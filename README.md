@@ -2,7 +2,7 @@
 
 A classroom in a phone: an offline-first app that shows a teacher what they teach today, who owes them, and how much they earned this month.
 
-**Status:** design and architecture settled; implementation starts with [spec 001](specs/001-foundation/spec.md).
+**Status:** design and architecture settled; implementation starts with [spec 001](docs/specs/001-foundation/spec.md).
 
 ## Stack
 
@@ -13,11 +13,12 @@ Expo (React Native, TypeScript strict, Expo Router) · NativeWind (Tailwind) · 
 | Path | What |
 | --- | --- |
 | [`CLAUDE.md`](CLAUDE.md) | How Claude Code works in this repo, spec by spec |
-| [`specs/`](specs/) | Constitution, roadmap and the specs (spec, plan, tasks) |
+| [`docs/specs/`](docs/specs/) | Constitution, roadmap and the specs (spec, plan, tasks) |
 | [`docs/product.md`](docs/product.md) | Product documentation v1 |
 | [`docs/architecture.md`](docs/architecture.md) | Architecture and technology v1 |
 | [`docs/mockups/`](docs/mockups/) | The 27 screen mockups |
-| [`design-system/`](design-system/) | Tokens, usage rules and the 30 components |
+| [`docs/design-system/`](docs/design-system/) | Design system usage rules, Tailwind and theming notes, and a guideline per component |
+| [`design-system/`](design-system/) | `tokens.json`, the props contract (`components/index.d.ts`) and the web reference previews of the 30 components |
 | [`.claude/commands/`](.claude/commands/) | `/spec`, `/plan`, `/implement`, `/verify` |
 
 ## Working with Claude Code

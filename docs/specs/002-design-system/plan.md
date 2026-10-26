@@ -1,7 +1,7 @@
 # Plan 002: Design system
 
-Architecture reference: [`docs/architecture.md`](../../docs/architecture.md), sections "Theming and i18n" and "Architecture layers".
-Design reference: [`design-system/`](../../design-system/): `tokens.json`, `README.md` (usage rules), `Tailwind.md`, `Theming.md`, `components/<Name>/README.md`, `components/index.d.ts` (props contract).
+Architecture reference: [`docs/architecture.md`](../../architecture.md), sections "Theming and i18n" and "Architecture layers".
+Design reference: [`design-system/`](../../../design-system/) holds `tokens.json`, `components/index.d.ts` (props contract), `components/bundle.js` and the previews; [`docs/design-system/`](../../design-system/) holds `README.md` (usage rules), `Tailwind.md`, `Theming.md` and `components/<Name>/README.md`.
 
 ## Approach
 
@@ -28,7 +28,7 @@ eslint rule (local plugin)        no hex, raw fontSize or raw spacing numbers in
 ## Key decisions
 
 - **Token pipeline:** generated file is committed so the app builds without running the script; CI runs `npm run tokens -- --check` and fails on drift (AC-002-1).
-- **Custom colors:** parts map to tokens exactly as `design-system/Theming.md` says. Components read `--btn-primary` and `--tab-active`, which default to `primary`; the header part writes `header` directly.
+- **Custom colors:** parts map to tokens exactly as `docs/design-system/Theming.md` says. Components read `--btn-primary` and `--tab-active`, which default to `primary`; the header part writes `header` directly.
 - **Dark-mode header:** `header = mix(primary, background, 0.68)` with `on-header` chosen by contrast; a custom header color goes through the same deepening.
 - **Large text:** a 1.15 multiplier applied in the type styles (through a `Text` component that reads the scale), not by changing rem, so spacing stays fixed and only type grows. Confirm in the Maestro screenshot flow (AC-002-16).
 - **Shadows:** applied in `Card`, `Fab` and `SegmentedControl` through platform props (`elevation` on Android), not class names.

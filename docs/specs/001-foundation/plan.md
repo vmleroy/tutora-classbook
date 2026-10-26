@@ -1,6 +1,6 @@
 # Plan 001: Foundation
 
-Architecture reference: [`docs/architecture.md`](../../docs/architecture.md). Mockups: [`docs/mockups/`](../../docs/mockups/).
+Architecture reference: [`docs/architecture.md`](../../architecture.md). Mockups: [`docs/mockups/`](../../mockups/).
 
 ## Stack pinned in this spec
 

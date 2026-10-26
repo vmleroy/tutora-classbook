@@ -2,7 +2,7 @@
 
 Status: ready
 Depends on: 001 Foundation
-Source of truth: [`design-system/`](../../design-system/) in this repo (tokens, components, usage rules), also published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei)
+Source of truth: [`design-system/`](../../../design-system/) (tokens and component previews) and [`docs/design-system/`](../../design-system/) (usage rules and component guidelines), also published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei)
 
 ## Goal
 
