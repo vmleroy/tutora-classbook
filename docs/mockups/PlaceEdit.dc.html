@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Editar local</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="PlaceDetail.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 22px; font-weight: 800">Editar local</h1>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 6px 20px 12px; overflow: hidden">
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+      <label for="pname" style="font-size: 12px; font-weight: 700; color: #5C6A70">Nome</label>
+      <input id="pname" type="text" defaultValue="Salinha Aprender+" style="height: 40px; border: none; border-bottom: 1px solid #ECE6D8; font-family: Nunito, system-ui, sans-serif; font-size: 16px; font-weight: 800; color: #1F2A2E; padding: 0; background: transparent">
+      <label for="paddr" style="font-size: 12px; font-weight: 700; color: #5C6A70">Endereço (opcional)</label>
+      <input id="paddr" type="text" defaultValue="Rua das Flores, 120" style="height: 32px; border: none; font-family: Nunito, system-ui, sans-serif; font-size: 15px; color: #1F2A2E; padding: 0; background: transparent">
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Tipo</span>
+      <div role="group" aria-label="Tipo de local" style="display: flex; gap: 6px">
+        <sc-for list="{{kinds}}" as="k" hint-placeholder-count="4">
+          <button onClick="{{k.pick}}" aria-pressed="{{k.on}}" style="height: 38px; padding: 0 12px; border-radius: 19px; border: {{k.border}}; background: {{k.bg}}; color: {{k.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{k.label}}</button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #5C6A70">{{jobHint}}</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Quem paga você?</span>
+      <div role="group" aria-label="Quem paga" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #F3EEE2; border-radius: 14px; padding: 4px; gap: 4px">
+        <button onClick="{{payPlace}}" aria-pressed="{{byPlace}}" style="height: 40px; border: none; border-radius: 11px; background: {{placeBg}}; color: {{placeFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">O local</button>
+        <button onClick="{{payStudent}}" aria-pressed="{{byStudent}}" style="height: 40px; border: none; border-radius: 11px; background: {{studentBg}}; color: {{studentFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">O aluno</button>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-size: 14px; font-weight: 700">{{rateCaption}}</span>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <button onClick="{{rateMinus}}" aria-label="Diminuir valor" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">−</button>
+          <span style="min-width: 76px; text-align: center; font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums">R$ {{rate}}/h</span>
+          <button onClick="{{ratePlus}}" aria-label="Aumentar valor" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">+</button>
+        </div>
+      </div>
+      <sc-if value="{{byStudent}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #F0EADC; padding-top: 10px">
+          <span style="font-size: 14px; font-weight: 700">O local fica com</span>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <button onClick="{{cutMinus}}" aria-label="Diminuir comissão" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">−</button>
+            <span style="min-width: 76px; text-align: center; font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums">{{cut}}%</span>
+            <button onClick="{{cutPlus}}" aria-label="Aumentar comissão" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">+</button>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{byPlace}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #F0EADC; padding-top: 10px">
+          <span style="font-size: 14px; font-weight: 700">Acerto com o local</span>
+          <div role="group" aria-label="Acerto" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{cycles}}" as="c" hint-placeholder-count="3">
+              <button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="height: 38px; border-radius: 10px; border: {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{c.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #F0EADC; padding-top: 10px">
+        <span style="font-size: 14px; font-weight: 700">Duração padrão</span>
+        <span style="font-size: 15px; font-weight: 800; color: #5C6A70">60 min</span>
+      </div>
+    </div>
+
+    <div style="background: #FCF3DF; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; color: #5A4300">
+      <span style="font-size: 12px; font-weight: 800">Ao registrar uma aula de 60 min aqui</span>
+      <span style="font-size: 15px; font-weight: 800; color: #1F2A2E">{{preview}}</span>
+    </div>
+  </div>
+
+  <div style="padding: 12px 20px 24px; border-top: 1px solid #ECE6D8; flex-shrink: 0">
+    <a href="PlaceDetail.dc.html" style="height: 56px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 16px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center">Salvar modelo</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#1F4E5F","#3D6FB4"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const kind = s.kind ?? 'salinha';
+    const payer = s.payer ?? 'place';
+    const byPlace = payer === 'place';
+    const rate = s.rate ?? (byPlace ? 60 : 100);
+    const cut = s.cut ?? 30;
+    const cycle = s.cycle ?? 'monthly';
+    const money = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const on = { bg: primary, fg: '#FFFFFF', border: '2px solid ' + primary };
+    const off = { bg: '#FFFFFF', fg: '#1F2A2E', border: '1px solid #E4DDCD' };
+    const chip = (isOn) => (isOn ? on : off);
+    const cycleWord = { lesson: 'a cada aula', weekly: 'no fechamento semanal', monthly: 'no fechamento do mês' }[cycle];
+    const net = rate * (100 - cut) / 100;
+    return {
+      primary: primary,
+      kinds: [['school', 'Escola'], ['salinha', 'Salinha'], ['course', 'Cursinho'], ['private', 'Particular']].map(([id, label]) => {
+        const st = chip(id === kind);
+        return { label: label, on: id === kind, bg: st.bg, fg: st.fg, border: st.border, pick: () => this.setState({ kind: id }) };
+      }),
+      jobHint: (kind === 'school' || kind === 'course') ? 'Nos Ganhos conta como Escola e emprego' : 'Nos Ganhos conta como Aulas particulares',
+      byPlace: byPlace,
+      byStudent: !byPlace,
+      placeBg: byPlace ? '#FFFFFF' : 'transparent',
+      placeFg: byPlace ? primary : '#5C6A70',
+      studentBg: byPlace ? 'transparent' : '#FFFFFF',
+      studentFg: byPlace ? '#5C6A70' : primary,
+      payPlace: () => this.setState({ payer: 'place', rate: 60 }),
+      payStudent: () => this.setState({ payer: 'student', rate: 100 }),
+      rateCaption: byPlace ? 'O local me paga' : 'O aluno paga',
+      rate: rate,
+      rateMinus: () => this.setState({ rate: Math.max(5, rate - 5) }),
+      ratePlus: () => this.setState({ rate: rate + 5 }),
+      cut: cut,
+      cutMinus: () => this.setState({ cut: Math.max(0, cut - 5) }),
+      cutPlus: () => this.setState({ cut: Math.min(90, cut + 5) }),
+      cycles: [['lesson', 'Por aula'], ['weekly', 'Semanal'], ['monthly', 'Mensal']].map(([id, label]) => {
+        const st = chip(id === cycle);
+        return { label: label, on: id === cycle, bg: st.bg, fg: st.fg, border: st.border, pick: () => this.setState({ cycle: id }) };
+      }),
+      preview: byPlace
+        ? 'Você ganha R$ ' + money(rate) + ', a receber do local ' + cycleWord
+        : 'Aluno paga R$ ' + money(rate) + ', você fica com R$ ' + money(net)
+    };
+  }
+}
+</script>
+</body>
+</html>

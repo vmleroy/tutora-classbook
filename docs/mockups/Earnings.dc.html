@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Ganhos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden; position: relative">
+  <header style="padding: 24px 20px 8px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 800">Ganhos</h1>
+    <button onClick="{{openSheet}}" style="height: 44px; padding: 0 16px; border-radius: 22px; border: none; background: {{primary}}; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; cursor: pointer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4M9 13h6M9 17h4"></path></svg>Relatório
+    </button>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 4px 20px 12px; overflow: hidden">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div role="radiogroup" aria-label="Período" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #F3EEE2; border-radius: 12px; padding: 3px; gap: 3px; flex-grow: 1">
+          <sc-for list="{{periods}}" as="p" hint-placeholder-count="3">
+            <button role="radio" aria-checked="{{p.on}}" onClick="{{p.pick}}" style="height: 36px; border: none; border-radius: 9px; background: {{p.bg}}; color: {{p.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{p.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <button aria-label="Período anterior" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: transparent; color: #1F2A2E; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+        <span style="font-size: 15px; font-weight: 800">{{rangeLabel}}</span>
+        <button aria-label="Próximo período" style="width: 36px; height: 36px; border-radius: 18px; border: none; background: transparent; color: #1F2A2E; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+      </div>
+      <div role="radiogroup" aria-label="Mostrar" style="display: flex; gap: 6px">
+        <sc-for list="{{types}}" as="k" hint-placeholder-count="3">
+          <button role="radio" aria-checked="{{k.on}}" onClick="{{k.pick}}" style="height: 34px; padding: 0 12px; border-radius: 17px; border: {{k.border}}; background: {{k.bg}}; color: {{k.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap">{{k.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <section aria-label="Resumo" style="background: #FFFFFF; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 10px rgba(31,42,46,0.05)">
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 13px; font-weight: 700; color: #5C6A70">Ganho no período</span>
+        <span style="font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.5px">R$ {{total}}</span>
+      </div>
+      <div style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #FBE9E7">
+        <div style="width: {{paidPct}}; background: #3E9D6B"></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <div style="display: flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #3E9D6B"></span><div style="display: flex; flex-direction: column"><span style="font-size: 12px; color: #5C6A70">Recebido</span><span style="font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums">R$ {{paid}}</span></div></div>
+        <div style="display: flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 3px; background: #F4C7C2"></span><div style="display: flex; flex-direction: column"><span style="font-size: 12px; color: #5C6A70">A receber</span><span style="font-size: 16px; font-weight: 800; color: #B93A36; font-variant-numeric: tabular-nums">R$ {{owed}}</span></div></div>
+      </div>
+    </section>
+
+    <section aria-label="De onde veio" style="display: flex; flex-direction: column; gap: 6px; overflow: hidden">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-size: 15px; font-weight: 800">De onde veio</h2>
+        <span style="font-size: 12px; color: #5C6A70">toque para ver detalhes</span>
+      </div>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+        <a href="{{r.href}}" style="background: #FFFFFF; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: #1F2A2E">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span style="width: 8px; height: 8px; border-radius: 4px; background: {{r.dot}}; flex-shrink: 0"></span>
+            <span style="font-size: 14px; font-weight: 800; flex-grow: 1">{{r.name}}</span>
+            <span style="font-size: 11px; font-weight: 800; color: #8F2B28">{{r.owedLabel}}</span>
+            <span style="font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">R$ {{r.value}}</span>
+          </div>
+          <div style="height: 4px; border-radius: 2px; background: #F3EEE2; overflow: hidden"><div style="width: {{r.pct}}; height: 4px; background: {{r.dot}}"></div></div>
+        </a>
+      </sc-for>
+    </section>
+  </div>
+
+  <nav aria-label="Navegação principal" style="height: 72px; flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #ECE6D8; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr))">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg></span>Hoje
+    </a>
+    <a href="Schedule.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span>Agenda
+    </a>
+    <a href="Students.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"></path></svg></span>Alunos
+    </a>
+    <a href="Places.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg></span>Locais
+    </a>
+    <a href="Earnings.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: {{primary}}; font-size: 11px; font-weight: 800">
+      <span style="background: #E1EEE8; border-radius: 14px; padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg></span>Ganhos
+    </a>
+  </nav>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(20,28,25,0.5); display: flex; flex-direction: column; justify-content: flex-end">
+      <div role="dialog" aria-label="Relatório de ganhos" style="background: #FFFFFF; border-radius: 28px 28px 0 0; padding: 22px 20px 28px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 20px; font-weight: 800">Relatório de ganhos</span>
+          <span style="font-size: 13px; color: #5C6A70">{{rangeLabel}} · {{typeLabel}} · usa os filtros da tela</span>
+        </div>
+        <div role="radiogroup" aria-label="Formato" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{formats}}" as="f" hint-placeholder-count="2">
+            <button role="radio" aria-checked="{{f.on}}" onClick="{{f.pick}}" style="border-radius: 16px; border: {{f.border}}; background: {{f.bg}}; padding: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; text-align: left; cursor: pointer">
+              <span style="font-size: 16px; font-weight: 800">{{f.label}}</span>
+              <span style="font-size: 12px; color: #5C6A70">{{f.sub}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column">
+          <sc-for list="{{includes}}" as="o" hint-placeholder-count="3">
+            <button onClick="{{o.toggle}}" aria-pressed="{{o.on}}" style="height: 44px; border: none; border-bottom: 1px solid #F0EADC; background: transparent; display: flex; align-items: center; gap: 10px; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 700; color: #1F2A2E; cursor: pointer; padding: 0">
+              <span style="width: 22px; height: 22px; border-radius: 6px; border: 2px solid {{o.box}}; background: {{o.fill}}; color: #FFFFFF; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-sizing: border-box">{{o.mark}}</span>{{o.label}}
+            </button>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px">
+          <button onClick="{{closeSheet}}" style="height: 52px; border-radius: 16px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 800; cursor: pointer">Cancelar</button>
+          <a href="{{generateHref}}" style="height: 52px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 15px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center">{{generateLabel}}</a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const period = s.period ?? 'm';
+    const type = s.type ?? 'all';
+    const fmt = s.fmt ?? 'pdf';
+    const inc = Object.assign({ split: true, lessons: true, payments: false }, s.inc || {});
+    const ORIGINS = [
+      { name: 'Colégio Santa Clara', job: 'formal', kind: 'place', dot: '#3D6FB4', v: { m: 2400, q: 7200, y: 24000 }, owed: 2400, href: 'PlaceDetail.dc.html' },
+      { name: 'Ana Souza', job: 'private', kind: 'student', dot: '#C98A10', v: { m: 780, q: 2040, y: 7800 }, owed: 240, href: 'StudentDetail.dc.html' },
+      { name: 'Turma ENEM', job: 'private', kind: 'student', dot: '#8E6CC0', v: { m: 540, q: 1440, y: 4860 }, owed: 180, href: 'StudentDetail.dc.html' },
+      { name: 'Pedro Lima', job: 'private', kind: 'student', dot: '#3E9D6B', v: { m: 480, q: 960, y: 4320 }, owed: 0, href: 'StudentDetail.dc.html' },
+      { name: 'Salinha Aprender+', job: 'private', kind: 'place', dot: '#A884D6', v: { m: 360, q: 840, y: 3000 }, owed: 360, href: 'PlaceDetail.dc.html' },
+      { name: 'Cursinho Foco', job: 'formal', kind: 'place', dot: '#D9772F', v: { m: 320, q: 800, y: 2400 }, owed: 80, href: 'PlaceDetail.dc.html' },
+      { name: 'Lucas Mendes', job: 'private', kind: 'student', dot: '#D64545', v: { m: 140, q: 420, y: 1400 }, owed: 140, href: 'StudentDetail.dc.html' }
+    ];
+    const list = ORIGINS.filter((o) => type === 'all' || o.job === type);
+    const total = list.reduce((a, o) => a + o.v[period], 0);
+    const owed = list.reduce((a, o) => a + o.owed, 0);
+    const max = Math.max(...list.map((o) => o.v[period]), 1);
+    const money = (v) => v.toLocaleString('pt-BR');
+    const RANGE = { m: 'Outubro 2026', q: 'Ago – Out 2026', y: 'Jan – Out 2026' };
+    const TYPES = [['all', 'Tudo'], ['private', 'Particulares'], ['formal', 'Escola e emprego']];
+    const on = { bg: primary, fg: '#FFFFFF', border: '2px solid ' + primary };
+    const off = { bg: '#FFFFFF', fg: '#1F2A2E', border: '1px solid #E4DDCD' };
+    return {
+      primary: primary,
+      periods: [['m', 'Mês'], ['q', 'Trimestre'], ['y', 'Ano']].map(([id, label]) => ({
+        label: label, on: id === period,
+        bg: id === period ? '#FFFFFF' : 'transparent', fg: id === period ? primary : '#5C6A70',
+        pick: () => this.setState({ period: id })
+      })),
+      rangeLabel: RANGE[period],
+      types: TYPES.map(([id, label]) => {
+        const st = id === type ? on : off;
+        return { label: label, on: id === type, bg: st.bg, fg: st.fg, border: st.border, pick: () => this.setState({ type: id }) };
+      }),
+      typeLabel: TYPES.find((x) => x[0] === type)[1],
+      total: money(total),
+      paid: money(total - owed),
+      owed: money(owed),
+      paidPct: Math.round((total - owed) / Math.max(total, 1) * 100) + '%',
+      rows: list.map((o) => ({
+        name: o.name, dot: o.dot, href: o.href,
+        value: money(o.v[period]),
+        owedLabel: o.owed ? 'deve ' + money(o.owed) : '',
+        pct: Math.round(o.v[period] / max * 100) + '%'
+      })),
+      sheet: !!s.sheet,
+      openSheet: () => this.setState({ sheet: true }),
+      closeSheet: () => this.setState({ sheet: false }),
+      formats: [['pdf', 'PDF', 'Para enviar ou imprimir'], ['xlsx', 'Excel', 'Planilha para analisar']].map(([id, label, sub]) => ({
+        label: label, sub: sub, on: id === fmt,
+        bg: id === fmt ? '#EEF5F1' : '#FFFFFF', border: id === fmt ? '2px solid ' + primary : '1px solid #E4DDCD',
+        pick: () => this.setState({ fmt: id })
+      })),
+      includes: [['split', 'Ganhos por aluno e por local'], ['lessons', 'Lista de aulas'], ['payments', 'Pagamentos recebidos']].map(([id, label]) => ({
+        label: label, on: inc[id],
+        box: inc[id] ? primary : '#CFC8B8', fill: inc[id] ? primary : '#FFFFFF', mark: inc[id] ? '✓' : '',
+        toggle: () => this.setState({ inc: Object.assign({}, inc, { [id]: !inc[id] }) })
+      })),
+      generateHref: fmt === 'pdf' ? 'EarningsPdf.dc.html' : 'Earnings.dc.html',
+      generateLabel: fmt === 'pdf' ? 'Gerar PDF' : 'Gerar Excel'
+    };
+  }
+}
+</script>
+</body>
+</html>

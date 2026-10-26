@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Alunos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 24px 20px 12px; display: flex; flex-direction: column; gap: 14px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <div style="display: flex; flex-direction: column">
+        <h1 style="margin: 0; font-size: 26px; font-weight: 800">Alunos</h1>
+        <span style="font-size: 14px; color: #5C6A70; font-weight: 600">5 particulares · 1 escola</span>
+      </div>
+      <button aria-label="Novo aluno" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: {{primary}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+      </button>
+    </div>
+    <div style="position: relative">
+      <label for="search" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar aluno</label>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C6A70" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 14px; top: 15px"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4 4"></path></svg>
+      <input id="search" type="search" placeholder="Buscar por nome ou matéria" style="width: 100%; height: 48px; border-radius: 14px; border: 1px solid #E4DDCD; background: #FFFFFF; padding: 0 14px 0 42px; font-family: Nunito, system-ui, sans-serif; font-size: 15px; color: #1F2A2E; box-sizing: border-box">
+    </div>
+    <div style="display: flex; gap: 8px">
+      <button style="height: 36px; padding: 0 14px; border-radius: 18px; border: none; background: {{primary}}; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800">Todos · 6</button>
+      <button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DDCD; background: #FFFFFF; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 700">Devendo · 3</button>
+      <button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DDCD; background: #FFFFFF; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px">Por local<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </div>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; padding: 4px 20px 12px; overflow: hidden">
+    <a href="StudentDetail.dc.html" style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1F2A2E">
+      <div style="width: 44px; height: 44px; border-radius: 22px; background: #FCE7B8; color: #6B4A00; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">AS</div>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px"><span style="font-size: 15px; font-weight: 800">Ana Souza</span><span style="font-size: 12px; color: #5C6A70">Matemática · Online, Casa do Aluno</span></div>
+      <span style="font-size: 12px; font-weight: 800; color: #9E2F2B; background: #FBE9E7; padding: 5px 9px; border-radius: 9px; font-variant-numeric: tabular-nums">Deve R$ 240</span>
+    </a>
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; align-items: center; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 22px; background: #D9EFE3; color: #1F5C3C; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">PL</div>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px"><span style="font-size: 15px; font-weight: 800">Pedro Lima</span><span style="font-size: 12px; color: #5C6A70">Física · Salinha Aprender+</span></div>
+      <span style="font-size: 12px; font-weight: 800; color: #276B48; background: #E2F2E9; padding: 5px 9px; border-radius: 9px">Em dia</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; align-items: center; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 22px; background: #EEE7F7; color: #4D3577; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">TE</div>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px"><span style="font-size: 15px; font-weight: 800">Turma ENEM</span><span style="font-size: 12px; color: #5C6A70">Redação · 3 alunos · R$ 180/aula</span></div>
+      <span style="font-size: 12px; font-weight: 800; color: #9E2F2B; background: #FBE9E7; padding: 5px 9px; border-radius: 9px; font-variant-numeric: tabular-nums">Deve R$ 180</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; align-items: center; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 22px; background: #DCE7F6; color: #24497E; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">MC</div>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 5px">
+        <span style="font-size: 15px; font-weight: 800">Mariana Costa</span>
+        <span style="font-size: 12px; color: #5C6A70">Inglês · pacote de 10 aulas</span>
+        <div style="display: flex; align-items: center; gap: 8px"><div style="flex-grow: 1; height: 6px; border-radius: 3px; background: #F0EADC; overflow: hidden"><div style="width: 70%; height: 6px; background: {{secondary}}"></div></div><span style="font-size: 11px; font-weight: 700; color: #5C6A70">7 de 10 usadas</span></div>
+      </div>
+      <span style="font-size: 12px; font-weight: 800; color: #276B48; background: #E2F2E9; padding: 5px 9px; border-radius: 9px">Pago</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; align-items: center; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 22px; background: #FDE8DC; color: #7A3B10; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">LM</div>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px"><span style="font-size: 15px; font-weight: 800">Lucas Mendes</span><span style="font-size: 12px; color: #5C6A70">Química · Casa do Aluno, Online</span></div>
+      <span style="font-size: 12px; font-weight: 800; color: #9E2F2B; background: #FBE9E7; padding: 5px 9px; border-radius: 9px; font-variant-numeric: tabular-nums">Deve R$ 140</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; align-items: center; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: {{secondary}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-5 9 5-9 5z"></path><path d="M7 12v4.5c1.5 1.3 3.2 2 5 2s3.5-.7 5-2V12"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; flex-grow: 1; gap: 1px"><span style="font-size: 15px; font-weight: 800">Colégio Santa Clara</span><span style="font-size: 12px; color: #5C6A70">Escola · 4 turmas · salário mensal</span></div>
+      <span style="font-size: 12px; font-weight: 700; color: #24497E; background: #E3ECF8; padding: 5px 9px; border-radius: 9px; font-variant-numeric: tabular-nums">R$ 2.400/mês</span>
+    </div>
+  </div>
+
+  <nav aria-label="Navegação principal" style="height: 72px; flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #ECE6D8; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr))">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg></span>Hoje
+    </a>
+    <a href="Schedule.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span>Agenda
+    </a>
+    <a href="Students.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: {{primary}}; font-size: 11px; font-weight: 800">
+      <span style="background: #E1EEE8; border-radius: 14px; padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"></path></svg></span>Alunos
+    </a>
+    <a href="Places.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg></span>Locais
+    </a>
+    <a href="Earnings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg></span>Ganhos
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#1F4E5F","#3D6FB4"]},"secondary":{"editor":"color","default":"#3D6FB4"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      primary: this.props.primary ?? '#2E5E4E',
+      secondary: this.props.secondary ?? '#3D6FB4'
+    };
+  }
+}
+</script>
+</body>
+</html>

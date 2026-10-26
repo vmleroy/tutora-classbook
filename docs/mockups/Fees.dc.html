@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cancelamentos e faltas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="Settings.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <div style="display: flex; flex-direction: column">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 800">Cancelamentos e faltas</h1>
+      <span style="font-size: 13px; color: #5C6A70">Padrão para todos · muda por aluno</span>
+    </div>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 6px 20px 12px; overflow: hidden">
+    <section aria-label="Cancelamento em cima da hora" style="background: #FFFFFF; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 800">Cancelou em cima da hora</span><span style="font-size: 12px; color: #5C6A70">{{lateSub}}</span></div>
+        <button onClick="{{toggleLate}}" aria-pressed="{{late}}" aria-label="Cobrar cancelamento em cima da hora" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{lateBg}}; padding: 3px; display: flex; justify-content: {{lateJustify}}; flex-shrink: 0; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+      </div>
+      <sc-if value="{{late}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Se avisar com menos de</span>
+          <div role="radiogroup" aria-label="Antecedência" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{windows}}" as="w" hint-placeholder-count="4">
+              <button role="radio" aria-checked="{{w.on}}" onClick="{{w.pick}}" style="height: 38px; border-radius: 12px; border: {{w.border}}; background: {{w.bg}}; color: {{w.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{w.label}}</button>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Cobrar</span>
+          <div role="radiogroup" aria-label="Valor do cancelamento" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{lateAmts}}" as="a" hint-placeholder-count="3">
+              <button role="radio" aria-checked="{{a.on}}" onClick="{{a.pick}}" style="height: 38px; border-radius: 12px; border: {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{a.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </section>
+
+    <section aria-label="Falta sem avisar" style="background: #FFFFFF; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 800">Faltou sem avisar</span><span style="font-size: 12px; color: #5C6A70">{{missSub}}</span></div>
+        <button onClick="{{toggleMiss}}" aria-pressed="{{miss}}" aria-label="Cobrar falta" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{missBg}}; padding: 3px; display: flex; justify-content: {{missJustify}}; flex-shrink: 0; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+      </div>
+      <sc-if value="{{miss}}" hint-placeholder-val="{{ true }}">
+        <div role="radiogroup" aria-label="Valor da falta" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{missAmts}}" as="a" hint-placeholder-count="3">
+            <button role="radio" aria-checked="{{a.on}}" onClick="{{a.pick}}" style="height: 38px; border-radius: 12px; border: {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{a.label}}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </section>
+
+    <section style="background: #FCF3DF; border-radius: 18px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 12px; font-weight: 800; color: #5A4300">EXEMPLO · AULA DE R$ 120 ÀS 14:00</span>
+      <span style="font-size: 14px; font-weight: 700; line-height: 1.4">{{example1}}</span>
+      <span style="font-size: 14px; font-weight: 700; line-height: 1.4">{{example2}}</span>
+    </section>
+
+    <span style="font-size: 12px; line-height: 1.45; color: #5C6A70; padding: 0 4px">Ao marcar uma aula como Cancelada ou Faltou, o app sugere a taxa e você confirma ou dispensa. A taxa entra no saldo do aluno e nos Ganhos.</span>
+  </div>
+
+  <div style="padding: 12px 20px 24px; border-top: 1px solid #ECE6D8; flex-shrink: 0">
+    <a href="Settings.dc.html" style="height: 56px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 16px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center">Salvar regra</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const late = s.late ?? true;
+    const win = s.win ?? 24;
+    const lateAmt = s.lateAmt ?? 'half';
+    const miss = s.miss ?? true;
+    const missAmt = s.missAmt ?? 'full';
+    const on = { bg: primary, fg: '#FFFFFF', border: '2px solid ' + primary };
+    const off = { bg: '#FFFFFF', fg: '#1F2A2E', border: '1px solid #E4DDCD' };
+    const chip = (id, cur, label, set) => Object.assign({ label: label, on: id === cur, pick: set }, id === cur ? on : off);
+    const AMT = { half: ['50%', 60], full: ['100%', 120], fixed: ['R$ 30', 30] };
+    const money = (v) => 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    const tog = (v) => ({ bg: v ? primary : '#CFC8B8', j: v ? 'flex-end' : 'flex-start' });
+    return {
+      primary: primary,
+      late: late,
+      lateSub: late ? 'Cobra ' + AMT[lateAmt][0] + ' se avisar com menos de ' + win + 'h' : 'Não cobra',
+      lateBg: tog(late).bg, lateJustify: tog(late).j,
+      toggleLate: () => this.setState({ late: !late }),
+      windows: [2, 12, 24, 48].map((h) => chip(h, win, h + 'h', () => this.setState({ win: h }))),
+      lateAmts: [['half', '50%'], ['full', '100%'], ['fixed', 'R$ 30']].map(([id, l]) => chip(id, lateAmt, l, () => this.setState({ lateAmt: id }))),
+      miss: miss,
+      missSub: miss ? 'Cobra ' + AMT[missAmt][0] + ' da aula' : 'Não cobra',
+      missBg: tog(miss).bg, missJustify: tog(miss).j,
+      toggleMiss: () => this.setState({ miss: !miss }),
+      missAmts: [['half', '50%'], ['full', '100%'], ['fixed', 'R$ 30']].map(([id, l]) => chip(id, missAmt, l, () => this.setState({ missAmt: id }))),
+      example1: 'Cancelou às 11:00 (3h antes): ' + (late && win > 3 ? 'taxa de ' + money(AMT[lateAmt][1]) : 'sem taxa'),
+      example2: 'Não apareceu: ' + (miss ? 'taxa de ' + money(AMT[missAmt][1]) : 'sem taxa')
+    };
+  }
+}
+</script>
+</body>
+</html>

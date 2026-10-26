@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Nova aula</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 12px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="Main.dc.html" aria-label="Fechar" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 22px; font-weight: 800">{{title}}</h1>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 0 20px 12px; overflow: hidden">
+    <div role="group" aria-label="Tipo de registro" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #F3EEE2; border-radius: 14px; padding: 4px; gap: 4px">
+      <button onClick="{{pickLog}}" aria-pressed="{{isLog}}" style="height: 44px; border: none; border-radius: 11px; background: {{logBg}}; color: {{logFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">Registrar aula dada</button>
+      <button onClick="{{pickSchedule}}" aria-pressed="{{isSchedule}}" style="height: 44px; border: none; border-radius: 11px; background: {{schedBg}}; color: {{schedFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">Agendar aula</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 700; color: #5C6A70">Aluno ou turma</span>
+      <button onClick="{{nextStudent}}" aria-label="Trocar aluno: {{stName}}" style="height: 52px; border-radius: 16px; border: 1px solid #E4DDCD; background: #FFFFFF; padding: 0 14px; display: flex; align-items: center; gap: 12px; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; cursor: pointer">
+        <span style="width: 36px; height: 36px; border-radius: 18px; background: {{stBg}}; color: {{stFg}}; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0">{{stIni}}</span>
+        <span style="display: flex; flex-direction: column; align-items: flex-start; flex-grow: 1"><span style="font-size: 15px; font-weight: 800">{{stName}}</span><span style="font-size: 12px; color: #5C6A70">{{stSub}}</span></span>
+        <span style="font-size: 12px; font-weight: 800; color: {{primary}}">Trocar</span>
+      </button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 700; color: #5C6A70">Local · só os ligados ao aluno</span>
+      <div role="group" aria-label="Local" style="display: flex; gap: 6px">
+        <sc-for list="{{places}}" as="p" hint-placeholder-count="3">
+          <button onClick="{{p.pick}}" aria-pressed="{{p.on}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: {{p.border}}; background: {{p.bg}}; color: {{p.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap">{{p.label}}</button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #5C6A70">{{placeHint}}</span>
+      <sc-if value="{{showTravel}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; border: 1px solid #E4DDCD; border-radius: 12px; padding: 4px 4px 4px 12px">
+          <span style="font-size: 13px; font-weight: 700">Deslocamento desta aula</span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <button onClick="{{travelMinus}}" aria-label="Menos deslocamento" style="width: 32px; height: 32px; border-radius: 9px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 17px; font-weight: 800; cursor: pointer">−</button>
+            <span style="min-width: 52px; text-align: center; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">R$ {{travel}}</span>
+            <button onClick="{{travelPlus}}" aria-label="Mais deslocamento" style="width: 32px; height: 32px; border-radius: 9px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 17px; font-weight: 800; cursor: pointer">+</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: #5C6A70">Data</span>
+        <button aria-label="Data: {{dateLabel}}" style="height: 52px; border-radius: 14px; border: 1px solid #E4DDCD; background: #FFFFFF; padding: 0 14px; display: flex; align-items: center; gap: 8px; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 700; color: #1F2A2E; cursor: pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C6A70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>{{dateLabel}}
+        </button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 13px; font-weight: 700; color: #5C6A70">Início</span>
+        <button aria-label="Início: 14:00" style="height: 52px; border-radius: 14px; border: 1px solid #E4DDCD; background: #FFFFFF; padding: 0 14px; display: flex; align-items: center; gap: 8px; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 700; color: #1F2A2E; cursor: pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C6A70" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>14:00
+        </button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 700; color: #5C6A70">{{durationCaption}}</span>
+      <div style="height: 50px; border-radius: 16px; border: 1px solid #E4DDCD; background: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 0 6px">
+        <button onClick="{{minus}}" aria-label="Menos 15 minutos" style="width: 44px; height: 44px; border-radius: 12px; border: none; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+        <span style="font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums">{{durationLabel}}</span>
+        <button onClick="{{plus}}" aria-label="Mais 15 minutos" style="width: 44px; height: 44px; border-radius: 12px; border: none; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+      </div>
+    </div>
+
+    <div style="background: #FCF3DF; border-radius: 16px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between">
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 13px; font-weight: 700; color: #5A4300">Valor da aula</span>
+        <span style="font-size: 12px; color: #5A4300">{{valueHint}}</span>
+      </div>
+      <span style="font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums">R$ {{value}}</span>
+    </div>
+
+    <sc-if value="{{isLog}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; font-weight: 700; color: #5C6A70">Pagamento</span>
+        <div role="group" aria-label="Pagamento" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <button onClick="{{setOwed}}" aria-pressed="{{owedPressed}}" style="height: 44px; border-radius: 12px; border: {{owedBorder}}; background: {{owedBg}}; color: {{owedFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">Fica a receber</button>
+          <button onClick="{{setPaid}}" aria-pressed="{{paid}}" style="height: 44px; border-radius: 12px; border: {{paidBorder}}; background: {{paidBg}}; color: {{paidFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">Já foi pago</button>
+        </div>
+        <sc-if value="{{paid}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 8px">
+            <span style="font-size: 13px; font-weight: 800; color: #FFFFFF; background: #2E5E4E; padding: 7px 12px; border-radius: 10px">Pix</span>
+            <span style="font-size: 13px; font-weight: 700; color: #1F2A2E; background: #FFFFFF; border: 1px solid #E4DDCD; padding: 6px 12px; border-radius: 10px">Dinheiro</span>
+            <span style="font-size: 13px; font-weight: 700; color: #1F2A2E; background: #FFFFFF; border: 1px solid #E4DDCD; padding: 6px 12px; border-radius: 10px">Transferência</span>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isSchedule}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; font-weight: 700; color: #5C6A70">Repetir</span>
+        <div role="group" aria-label="Repetir" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{repeats}}" as="r" hint-placeholder-count="3">
+            <button onClick="{{r.pick}}" aria-pressed="{{r.on}}" style="height: 44px; border-radius: 12px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">{{r.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="padding: 12px 20px 24px; background: #FAF7F0; border-top: 1px solid #ECE6D8; flex-shrink: 0">
+    <a href="Main.dc.html" style="height: 56px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 16px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center">{{saveLabel}}</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#1F4E5F","#3D6FB4"]},"rate":{"editor":"float","default":120,"min":10,"max":1000,"step":5,"unit":"R$/h"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const ALL = {
+      online: { label: 'Online / Remoto', base: 100, travel: false, dur: 60, payer: 'aluno' },
+      salinha: { label: 'Salinha Aprender+', base: 60, travel: false, dur: 120, payer: 'salinha' },
+      home: { label: 'Casa do Aluno', base: 120, travel: true, dur: 90, payer: 'aluno' }
+    };
+    const STUDENTS = [
+      { name: 'Ana Souza', first: 'Ana', ini: 'AS', bg: '#FCE7B8', fg: '#6B4A00', subj: 'Matemática', places: ['online', 'home'], own: { online: this.props.rate ?? 120 } },
+      { name: 'Pedro Lima', first: 'Pedro', ini: 'PL', bg: '#DDF0E5', fg: '#1F5C3C', subj: 'Física', places: ['salinha'], own: {} },
+      { name: 'Lucas Mendes', first: 'Lucas', ini: 'LM', bg: '#FBE3E0', fg: '#8F2B28', subj: 'Química', places: ['home', 'online'], own: { home: 100 } }
+    ];
+    const si = s.student ?? 0;
+    const st = STUDENTS[si];
+    const PLACES = st.places.map((id) => Object.assign({ id: id }, ALL[id]));
+    const pi = Math.min(s.place ?? 0, PLACES.length - 1);
+    const place = PLACES[pi];
+    const ownRate = st.own[place.id];
+    const rate = ownRate ?? place.base;
+    const travel = place.travel ? (s.travel ?? 20) : 0;
+    const mode = s.mode ?? 'log';
+    const dur = s.dur ?? place.dur;
+    const paid = s.paid ?? false;
+    const rep = s.rep ?? 'weekly';
+    const isLog = mode === 'log';
+    const money = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const value = money(rate * dur / 60 + travel);
+    const h = Math.floor(dur / 60), m = dur % 60;
+    const durationLabel = dur + ' min' + (h > 0 ? ' · ' + h + 'h' + (m ? String(m).padStart(2, '0') : '') : '');
+    const on = { bg: primary, fg: '#FFFFFF', border: '2px solid ' + primary };
+    const off = { bg: '#FFFFFF', fg: '#1F2A2E', border: '1px solid #E4DDCD' };
+    const repeatDefs = [['none', 'Não repete'], ['weekly', 'Semanal'], ['biweekly', 'Quinzenal']];
+    return {
+      primary: primary,
+      places: PLACES.map((p, i) => {
+        const st = i === pi ? on : off;
+        return { label: p.label, on: i === pi, bg: st.bg, fg: st.fg, border: st.border, pick: () => this.setState({ place: i, dur: p.dur }) };
+      }),
+      placeHint: (ownRate != null ? 'Preço próprio de ' + st.first + ': R$ ' + rate + '/h' : 'Preço do local: R$ ' + rate + '/h') + ' · quem paga: ' + place.payer,
+      showTravel: place.travel,
+      travel: travel,
+      travelMinus: () => this.setState({ travel: Math.max(0, travel - 5) }),
+      travelPlus: () => this.setState({ travel: travel + 5 }),
+      stName: st.name, stIni: st.ini, stBg: st.bg, stFg: st.fg,
+      stSub: st.subj + ' · ' + st.places.map((id) => ALL[id].label.split(' ')[0]).join(', '),
+      nextStudent: () => { const n = (si + 1) % STUDENTS.length; this.setState({ student: n, place: 0, travel: 20, dur: ALL[STUDENTS[n].places[0]].dur }); },
+      title: isLog ? 'Registrar aula' : 'Nova aula',
+      isLog: isLog,
+      isSchedule: !isLog,
+      logBg: isLog ? '#FFFFFF' : 'transparent',
+      logFg: isLog ? primary : '#5C6A70',
+      schedBg: isLog ? 'transparent' : '#FFFFFF',
+      schedFg: isLog ? '#5C6A70' : primary,
+      pickLog: () => this.setState({ mode: 'log' }),
+      pickSchedule: () => this.setState({ mode: 'schedule' }),
+      dateLabel: isLog ? 'Hoje, 26 out' : 'Seg, 2 nov',
+      durationCaption: isLog ? 'Duração real' : 'Duração prevista',
+      durationLabel: durationLabel,
+      minus: () => this.setState({ dur: Math.max(15, dur - 15) }),
+      plus: () => this.setState({ dur: Math.min(300, dur + 15) }),
+      value: value,
+      valueHint: dur + ' min × R$ ' + money(rate) + '/h' + (travel ? ' + R$ ' + travel : ' · toque para ajustar'),
+      paid: paid,
+      owedPressed: !paid,
+      owedBg: paid ? off.bg : '#FBE9E7',
+      owedFg: paid ? off.fg : '#8F2B28',
+      owedBorder: paid ? off.border : '2px solid #D64545',
+      paidBg: paid ? '#E2F2E9' : off.bg,
+      paidFg: paid ? '#1F5C3C' : off.fg,
+      paidBorder: paid ? '2px solid #3E9D6B' : off.border,
+      setOwed: () => this.setState({ paid: false }),
+      setPaid: () => this.setState({ paid: true }),
+      repeats: repeatDefs.map(([id, label]) => {
+        const st = rep === id ? on : off;
+        return { label: label, on: rep === id, bg: st.bg, fg: st.fg, border: st.border, pick: () => this.setState({ rep: id }) };
+      }),
+      saveLabel: isLog ? 'Registrar aula · R$ ' + value : 'Agendar aula'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Aula ao vivo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: {{primary}}; font-family: Nunito, system-ui, sans-serif; color: #FFFFFF; display: flex; flex-direction: column; overflow: hidden; position: relative; box-sizing: border-box; padding: 20px 20px 28px; gap: 18px">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <a href="Main.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.12); color: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <span style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.18); padding: 8px 14px; border-radius: 16px; font-size: 13px; font-weight: 800; letter-spacing: 1px">
+      <span style="width: 10px; height: 10px; border-radius: 5px; background: {{dotColor}}"></span>{{statusLabel}}
+    </span>
+    <span style="width: 44px"></span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px">
+    <div style="width: 48px; height: 48px; border-radius: 24px; background: #FCE7B8; color: #6B4A00; font-weight: 800; display: flex; align-items: center; justify-content: center">AS</div>
+    <div style="display: flex; flex-direction: column">
+      <span style="font-size: 20px; font-weight: 800">Ana Souza</span>
+      <span style="font-size: 14px; color: #D3E6DD">Matemática · Online · 14:00–15:00</span>
+    </div>
+  </div>
+
+  <div style="position: relative; width: 260px; height: 260px; align-self: center">
+    <svg width="260" height="260" viewBox="0 0 260 260" aria-hidden="true">
+      <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="14"></circle>
+      <circle cx="130" cy="130" r="120" fill="none" stroke="{{accent}}" stroke-width="14" stroke-linecap="round" stroke-dasharray="754" stroke-dashoffset="{{dash}}" transform="rotate(-90 130 130)"></circle>
+    </svg>
+    <div style="position: absolute; left: 0; top: 0; width: 260px; height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px">
+      <span style="font-size: 13px; font-weight: 700; color: #D3E6DD">Tempo de aula</span>
+      <span style="font-size: 46px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -1px">{{clock}}</span>
+      <span style="font-size: 13px; color: #D3E6DD">de 60 min planejados</span>
+    </div>
+  </div>
+
+  <section aria-label="Ganho em tempo real" style="background: rgba(0,0,0,0.16); border-radius: 20px; padding: 16px 18px; display: flex; flex-direction: column; align-items: center; gap: 2px">
+    <span style="font-size: 13px; font-weight: 700; color: #D3E6DD">Ganho até agora</span>
+    <span style="font-size: 48px; font-weight: 800; color: {{accent}}; font-variant-numeric: tabular-nums; letter-spacing: -1px">R$ {{earned}}</span>
+    <span style="font-size: 13px; color: #D3E6DD">R$ 120,00 por hora · R$ 2,00 por minuto</span>
+  </section>
+
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <label for="note" style="font-size: 13px; font-weight: 700; color: #D3E6DD">Anotação rápida</label>
+    <input id="note" type="text" placeholder="Ex.: equações do 2º grau, lista 4 de dever" style="height: 48px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #FFFFFF; padding: 0 14px; font-family: Nunito, system-ui, sans-serif; font-size: 15px; box-sizing: border-box">
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: auto">
+    <button onClick="{{toggle}}" style="height: 56px; border-radius: 16px; border: 2px solid rgba(255,255,255,0.6); background: transparent; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; font-size: 16px; font-weight: 800; cursor: pointer">{{pauseLabel}}</button>
+    <button onClick="{{end}}" style="height: 56px; border-radius: 16px; border: none; background: {{accent}}; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 16px; font-weight: 800; cursor: pointer">Encerrar aula</button>
+  </div>
+
+  <sc-if value="{{ended}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(20,28,25,0.55); display: flex; flex-direction: column; justify-content: flex-end">
+      <div role="dialog" aria-label="Aula concluída" style="background: #FFFFFF; color: #1F2A2E; border-radius: 28px 28px 0 0; padding: 28px 20px 32px; display: flex; flex-direction: column; gap: 14px; align-items: center">
+        <div style="width: 56px; height: 56px; border-radius: 28px; background: #E2F2E9; color: #276B48; display: flex; align-items: center; justify-content: center">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        </div>
+        <span style="font-size: 22px; font-weight: 800">Aula concluída</span>
+        <span style="font-size: 14px; color: #5C6A70">Ana Souza · {{clock}} de aula</span>
+        <span style="font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums">R$ {{earned}}</span>
+        <span style="font-size: 14px; color: #5C6A70; text-align: center">Adicionado ao saldo da aluna. Saldo pendente agora: R$ {{balance}}</span>
+        <a href="Students.dc.html" style="width: 100%; height: 52px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-weight: 800; font-size: 16px; text-decoration: none; display: flex; align-items: center; justify-content: center">Registrar pagamento</a>
+        <div style="display: flex; gap: 12px; width: 100%">
+          <button onClick="{{reset}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 700; cursor: pointer">Desfazer</button>
+          <a href="Main.dc.html" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DCD5C6; color: #1F2A2E; font-size: 15px; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box">Voltar para Hoje</a>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#1F4E5F","#3D6FB4"]},"accent":{"editor":"color","default":"#F2B33D","options":["#F2B33D","#F28C38","#7BC6A4"]},"rate":{"editor":"float","default":120,"min":10,"max":1000,"step":5,"unit":"R$/h"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this.setState({ running: true, base: 1421, resumedAt: Date.now(), ended: false });
+    this.timer = setInterval(() => this.forceUpdate(), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+  renderVals() {
+    const s = this.state || {};
+    const rate = this.props.rate ?? 120;
+    const running = s.running ?? true;
+    const base = s.base ?? 1421;
+    const sec = Math.floor(base + (running && s.resumedAt ? (Date.now() - s.resumedAt) / 1000 : 0));
+    const pad = (n) => String(n).padStart(2, '0');
+    const clock = pad(Math.floor(sec / 3600)) + ':' + pad(Math.floor(sec / 60) % 60) + ':' + pad(sec % 60);
+    const money = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const earnedValue = rate * sec / 3600;
+    const progress = Math.min(sec / 3600, 1);
+    return {
+      primary: this.props.primary ?? '#2E5E4E',
+      accent: this.props.accent ?? '#F2B33D',
+      clock: clock,
+      earned: money(earnedValue),
+      balance: money(240 + earnedValue),
+      dash: (754 * (1 - progress)).toFixed(1),
+      statusLabel: running ? 'AO VIVO' : 'PAUSADA',
+      dotColor: running ? '#EF7A7A' : '#F2B33D',
+      pauseLabel: running ? 'Pausar' : 'Retomar',
+      ended: !!s.ended,
+      toggle: () => running
+        ? this.setState({ running: false, base: sec })
+        : this.setState({ running: true, base: sec, resumedAt: Date.now() }),
+      end: () => this.setState({ ended: true, running: false, base: sec }),
+      reset: () => this.setState({ ended: false, running: true, base: sec, resumedAt: Date.now() })
+    };
+  }
+}
+</script>
+</body>
+</html>

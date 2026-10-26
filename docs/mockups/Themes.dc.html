@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Temas claro e escuro</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 936px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; box-sizing: border-box; padding: 32px; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <h1 style="margin: 0; font-size: 28px; font-weight: 800">Quatro temas, cada um com modo claro e escuro</h1>
+    <span style="font-size: 14px; color: #5C6A70">Escolhidos em Ajustes › Aparência. Cores principal e de destaque podem ser trocadas à vontade.</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px">
+    <sc-for list="{{cards}}" as="c" hint-placeholder-count="8">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; font-weight: 800; color: #1F2A2E">{{c.name}} <span style="font-weight: 600; color: #5C6A70">· {{c.mode}}</span></span>
+        <div style="height: 300px; border-radius: 22px; background: {{c.bg}}; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #E4DDCD">
+          <div style="background: {{c.headBg}}; color: {{c.headFg}}; padding: 14px 14px 34px; display: flex; flex-direction: column">
+            <span style="font-size: 11px; font-weight: 600; opacity: 0.85">Segunda, 26 out</span>
+            <span style="font-size: 16px; font-weight: 800">Boa tarde, Victor</span>
+          </div>
+          <div style="margin: -22px 10px 0; background: {{c.surface}}; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.10)">
+            <span style="font-size: 11px; font-weight: 700; color: {{c.muted}}">Ganho hoje</span>
+            <span style="font-size: 20px; font-weight: 800; color: {{c.ink}}; font-variant-numeric: tabular-nums">R$ 240,00</span>
+            <div style="height: 5px; border-radius: 3px; background: {{c.track}}; overflow: hidden"><div style="width: 63%; height: 5px; background: {{c.a}}"></div></div>
+          </div>
+          <div style="margin: 10px 10px 0; background: {{c.surface}}; border-radius: 12px; padding: 9px 10px; display: flex; align-items: center; gap: 8px">
+            <span style="width: 8px; height: 8px; border-radius: 4px; background: {{c.p}}"></span>
+            <span style="font-size: 12px; font-weight: 700; color: {{c.ink}}; flex-grow: 1">Ana Souza</span>
+            <span style="font-size: 11px; color: {{c.muted}}">14:00</span>
+          </div>
+          <div style="margin: 6px 10px 0; background: {{c.surface}}; border-radius: 12px; padding: 9px 10px; display: flex; align-items: center; gap: 8px">
+            <span style="width: 8px; height: 8px; border-radius: 4px; background: {{c.p}}"></span>
+            <span style="font-size: 12px; font-weight: 700; color: {{c.ink}}; flex-grow: 1">Turma ENEM</span>
+            <span style="font-size: 11px; color: {{c.muted}}">16:30</span>
+          </div>
+          <div style="margin: auto 10px 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+            <span style="height: 34px; border-radius: 10px; background: {{c.p}}; color: {{c.onP}}; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center">Salvar</span>
+            <span style="height: 34px; border-radius: 10px; background: {{c.a}}; color: #1F2A2E; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center">Iniciar aula</span>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":936,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const THEMES = [
+      { name: 'Quadro-negro', light: { p: '#2E5E4E', a: '#F2B33D', bg: '#FAF7F0' }, dark: { p: '#6FB39A', a: '#F5C462', bg: '#141C19', s: '#1E2925' } },
+      { name: 'Caderno azul', light: { p: '#2F5C9E', a: '#F28C38', bg: '#F5F7FB' }, dark: { p: '#7FA6DE', a: '#F5A766', bg: '#121826', s: '#1C2435' } },
+      { name: 'Biblioteca', light: { p: '#7A2E3B', a: '#D9A441', bg: '#FBF6EF' }, dark: { p: '#D9848F', a: '#E6BE6E', bg: '#1C1416', s: '#281D20' } },
+      { name: 'Giz pastel', light: { p: '#2D7F86', a: '#F07C6C', bg: '#F3F9F8' }, dark: { p: '#7CC7CC', a: '#F59E91', bg: '#111B1C', s: '#1B2829' } }
+    ];
+    const card = (t, dark) => {
+      const pal = dark ? t.dark : t.light;
+      const surface = dark ? pal.s : '#FFFFFF';
+      const ink = dark ? '#ECEFEA' : '#1F2A2E';
+      return {
+        name: t.name, mode: dark ? 'Escuro' : 'Claro',
+        p: pal.p, a: pal.a, bg: pal.bg, surface: surface, ink: ink,
+        muted: dark ? '#A3B0AA' : '#5C6A70',
+        headBg: dark ? surface : pal.p,
+        headFg: dark ? ink : '#FFFFFF',
+        onP: dark ? '#10161A' : '#FFFFFF',
+        track: dark ? 'rgba(255,255,255,0.12)' : '#F0EADC'
+      };
+    };
+    return { cards: THEMES.map((t) => card(t, false)).concat(THEMES.map((t) => card(t, true))) };
+  }
+}
+</script>
+</body>
+</html>

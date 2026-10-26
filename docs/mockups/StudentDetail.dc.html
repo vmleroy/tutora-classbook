@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Aluno</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="Students.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <span style="flex-grow: 1"></span>
+    <a href="StudentEdit.dc.html" style="height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-size: 14px; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 6px; box-sizing: border-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13.5 6.5l4 4"></path></svg>Editar
+    </a>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 0 20px 12px; overflow: hidden">
+    <div style="display: flex; align-items: center; gap: 14px">
+      <div style="width: 60px; height: 60px; border-radius: 30px; background: #FCE7B8; color: #6B4A00; font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">AS</div>
+      <div style="display: flex; flex-direction: column">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 800">Ana Souza</h1>
+        <span style="font-size: 13px; color: #5C6A70">Matemática · 9º ano · (11) 9 0000-0000</span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <div style="background: #FBE9E7; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; font-weight: 700; color: #8F2B28">Deve</span><span style="font-size: 17px; font-weight: 800; color: #8F2B28; font-variant-numeric: tabular-nums">R$ 240</span></div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; font-weight: 700; color: #5C6A70">Outubro</span><span style="font-size: 17px; font-weight: 800">6 aulas</span></div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; font-weight: 700; color: #5C6A70">Valor</span><span style="font-size: 17px; font-weight: 800">R$ 120/h</span></div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 6px">
+      <span style="font-size: 13px; font-weight: 800; color: #5C6A70; margin-right: 2px">Locais</span>
+      <span style="height: 30px; padding: 0 12px; border-radius: 15px; background: #FFFFFF; border: 1px solid #E4DDCD; font-size: 13px; font-weight: 800; display: flex; align-items: center">Online / Remoto</span><span style="height: 30px; padding: 0 12px; border-radius: 15px; background: #FFFFFF; border: 1px solid #E4DDCD; font-size: 13px; font-weight: 800; display: flex; align-items: center">Casa do Aluno</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px">
+      <button style="height: 46px; border-radius: 14px; border: none; background: {{primary}}; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">Registrar pagamento</button>
+      <a href="Report.dc.html" style="height: 46px; border-radius: 14px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-size: 13px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box">Relatório</a>
+      <a href="AddLesson.dc.html" style="height: 46px; border-radius: 14px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-size: 13px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box">Nova aula</a>
+    </div>
+
+    <section aria-label="Próximas aulas" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 800">Próximas aulas</h2>
+      <a href="LessonDetail.dc.html" style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1F2A2E">
+        <span style="font-size: 13px; font-weight: 800; width: 76px">Hoje, 14:00</span><span style="font-size: 12px; color: #5C6A70; flex-grow: 1">Online · 60 min</span><span style="font-size: 12px; font-weight: 800; color: #5A4300; background: #FCE7B8; padding: 3px 8px; border-radius: 7px">Próxima</span>
+      </a>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px">
+        <span style="font-size: 13px; font-weight: 800; width: 76px">02/11, 14:00</span><span style="font-size: 12px; color: #5C6A70; flex-grow: 1">Online · 60 min</span><span style="font-size: 12px; color: #5C6A70">Semanal</span>
+      </div>
+    </section>
+
+    <section aria-label="Últimas aulas" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 800">Últimas aulas</h2>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span style="font-size: 13px; font-weight: 800; width: 76px">22/10</span><span style="font-size: 12px; color: #5C6A70; flex-grow: 1">60 min · R$ 120</span><span style="font-size: 11px; font-weight: 800; color: #8F2B28; background: #FBE9E7; padding: 3px 8px; border-radius: 7px">A receber</span></div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span style="font-size: 13px; font-weight: 800; width: 76px">19/10</span><span style="font-size: 12px; color: #5C6A70; flex-grow: 1">60 min · R$ 120</span><span style="font-size: 11px; font-weight: 800; color: #8F2B28; background: #FBE9E7; padding: 3px 8px; border-radius: 7px">A receber</span></div>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span style="font-size: 13px; font-weight: 800; width: 76px">15/10</span><span style="font-size: 12px; color: #5C6A70; flex-grow: 1">60 min · R$ 120</span><span style="font-size: 11px; font-weight: 800; color: #1F5C3C; background: #E2F2E9; padding: 3px 8px; border-radius: 7px">Pago</span></div>
+    </section>
+
+    <section aria-label="Pagamentos" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0; font-size: 15px; font-weight: 800">Pagamentos</h2>
+      <div style="background: #FFFFFF; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px"><span style="font-size: 13px; font-weight: 800; width: 76px">16/10</span><span style="font-size: 12px; color: #5C6A70; flex-grow: 1">Pix · 4 aulas</span><span style="font-size: 13px; font-weight: 800; color: #276B48">+ R$ 540</span></div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { primary: this.props.primary ?? '#2E5E4E' };
+  }
+}
+</script>
+</body>
+</html>

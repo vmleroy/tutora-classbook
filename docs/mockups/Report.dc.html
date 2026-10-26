@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="Earnings.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 22px; font-weight: 800">Relatório</h1>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 4px 20px 8px; overflow: hidden">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div role="group" aria-label="Relatório de" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #F3EEE2; border-radius: 14px; padding: 4px; gap: 4px">
+        <sc-for list="{{kinds}}" as="x" hint-placeholder-count="2">
+          <button onClick="{{x.pick}}" aria-pressed="{{x.on}}" style="height: 38px; border: none; border-radius: 11px; background: {{x.bg}}; color: {{x.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">{{x.label}}</button>
+        </sc-for>
+      </div>
+      <div role="radiogroup" aria-label="Escolha" style="display: flex; gap: 6px; flex-wrap: wrap">
+        <sc-for list="{{entities}}" as="e" hint-placeholder-count="3">
+          <button role="radio" aria-checked="{{e.on}}" onClick="{{e.pick}}" style="height: 34px; padding: 0 10px; border-radius: 17px; border: {{e.border}}; background: {{e.bg}}; color: {{e.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 4px; background: {{e.dot}}"></span>{{e.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div role="group" aria-label="Período" style="display: flex; gap: 6px">
+        <sc-for list="{{ranges}}" as="r" hint-placeholder-count="4">
+          <button onClick="{{r.pick}}" aria-pressed="{{r.on}}" style="height: 34px; padding: 0 11px; border-radius: 17px; border: {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap">{{r.label}}</button>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <button aria-label="Data inicial: {{from}}" style="height: 44px; border-radius: 12px; border: 1px solid #E4DDCD; background: #FFFFFF; padding: 0 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; cursor: pointer"><span style="font-size: 11px; color: #5C6A70; font-weight: 700">De</span><span style="font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">{{from}}</span></button>
+        <button aria-label="Data final: {{to}}" style="height: 44px; border-radius: 12px; border: 1px solid #E4DDCD; background: #FFFFFF; padding: 0 12px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; cursor: pointer"><span style="font-size: 11px; color: #5C6A70; font-weight: 700">Até</span><span style="font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">{{to}}</span></button>
+      </div>
+    </div>
+
+    <section aria-label="Resumo" style="background: {{primary}}; color: #FFFFFF; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-size: 15px; font-weight: 800">{{subjectName}}</span>
+        <span style="font-size: 12px; color: #D3E6DD">{{count}} aulas · {{hours}}</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <div style="display: flex; flex-direction: column"><span style="font-size: 12px; color: #D3E6DD">Ganho</span><span style="font-size: 17px; font-weight: 800; color: {{accent}}; font-variant-numeric: tabular-nums">R$ {{earned}}</span></div>
+        <div style="display: flex; flex-direction: column"><span style="font-size: 12px; color: #D3E6DD">Pago</span><span style="font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums">R$ {{paid}}</span></div>
+        <div style="display: flex; flex-direction: column"><span style="font-size: 12px; color: #D3E6DD">A receber</span><span style="font-size: 17px; font-weight: 800; color: #FFC9C4; font-variant-numeric: tabular-nums">R$ {{owed}}</span></div>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-direction: column; gap: 6px; overflow: hidden">
+      <span style="font-size: 14px; font-weight: 800">{{listTitle}}</span>
+      <sc-for list="{{rows}}" as="l" hint-placeholder-count="5">
+        <div style="background: #FFFFFF; border-radius: 12px; padding: 9px 12px; display: flex; align-items: center; gap: 10px">
+          <span style="width: 44px; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums">{{l.day}}</span>
+          <span style="font-size: 12px; color: #5C6A70; flex-grow: 1">{{l.dur}}</span>
+          <span style="font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums">{{l.money}}</span>
+          <span style="width: 66px; text-align: center; font-size: 11px; font-weight: 800; color: {{l.fg}}; background: {{l.bg}}; padding: 3px 0; border-radius: 7px">{{l.status}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding: 10px 20px 22px; border-top: 1px solid #ECE6D8; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0">
+    <span style="font-size: 12px; font-weight: 800; color: #5C6A70">Exportar este relatório</span>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 52px; gap: 8px">
+      <a href="ReportPdf.dc.html" style="height: 52px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 15px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4M9 13h6M9 17h4"></path></svg>PDF
+      </a>
+      <button style="height: 52px; border-radius: 16px; border: none; background: #1D6B40; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M4 9h16M4 15h16M10 3v18"></path></svg>Excel</button>
+      <button aria-label="Copiar resumo em texto" style="height: 52px; border-radius: 16px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"></path></svg></button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"accent":{"editor":"color","default":"#F2B33D"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const accent = this.props.accent ?? '#F2B33D';
+    const DATA = {
+      ana: { kind: 'student', label: 'Ana Souza', dot: '#C98A10', name: 'Ana Souza · Matemática', rate: 120, lessons: [
+        ['2026-10-22', 60, false], ['2026-10-19', 60, false], ['2026-10-15', 60, true], ['2026-10-12', 60, true], ['2026-10-08', 60, true], ['2026-10-05', 90, true],
+        ['2026-09-28', 60, true], ['2026-09-21', 90, true], ['2026-09-14', 60, true], ['2026-09-07', 60, true], ['2026-08-24', 60, true], ['2026-08-10', 60, true]
+      ] },
+      pedro: { kind: 'student', label: 'Pedro Lima', dot: '#3E9D6B', name: 'Pedro Lima · Física · R$ 120/aula', fixed: 120, lessons: [
+        ['2026-10-22', 60, true], ['2026-10-15', 60, true], ['2026-10-08', 60, true], ['2026-10-01', 60, true],
+        ['2026-09-24', 60, true], ['2026-09-17', 60, true], ['2026-09-10', 60, true], ['2026-09-03', 60, true]
+      ] },
+      enem: { kind: 'student', label: 'Turma ENEM', dot: '#8E6CC0', name: 'Turma ENEM · Redação · R$ 180/aula', fixed: 180, lessons: [
+        ['2026-10-19', 90, false], ['2026-10-12', 90, true], ['2026-10-05', 90, true], ['2026-09-28', 90, true], ['2026-09-21', 90, true], ['2026-09-14', 90, true]
+      ] },
+      colegio: { kind: 'place', label: 'Colégio Santa Clara', dot: '#3D6FB4', name: 'Colégio Santa Clara · salário R$ 2.400/mês', salary: 2400, lessons: [
+        ['2026-10-26', 50, 1], ['2026-10-23', 200, 4], ['2026-10-21', 150, 3], ['2026-10-19', 200, 4], ['2026-10-16', 200, 4], ['2026-10-14', 150, 3],
+        ['2026-09-30', 200, 4], ['2026-09-25', 200, 4], ['2026-09-18', 200, 4], ['2026-08-28', 200, 4]
+      ] },
+      salinha: { kind: 'place', label: 'Salinha Aprender+', dot: '#8E6CC0', name: 'Salinha Aprender+ · paga a salinha', rate: 60, lessons: [
+        ['2026-10-20', 120, false], ['2026-10-13', 120, false], ['2026-10-06', 120, false],
+        ['2026-09-29', 120, true], ['2026-09-22', 120, true], ['2026-09-15', 120, true], ['2026-09-08', 120, true], ['2026-08-18', 120, true]
+      ] },
+      foco: { kind: 'place', label: 'Cursinho Foco', dot: '#D9772F', name: 'Cursinho Foco · R$ 80/aula, toda sexta', fixed: 80, lessons: [
+        ['2026-10-23', 100, false], ['2026-10-16', 100, true], ['2026-10-09', 100, true], ['2026-10-02', 100, true], ['2026-09-25', 100, true], ['2026-09-18', 100, true]
+      ] }
+    };
+    const RANGES = {
+      month: { label: 'Este mês', from: '2026-10-01', to: '2026-10-26' },
+      last: { label: 'Mês passado', from: '2026-09-01', to: '2026-09-30' },
+      q: { label: '3 meses', from: '2026-08-01', to: '2026-10-26' },
+      custom: { label: 'Outro…', from: '2026-09-15', to: '2026-10-15' }
+    };
+    const kind = s.kind ?? 'place';
+    const sub = s.sub ?? (kind === 'place' ? 'colegio' : 'ana');
+    const rg = s.range ?? 'month';
+    const d = DATA[sub];
+    const R = RANGES[rg];
+    const money = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const br = (iso) => iso.slice(8, 10) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4);
+    const list = d.lessons.filter((l) => l[0] >= R.from && l[0] <= R.to);
+    const isSalary = !!d.salary;
+    const val = (l) => (d.fixed ? d.fixed : d.rate * l[1] / 60);
+    let earned, paid;
+    if (isSalary) {
+      const months = ['2026-08', '2026-09', '2026-10'].filter((m) => m + '-31' >= R.from && m + '-01' <= R.to);
+      earned = months.length * d.salary;
+      paid = months.filter((m) => m < '2026-10').length * d.salary;
+    } else {
+      earned = list.reduce((a, l) => a + val(l), 0);
+      paid = list.filter((l) => l[2]).reduce((a, l) => a + val(l), 0);
+    }
+    const count = isSalary ? list.reduce((a, l) => a + l[2], 0) : list.length;
+    const mins = list.reduce((a, l) => a + l[1], 0);
+    const hh = Math.floor(mins / 60), mm = mins % 60;
+    const on = { bg: primary, fg: '#FFFFFF', border: '2px solid ' + primary };
+    const off = { bg: '#FFFFFF', fg: '#1F2A2E', border: '1px solid #E4DDCD' };
+    return {
+      primary: primary,
+      accent: accent,
+      kinds: [['student', 'Por aluno'], ['place', 'Por local / escola']].map(([id, label]) => ({
+        label: label, on: id === kind,
+        bg: id === kind ? '#FFFFFF' : 'transparent', fg: id === kind ? primary : '#5C6A70',
+        pick: () => this.setState({ kind: id, sub: id === 'place' ? 'colegio' : 'ana' })
+      })),
+      entities: Object.keys(DATA).filter((k) => DATA[k].kind === kind).map((k) => {
+        const st = k === sub ? on : off;
+        return { label: DATA[k].label, dot: k === sub ? '#FFFFFF' : DATA[k].dot, on: k === sub, bg: st.bg, fg: st.fg, border: st.border, pick: () => this.setState({ sub: k }) };
+      }),
+      ranges: Object.keys(RANGES).map((id) => {
+        const st = id === rg ? on : off;
+        return { label: RANGES[id].label, on: id === rg, bg: st.bg, fg: st.fg, border: st.border, pick: () => this.setState({ range: id }) };
+      }),
+      from: br(R.from),
+      to: br(R.to),
+      subjectName: d.name,
+      count: count,
+      listTitle: isSalary ? 'Dias de aula no período (salário mensal)' : 'Aulas no período',
+      hours: hh + 'h' + (mm ? String(mm).padStart(2, '0') : ''),
+      earned: money(earned),
+      paid: money(paid),
+      owed: money(earned - paid),
+      rows: list.slice(0, 5).map((l) => ({
+        day: l[0].slice(8, 10) + '/' + l[0].slice(5, 7),
+        dur: isSalary ? l[2] + (l[2] > 1 ? ' aulas · ' : ' aula · ') + l[1] + ' min' : l[1] + ' min',
+        money: isSalary ? '—' : 'R$ ' + money(val(l)),
+        status: isSalary ? 'Dada' : (l[2] ? 'Pago' : 'A receber'),
+        fg: isSalary ? '#24497E' : (l[2] ? '#1F5C3C' : '#8F2B28'),
+        bg: isSalary ? '#E3ECF8' : (l[2] ? '#E2F2E9' : '#FBE9E7')
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

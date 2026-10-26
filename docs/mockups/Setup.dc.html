@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Configuração inicial</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 24px 20px 6px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Passo {{stepNum}} de 4</span>
+      <button onClick="{{skip}}" style="height: 32px; padding: 0 10px; border: none; background: transparent; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; color: #5C6A70; cursor: pointer">{{skipLabel}}</button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+      <sc-for list="{{bars}}" as="b" hint-placeholder-count="4">
+        <span style="height: 6px; border-radius: 3px; background: {{b.color}}"></span>
+      </sc-for>
+    </div>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; padding: 14px 20px 12px; overflow: hidden">
+    <sc-if value="{{s1}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: {{primary}}; color: #F2B33D; display: flex; align-items: center; justify-content: center">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-5 9 5-9 5z"></path><path d="M7 12v4.5c1.5 1.3 3.2 2 5 2s3.5-.7 5-2V12"></path></svg>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 800">Bem-vindo(a)!</h1>
+          <span style="font-size: 15px; line-height: 1.45; color: #5C6A70">Vamos deixar o app pronto em 1 minuto. Tudo aqui pode ser mudado depois em Ajustes.</span>
+        </div>
+        <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Idioma</span>
+        <div role="radiogroup" aria-label="Idioma" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{langs}}" as="o" hint-placeholder-count="2">
+            <button role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="height: 56px; border-radius: 16px; border: {{o.border}}; background: {{o.bg}}; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 800; color: #1F2A2E; cursor: pointer">{{o.label}}</button>
+          </sc-for>
+        </div>
+        <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Moeda do app <span style="font-weight: 700">· separada do idioma</span></span>
+        <div role="radiogroup" aria-label="Moeda" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{curs}}" as="o" hint-placeholder-count="2">
+            <button role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="height: 56px; border-radius: 16px; border: {{o.border}}; background: {{o.bg}}; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 800; color: #1F2A2E; cursor: pointer">{{o.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s2}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 800">Como você dá aula?</h1>
+          <span style="font-size: 15px; color: #5C6A70">Marque tudo o que vale para você.</span>
+        </div>
+        <sc-for list="{{works}}" as="w" hint-placeholder-count="3">
+          <button onClick="{{w.toggle}}" aria-pressed="{{w.on}}" style="border-radius: 18px; border: {{w.border}}; background: {{w.bg}}; padding: 14px 16px; display: flex; align-items: center; gap: 12px; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; text-align: left; cursor: pointer">
+            <span style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 16px; font-weight: 800">{{w.label}}</span><span style="font-size: 13px; color: #5C6A70">{{w.sub}}</span></span>
+            <span style="width: 26px; height: 26px; border-radius: 8px; border: 2px solid {{w.box}}; background: {{w.fill}}; color: #FFFFFF; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-sizing: border-box; flex-shrink: 0">{{w.mark}}</span>
+          </button>
+        </sc-for>
+        <span style="font-size: 13px; line-height: 1.45; color: #5C6A70">Escolas, salinhas e cursinhos você cadastra depois em Alunos › Locais, cada um com seu valor.</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s3}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 800">Seus preços padrão</h1>
+          <span style="font-size: 14px; line-height: 1.4; color: #5C6A70">Cada aluno começa com esses valores. Dá para mudar por aluno ou em cada aula.</span>
+        </div>
+        <div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 800">Online / Remoto</span><span style="font-size: 12px; color: #5C6A70">por hora</span></span>
+            <div style="display: flex; align-items: center; gap: 6px">
+              <button onClick="{{onMinus}}" aria-label="Diminuir preço online" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">−</button>
+              <span style="min-width: 70px; text-align: center; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums">{{sym}} {{onRate}}</span>
+              <button onClick="{{onPlus}}" aria-label="Aumentar preço online" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">+</button>
+            </div>
+          </div>
+        </div>
+        <div style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 800">Casa do Aluno</span><span style="font-size: 12px; color: #5C6A70">por hora</span></span>
+            <div style="display: flex; align-items: center; gap: 6px">
+              <button onClick="{{homeMinus}}" aria-label="Diminuir preço casa do aluno" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">−</button>
+              <span style="min-width: 70px; text-align: center; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums">{{sym}} {{homeRate}}</span>
+              <button onClick="{{homePlus}}" aria-label="Aumentar preço casa do aluno" style="width: 36px; height: 36px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">+</button>
+            </div>
+          </div>
+          <div style="border-top: 1px solid #F0EADC; padding-top: 10px; display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Deslocamento</span>
+            <div role="radiogroup" aria-label="Deslocamento" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+              <sc-for list="{{travels}}" as="t" hint-placeholder-count="3">
+                <button role="radio" aria-checked="{{t.on}}" onClick="{{t.pick}}" style="height: 40px; border-radius: 12px; border: {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{t.label}}</button>
+              </sc-for>
+            </div>
+            <span style="font-size: 12px; line-height: 1.4; color: #5C6A70">{{travelHint}}</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{s4}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 800">Seus dados, seguros</h1>
+          <span style="font-size: 14px; line-height: 1.4; color: #5C6A70">Tudo fica só neste celular. Um backup automático evita perder o histórico se trocar de aparelho.</span>
+        </div>
+        <div style="background: #FFFFFF; border-radius: 18px; display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #F0EADC; gap: 12px">
+            <span style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 800">Backup automático</span><span style="font-size: 12px; color: #5C6A70">Toda semana, domingo à noite</span></span>
+            <button onClick="{{toggleBackup}}" aria-pressed="{{backup}}" aria-label="Backup automático" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{backupBg}}; padding: 3px; display: flex; justify-content: {{backupJustify}}; flex-shrink: 0; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+          </div>
+          <button style="min-height: 52px; border: none; border-bottom: 1px solid #F0EADC; background: transparent; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; cursor: pointer; text-align: left"><span style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 800">Escolher pasta</span><span style="font-size: 12px; color: #5C6A70">Pode ser no Google Drive ou OneDrive</span></span><span style="font-size: 14px; color: {{primary}}; font-weight: 800">Escolher</span></button>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; gap: 12px">
+            <span style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 800">Aviso antes da aula</span><span style="font-size: 12px; color: #5C6A70">15 minutos antes</span></span>
+            <button onClick="{{toggleRemind}}" aria-pressed="{{remind}}" aria-label="Aviso antes da aula" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{remindBg}}; padding: 3px; display: flex; justify-content: {{remindJustify}}; flex-shrink: 0; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+          </div>
+        </div>
+        <div style="background: #FCF3DF; border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 3px">
+          <span style="font-size: 12px; font-weight: 800; color: #5A4300">RESUMO</span>
+          <span style="font-size: 14px; font-weight: 700">{{summary}}</span>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="padding: 12px 20px 24px; border-top: 1px solid #ECE6D8; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0">
+    <sc-if value="{{notLast}}" hint-placeholder-val="{{ true }}">
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px">
+        <button onClick="{{back}}" style="height: 56px; border-radius: 16px; border: 1px solid #DCD5C6; background: #FFFFFF; color: {{backFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 800; cursor: pointer">Voltar</button>
+        <button onClick="{{next}}" style="height: 56px; border-radius: 16px; border: none; background: {{primary}}; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; font-size: 16px; font-weight: 800; cursor: pointer">Continuar</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{s4}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <a href="StudentEdit.dc.html" style="height: 56px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 16px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center">Cadastrar meu primeiro aluno</a>
+        <a href="Main.dc.html" style="height: 48px; border-radius: 16px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-size: 15px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; box-sizing: border-box">Ir para Hoje</a>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const step = s.step ?? 1;
+    const lang = s.lang ?? 'pt';
+    const cur = s.cur ?? 'BRL';
+    const work = Object.assign({ private: true, school: false, salinha: false }, s.work || {});
+    const onRate = s.onRate ?? 100;
+    const homeRate = s.homeRate ?? 120;
+    const travel = s.travel ?? 'varies';
+    const backup = s.backup ?? true;
+    const remind = s.remind ?? true;
+    const sym = cur === 'USD' ? 'US$' : 'R$';
+    const card = (on) => ({ bg: on ? '#EEF5F1' : '#FFFFFF', border: on ? '2px solid ' + primary : '1px solid #E4DDCD' });
+    const chipOn = { bg: primary, fg: '#FFFFFF', border: '2px solid ' + primary };
+    const chipOff = { bg: '#FFFFFF', fg: '#1F2A2E', border: '1px solid #E4DDCD' };
+    const tog = (v) => ({ bg: v ? primary : '#CFC8B8', j: v ? 'flex-end' : 'flex-start' });
+    const go = (n) => this.setState({ step: Math.max(1, Math.min(4, n)) });
+    const TRAVEL = { varies: 'Você informa o valor em cada aula (já vem R$ 20 sugerido).', fixed: 'Soma R$ 20 em toda aula na casa do aluno; dá para mudar por aluno.', none: 'Não soma nada; o preço por hora já cobre o deslocamento.' };
+    return {
+      primary: primary,
+      stepNum: step,
+      s1: step === 1, s2: step === 2, s3: step === 3, s4: step === 4,
+      notLast: step < 4,
+      bars: [1, 2, 3, 4].map((i) => ({ color: i <= step ? primary : '#E4DDCD' })),
+      skip: () => go(4),
+      skipLabel: step < 4 ? 'Pular' : '',
+      back: () => go(step - 1),
+      backFg: step === 1 ? '#B5AE9F' : '#1F2A2E',
+      next: () => go(step + 1),
+      langs: [['pt', 'Português'], ['en', 'English']].map(([id, label]) => Object.assign({ label: label, on: id === lang, pick: () => this.setState({ lang: id }) }, card(id === lang))),
+      curs: [['BRL', 'R$ · Real'], ['USD', 'US$ · Dólar']].map(([id, label]) => Object.assign({ label: label, on: id === cur, pick: () => this.setState({ cur: id }) }, card(id === cur))),
+      works: [['private', 'Aulas particulares', 'Na casa do aluno ou online'], ['school', 'Escola ou emprego fixo', 'Salário por mês'], ['salinha', 'Salinha ou cursinho', 'Eles pagam por aula ou por hora']].map(([id, label, sub]) => Object.assign({
+        label: label, sub: sub, on: work[id],
+        box: work[id] ? primary : '#CFC8B8', fill: work[id] ? primary : '#FFFFFF', mark: work[id] ? '✓' : '',
+        toggle: () => this.setState({ work: Object.assign({}, work, { [id]: !work[id] }) })
+      }, card(work[id]))),
+      sym: sym,
+      onRate: onRate, homeRate: homeRate,
+      onMinus: () => this.setState({ onRate: Math.max(5, onRate - 5) }),
+      onPlus: () => this.setState({ onRate: onRate + 5 }),
+      homeMinus: () => this.setState({ homeRate: Math.max(5, homeRate - 5) }),
+      homePlus: () => this.setState({ homeRate: homeRate + 5 }),
+      travels: [['varies', 'Varia'], ['fixed', 'Fixo R$ 20'], ['none', 'Não cobro']].map(([id, label]) => Object.assign({ label: label, on: id === travel, pick: () => this.setState({ travel: id }) }, id === travel ? chipOn : chipOff)),
+      travelHint: TRAVEL[travel],
+      backup: backup, backupBg: tog(backup).bg, backupJustify: tog(backup).j,
+      toggleBackup: () => this.setState({ backup: !backup }),
+      remind: remind, remindBg: tog(remind).bg, remindJustify: tog(remind).j,
+      toggleRemind: () => this.setState({ remind: !remind }),
+      summary: (lang === 'en' ? 'English' : 'Português') + ' · ' + sym + ' · Online ' + sym + ' ' + onRate + '/h · Casa do Aluno ' + sym + ' ' + homeRate + '/h' + (travel === 'varies' ? ' + deslocamento por aula' : travel === 'fixed' ? ' + R$ 20' : '')
+    };
+  }
+}
+</script>
+</body>
+</html>

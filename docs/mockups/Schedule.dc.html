@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Agenda</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden; position: relative">
+  <header style="padding: 24px 20px 12px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border-radius: 0 0 24px 24px; box-shadow: 0 2px 10px rgba(31,42,46,0.05); flex-shrink: 0">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <div style="display: flex; flex-direction: column">
+        <h1 style="margin: 0; font-size: 26px; font-weight: 800">Agenda</h1>
+        <span style="font-size: 14px; color: #5C6A70; font-weight: 600">Outubro 2026</span>
+      </div>
+      <div style="display: flex; background: #F3EEE2; border-radius: 12px; padding: 4px">
+        <button style="height: 36px; padding: 0 14px; border: none; border-radius: 9px; background: #FFFFFF; color: {{primary}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; box-shadow: 0 1px 3px rgba(31,42,46,0.12)">Dia</button>
+        <button style="height: 36px; padding: 0 14px; border: none; border-radius: 9px; background: transparent; color: #5C6A70; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 700">Semana</button>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px">
+      <button style="height: 64px; border: none; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><span style="font-size: 12px; font-weight: 700">Seg</span><span style="font-size: 18px; font-weight: 800">26</span><span style="width: 5px; height: 5px; border-radius: 3px; background: {{accent}}"></span></button>
+      <button style="height: 64px; border: none; border-radius: 16px; background: transparent; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: #5C6A70">Ter</span><span style="font-size: 18px; font-weight: 800">27</span><span style="width: 5px; height: 5px; border-radius: 3px; background: #3D6FB4"></span></button>
+      <button style="height: 64px; border: none; border-radius: 16px; background: transparent; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: #5C6A70">Qua</span><span style="font-size: 18px; font-weight: 800">28</span><span style="width: 5px; height: 5px; border-radius: 3px; background: #2E5E4E"></span></button>
+      <button style="height: 64px; border: none; border-radius: 16px; background: transparent; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: #5C6A70">Qui</span><span style="font-size: 18px; font-weight: 800">29</span><span style="width: 5px; height: 5px; border-radius: 3px; background: #3D6FB4"></span></button>
+      <button style="height: 64px; border: none; border-radius: 16px; background: transparent; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: #5C6A70">Sex</span><span style="font-size: 18px; font-weight: 800">30</span><span style="width: 5px; height: 5px; border-radius: 3px; background: #2E5E4E"></span></button>
+      <button style="height: 64px; border: none; border-radius: 16px; background: transparent; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: #5C6A70">Sáb</span><span style="font-size: 18px; font-weight: 800">31</span><span style="width: 5px; height: 5px; border-radius: 3px; background: transparent"></span></button>
+      <button style="height: 64px; border: none; border-radius: 16px; background: transparent; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><span style="font-size: 12px; font-weight: 700; color: #5C6A70">Dom</span><span style="font-size: 18px; font-weight: 800">1</span><span style="width: 5px; height: 5px; border-radius: 3px; background: transparent"></span></button>
+    </div>
+  </header>
+
+  <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 14px 20px 6px">
+    <span style="font-size: 15px; font-weight: 800">Hoje · 5 aulas</span>
+    <span style="font-size: 13px; color: #5C6A70">Previsto R$ 380 + escola</span>
+  </div>
+
+  <div style="position: relative; height: 548px; margin: 0 20px; flex-shrink: 0">
+    <div style="position: absolute; left: 0; top: 0; width: 40px; font-size: 12px; font-weight: 700; color: #5C6A70; font-variant-numeric: tabular-nums">
+      <div style="position: absolute; top: 2px">08:00</div>
+      <div style="position: absolute; top: 46px">09:00</div>
+      <div style="position: absolute; top: 90px">10:00</div>
+      <div style="position: absolute; top: 134px">11:00</div>
+      <div style="position: absolute; top: 178px">12:00</div>
+      <div style="position: absolute; top: 222px">13:00</div>
+      <div style="position: absolute; top: 266px">14:00</div>
+      <div style="position: absolute; top: 310px">15:00</div>
+      <div style="position: absolute; top: 354px">16:00</div>
+      <div style="position: absolute; top: 398px">17:00</div>
+      <div style="position: absolute; top: 442px">18:00</div>
+      <div style="position: absolute; top: 486px">19:00</div>
+      <div style="position: absolute; top: 530px">20:00</div>
+    </div>
+    <div style="position: absolute; left: 48px; right: 0; top: 0; height: 548px; background-image: repeating-linear-gradient(to bottom, #E8E1D2 0px, #E8E1D2 1px, transparent 1px, transparent 44px); background-position: 0 10px"></div>
+
+    <div style="position: absolute; left: 56px; right: 0; top: 11px; height: 36px; border-radius: 12px; background: #E3ECF8; padding: 0 12px; display: flex; align-items: center; gap: 8px; box-sizing: border-box">
+      <span style="width: 8px; height: 8px; border-radius: 4px; background: #3D6FB4"></span><span style="font-size: 13px; font-weight: 800; color: #24497E">9º ano B</span><span style="font-size: 12px; color: #24497E">Colégio Santa Clara</span>
+    </div>
+    <a href="LessonDetail.dc.html" style="position: absolute; left: 56px; right: 0; top: 99px; height: 42px; border-radius: 12px; background: #E2F2E9; padding: 0 12px; display: flex; align-items: center; gap: 8px; box-sizing: border-box; text-decoration: none">
+      <span style="width: 8px; height: 8px; border-radius: 4px; background: #3E9D6B"></span><span style="font-size: 13px; font-weight: 800; color: #1F5C3C">Pedro Lima</span><span style="font-size: 12px; color: #1F5C3C; flex-grow: 1">Física</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F5C3C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Concluída"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+    </a>
+
+    <div style="position: absolute; left: 48px; right: 0; top: 256px; display: flex; align-items: center">
+      <span style="width: 8px; height: 8px; border-radius: 4px; background: #D64545; margin-left: -4px"></span>
+      <span style="flex-grow: 1; height: 2px; background: #D64545"></span>
+    </div>
+
+    <a href="LessonDetail.dc.html" style="position: absolute; left: 56px; right: 0; top: 275px; height: 42px; border-radius: 12px; background: #FCE7B8; padding: 0 12px; display: flex; align-items: center; gap: 8px; box-sizing: border-box; text-decoration: none; color: #5A4300; border: 2px solid {{accent}}">
+      <span style="width: 8px; height: 8px; border-radius: 4px; background: #C98A10"></span><span style="font-size: 13px; font-weight: 800">Ana Souza</span><span style="font-size: 12px; flex-grow: 1">Matemática · online</span><span style="font-size: 12px; font-weight: 800">Próxima</span>
+    </a>
+    <div style="position: absolute; left: 56px; right: 0; top: 385px; height: 64px; border-radius: 12px; background: #EEE7F7; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; box-sizing: border-box">
+      <div style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #8E6CC0"></span><span style="font-size: 13px; font-weight: 800; color: #4D3577">Turma ENEM</span></div>
+      <span style="font-size: 12px; color: #4D3577; padding-left: 16px">Redação · 3 alunos · 16:30–18:00</span>
+    </div>
+    <div style="position: absolute; left: 56px; right: 0; top: 495px; height: 42px; border-radius: 12px; background: #FDE8DC; padding: 0 12px; display: flex; align-items: center; gap: 8px; box-sizing: border-box">
+      <span style="width: 8px; height: 8px; border-radius: 4px; background: #D9772F"></span><span style="font-size: 13px; font-weight: 800; color: #7A3B10">Lucas Mendes</span><span style="font-size: 12px; color: #7A3B10">Química</span>
+    </div>
+  </div>
+
+  <a href="AddLesson.dc.html" aria-label="Nova aula" style="position: absolute; right: 20px; bottom: 92px; width: 60px; height: 60px; border-radius: 20px; background: {{accent}}; color: #1F2A2E; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(31,42,46,0.22); text-decoration: none">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+  </a>
+
+  <nav aria-label="Navegação principal" style="height: 72px; flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #ECE6D8; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr))">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg></span>Hoje
+    </a>
+    <a href="Schedule.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: {{primary}}; font-size: 11px; font-weight: 800">
+      <span style="background: #E1EEE8; border-radius: 14px; padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span>Agenda
+    </a>
+    <a href="Students.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"></path></svg></span>Alunos
+    </a>
+    <a href="Places.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg></span>Locais
+    </a>
+    <a href="Earnings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg></span>Ganhos
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#1F4E5F","#3D6FB4"]},"accent":{"editor":"color","default":"#F2B33D","options":["#F2B33D","#F28C38","#7BC6A4"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      primary: this.props.primary ?? '#2E5E4E',
+      accent: this.props.accent ?? '#F2B33D'
+    };
+  }
+}
+</script>
+</body>
+</html>

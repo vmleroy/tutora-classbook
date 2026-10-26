@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Paleta e tipografia</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 560px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; box-sizing: border-box; padding: 32px; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <h1 style="margin: 0; font-size: 28px; font-weight: 800">Paleta “sala de aula”</h1>
+    <span style="font-size: 14px; color: #5C6A70">Quadro-negro, lápis amarelo, caderno e caneta vermelha</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #2E5E4E"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Quadro-negro</span><span style="font-size: 12px; color: #5C6A70">#2E5E4E · principal</span></div></div>
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #F2B33D"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Lápis amarelo</span><span style="font-size: 12px; color: #5C6A70">#F2B33D · ganhos</span></div></div>
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #3D6FB4"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Azul caderno</span><span style="font-size: 12px; color: #5C6A70">#3D6FB4 · escola</span></div></div>
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #D64545"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Caneta vermelha</span><span style="font-size: 12px; color: #5C6A70">#D64545 · pendente</span></div></div>
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #3E9D6B"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Folha verde</span><span style="font-size: 12px; color: #5C6A70">#3E9D6B · pago</span></div></div>
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #FAF7F0; border-bottom: 1px solid #ECE6D8"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Papel de caderno</span><span style="font-size: 12px; color: #5C6A70">#FAF7F0 · fundo</span></div></div>
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #1F2A2E"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Tinta</span><span style="font-size: 12px; color: #5C6A70">#1F2A2E · texto</span></div></div>
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #5C6A70"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Grafite</span><span style="font-size: 12px; color: #5C6A70">#5C6A70 · legendas</span></div></div>
+    <div style="background: #FFFFFF; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column"><div style="height: 64px; background: #141C19"></div><div style="padding: 8px 10px; display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Lousa (escuro)</span><span style="font-size: 12px; color: #5C6A70">#141C19 · modo escuro</span></div></div>
+  </div>
+
+  <section aria-label="Tipografia" style="background: #FFFFFF; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 12px; font-weight: 800; color: #5C6A70; letter-spacing: 1px">TIPOGRAFIA · NUNITO</span>
+    <span style="font-size: 26px; font-weight: 800">Boa tarde, Victor</span>
+    <span style="font-size: 16px; font-weight: 700">Próxima aula: Ana Souza às 14:00</span>
+    <span style="font-size: 14px; color: #5C6A70">Texto de apoio e legendas em 13–14 px, sempre com contraste AA.</span>
+    <span style="font-size: 40px; font-weight: 800; color: #2E5E4E; font-variant-numeric: tabular-nums; letter-spacing: -1px">R$ 1.234,56</span>
+    <span style="font-size: 12px; color: #5C6A70">Números tabulares: o contador ao vivo não “pula” quando os dígitos mudam.</span>
+  </section>
+
+  <section aria-label="Componentes" style="display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 12px; font-weight: 800; color: #5C6A70; letter-spacing: 1px">COMPONENTES</span>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap">
+      <button style="height: 48px; padding: 0 18px; border-radius: 14px; border: none; background: #2E5E4E; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 800">Salvar aula</button>
+      <button style="height: 48px; padding: 0 18px; border-radius: 14px; border: none; background: #F2B33D; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 800">Iniciar aula</button>
+      <button style="height: 48px; padding: 0 18px; border-radius: 14px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 700">Cancelar</button>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <span style="font-size: 12px; font-weight: 800; color: #276B48; background: #E2F2E9; padding: 5px 10px; border-radius: 9px">Pago</span>
+      <span style="font-size: 12px; font-weight: 800; color: #9E2F2B; background: #FBE9E7; padding: 5px 10px; border-radius: 9px">Deve R$ 240</span>
+      <span style="font-size: 12px; font-weight: 800; color: #5A4300; background: #FCE7B8; padding: 5px 10px; border-radius: 9px">Ao vivo</span>
+      <span style="font-size: 12px; font-weight: 800; color: #24497E; background: #E3ECF8; padding: 5px 10px; border-radius: 9px">Escola</span>
+      <span style="font-size: 12px; font-weight: 800; color: #4D3577; background: #EEE7F7; padding: 5px 10px; border-radius: 9px">Turma</span>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":560,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Moeda e cotação</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="Settings.dc.html" aria-label="{{t.back}}" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 22px; font-weight: 800">{{t.title}}</h1>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 14px; padding: 6px 20px 12px; overflow: hidden">
+    <section style="display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0 4px; font-size: 13px; font-weight: 800; color: #5C6A70">{{t.curHead}}</h2>
+      <div role="radiogroup" aria-label="{{t.curHead}}" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{curs}}" as="c" hint-placeholder-count="2">
+          <button role="radio" aria-checked="{{c.on}}" onClick="{{c.pick}}" style="border-radius: 16px; border: {{c.border}}; background: {{c.bg}}; padding: 12px 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; text-align: left; cursor: pointer">
+            <span style="font-size: 22px; font-weight: 800">{{c.sym}}</span>
+            <span style="font-size: 14px; font-weight: 800">{{c.label}}</span>
+            <span style="font-size: 12px; color: #5C6A70">{{c.code}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 15px; font-weight: 800">{{t.mixHead}}</span>
+      <span style="font-size: 13px; line-height: 1.45; color: #5C6A70">{{t.mixBody}}</span>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 700">{{t.both}}</span><span style="font-size: 12px; color: #5C6A70">{{bothSub}}</span></span>
+        <button onClick="{{toggleBoth}}" aria-pressed="{{showBoth}}" aria-label="{{t.both}}" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{bothBg}}; padding: 3px; display: flex; justify-content: {{bothJustify}}; flex-shrink: 0; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+      </div>
+      <div style="border-top: 1px solid #F0EADC; padding-top: 10px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+          <span style="font-size: 14px; font-weight: 700">{{t.rate}}</span>
+          <div role="radiogroup" aria-label="{{t.rate}}" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #F3EEE2; border-radius: 11px; padding: 3px; gap: 3px; width: 184px">
+            <sc-for list="{{modes}}" as="m" hint-placeholder-count="2">
+              <button role="radio" aria-checked="{{m.on}}" onClick="{{m.pick}}" style="height: 32px; border: none; border-radius: 8px; background: {{m.bg}}; color: {{m.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{m.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{isAuto}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <div style="display: flex; flex-direction: column; flex-grow: 1">
+              <span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums">{{rateLabel}}</span>
+              <span style="font-size: 12px; color: #5C6A70; font-variant-numeric: tabular-nums">{{inverseLabel}}</span>
+              <span style="font-size: 12px; color: {{statusColor}}; font-weight: 700">{{statusLabel}}</span>
+            </div>
+            <button onClick="{{refresh}}" aria-label="{{t.refresh}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; flex-shrink: 0">{{t.refresh}}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{isManual}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <span style="font-size: 12px; color: #5C6A70; font-variant-numeric: tabular-nums">{{inverseLabel}}</span>
+            <div style="display: flex; align-items: center; gap: 8px">
+              <button onClick="{{rateMinus}}" aria-label="−" style="width: 34px; height: 34px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">−</button>
+              <span style="min-width: 112px; text-align: center; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">{{rateLabel}}</span>
+              <button onClick="{{ratePlus}}" aria-label="+" style="width: 34px; height: 34px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">+</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <section style="background: #FCF3DF; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: #1F2A2E">
+      <span style="font-size: 12px; font-weight: 800; color: #5A4300">{{t.preview}}</span>
+      <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-size: 14px; font-weight: 700">{{ex1Name}}</span><span style="font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">{{ex1Val}}</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-size: 14px; font-weight: 700">{{ex2Name}}</span><span style="font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">{{ex2Val}}</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid #EBD9AE; padding-top: 8px"><span style="font-size: 14px; font-weight: 800">{{t.total}}</span><span style="font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums">{{totalVal}}</span></div>
+    </section>
+  </div>
+
+  <div style="padding: 12px 20px 24px; border-top: 1px solid #ECE6D8; flex-shrink: 0">
+    <a href="Settings.dc.html" style="height: 56px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 16px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center">{{t.save}}</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const lang = s.lang ?? 'pt';
+    const cur = s.cur ?? 'BRL';
+    const mode = s.mode ?? 'auto';
+    const isAuto = mode === 'auto';
+    const autoRate = s.fetched ? 5.43 : 5.42;
+    const rate = isAuto ? autoRate : (s.rate ?? 5.4);
+    const en = lang === 'en';
+    const locale = en ? 'en-US' : 'pt-BR';
+    const T = en ? {
+      back: 'Back', title: 'Currency and rate', langHead: 'App language', curHead: 'App currency (separate from language)',
+      mixHead: 'Students in another currency', mixBody: 'Set a student to pay in USD in their profile. Totals always use the app currency.', both: 'Show both currencies',
+      rate: 'Exchange rate', refresh: 'Update', auto: 'Automatic', manual: 'Manual', preview: 'PREVIEW · MONDAY, OCT 26', total: 'Total today', save: 'Save'
+    } : {
+      back: 'Voltar', title: 'Moeda e cotação', langHead: 'Idioma do app', curHead: 'Moeda do app (independente do idioma)',
+      mixHead: 'Alunos em outra moeda', mixBody: 'No perfil do aluno dá para escolher que ele paga em US$. Os totais usam sempre a moeda do app.', both: 'Mostrar as duas moedas',
+      rate: 'Cotação', refresh: 'Atualizar', auto: 'Automática', manual: 'Manual', preview: 'COMO FICA · SEGUNDA, 26 OUT', total: 'Total do dia', save: 'Salvar'
+    };
+    const fmt = (v, c) => new Intl.NumberFormat(locale, { style: 'currency', currency: c, currencyDisplay: c === 'USD' && !en ? 'symbol' : 'narrowSymbol' }).format(v);
+    const toMain = (v, c) => (c === cur ? v : c === 'USD' ? v * rate : v / rate);
+    const ana = 120, emma = 30;
+    const showBoth = s.showBoth ?? false;
+    const sel = (on) => ({ ring: on ? primary : '#CFC8B8', fill: on ? primary : '#FFFFFF', mark: on ? '✓' : '' });
+    return {
+      primary: primary,
+      t: T,
+      langs: [['pt', 'PT', 'Português (Brasil)', 'Datas 26/10 · R$ 1.234,56'], ['en', 'EN', 'English', 'Dates 10/26 · $1,234.56']].map(([id, code, label, sub], i) => Object.assign({
+        code: code, label: label, sub: sub, on: id === lang, line: i === 0 ? '1px solid #F0EADC' : 'none',
+        pick: () => this.setState({ lang: id })
+      }, sel(id === lang))),
+      curs: [['BRL', 'R$', en ? 'Brazilian real' : 'Real'], ['USD', 'US$', en ? 'US dollar' : 'Dólar americano']].map(([id, sym, label]) => ({
+        sym: sym, label: label, code: id, on: id === cur,
+        bg: id === cur ? '#EEF5F1' : '#FFFFFF', border: id === cur ? '2px solid ' + primary : '1px solid #E4DDCD',
+        pick: () => this.setState({ cur: id })
+      })),
+      rateLabel: 'US$ 1 = ' + fmt(rate, 'BRL'),
+      inverseLabel: 'R$ 1 = ' + new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD', currencyDisplay: en ? 'narrowSymbol' : 'symbol', minimumFractionDigits: 4 }).format(1 / rate),
+      isAuto: isAuto, isManual: !isAuto,
+      modes: [['auto', T.auto], ['manual', T.manual]].map(([id, label]) => ({
+        label: label, on: id === mode,
+        bg: id === mode ? '#FFFFFF' : 'transparent', fg: id === mode ? primary : '#5C6A70',
+        pick: () => this.setState({ mode: id })
+      })),
+      statusLabel: s.fetched ? (en ? 'Updated just now · Central Bank of Brazil' : 'Atualizada agora · Banco Central') : (en ? 'Today 09:10 · offline uses the last rate' : 'Hoje, 09:10 · sem internet usa a última'),
+      statusColor: s.fetched ? '#1D6B40' : '#5C6A70',
+      refresh: () => this.setState({ fetched: true }),
+      rateMinus: () => this.setState({ rate: Math.max(1, Math.round((rate - 0.05) * 100) / 100) }),
+      ratePlus: () => this.setState({ rate: Math.round((rate + 0.05) * 100) / 100 }),
+      ex1Name: en ? 'Ana · 60 min · charges in BRL' : 'Ana · 60 min · cobra em R$',
+      ex1Val: cur === 'BRL' ? fmt(ana, 'BRL') : (showBoth ? fmt(ana, 'BRL') + ' ≈ ' : '') + fmt(toMain(ana, 'BRL'), cur),
+      ex2Name: en ? 'Emma · 60 min · charges in USD' : 'Emma · 60 min · cobra em US$',
+      ex2Val: cur === 'USD' ? fmt(emma, 'USD') : (showBoth ? fmt(emma, 'USD') + ' ≈ ' : '') + fmt(toMain(emma, 'USD'), cur),
+      showBoth: showBoth,
+      bothSub: showBoth ? (en ? 'Original amount next to the converted one' : 'Valor original ao lado do convertido') : (en ? 'Off: one currency only (default)' : 'Desligado: só uma moeda (padrão)'),
+      bothBg: showBoth ? primary : '#CFC8B8',
+      bothJustify: showBoth ? 'flex-end' : 'flex-start',
+      toggleBoth: () => this.setState({ showBoth: !showBoth }),
+      totalVal: fmt(toMain(ana, 'BRL') + toMain(emma, 'USD'), cur)
+    };
+  }
+}
+</script>
+</body>
+</html>

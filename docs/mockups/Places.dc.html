@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Locais</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 24px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <div style="display: flex; flex-direction: column; flex-grow: 1">
+      <h1 style="margin: 0; font-size: 26px; font-weight: 800">Locais</h1>
+      <span style="font-size: 13px; color: #5C6A70">Onde você dá aula · cada um com seus alunos</span>
+    </div>
+    <a href="PlaceEdit.dc.html" aria-label="Novo local" style="width: 44px; height: 44px; border-radius: 22px; background: {{primary}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+    </a>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 10px 20px 12px; overflow: hidden">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 0 2px"><h2 style="margin: 0; font-size: 13px; font-weight: 800; color: #5C6A70">Já vem no app</h2><span style="font-size: 12px; color: #5C6A70">alunos herdam o preço</span></div>
+
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #E2F2E9; color: #1F5C3C; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1">
+        <div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 15px; font-weight: 800">Casa do Aluno</span><span style="font-size: 11px; font-weight: 800; color: #1F5C3C; background: #E2F2E9; padding: 2px 7px; border-radius: 7px">Padrão</span></div>
+        <span style="font-size: 12px; color: #5C6A70">R$ 120/h padrão · 90 min · 2 alunos</span>
+        <span style="font-size: 12px; color: #5C6A70">Deslocamento: varia, você informa em cada aula</span>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #FCE7B8; color: #6B4A00; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1">
+        <div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 15px; font-weight: 800">Online / Remoto</span><span style="font-size: 11px; font-weight: 800; color: #6B4A00; background: #FCE7B8; padding: 2px 7px; border-radius: 7px">Padrão</span></div>
+        <span style="font-size: 12px; color: #5C6A70">R$ 100/h padrão · 60 min · 4 alunos</span>
+      </div>
+    </div>
+
+
+    <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 0 2px"><h2 style="margin: 0; font-size: 13px; font-weight: 800; color: #5C6A70">Seus locais</h2><span style="font-size: 12px; color: #5C6A70"></span></div>
+
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #E3ECF8; color: #24497E; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-5 9 5-9 5z"></path><path d="M7 12v4.5c1.5 1.3 3.2 2 5 2s3.5-.7 5-2V12"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1">
+        <div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 15px; font-weight: 800">Colégio Santa Clara</span><span style="font-size: 11px; font-weight: 800; color: #24497E; background: #E3ECF8; padding: 2px 7px; border-radius: 7px">Escola</span></div>
+        <span style="font-size: 12px; color: #5C6A70">Salário R$ 2.400/mês · 4 turmas · 50 min</span>
+      </div>
+    </div>
+
+    <a href="PlaceDetail.dc.html" style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px; text-decoration: none; color: #1F2A2E; border: 2px solid #D9CCEB">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #EEE7F7; color: #4D3577; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"></path><path d="M9 20v-6h6v6"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1">
+        <div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 15px; font-weight: 800">Salinha Aprender+</span><span style="font-size: 11px; font-weight: 800; color: #4D3577; background: #EEE7F7; padding: 2px 7px; border-radius: 7px">Salinha</span></div>
+        <span style="font-size: 12px; color: #5C6A70">R$ 60/h pagos pela salinha · fecha todo mês</span>
+        <span style="font-size: 12px; color: #5C6A70">3 alunos · Rua das Flores, 120</span>
+        <span style="align-self: flex-start; font-size: 12px; font-weight: 800; color: #9E2F2B; background: #FBE9E7; padding: 3px 8px; border-radius: 8px; margin-top: 3px">A receber da salinha: R$ 360</span>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5C6A70" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="align-self: center; flex-shrink: 0"><path d="M9 5l7 7-7 7"></path></svg>
+    </a>
+
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 12px 14px; display: flex; gap: 12px">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: #FDE8DC; color: #7A3B10; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3z"></path><path d="M18 8h2v11a2 2 0 0 1-2 2"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1">
+        <div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 15px; font-weight: 800">Cursinho Foco</span><span style="font-size: 11px; font-weight: 800; color: #7A3B10; background: #FDE8DC; padding: 2px 7px; border-radius: 7px">Cursinho</span></div>
+        <span style="font-size: 12px; color: #5C6A70">R$ 80/aula pagos pelo cursinho · toda sexta</span>
+      </div>
+    </div>
+  </div>
+
+  <nav aria-label="Navegação principal" style="height: 72px; flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #ECE6D8; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr))">
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg></span>Hoje
+    </a>
+    <a href="Schedule.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span>Agenda
+    </a>
+    <a href="Students.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"></path></svg></span>Alunos
+    </a>
+    <a href="Places.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: {{primary}}; font-size: 11px; font-weight: 800">
+      <span style="background: #E1EEE8; border-radius: 14px; padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg></span>Locais
+    </a>
+    <a href="Earnings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg></span>Ganhos
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#1F4E5F","#3D6FB4"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { primary: this.props.primary ?? '#2E5E4E' };
+  }
+}
+</script>
+</body>
+</html>

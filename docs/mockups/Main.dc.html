@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Hoje</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="background: {{primary}}; color: #FFFFFF; padding: 28px 20px 76px; border-radius: 0 0 28px 28px; display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 14px; color: #D3E6DD; font-weight: 600">Segunda, 26 de outubro</span>
+      <span style="font-size: 26px; font-weight: 800">Boa tarde, Victor</span>
+    </div>
+    <div style="display: flex; gap: 8px">
+    <a href="Settings.dc.html" aria-label="Ajustes" style="width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.16); color: #FFFFFF; display: flex; align-items: center; justify-content: center; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+    </a>
+    <a href="AddLesson.dc.html" aria-label="Nova aula" style="width: 44px; height: 44px; border-radius: 22px; background: {{accent}}; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+    </a>
+    </div>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 0 20px; margin-top: -60px; overflow: hidden">
+    <section aria-label="Ganhos de hoje" style="background: #FFFFFF; border-radius: 20px; padding: 18px; box-shadow: 0 6px 20px rgba(31,42,46,0.08); display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-size: 13px; font-weight: 700; color: #5C6A70">Ganho hoje</span>
+        <span style="font-size: 13px; color: #5C6A70">de R$ 380,00 previstos</span>
+      </div>
+      <span style="font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.5px">R$ 240,00</span>
+      <div style="height: 8px; border-radius: 4px; background: #F3EBD9; overflow: hidden">
+        <div style="width: 63%; height: 8px; border-radius: 4px; background: {{accent}}"></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 6px; border-top: 1px solid #F0EADC">
+        <div style="display: flex; flex-direction: column; padding-top: 8px"><span style="font-size: 12px; color: #5C6A70">Semana</span><span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums">R$ 1.180</span></div>
+        <div style="display: flex; flex-direction: column; padding-top: 8px"><span style="font-size: 12px; color: #5C6A70">Outubro</span><span style="font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums">R$ 5.020</span></div>
+        <div style="display: flex; flex-direction: column; padding-top: 8px"><span style="font-size: 12px; color: #5C6A70">Alunos devem</span><span style="font-size: 15px; font-weight: 800; color: #B93A36; font-variant-numeric: tabular-nums">R$ 560</span></div>
+      </div>
+    </section>
+
+    <section aria-label="Próxima aula" style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 800">Próxima aula</h2>
+        <span style="font-size: 13px; font-weight: 700; color: {{primary}}">em 25 min</span>
+      </div>
+      <div style="background: #FFFFFF; border-radius: 20px; padding: 16px; box-shadow: 0 2px 10px rgba(31,42,46,0.05); display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="width: 44px; height: 44px; border-radius: 22px; background: #FCE7B8; color: #6B4A00; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">AS</div>
+          <div style="display: flex; flex-direction: column; flex-grow: 1">
+            <span style="font-size: 16px; font-weight: 800">Ana Souza</span>
+            <span style="font-size: 13px; color: #5C6A70">Matemática · Online · R$ 120/h</span>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end">
+            <span style="font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums">14:00</span>
+            <span style="font-size: 12px; color: #5C6A70">60 min</span>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <a href="AddLesson.dc.html" style="height: 44px; border-radius: 14px; border: 1px solid #DCD5C6; color: #1F2A2E; font-weight: 800; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Marcar como dada
+          </a>
+          <a href="Live.dc.html" style="height: 44px; border-radius: 14px; background: {{accent}}; color: #1F2A2E; font-weight: 800; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>Iniciar aula
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <a href="Students.dc.html" style="background: #FBE9E7; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; text-decoration: none; color: #8F2B28">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5M12 16v.5"></path></svg>
+      <span style="flex-grow: 1; font-size: 14px; font-weight: 700">3 alunos com pagamento pendente</span>
+      <span style="font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">R$ 560</span>
+    </a>
+
+    <section aria-label="Aulas de hoje" style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 800">Aulas de hoje</h2>
+        <span style="font-size: 13px; color: #5C6A70">4 aulas</span>
+      </div>
+      <a href="LessonDetail.dc.html" style="background: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1F2A2E">
+        <span style="width: 44px; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; color: #5C6A70">08:00</span>
+        <span style="width: 10px; height: 10px; border-radius: 5px; background: {{secondary}}; flex-shrink: 0"></span>
+        <div style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 14px; font-weight: 700">9º ano B</span><span style="font-size: 12px; color: #5C6A70">Colégio Santa Clara · 50 min</span></div>
+        <span style="font-size: 12px; font-weight: 800; color: #276B48; background: #E2F2E9; padding: 4px 8px; border-radius: 8px">Concluída</span>
+      </a>
+      <a href="LessonDetail.dc.html" style="background: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1F2A2E">
+        <span style="width: 44px; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; color: #5C6A70">10:00</span>
+        <span style="width: 10px; height: 10px; border-radius: 5px; background: #3E9D6B; flex-shrink: 0"></span>
+        <div style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 14px; font-weight: 700">Pedro Lima</span><span style="font-size: 12px; color: #5C6A70">Física · Presencial</span></div>
+        <span style="font-size: 12px; font-weight: 800; color: #276B48; background: #E2F2E9; padding: 4px 8px; border-radius: 8px">+ R$ 120</span>
+      </a>
+      <a href="LessonDetail.dc.html" style="background: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1F2A2E">
+        <span style="width: 44px; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; color: #5C6A70">16:30</span>
+        <span style="width: 10px; height: 10px; border-radius: 5px; background: #8E6CC0; flex-shrink: 0"></span>
+        <div style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 14px; font-weight: 700">Turma ENEM</span><span style="font-size: 12px; color: #5C6A70">Redação · 3 alunos</span></div>
+        <span style="font-size: 12px; font-weight: 700; color: #5C6A70">R$ 180</span>
+      </a>
+    </section>
+  </div>
+
+  <nav aria-label="Navegação principal" style="height: 72px; flex-shrink: 0; background: #FFFFFF; border-top: 1px solid #ECE6D8; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr))">
+    <a href="Main.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: {{primary}}; font-size: 11px; font-weight: 800">
+      <span style="background: #E1EEE8; border-radius: 14px; padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg></span>Hoje
+    </a>
+    <a href="Schedule.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span>Agenda
+    </a>
+    <a href="Students.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.5 3.5 5.2"></path></svg></span>Alunos
+    </a>
+    <a href="Places.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg></span>Locais
+    </a>
+    <a href="Earnings.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: #5C6A70; font-size: 11px; font-weight: 700">
+      <span style="padding: 3px 16px; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"></rect><path d="M3 10h18M16 15h2"></path></svg></span>Ganhos
+    </a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#1F4E5F","#3D6FB4"]},"accent":{"editor":"color","default":"#F2B33D","options":["#F2B33D","#F28C38","#7BC6A4"]},"secondary":{"editor":"color","default":"#3D6FB4"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      primary: this.props.primary ?? '#2E5E4E',
+      accent: this.props.accent ?? '#F2B33D',
+      secondary: this.props.secondary ?? '#3D6FB4'
+    };
+  }
+}
+</script>
+</body>
+</html>

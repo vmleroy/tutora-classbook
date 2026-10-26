@@ -1,0 +1,21 @@
+<!-- @dsCard group="Foundations" height=88 -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Icon — preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap">
+<style>
+  .p { padding: 16px 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .col { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; max-width: 390px; }
+  .phone { max-width: 390px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var T = window.Tutora, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div', { className: 'p' }, ['home','calendar','users','pin','wallet','plus','minus','check','close','chevron-left','chevron-right','clock','alert','file','cloud','gear','calendar-check','no-show','play'].map(function (n) { return h('span', { key: n, title: n, style: { display: 'inline-flex', color: 'var(--ink)' } }, h(T.Icon, { name: n })); })));
+</script>
+</body>
+</html>
