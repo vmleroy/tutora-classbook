@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react-native';
-import fc from 'fast-check';
+import * as fc from 'fast-check';
 import { Text } from 'react-native';
 
 describe('test harness', () => {
