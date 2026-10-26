@@ -1,4 +1,6 @@
-export type Language = 'pt-BR' | 'en';
+import type { Language } from '@/domain/settings';
+
+export type { Language };
 
 type PhoneLocale = { languageCode: string | null; languageTag: string };
 

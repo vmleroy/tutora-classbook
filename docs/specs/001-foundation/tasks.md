@@ -9,7 +9,7 @@ Each task lists the criteria it proves and where the test lives.
 - [x] 5. Theme tokens and `resolvePalette` for Quadro-negro light and dark. Test: `src/domain/theme/palette.test.ts`. (AC-001-8)
 - [x] 6. NativeWind setup, `tailwind.config.js` with variable colors, `ThemeProvider` with `vars()`, Nunito fonts, base components; hex-color lint check; decide the Large text approach. Tests: `src/ui/theme/ThemeProvider.test.tsx`, `tests/no-hex.test.ts`. (AC-001-9, AC-001-10, AC-001-11)
 - [x] 7. i18n with typed keys, pt-BR and en files, phone-language detection on first run. Test: `src/i18n/i18n.test.ts`. (AC-001-5, AC-001-6, AC-001-7)
-- [ ] 8. Database open, pragmas, Drizzle schema for `settings`, first migration, pre-migration copy, error screen. Tests: `src/data/db.test.ts`, `src/data/migrations.test.ts`. (AC-001-12, AC-001-13, AC-001-14, AC-001-15)
+- [x] 8. Database open, pragmas, Drizzle schema for `settings`, first migration, pre-migration copy, error screen. Tests: `src/data/db.test.ts`, `src/data/migrations.test.ts`. (AC-001-12, AC-001-13, AC-001-14, AC-001-15)
 - [ ] 9. Settings repo and Zustand store loaded at start-up; splash held until ready. Test: `src/app/_layout.test.tsx`. (AC-001-4)
 - [ ] 10. Tabs layout with five empty states, gear to Ajustes, About row. Tests: `src/app/(tabs)/tabs.test.tsx`, `src/app/settings/settings.test.tsx`. (AC-001-1, AC-001-3, AC-001-22)
 - [ ] 11. Maestro flow through tabs and settings. Test: `.maestro/shell.yaml`. (AC-001-2, AC-001-21)
