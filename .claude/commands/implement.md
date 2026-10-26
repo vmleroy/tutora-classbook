@@ -1,7 +1,8 @@
 ---
 description: Implement a ready spec task by task, tests first
-argument-hint: "NNN [task number]"
+argument-hint: 'NNN [task number]'
 ---
+
 Implement spec $ARGUMENTS.
 
 1. Check the spec is `ready` (or `in progress`) and that `plan.md` and `tasks.md` exist. If not, stop and suggest `/plan`.

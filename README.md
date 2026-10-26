@@ -10,16 +10,16 @@ Expo (React Native, TypeScript strict, Expo Router) · NativeWind (Tailwind) · 
 
 ## What is in this repo
 
-| Path | What |
-| --- | --- |
-| [`CLAUDE.md`](CLAUDE.md) | How Claude Code works in this repo, spec by spec |
-| [`docs/specs/`](docs/specs/) | Constitution, roadmap and the specs (spec, plan, tasks) |
-| [`docs/product.md`](docs/product.md) | Product documentation v1 |
-| [`docs/architecture.md`](docs/architecture.md) | Architecture and technology v1 |
-| [`docs/mockups/`](docs/mockups/) | The 27 screen mockups |
-| [`docs/design-system/`](docs/design-system/) | Design system usage rules, Tailwind and theming notes, and a guideline per component |
-| [`design-system/`](design-system/) | `tokens.json`, the props contract (`components/index.d.ts`) and the web reference previews of the 30 components |
-| [`.claude/commands/`](.claude/commands/) | `/spec`, `/plan`, `/implement`, `/verify` |
+| Path                                           | What                                                                                                            |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| [`CLAUDE.md`](CLAUDE.md)                       | How Claude Code works in this repo, spec by spec                                                                |
+| [`docs/specs/`](docs/specs/)                   | Constitution, roadmap and the specs (spec, plan, tasks)                                                         |
+| [`docs/product.md`](docs/product.md)           | Product documentation v1                                                                                        |
+| [`docs/architecture.md`](docs/architecture.md) | Architecture and technology v1                                                                                  |
+| [`docs/mockups/`](docs/mockups/)               | The 27 screen mockups                                                                                           |
+| [`docs/design-system/`](docs/design-system/)   | Design system usage rules, Tailwind and theming notes, and a guideline per component                            |
+| [`design-system/`](design-system/)             | `tokens.json`, the props contract (`components/index.d.ts`) and the web reference previews of the 30 components |
+| [`.claude/commands/`](.claude/commands/)       | `/spec`, `/plan`, `/implement`, `/verify`                                                                       |
 
 ## Working with Claude Code
 

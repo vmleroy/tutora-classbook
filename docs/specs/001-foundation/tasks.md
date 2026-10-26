@@ -3,7 +3,7 @@
 Each task lists the criteria it proves and where the test lives.
 
 - [x] 1. Create the Expo app with TypeScript strict, Expo Router and a dev client; app config with name, package and versioning. (AC-001-19)
-- [ ] 2. ESLint, Prettier, type check scripts; import-boundary rule for `src/domain/`. Test: `tests/boundaries.test.ts`. (AC-001-16, AC-001-19)
+- [x] 2. ESLint, Prettier, type check scripts; import-boundary rule for `src/domain/`. Test: `tests/boundaries.test.ts`. (AC-001-16, AC-001-19)
 - [ ] 3. Jest with `jest-expo`, RNTL and fast-check; `npm test` runs everything in Node. (AC-001-18)
 - [ ] 4. `domain/money.ts` with property tests. Test: `src/domain/money.test.ts`. (AC-001-17)
 - [ ] 5. Theme tokens and `resolvePalette` for Quadro-negro light and dark. Test: `src/domain/theme/palette.test.ts`. (AC-001-8)
