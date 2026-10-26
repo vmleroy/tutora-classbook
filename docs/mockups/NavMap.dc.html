@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Mapa de navegação</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 1280px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; box-sizing: border-box; padding: 40px; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-size: 30px; font-weight: 800">Mapa de navegação</h1>
+      <span style="font-size: 15px; color: #5C6A70">Primeira abertura: Configuração inicial (4 passos), depois Hoje. Cinco abas: Hoje, Agenda, Alunos, Locais e Ganhos. Ajustes fica na engrenagem do Hoje.</span>
+    </div>
+    <div style="display: flex; gap: 16px; font-size: 13px; color: #5C6A70">
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #2E5E4E"></span>Aba principal</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #FFFFFF; border: 1px solid #DCD5C6"></span>Tela aberta a partir dela</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #EEF3FA; border: 1px dashed #3D6FB4"></span>Ligação aluno ↔ local</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; flex-grow: 1">
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="background: #2E5E4E; color: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; font-weight: 700; color: #D3E6DD">Aba 1</span><span style="font-size: 19px; font-weight: 800">Hoje</span><span style="font-size: 12px; color: #D3E6DD">Ganhos do dia, próxima aula</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Aula ao vivo</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Iniciar aula”</span></span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Nova aula / Registrar</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“+”</span> ou <span style="font-weight: 800; color: #8A6A1F">“Marcar como dada”</span></span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Detalhe da aula</span><span style="font-size: 12px; color: #5C6A70">Tocar numa aula</span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ Editar aula</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Editar”</span></span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Ajustes</span><span style="font-size: 12px; color: #5C6A70">Engrenagem no topo do Hoje</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="background: #2E5E4E; color: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; font-weight: 700; color: #D3E6DD">Aba 2</span><span style="font-size: 19px; font-weight: 800">Agenda</span><span style="font-size: 12px; color: #D3E6DD">Dia e semana</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Detalhe da aula</span><span style="font-size: 12px; color: #5C6A70">Tocar em qualquer bloco</span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ Editar aula</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Editar”</span></span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ Aula ao vivo</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Iniciar aula”</span></span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Nova aula</span><span style="font-size: 12px; color: #5C6A70">Botão amarelo <span style="font-weight: 800; color: #8A6A1F">“+”</span></span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="background: #2E5E4E; color: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; font-weight: 700; color: #D3E6DD">Aba 3</span><span style="font-size: 19px; font-weight: 800">Alunos</span><span style="font-size: 12px; color: #D3E6DD">Lista, busca, filtro por local</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Detalhe do aluno</span><span style="font-size: 12px; color: #5C6A70">Tocar num aluno</span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ Editar aluno</span><span style="font-size: 12px; color: #5C6A70">Preço por local, moeda, taxa</span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ Relatório do aluno</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Relatório”</span>: PDF ou Excel</span></div>
+      <div style="margin-left: 18px; background: #EEF3FA; border: 1px dashed #3D6FB4; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↔ Detalhe do local</span><span style="font-size: 12px; color: #5C6A70">Tocar num local do aluno</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="background: #2E5E4E; color: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; font-weight: 700; color: #D3E6DD">Aba 4</span><span style="font-size: 19px; font-weight: 800">Locais</span><span style="font-size: 12px; color: #D3E6DD">Padrão + seus locais</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Detalhe do local</span><span style="font-size: 12px; color: #5C6A70">Tocar num local</span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ Editar local</span><span style="font-size: 12px; color: #5C6A70">Preço padrão, quem paga</span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ Relatório do local</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Relatório”</span>: PDF ou Excel</span></div>
+      <div style="margin-left: 18px; background: #EEF3FA; border: 1px dashed #3D6FB4; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↔ Detalhe do aluno</span><span style="font-size: 12px; color: #5C6A70">Tocar num aluno do local</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="background: #2E5E4E; color: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; font-weight: 700; color: #D3E6DD">Aba 5</span><span style="font-size: 19px; font-weight: 800">Ganhos</span><span style="font-size: 12px; color: #D3E6DD">Filtros: período e tipo</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Relatório de ganhos</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Relatório”</span>: PDF ou Excel</span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ PDF de ganhos</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Gerar PDF”</span></span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Detalhe do aluno ou local</span><span style="font-size: 12px; color: #5C6A70">Tocar numa linha</span></div>
+      <div style="margin-left: 18px; background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">↳ Relatório</span><span style="font-size: 12px; color: #5C6A70"><span style="font-weight: 800; color: #8A6A1F">“Relatório”</span></span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="background: #5C6A70; color: #FFFFFF; border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column"><span style="font-size: 12px; font-weight: 700; color: #D3E6DD">⚙</span><span style="font-size: 19px; font-weight: 800">Ajustes</span><span style="font-size: 12px; color: #D3E6DD">Aberto pela engrenagem no Hoje</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Idioma e Moeda</span><span style="font-size: 12px; color: #5C6A70">Duas opções separadas no topo</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Cotação R$ ↔ US$</span><span style="font-size: 12px; color: #5C6A70">Automática ou manual</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Aparência</span><span style="font-size: 12px; color: #5C6A70">Tema ›  <span style="font-weight: 800; color: #8A6A1F">“Suas cores”</span></span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Calendário · Backup</span><span style="font-size: 12px; color: #5C6A70">Sincronizar; backup automático</span></div>
+      <div style="background: #FFFFFF; border: 1px solid #ECE6D8; border-radius: 14px; padding: 10px 13px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 800">Cancelamentos e faltas</span><span style="font-size: 12px; color: #5C6A70">Regra padrão da taxa</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

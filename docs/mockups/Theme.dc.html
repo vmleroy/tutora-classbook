@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Aparência</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: {{bg}}; font-family: Nunito, system-ui, sans-serif; color: {{ink}}; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 10px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="Settings.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: {{surface}}; color: {{ink}}; display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid {{line}}; box-sizing: border-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 22px; font-weight: 800">Aparência</h1>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 4px 20px 16px; overflow: hidden">
+    <section aria-label="Pré-visualização" style="border-radius: 20px; overflow: hidden; background: {{surface}}; border: 1px solid {{line}}">
+      <div style="background: {{headBg}}; color: {{headFg}}; padding: 14px 16px 30px; display: flex; flex-direction: column">
+        <span style="font-size: {{fsSmall}}; font-weight: 600; opacity: 0.85">Segunda, 26 de outubro</span>
+        <span style="font-size: {{fsTitle}}; font-weight: 800">Boa tarde, Victor</span>
+      </div>
+      <div style="margin: -18px 12px 12px; background: {{surface}}; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 14px rgba(0,0,0,0.12); border: 1px solid {{line}}">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: {{fsSmall}}; color: {{muted}}; font-weight: 700">Ganho hoje</span>
+          <span style="font-size: {{fsMoney}}; font-weight: 800; font-variant-numeric: tabular-nums">R$ 240,00</span>
+          <div style="width: 130px; height: 6px; border-radius: 3px; background: {{track}}; overflow: hidden"><div style="width: 63%; height: 6px; background: {{accent}}"></div></div>
+        </div>
+        <span style="height: 40px; padding: 0 14px; border-radius: 12px; background: {{accent}}; color: #1F2A2E; font-size: {{fsSmall}}; font-weight: 800; display: flex; align-items: center">Iniciar aula</span>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 13px; font-weight: 800; color: {{muted}}">Modo</span>
+      <div role="group" aria-label="Modo claro ou escuro" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: {{segBg}}; border-radius: 14px; padding: 4px; gap: 4px">
+        <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+          <button onClick="{{m.pick}}" aria-pressed="{{m.on}}" style="height: 40px; border: none; border-radius: 11px; background: {{m.bg}}; color: {{m.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">{{m.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 13px; font-weight: 800; color: {{muted}}">Tema</span>
+      <div role="group" aria-label="Tema" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{themes}}" as="t" hint-placeholder-count="4">
+          <button onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="height: 56px; border-radius: 14px; border: {{t.border}}; background: {{surface}}; color: {{ink}}; padding: 0 12px; display: flex; align-items: center; gap: 10px; font-family: Nunito, system-ui, sans-serif; cursor: pointer; box-sizing: border-box">
+            <span style="display: flex"><span style="width: 22px; height: 22px; border-radius: 11px; background: {{t.p}}"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: {{t.a}}; margin-left: -7px; border: 2px solid {{surface}}; box-sizing: border-box"></span></span>
+            <span style="font-size: 14px; font-weight: 800">{{t.name}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; background: {{surface}}; border: 1px solid {{line}}; border-radius: 18px; padding: 14px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <span style="font-size: 15px; font-weight: 800">Personalizar</span>
+        <button onClick="{{resetCustom}}" style="border: none; background: transparent; color: {{link}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; padding: 6px 0; cursor: pointer">Restaurar tema</button>
+      </div>
+      <span style="font-size: 13px; font-weight: 700; color: {{muted}}">Cor principal</span>
+      <div role="group" aria-label="Cor principal" style="display: flex; gap: 8px">
+        <sc-for list="{{primaries}}" as="c" hint-placeholder-count="6">
+          <button onClick="{{c.pick}}" aria-label="{{c.label}}" aria-pressed="{{c.on}}" style="width: 38px; height: 38px; border-radius: 19px; background: {{c.color}}; border: 3px solid {{c.ring}}; outline: 2px solid {{c.outline}}; cursor: pointer; box-sizing: border-box"></button>
+        </sc-for>
+        <a href="ColorPicker.dc.html" aria-label="Cor personalizada" style="width: 38px; height: 38px; border-radius: 19px; background: conic-gradient(#E53935, #FDD835, #43A047, #00ACC1, #1E88E5, #8E24AA, #E53935); display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><span style="width: 24px; height: 24px; border-radius: 12px; background: {{surface}}; color: {{ink}}; font-size: 18px; font-weight: 800; line-height: 24px; text-align: center">+</span></a>
+      </div>
+      <span style="font-size: 13px; font-weight: 700; color: {{muted}}">Cor de destaque (ganhos)</span>
+      <div role="group" aria-label="Cor de destaque" style="display: flex; gap: 8px">
+        <sc-for list="{{accents}}" as="c" hint-placeholder-count="6">
+          <button onClick="{{c.pick}}" aria-label="{{c.label}}" aria-pressed="{{c.on}}" style="width: 38px; height: 38px; border-radius: 19px; background: {{c.color}}; border: 3px solid {{c.ring}}; outline: 2px solid {{c.outline}}; cursor: pointer; box-sizing: border-box"></button>
+        </sc-for>
+        <a href="ColorPicker.dc.html" aria-label="Cor personalizada" style="width: 38px; height: 38px; border-radius: 19px; background: conic-gradient(#E53935, #FDD835, #43A047, #00ACC1, #1E88E5, #8E24AA, #E53935); display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0"><span style="width: 24px; height: 24px; border-radius: 12px; background: {{surface}}; color: {{ink}}; font-size: 18px; font-weight: 800; line-height: 24px; text-align: center">+</span></a>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 4px">
+        <span style="font-size: 13px; font-weight: 700; color: {{muted}}">Tamanho do texto</span>
+        <div role="group" aria-label="Tamanho do texto" style="display: flex; background: {{segBg}}; border-radius: 12px; padding: 3px; gap: 3px">
+          <sc-for list="{{sizes}}" as="z" hint-placeholder-count="2">
+            <button onClick="{{z.pick}}" aria-pressed="{{z.on}}" style="height: 34px; padding: 0 14px; border: none; border-radius: 9px; background: {{z.bg}}; color: {{z.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{z.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+      <a href="ColorPicker.dc.html" style="display: flex; align-items: center; gap: 10px; border-top: 1px solid {{line}}; padding-top: 10px; text-decoration: none; color: {{ink}}">
+        <span style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 14px; font-weight: 800">Cores avançadas</span><span style="font-size: 12px; color: {{muted}}">Qualquer cor para botões, cabeçalho, fundo e mais</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+      </a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const THEMES = [
+      { name: 'Quadro-negro', light: { p: '#2E5E4E', a: '#F2B33D', bg: '#FAF7F0' }, dark: { p: '#6FB39A', a: '#F5C462', bg: '#141C19', s: '#1E2925' } },
+      { name: 'Caderno azul', light: { p: '#2F5C9E', a: '#F28C38', bg: '#F5F7FB' }, dark: { p: '#7FA6DE', a: '#F5A766', bg: '#121826', s: '#1C2435' } },
+      { name: 'Biblioteca', light: { p: '#7A2E3B', a: '#D9A441', bg: '#FBF6EF' }, dark: { p: '#D9848F', a: '#E6BE6E', bg: '#1C1416', s: '#281D20' } },
+      { name: 'Giz pastel', light: { p: '#2D7F86', a: '#F07C6C', bg: '#F3F9F8' }, dark: { p: '#7CC7CC', a: '#F59E91', bg: '#111B1C', s: '#1B2829' } }
+    ];
+    const PRIMARIES = [['#2E5E4E', 'Verde quadro'], ['#2F5C9E', 'Azul'], ['#7A2E3B', 'Vinho'], ['#2D7F86', 'Turquesa'], ['#5B4A8B', 'Roxo'], ['#3A3F47', 'Grafite'], ['#A0522D', 'Terracota']];
+    const ACCENTS = [['#F2B33D', 'Amarelo lápis'], ['#F28C38', 'Laranja'], ['#F07C6C', 'Coral'], ['#7BC6A4', 'Menta'], ['#E58FB5', 'Rosa'], ['#9DB8F2', 'Azul claro'], ['#D9A441', 'Dourado']];
+    const ti = s.theme ?? 0;
+    const mode = s.mode ?? 'light';
+    const dark = mode === 'dark';
+    const big = s.size === 'big';
+    const th = THEMES[ti];
+    const pal = dark ? th.dark : th.light;
+    const lighten = (hex, k) => {
+      const n = parseInt(hex.slice(1), 16);
+      const ch = (v) => Math.round(v + (255 - v) * k).toString(16).padStart(2, '0');
+      return '#' + ch((n >> 16) & 255) + ch((n >> 8) & 255) + ch(n & 255);
+    };
+    const primary = s.customP ? (dark ? lighten(s.customP, 0.4) : s.customP) : pal.p;
+    const accent = s.customA ?? pal.a;
+    const surface = dark ? pal.s : '#FFFFFF';
+    const ink = dark ? '#ECEFEA' : '#1F2A2E';
+    const muted = dark ? '#A3B0AA' : '#5C6A70';
+    const line = dark ? 'rgba(255,255,255,0.10)' : '#ECE6D8';
+    const segBg = dark ? 'rgba(255,255,255,0.08)' : '#F0EBDF';
+    const onP = dark ? '#10161A' : '#FFFFFF';
+    const swatches = (list, current, key) => [[null, 'Do tema']].concat(list).slice(0, 6).map(([color, label]) => {
+      const on = (current ?? null) === color;
+      const shown = color ?? (key === 'customP' ? pal.p : pal.a);
+      return { color: shown, label: label, on: on, ring: on ? surface : 'transparent', outline: on ? ink : 'transparent', pick: () => this.setState({ [key]: color }) };
+    });
+    return {
+      bg: pal.bg, surface: surface, ink: ink, muted: muted, line: line, segBg: segBg, accent: accent,
+      link: dark ? primary : primary,
+      headBg: dark ? surface : primary,
+      headFg: dark ? ink : '#FFFFFF',
+      track: dark ? 'rgba(255,255,255,0.12)' : '#F3EBD9',
+      fsSmall: big ? '15px' : '13px',
+      fsTitle: big ? '25px' : '21px',
+      fsMoney: big ? '30px' : '26px',
+      modes: [['light', 'Claro'], ['dark', 'Escuro'], ['system', 'Sistema']].map(([id, label]) => {
+        const on = id === mode;
+        return { label: label, on: on, bg: on ? primary : 'transparent', fg: on ? onP : muted, pick: () => this.setState({ mode: id }) };
+      }),
+      themes: THEMES.map((t, i) => {
+        const tp = dark ? t.dark : t.light;
+        return { name: t.name, p: tp.p, a: tp.a, on: i === ti, border: i === ti ? '2px solid ' + primary : '1px solid ' + line, pick: () => this.setState({ theme: i, customP: null, customA: null }) };
+      }),
+      primaries: swatches(PRIMARIES, s.customP, 'customP'),
+      accents: swatches(ACCENTS, s.customA, 'customA'),
+      sizes: [['normal', 'Normal'], ['big', 'Grande']].map(([id, label]) => {
+        const on = (s.size ?? 'normal') === id;
+        return { label: label, on: on, bg: on ? primary : 'transparent', fg: on ? onP : muted, pick: () => this.setState({ size: id }) };
+      }),
+      resetCustom: () => this.setState({ customP: null, customA: null, size: 'normal' })
+    };
+  }
+}
+</script>
+</body>
+</html>

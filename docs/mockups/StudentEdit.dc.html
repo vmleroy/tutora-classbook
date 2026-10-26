@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Editar aluno</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="StudentDetail.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 22px; font-weight: 800; flex-grow: 1">Editar aluno</h1>
+    <button aria-label="Arquivar aluno (mantém o histórico)" style="height: 40px; padding: 0 12px; border-radius: 20px; border: none; background: #FBE9E7; color: #B93A36; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">Arquivar</button>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px; padding: 4px 20px 12px; overflow: hidden">
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px">
+      <label for="sname" style="font-size: 12px; font-weight: 700; color: #5C6A70">Nome</label>
+      <input id="sname" type="text" defaultValue="Ana Souza" style="height: 32px; border: none; border-bottom: 1px solid #ECE6D8; font-family: Nunito, system-ui, sans-serif; font-size: 16px; font-weight: 800; color: #1F2A2E; padding: 0; background: transparent">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 4px">
+        <div style="display: flex; flex-direction: column; gap: 2px"><label for="ssubj" style="font-size: 12px; font-weight: 700; color: #5C6A70">Matéria e série</label><input id="ssubj" type="text" defaultValue="Matemática · 9º" style="height: 30px; border: none; font-family: Nunito, system-ui, sans-serif; font-size: 15px; color: #1F2A2E; padding: 0; background: transparent; min-width: 0"></div>
+        <div style="display: flex; flex-direction: column; gap: 2px"><label for="sphone" style="font-size: 12px; font-weight: 700; color: #5C6A70">Telefone</label><input id="sphone" type="tel" defaultValue="(11) 9 0000-0000" style="height: 30px; border: none; font-family: Nunito, system-ui, sans-serif; font-size: 15px; color: #1F2A2E; padding: 0; background: transparent; min-width: 0"></div>
+      </div>
+    </div>
+
+    <section aria-label="Locais e preços" style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-size: 15px; font-weight: 800">Onde tem aula e quanto paga</h2>
+        <span style="font-size: 12px; color: #5C6A70">★ = local padrão</span>
+      </div>
+      <div role="radiogroup" aria-label="Como cobra" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #F3EEE2; border-radius: 12px; padding: 3px; gap: 3px">
+        <sc-for list="{{types}}" as="x" hint-placeholder-count="3">
+          <button role="radio" aria-checked="{{x.on}}" onClick="{{x.pick}}" style="height: 34px; border: none; border-radius: 9px; background: {{x.bg}}; color: {{x.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{x.label}}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{isPackage}}" hint-placeholder-val="{{ false }}">
+        <div style="background: #FFFFFF; border-radius: 16px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between">
+          <span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 800">Pacote de 10 aulas</span><span style="font-size: 12px; color: #5C6A70">vale em qualquer local abaixo</span></span>
+          <div style="display: flex; align-items: center; gap: 6px">
+            <button onClick="{{pkgMinus}}" aria-label="Diminuir pacote" style="width: 32px; height: 32px; border-radius: 9px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 17px; font-weight: 800; cursor: pointer">−</button>
+            <span style="min-width: 70px; text-align: center; font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums">{{pkgLabel}}</span>
+            <button onClick="{{pkgPlus}}" aria-label="Aumentar pacote" style="width: 32px; height: 32px; border-radius: 9px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 17px; font-weight: 800; cursor: pointer">+</button>
+          </div>
+        </div>
+      </sc-if>
+      <sc-for list="{{linked}}" as="p" hint-placeholder-count="2">
+        <div style="background: #FFFFFF; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; border: {{p.border}}">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <button onClick="{{p.makeDefault}}" aria-pressed="{{p.isDefault}}" aria-label="Local padrão: {{p.name}}" style="width: 28px; height: 28px; border-radius: 14px; border: none; background: {{p.starBg}}; color: {{p.starFg}}; font-size: 15px; cursor: pointer; flex-shrink: 0">★</button>
+            <span style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0"><span style="font-size: 14px; font-weight: 800">{{p.name}}</span><span style="font-size: 12px; color: #5C6A70">{{p.sub}}</span></span>
+            <button onClick="{{p.remove}}" aria-label="Desligar {{p.name}}" style="width: 28px; height: 28px; border-radius: 14px; border: none; background: #F3EEE2; color: #5C6A70; font-size: 15px; font-weight: 800; cursor: pointer; flex-shrink: 0">×</button>
+          </div>
+          <sc-if value="{{p.priced}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <div role="radiogroup" aria-label="Preço em {{p.name}}" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #F3EEE2; border-radius: 10px; padding: 3px; gap: 3px; width: 168px; flex-shrink: 0">
+                <button role="radio" aria-checked="{{p.inherit}}" onClick="{{p.useLocal}}" style="height: 30px; border: none; border-radius: 8px; background: {{p.localBg}}; color: {{p.localFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 12px; font-weight: 800; cursor: pointer">Do local</button>
+                <button role="radio" aria-checked="{{p.own}}" onClick="{{p.useOwn}}" style="height: 30px; border: none; border-radius: 8px; background: {{p.ownBg}}; color: {{p.ownFg}}; font-family: Nunito, system-ui, sans-serif; font-size: 12px; font-weight: 800; cursor: pointer">Personalizado</button>
+              </div>
+              <sc-if value="{{p.own}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; align-items: center; gap: 4px">
+                  <button onClick="{{p.minus}}" aria-label="Diminuir preço" style="width: 30px; height: 30px; border-radius: 8px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 16px; font-weight: 800; cursor: pointer">−</button>
+                  <span style="min-width: 74px; text-align: center; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">{{p.value}}</span>
+                  <button onClick="{{p.plus}}" aria-label="Aumentar preço" style="width: 30px; height: 30px; border-radius: 8px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 16px; font-weight: 800; cursor: pointer">+</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{p.inherit}}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 15px; font-weight: 800; color: #5C6A70; font-variant-numeric: tabular-nums">{{p.value}}</span>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{picking}}" hint-placeholder-val="{{ false }}">
+        <div style="background: #FFFFFF; border: 1px dashed #CFC8B8; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 12px; font-weight: 800; color: #5C6A70">Ligar a qual local?</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{available}}" as="a" hint-placeholder-count="3">
+              <button onClick="{{a.add}}" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #E4DDCD; background: #FAF7F0; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">+ {{a.name}}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{canPick}}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{openPick}}" style="height: 40px; border-radius: 14px; border: 1px dashed #CFC8B8; background: transparent; color: {{primary}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">+ Ligar a outro local</button>
+      </sc-if>
+    </section>
+
+    <div style="background: #FFFFFF; border-radius: 18px; display: flex; flex-direction: column">
+      <button style="min-height: 44px; border: none; border-bottom: 1px solid #F0EADC; background: transparent; padding: 6px 14px; display: flex; align-items: center; justify-content: space-between; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; cursor: pointer"><span style="font-size: 14px; font-weight: 700">Paga em</span><span style="font-size: 14px; color: #5C6A70">R$ (moeda do app) ›</span></button>
+      <button style="min-height: 44px; border: none; border-bottom: 1px solid #F0EADC; background: transparent; padding: 6px 14px; display: flex; align-items: center; justify-content: space-between; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; cursor: pointer"><span style="font-size: 14px; font-weight: 700">Cancelamento e falta</span><span style="font-size: 14px; color: #5C6A70">Regra padrão ›</span></button>
+      <div style="padding: 6px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px">
+        <span style="font-size: 14px; font-weight: 700">Cor</span>
+        <div role="radiogroup" aria-label="Cor na agenda" style="display: flex; gap: 8px">
+          <sc-for list="{{colors}}" as="c" hint-placeholder-count="6">
+            <button role="radio" aria-checked="{{c.on}}" aria-label="{{c.name}}" onClick="{{c.pick}}" style="width: 26px; height: 26px; border-radius: 13px; background: {{c.hex}}; border: 3px solid {{c.ring}}; outline: 2px solid {{c.outline}}; cursor: pointer; box-sizing: border-box"></button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 10px 20px 22px; border-top: 1px solid #ECE6D8; flex-shrink: 0">
+    <a href="StudentDetail.dc.html" style="height: 54px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 16px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center">Salvar</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const type = s.type ?? 'hour';
+    const pkg = s.pkg ?? 1000;
+    const color = s.color ?? 0;
+    const linkedIds = s.linked ?? ['online', 'home'];
+    const def = linkedIds.includes(s.def) ? s.def : linkedIds[0];
+    const own = Object.assign({ online: 120 }, s.own || {});
+    const picking = !!s.picking;
+    const unit = type === 'lesson' ? '/aula' : '/h';
+    const PLACES = {
+      online: { name: 'Online / Remoto', base: 100, payer: 'student', note: '' },
+      home: { name: 'Casa do Aluno', base: 120, payer: 'student', note: ' · + deslocamento na aula' },
+      salinha: { name: 'Salinha Aprender+', base: 60, payer: 'place', note: '' },
+      foco: { name: 'Cursinho Foco', base: 80, payer: 'place', note: '' }
+    };
+    const COLORS = [['#F2B33D', 'Amarelo'], ['#3E9D6B', 'Verde'], ['#3D6FB4', 'Azul'], ['#8E6CC0', 'Roxo'], ['#D9772F', 'Laranja'], ['#D64545', 'Vermelho']];
+    const setOwn = (id, v) => this.setState({ own: Object.assign({}, own, { [id]: v }) });
+    const available = Object.keys(PLACES).filter((id) => !linkedIds.includes(id));
+    return {
+      primary: primary,
+      types: [['hour', 'Por hora'], ['lesson', 'Por aula'], ['package', 'Pacote']].map(([id, label]) => ({
+        label: label, on: id === type,
+        bg: id === type ? '#FFFFFF' : 'transparent', fg: id === type ? primary : '#5C6A70',
+        pick: () => this.setState({ type: id })
+      })),
+      isPackage: type === 'package',
+      pkgLabel: 'R$ ' + pkg.toLocaleString('pt-BR'),
+      pkgMinus: () => this.setState({ pkg: Math.max(100, pkg - 50) }),
+      pkgPlus: () => this.setState({ pkg: pkg + 50 }),
+      linked: linkedIds.map((id) => {
+        const p = PLACES[id];
+        const studentPays = p.payer === 'student' && type !== 'package';
+        const mine = own[id];
+        const has = mine != null;
+        const v = has ? mine : p.base;
+        const isDefault = id === def;
+        return {
+          name: p.name,
+          sub: p.payer === 'place'
+            ? 'Pago pelo local · R$ ' + p.base + '/h para você'
+            : type === 'package' ? 'Usa o pacote' + p.note : (has ? 'Preço personalizado da Ana' : 'Preço do local: R$ ' + p.base + unit) + p.note,
+          isDefault: isDefault,
+          border: isDefault ? '2px solid ' + primary : '1px solid #ECE6D8',
+          starBg: isDefault ? '#FCE7B8' : '#F3EEE2', starFg: isDefault ? '#8A6A1F' : '#B5AE9F',
+          makeDefault: () => this.setState({ def: id }),
+          remove: () => this.setState({ linked: linkedIds.filter((x) => x !== id) }),
+          priced: studentPays,
+          own: has, inherit: !has,
+          localBg: has ? 'transparent' : '#FFFFFF', localFg: has ? '#5C6A70' : primary,
+          ownBg: has ? '#FFFFFF' : 'transparent', ownFg: has ? primary : '#5C6A70',
+          useLocal: () => setOwn(id, null),
+          useOwn: () => setOwn(id, has ? mine : p.base),
+          value: 'R$ ' + v + unit,
+          minus: () => setOwn(id, Math.max(5, v - 5)),
+          plus: () => setOwn(id, v + 5)
+        };
+      }),
+      picking: picking && available.length > 0,
+      canPick: !picking && available.length > 0,
+      openPick: () => this.setState({ picking: true }),
+      available: available.map((id) => ({ name: PLACES[id].name, add: () => this.setState({ linked: linkedIds.concat(id), picking: false }) })),
+      colors: COLORS.map(([hex, name], i) => ({
+        hex: hex, name: name, on: i === color,
+        ring: i === color ? '#FFFFFF' : 'transparent', outline: i === color ? '#1F2A2E' : 'transparent',
+        pick: () => this.setState({ color: i })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

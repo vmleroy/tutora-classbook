@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Editar aula</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="LessonDetail.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <div style="display: flex; flex-direction: column; flex-grow: 1">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 800">Editar aula</h1>
+      <span style="font-size: 13px; color: #5C6A70">Repete toda segunda</span>
+    </div>
+    <button aria-label="Excluir aula" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #FBE9E7; color: #B93A36; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
+    </button>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 4px 20px 12px; overflow: hidden">
+    <div style="background: #FFFFFF; border-radius: 18px; display: flex; flex-direction: column">
+      <button style="min-height: 58px; border: none; border-bottom: 1px solid #F0EADC; background: transparent; padding: 8px 14px; display: flex; align-items: center; gap: 12px; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; text-align: left; cursor: pointer">
+        <span style="width: 36px; height: 36px; border-radius: 18px; background: #FCE7B8; color: #6B4A00; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0">AS</span>
+        <span style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 12px; color: #5C6A70; font-weight: 700">Aluno</span><span style="font-size: 15px; font-weight: 800">Ana Souza · Matemática</span></span>
+      </button>
+      <button style="min-height: 52px; border: none; border-bottom: 1px solid #F0EADC; background: transparent; padding: 8px 14px; display: flex; flex-direction: column; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; text-align: left; cursor: pointer">
+        <span style="font-size: 12px; color: #5C6A70; font-weight: 700">Local</span><span style="font-size: 15px; font-weight: 800">Online · valor da aluna</span>
+      </button>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+        <button style="min-height: 52px; border: none; border-right: 1px solid #F0EADC; background: transparent; padding: 8px 14px; display: flex; flex-direction: column; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; text-align: left; cursor: pointer"><span style="font-size: 12px; color: #5C6A70; font-weight: 700">Data</span><span style="font-size: 15px; font-weight: 800">Seg, 26 out</span></button>
+        <button style="min-height: 52px; border: none; background: transparent; padding: 8px 14px; display: flex; flex-direction: column; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; text-align: left; cursor: pointer"><span style="font-size: 12px; color: #5C6A70; font-weight: 700">Início</span><span style="font-size: 15px; font-weight: 800">14:00</span></button>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 12px; color: #5C6A70; font-weight: 700">Duração</span><span style="font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums">{{dur}} min</span></div>
+      <div style="display: flex; gap: 8px">
+        <button onClick="{{minus}}" aria-label="Menos 15 minutos" style="width: 44px; height: 44px; border-radius: 12px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 20px; font-weight: 800; cursor: pointer">−</button>
+        <button onClick="{{plus}}" aria-label="Mais 15 minutos" style="width: 44px; height: 44px; border-radius: 12px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 20px; font-weight: 800; cursor: pointer">+</button>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end"><span style="font-size: 12px; color: #5C6A70; font-weight: 700">Valor</span><span style="font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums">R$ {{value}}</span></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Situação</span>
+      <div role="radiogroup" aria-label="Situação" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+        <sc-for list="{{statuses}}" as="x" hint-placeholder-count="4">
+          <button role="radio" aria-checked="{{x.on}}" onClick="{{x.pick}}" style="height: 40px; border-radius: 12px; border: {{x.border}}; background: {{x.bg}}; color: {{x.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{x.label}}</button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; color: #5C6A70">{{statusHint}}</span>
+      <sc-if value="{{showFee}}" hint-placeholder-val="{{ false }}">
+        <div style="background: #FBE9E7; border-radius: 14px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <div style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 800; color: #8F2B28">{{feeTitle}}</span><span style="font-size: 12px; color: #5C3330">{{feeSub}}</span></div>
+          <button onClick="{{toggleFee}}" aria-pressed="{{feeOn}}" aria-label="{{feeTitle}}" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{feeBg}}; padding: 3px; display: flex; justify-content: {{feeJustify}}; flex-shrink: 0; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 13px; font-weight: 800; color: #5C6A70">Aplicar mudanças em</span>
+      <div role="radiogroup" aria-label="Aplicar mudanças em" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #F3EEE2; border-radius: 14px; padding: 4px; gap: 4px">
+        <sc-for list="{{scopes}}" as="x" hint-placeholder-count="2">
+          <button role="radio" aria-checked="{{x.on}}" onClick="{{x.pick}}" style="height: 40px; border: none; border-radius: 11px; background: {{x.bg}}; color: {{x.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{x.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="lnote" style="font-size: 13px; font-weight: 800; color: #5C6A70">Anotações</label>
+      <input id="lnote" type="text" defaultValue="Revisar equações do 2º grau" style="height: 46px; border-radius: 14px; border: 1px solid #E4DDCD; background: #FFFFFF; padding: 0 14px; font-family: Nunito, system-ui, sans-serif; font-size: 15px; color: #1F2A2E; box-sizing: border-box">
+    </div>
+  </div>
+
+  <div style="padding: 10px 20px 22px; border-top: 1px solid #ECE6D8; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; flex-shrink: 0">
+    <a href="Live.dc.html" style="height: 52px; border-radius: 16px; background: {{accent}}; color: #1F2A2E; font-size: 15px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg>Iniciar aula
+    </a>
+    <a href="LessonDetail.dc.html" style="height: 52px; border-radius: 16px; background: {{primary}}; color: #FFFFFF; font-size: 15px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center">Salvar</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"accent":{"editor":"color","default":"#F2B33D"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const dur = s.dur ?? 60;
+    const status = s.status ?? 'scheduled';
+    const scope = s.scope ?? 'one';
+    const feeOn = s.feeOn ?? true;
+    const money = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const STATUS = [
+      ['scheduled', 'Agendada', 'Conta no previsto da semana.', primary, '#FFFFFF'],
+      ['done', 'Dada', 'Entra no ganho e no saldo da aluna (R$ a receber).', '#3E9D6B', '#FFFFFF'],
+      ['cancelled', 'Cancelada', 'Avisou hoje às 11:00, 3h antes da aula.', '#5C6A70', '#FFFFFF'],
+      ['missed', 'Faltou', 'Não apareceu e não avisou.', '#D64545', '#FFFFFF']
+    ];
+    const cur = STATUS.find((x) => x[0] === status);
+    return {
+      primary: primary,
+      accent: this.props.accent ?? '#F2B33D',
+      dur: dur,
+      value: money(120 * dur / 60),
+      minus: () => this.setState({ dur: Math.max(15, dur - 15) }),
+      plus: () => this.setState({ dur: Math.min(300, dur + 15) }),
+      statuses: STATUS.map(([id, label, hint, color, fg]) => ({
+        label: label, on: id === status,
+        bg: id === status ? color : '#FFFFFF', fg: id === status ? fg : '#1F2A2E',
+        border: id === status ? '2px solid ' + color : '1px solid #E4DDCD',
+        pick: () => this.setState({ status: id })
+      })),
+      statusHint: cur[2],
+      showFee: status === 'cancelled' || status === 'missed',
+      feeOn: feeOn,
+      feeTitle: status === 'missed' ? 'Cobrar a falta' : 'Cobrar cancelamento',
+      feeSub: feeOn
+        ? (status === 'missed' ? 'R$ ' + money(120 * dur / 60) + ' · 100% · regra padrão' : 'R$ ' + money(60 * dur / 60) + ' · 50% · menos de 24h')
+        : 'Dispensado desta vez: não cobra nada',
+      feeBg: feeOn ? '#B93A36' : '#CFC8B8',
+      feeJustify: feeOn ? 'flex-end' : 'flex-start',
+      toggleFee: () => this.setState({ feeOn: !feeOn }),
+      scopes: [['one', 'Só esta aula'], ['next', 'Esta e as próximas']].map(([id, label]) => ({
+        label: label, on: id === scope,
+        bg: id === scope ? '#FFFFFF' : 'transparent', fg: id === scope ? primary : '#5C6A70',
+        pick: () => this.setState({ scope: id })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

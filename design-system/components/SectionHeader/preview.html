@@ -1,0 +1,21 @@
+<!-- @dsCard group="Lists" height=88 -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>SectionHeader — preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap">
+<style>
+  .p { padding: 16px 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .col { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; max-width: 390px; }
+  .phone { max-width: 390px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var T = window.Tutora, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div', { className: 'col' }, h(T.SectionHeader, { title: 'Aulas de hoje', aside: '4 aulas' }), h(T.SectionHeader, { title: 'Próxima aula', aside: 'em 25 min', asideTone: 'primary' })));
+</script>
+</body>
+</html>

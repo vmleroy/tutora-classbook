@@ -1,0 +1,15 @@
+# SegmentedControl
+
+Two to four mutually exclusive options that switch a view or a mode in place.
+
+## Use
+- Modes of one screen (Registrar / Agendar), periods (Mês / Trimestre / Ano), Dia / Semana on Agenda, language and currency in Ajustes.
+- `md` (44px segments) in forms, `sm` (36px) in filters and settings rows.
+
+## Consumer provides
+`options` ({value, label}), `value`, `onChange`, `label` (accessible group name).
+
+## Rules
+- Equal-width segments; labels short enough to fit without wrapping at 390px.
+- Five or more options, or options that filter a list → use Chips.
+- The selected segment is `surface` with `primary` text and `shadow-thumb`; never a primary fill.

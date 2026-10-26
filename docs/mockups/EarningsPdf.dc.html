@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>PDF de ganhos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 595px; height: 842px; background: #FFFFFF; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; box-sizing: border-box; padding: 40px 44px; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 3px solid {{primary}}">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 12px; font-weight: 800; color: {{primary}}; letter-spacing: 1.5px">TUTORA · CONTROLE DE AULAS</span>
+      <span style="font-size: 24px; font-weight: 800">Relatório de ganhos</span>
+      <span style="font-size: 13px; color: #5C6A70">Prof. Victor · Outubro 2026 (01 a 26/10) · alunos, escolas e locais</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+    <div style="background: #FAF7F0; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; color: #5C6A70; font-weight: 700">Aulas</span><span style="font-size: 18px; font-weight: 800">40 · 44h54</span></div>
+    <div style="background: #FAF7F0; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; color: #5C6A70; font-weight: 700">Ganho</span><span style="font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums">R$ 5.020</span></div>
+    <div style="background: #EAF5EE; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; color: #1F5C3C; font-weight: 700">Recebido</span><span style="font-size: 18px; font-weight: 800; color: #1F5C3C; font-variant-numeric: tabular-nums">R$ 1.620</span></div>
+    <div style="background: #FBE9E7; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; color: #8F2B28; font-weight: 700">A receber</span><span style="font-size: 18px; font-weight: 800; color: #8F2B28; font-variant-numeric: tabular-nums">R$ 3.400</span></div>
+  </div>
+
+  <div style="display: flex; flex-direction: column">
+    <span style="font-size: 14px; font-weight: 800; margin-bottom: 8px">Por aluno e por local</span>
+    <div style="display: grid; grid-template-columns: 2fr 1fr 0.8fr 0.9fr 1fr 1fr; padding: 7px 10px; background: {{primary}}; color: #FFFFFF; border-radius: 8px 8px 0 0; font-size: 11px; font-weight: 800">
+      <span>Origem</span><span>Tipo</span><span style="text-align: right">Aulas</span><span style="text-align: right">Horas</span><span style="text-align: right">Ganho</span><span style="text-align: right">A receber</span>
+    </div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 0.8fr 0.9fr 1fr 1fr; padding: 7px 10px; border-bottom: 1px solid #ECE6D8; font-size: 12px; font-variant-numeric: tabular-nums">
+        <span style="font-weight: 700">{{r.name}}</span><span style="color: #5C6A70">{{r.kind}}</span><span style="text-align: right">{{r.count}}</span><span style="text-align: right">{{r.hours}}</span><span style="text-align: right; font-weight: 700">{{r.value}}</span><span style="text-align: right; font-weight: 800; color: {{r.owedColor}}">{{r.owed}}</span>
+      </div>
+    </sc-for>
+    <div style="display: grid; grid-template-columns: 2fr 1fr 0.8fr 0.9fr 1fr 1fr; padding: 8px 10px; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums">
+      <span>Total</span><span></span><span style="text-align: right">40</span><span style="text-align: right">44h54</span><span style="text-align: right">R$ 5.020</span><span style="text-align: right; color: #B93A36">R$ 3.400</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 14px; font-weight: 800">Últimos 6 meses</span>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; align-items: end; height: 120px">
+      <sc-for list="{{months}}" as="m" hint-placeholder-count="6">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+          <span style="font-size: 11px; color: #5C6A70; font-variant-numeric: tabular-nums">{{m.label}}</span>
+          <div style="width: 100%; height: {{m.h}}; border-radius: 6px 6px 2px 2px; background: {{m.color}}"></div>
+          <span style="font-size: 11px; font-weight: 700; color: #5C6A70">{{m.name}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <span style="margin-top: auto; font-size: 11px; color: #5C6A70; text-align: center">Gerado pela Tutora em 26/10/2026, 18:45 · página 1 de 2 (lista de aulas na página 2)</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":595,"height":842}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const primary = this.props.primary ?? '#2E5E4E';
+    const R = [
+      ['Colégio Santa Clara', 'Escola', 19, '15h50', 'R$ 2.400', 'R$ 2.400'],
+      ['Ana Souza', 'Aluna', 6, '6h30', 'R$ 780', 'R$ 240'],
+      ['Turma ENEM', 'Turma', 3, '4h30', 'R$ 540', 'R$ 180'],
+      ['Pedro Lima', 'Aluno', 4, '4h00', 'R$ 480', '—'],
+      ['Salinha Aprender+', 'Salinha', 3, '6h00', 'R$ 360', 'R$ 360'],
+      ['Cursinho Foco', 'Cursinho', 4, '6h40', 'R$ 320', 'R$ 80'],
+      ['Lucas Mendes', 'Aluno', 1, '1h24', 'R$ 140', 'R$ 140']
+    ];
+    const M = [['Mai', 4150], ['Jun', 4300], ['Jul', 3400], ['Ago', 4600], ['Set', 4850], ['Out', 5020]];
+    return {
+      primary: primary,
+      rows: R.map((r) => ({ name: r[0], kind: r[1], count: r[2], hours: r[3], value: r[4], owed: r[5], owedColor: r[5] === '—' ? '#5C6A70' : '#B93A36' })),
+      months: M.map(([name, v], i) => ({ name: name, label: (v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + 'k', h: Math.round(v / 5020 * 84) + 'px', color: i === M.length - 1 ? primary : '#CFE2D9' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

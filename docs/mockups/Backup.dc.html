@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Backup e planilha</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #FAF7F0; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; display: flex; flex-direction: column; overflow: hidden">
+  <header style="padding: 20px 20px 8px; display: flex; align-items: center; gap: 12px; flex-shrink: 0">
+    <a href="Settings.dc.html" aria-label="Voltar" style="width: 44px; height: 44px; border-radius: 22px; background: #F3EEE2; color: #1F2A2E; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+    </a>
+    <h1 style="margin: 0; font-size: 22px; font-weight: 800">Backup e planilha</h1>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 6px 20px 12px; overflow: hidden">
+    <section aria-label="Backup automático" style="background: #FFFFFF; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 10px rgba(31,42,46,0.05)">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 800">Backup automático</span><span style="font-size: 12px; color: #5C6A70">{{autoSub}}</span></div>
+        <button onClick="{{toggleAuto}}" aria-pressed="{{auto}}" aria-label="Backup automático" style="width: 52px; height: 32px; border-radius: 16px; border: none; background: {{autoBg}}; padding: 3px; display: flex; justify-content: {{autoJustify}}; flex-shrink: 0; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF"></span></button>
+      </div>
+      <sc-if value="{{auto}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div role="radiogroup" aria-label="Frequência" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #F3EEE2; border-radius: 12px; padding: 3px; gap: 3px">
+            <sc-for list="{{freqs}}" as="f" hint-placeholder-count="3">
+              <button role="radio" aria-checked="{{f.on}}" onClick="{{f.pick}}" style="height: 36px; border: none; border-radius: 9px; background: {{f.bg}}; color: {{f.fg}}; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">{{f.label}}</button>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; border-top: 1px solid #F0EADC; padding-top: 10px">
+            <span style="width: 32px; height: 32px; border-radius: 10px; background: #E3ECF8; color: #1F5FBF; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></span>
+            <span style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 12px; color: #5C6A70; font-weight: 700">Salvar em</span><span style="font-size: 14px; font-weight: 800">Google Drive › Tutora backups</span></span>
+            <button style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 13px; font-weight: 800; cursor: pointer">Trocar</button>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #F0EADC; padding-top: 10px">
+            <span style="font-size: 14px; font-weight: 700">Guardar os últimos</span>
+            <div style="display: flex; align-items: center; gap: 8px">
+              <button onClick="{{keepMinus}}" aria-label="Menos" style="width: 34px; height: 34px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">−</button>
+              <span style="min-width: 70px; text-align: center; font-size: 15px; font-weight: 800">{{keep}} backups</span>
+              <button onClick="{{keepPlus}}" aria-label="Mais" style="width: 34px; height: 34px; border-radius: 10px; border: none; background: #F3EEE2; color: #1F2A2E; font-size: 18px; font-weight: 800; cursor: pointer">+</button>
+            </div>
+          </div>
+          <span style="font-size: 12px; line-height: 1.4; color: #5C6A70">Você escolhe a pasta uma vez. Pode ser no Google Drive, OneDrive ou no próprio celular. Se o celular estiver sem bateria ou desligado, o backup roda na próxima vez que abrir o app.</span>
+        </div>
+      </sc-if>
+    </section>
+
+    <section aria-label="Agora" style="display: flex; flex-direction: column; gap: 8px">
+      <h2 style="margin: 0 4px; font-size: 13px; font-weight: 800; color: #5C6A70">Fazer agora</h2>
+      <button style="height: 50px; border-radius: 16px; border: none; background: {{primary}}; color: #FFFFFF; font-family: Nunito, system-ui, sans-serif; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>Backup completo (.json)
+      </button>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <button style="height: 46px; border-radius: 14px; border: 1px solid #CDE3D6; background: #EAF5EE; color: #1D6B40; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 800; cursor: pointer">Planilha .xlsx</button>
+        <button style="height: 46px; border-radius: 14px; border: 1px solid #DCD5C6; background: #FFFFFF; color: #1F2A2E; font-family: Nunito, system-ui, sans-serif; font-size: 14px; font-weight: 700; cursor: pointer">Restaurar backup</button>
+      </div>
+    </section>
+
+    <section aria-label="Backups recentes" style="display: flex; flex-direction: column; gap: 6px">
+      <h2 style="margin: 0 4px; font-size: 13px; font-weight: 800; color: #5C6A70">Recentes</h2>
+      <div style="background: #FFFFFF; border-radius: 18px; display: flex; flex-direction: column">
+        <sc-for list="{{recent}}" as="r" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: {{r.line}}">
+            <span style="width: 8px; height: 8px; border-radius: 4px; background: {{r.dot}}; flex-shrink: 0"></span>
+            <span style="display: flex; flex-direction: column; flex-grow: 1"><span style="font-size: 14px; font-weight: 700">{{r.when}}</span><span style="font-size: 12px; color: #5C6A70">{{r.sub}}</span></span>
+            <span style="font-size: 12px; font-weight: 800; color: #5C6A70">{{r.size}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const primary = this.props.primary ?? '#2E5E4E';
+    const auto = s.auto ?? true;
+    const freq = s.freq ?? 'w';
+    const keep = s.keep ?? 5;
+    const NEXT = { d: 'amanhã, 20:00', w: 'dom, 1 nov, 20:00', m: 'dom, 1 nov, 20:00' };
+    return {
+      primary: primary,
+      auto: auto,
+      autoSub: auto ? 'Próximo: ' + NEXT[freq] + ' · último ontem' : 'Desligado · só backup manual',
+      autoBg: auto ? primary : '#CFC8B8',
+      autoJustify: auto ? 'flex-end' : 'flex-start',
+      toggleAuto: () => this.setState({ auto: !auto }),
+      freqs: [['d', 'Todo dia'], ['w', 'Toda semana'], ['m', 'Todo mês']].map(([id, label]) => ({
+        label: label, on: id === freq,
+        bg: id === freq ? '#FFFFFF' : 'transparent', fg: id === freq ? primary : '#5C6A70',
+        pick: () => this.setState({ freq: id })
+      })),
+      keep: keep,
+      keepMinus: () => this.setState({ keep: Math.max(1, keep - 1) }),
+      keepPlus: () => this.setState({ keep: Math.min(30, keep + 1) }),
+      recent: [
+        ['Dom, 25 out · 20:00', 'Automático · Google Drive', '184 KB', '#3E9D6B'],
+        ['Seg, 19 out · 21:10', 'Manual · compartilhado no WhatsApp', '181 KB', '#3E9D6B'],
+        ['Dom, 18 out · 20:00', 'Automático · Google Drive', '179 KB', '#3E9D6B']
+      ].map(([when, sub, size, dot], i, a) => ({ when: when, sub: sub, size: size, dot: dot, line: i === a.length - 1 ? 'none' : '1px solid #F0EADC' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

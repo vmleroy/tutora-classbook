@@ -1,0 +1,56 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Tutora</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;800&amp;display=swap">
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--background); color: var(--ink); font-family: var(--font-sans); overflow: hidden; }
+  .cover { position: relative; height: 288px; overflow: hidden; }
+  .art { position: absolute; top: 0; left: 480px; width: 480px; height: 288px; overflow: hidden; }
+  .art svg { display: block; width: 480px; height: 288px; }
+  .brand { fill: var(--primary); }
+  .pencil { fill: var(--accent); }
+  .tint { fill: var(--accent-soft); }
+  .school { fill: var(--secondary); }
+  .card { rx: var(--radius-2xl); }
+  .small { rx: var(--radius-lg); }
+  .rule { stroke: var(--line-strong); stroke-width: 1; }
+  .cut { stroke: var(--background); stroke-width: 2; }
+  .margin { stroke: var(--danger); stroke-width: 1.5; }
+  .words { position: absolute; left: var(--space-6); bottom: var(--space-6); max-width: 440px; }
+  .name { margin: 0; font-size: 120px; line-height: .92; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+  .tag { margin: var(--space-2) 0 0 6px; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      primary 200×228 slab bled off the top (chalkboard, the identity) · accent 120×96 (pencil, money) · accent-soft 128×184 bleeding off the right (relief tint) · secondary 120×56 (school, small) — about 30% of 960×288
+  arrangement one tall chalkboard slab with satellites, block bottoms on one line at y=208, space-4 gutters
+  pattern     ruled notebook paper, from "the ruled-paper pattern appears on empty states": four line-strong rules at a 56px pitch (2 × space-7) that cut through the blocks in the ground colour, plus one danger hairline as the notebook margin
+  scales      gutters space-4; pitch 2 × space-7; corners radius-2xl on blocks, radius-lg on the small block
+-->
+<line class="rule" x1="0" y1="64" x2="480" y2="64"/>
+<line class="rule" x1="0" y1="120" x2="480" y2="120"/>
+<line class="rule" x1="0" y1="176" x2="480" y2="176"/>
+<line class="rule" x1="0" y1="232" x2="480" y2="232"/>
+<rect class="brand card" x="24" y="-20" width="200" height="228" rx="20"/>
+<rect class="school small" x="240" y="24" width="120" height="56" rx="14"/>
+<rect class="pencil card" x="240" y="112" width="120" height="96" rx="20"/>
+<rect class="tint card" x="376" y="24" width="128" height="184" rx="20"/>
+<path class="cut" d="M24 64H224M240 64H360M376 64H480M24 120H224M240 120H360M376 120H480M24 176H224M240 176H360M376 176H480"/>
+<line class="margin" x1="8" y1="0" x2="8" y2="288"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">Tutora</h1>
+<p class="tag">Controle de aulas para professores e tutores.</p>
+</div>
+</div>
+</body>
+</html>

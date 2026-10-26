@@ -1,0 +1,21 @@
+<!-- @dsCard group="Selection" height=88 -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Switch — preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap">
+<style>
+  .p { padding: 16px 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .col { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; max-width: 390px; }
+  .phone { max-width: 390px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var T = window.Tutora, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div', { className: 'p' }, h(T.Switch, { value: true, label: 'Cronômetro ao vivo' }), h(T.Switch, { value: false, label: 'Lembretes' }), h(T.Switch, { value: true, label: 'Desativado', disabled: true })));
+</script>
+</body>
+</html>

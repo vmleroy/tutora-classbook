@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>PDF do relatório</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2E5E4E}a:hover{color:#234A3D}
+</style>
+</helmet>
+<div style="width: 595px; height: 842px; background: #FFFFFF; font-family: Nunito, system-ui, sans-serif; color: #1F2A2E; box-sizing: border-box; padding: 40px 44px; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 3px solid {{primary}}">
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <span style="font-size: 12px; font-weight: 800; color: {{primary}}; letter-spacing: 1.5px">TUTORA · CONTROLE DE AULAS</span>
+      <span style="font-size: 24px; font-weight: 800">Relatório de aulas</span>
+      <span style="font-size: 13px; color: #5C6A70">Prof. Victor · 01/10/2026 a 26/10/2026</span>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+      <span style="font-size: 12px; color: #5C6A70">Aluna</span>
+      <span style="font-size: 16px; font-weight: 800">Ana Souza</span>
+      <span style="font-size: 12px; color: #5C6A70">Matemática · R$ 120,00/h</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+    <div style="background: #FAF7F0; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; color: #5C6A70; font-weight: 700">Aulas</span><span style="font-size: 18px; font-weight: 800">6 · 6h30</span></div>
+    <div style="background: #FAF7F0; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; color: #5C6A70; font-weight: 700">Total</span><span style="font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums">R$ 780,00</span></div>
+    <div style="background: #EAF5EE; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; color: #1F5C3C; font-weight: 700">Pago</span><span style="font-size: 18px; font-weight: 800; color: #1F5C3C; font-variant-numeric: tabular-nums">R$ 540,00</span></div>
+    <div style="background: #FBE9E7; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column"><span style="font-size: 11px; color: #8F2B28; font-weight: 700">A pagar</span><span style="font-size: 18px; font-weight: 800; color: #8F2B28; font-variant-numeric: tabular-nums">R$ 240,00</span></div>
+  </div>
+
+  <div style="display: flex; flex-direction: column">
+    <span style="font-size: 14px; font-weight: 800; margin-bottom: 8px">Aulas</span>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1.4fr 1fr 1fr; padding: 7px 10px; background: {{primary}}; color: #FFFFFF; border-radius: 8px 8px 0 0; font-size: 12px; font-weight: 800">
+      <span>Data</span><span>Duração</span><span>Local</span><span style="text-align: right">Valor</span><span style="text-align: right">Situação</span>
+    </div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1.4fr 1fr 1fr; padding: 8px 10px; border-bottom: 1px solid #ECE6D8; font-size: 12px; font-variant-numeric: tabular-nums">
+        <span style="font-weight: 700">{{r.day}}</span><span>{{r.dur}}</span><span>Online</span><span style="text-align: right; font-weight: 700">R$ {{r.value}}</span><span style="text-align: right; font-weight: 800; color: {{r.color}}">{{r.status}}</span>
+      </div>
+    </sc-for>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1.4fr 1fr 1fr; padding: 9px 10px; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums">
+      <span>Total</span><span>6h30</span><span></span><span style="text-align: right">R$ 780,00</span><span></span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 14px; font-weight: 800">Pagamentos recebidos</span>
+    <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 8px 10px; background: #FAF7F0; border-radius: 8px"><span>16/10/2026 · Pix · 4 aulas (05 a 15/10)</span><span style="font-weight: 800">R$ 540,00</span></div>
+  </div>
+
+  <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+    <div style="border: 2px dashed #E4DDCD; border-radius: 12px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center">
+      <div style="display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 800">Valor pendente: R$ 240,00</span><span style="font-size: 12px; color: #5C6A70">Aulas de 19/10 e 22/10</span></div>
+      <span style="font-size: 12px; color: #5C6A70">Pix: [SUA CHAVE PIX]</span>
+    </div>
+    <span style="font-size: 11px; color: #5C6A70; text-align: center">Gerado pela Tutora em 26/10/2026, 18:45 · página 1 de 1</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"primary":{"editor":"color","default":"#2E5E4E","options":["#2E5E4E","#2F5C9E","#7A2E3B","#2D7F86"]},"$preview":{"width":595,"height":842}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const rows = [
+      ['05/10/2026', 90, '180,00', true], ['08/10/2026', 60, '120,00', true], ['12/10/2026', 60, '120,00', true],
+      ['15/10/2026', 60, '120,00', true], ['19/10/2026', 60, '120,00', false], ['22/10/2026', 60, '120,00', false]
+    ];
+    return {
+      primary: this.props.primary ?? '#2E5E4E',
+      rows: rows.map((r) => ({ day: r[0], dur: r[1] + ' min', value: r[2], status: r[3] ? 'Pago' : 'A pagar', color: r[3] ? '#1F5C3C' : '#B93A36' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

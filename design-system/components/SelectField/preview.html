@@ -1,0 +1,21 @@
+<!-- @dsCard group="Inputs" height=200 -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>SelectField — preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap">
+<style>
+  .p { padding: 16px 20px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .col { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; max-width: 390px; }
+  .phone { max-width: 390px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var T = window.Tutora, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div', { className: 'col' }, h(T.SelectField, { label: 'Aluno ou turma', value: 'Ana Souza', sub: 'Matemática · Online, Casa', avatar: { initials: 'AS', tag: 'amber' }, actionLabel: 'Trocar' }), h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } }, h(T.SelectField, { label: 'Data', value: 'Hoje, 26 out', icon: 'calendar' }), h(T.SelectField, { label: 'Início', value: '14:00', icon: 'clock' }))));
+</script>
+</body>
+</html>

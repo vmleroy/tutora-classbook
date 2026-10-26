@@ -1,0 +1,10 @@
+# LessonRow
+
+One lesson in a day list: time, tag dot, who and where, and its state or value.
+
+## Consumer provides
+`time`, `tag`, `title` (student or group), `subtitle` (subject · place · duration), and either `status` (Badge) or `trailing` (expected value), `onPress` → Lesson detail.
+
+## Rules
+- Done: success badge with "Concluída" or the earned amount. Missed: danger "Faltou". Cancelled: neutral "Cancelada". Scheduled: expected value in ink-muted.
+- Rows are 56px+ tall with `space-2` between them; swipe actions are not used.
