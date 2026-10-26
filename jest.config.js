@@ -1,5 +1,11 @@
 module.exports = {
   preset: 'jest-expo',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
-  moduleNameMapper: { '^@/(.*)$': '<rootDir>/src/$1' },
+  setupFiles: ['<rootDir>/tests/setup.ts'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    // The package's default entry is ESM (.mjs); Jest loads its CommonJS build instead.
+    '^lucide-react-native$':
+      '<rootDir>/node_modules/lucide-react-native/dist/cjs/lucide-react-native.js',
+  },
 };
