@@ -1,6 +1,6 @@
 # Spec 001: Foundation
 
-Status: ready
+Status: in progress
 Depends on: nothing
 
 ## Goal
