@@ -46,9 +46,23 @@ Read these when the spec points to them, not all up front:
 - Test names carry criterion ids: `it('AC-001-3: …')`.
 - If a spec is ambiguous, write the question under "Open questions" and ask Victor rather than guessing on anything the teacher would see.
 
-## Commands
+## Stack as installed
 
-The app does not exist yet; spec 001 creates it. Once it does:
+- Expo SDK 58, React 19.3, React Native 0.88 (New Architecture is always on, so there is no `newArchEnabled` flag), Expo Router 58 with `src/app` as the routes root and typed routes.
+- NativeWind 4.2.7 with Tailwind CSS 3.4. NativeWind 5 was still a release candidate when the repo was created. `inlineRem: 16` is set in `metro.config.js`.
+- Reanimated 4 with `react-native-worklets`, expo-sqlite + Drizzle ORM (drizzle-kit for migrations), TanStack Query 5, Zustand 5, i18next + react-i18next, culori.
+- Jest 30 through `jest-expo`, React Native Testing Library 14 and fast-check. `better-sqlite3` runs the migration SQL in Node.
+- Expo SDK 58 changed many APIs. Check the versioned docs (`https://docs.expo.dev/versions/v58.0.0/`, and `https://docs.expo.dev/llms.txt` for the index) before writing code against an Expo or Router API. Two examples: in tests `renderRouter` returns a promise, and tabs show only the screens declared in the layout.
+
+## Tooling gotchas
+
+- Add native or Expo packages with `npx expo install <pkg>` so versions match the SDK. Plain JS libraries go through `npm install`.
+- npm runs install scripts only for packages approved in `package.json` under `allowScripts` (esbuild, better-sqlite3, unrs-resolver, fsevents, @parcel/watcher). After adding a package that needs one, run `npm approve-scripts <pkg>` and then `npm rebuild <pkg>`.
+- `react-dom` is pinned to `19.3.0` to match `react`. A newer `react-dom` breaks peer resolution. `react-test-renderer` is not installed: RNTL 14 doesn't need it, and its peer range rejects React 19.3.0.
+- App config is `app.config.ts`, not `app.json`. `android.versionCode` comes from the `TUTORA_VERSION_CODE` env var (default 1) and must grow on every release build. `version` follows the last spec shipped (`1.1.0` = spec 001).
+- `metro.config.js` adds `.sql` to the source extensions so Drizzle migrations are bundled.
+
+## Commands
 
 - `npm run typecheck`, `npm run lint`, `npm test` must all pass before any commit is pushed.
 - `npm run tokens` regenerates `src/ui/theme/tokens.ts` from `design-system/tokens.json`.
