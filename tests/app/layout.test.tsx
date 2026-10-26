@@ -3,8 +3,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Text, View } from 'react-native';
 import { registerCSS, setupAllComponents } from 'react-native-css-interop/test';
 
-import { appCss } from '../../tests/nativewind';
-import RootLayout from './_layout';
+import { appCss } from '../nativewind';
+import RootLayout from '@/app/_layout';
 
 // --- Phone: fonts load on demand, locale is Portuguese, splash is observable. ---
 const mockFonts: { loaded: boolean; resolve: (() => void) | null } = {
@@ -38,7 +38,7 @@ jest.mock('expo-localization', () => ({
 // --- Database: a real SQLite file in Node, behind the app's open function. ---
 const mockState: { savedMode?: 'dark'; failMigration?: boolean } = {};
 jest.mock('@/data/appDatabase', () => {
-  const { tempDatabase, nodeFiles } = jest.requireActual('../../tests/sqliteNode');
+  const { tempDatabase, nodeFiles } = jest.requireActual('../sqliteNode');
   const { prepareDatabase } = jest.requireActual('@/data/db');
   const { migrations } = jest.requireActual('@/data/migrations');
   const repo = jest.requireActual('@/data/repos/settingsRepo');

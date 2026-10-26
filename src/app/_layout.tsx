@@ -51,7 +51,10 @@ export default function RootLayout() {
             <StartupError t={i18n.t} backupPath={failure.backupPath} message={failure.message} />
           ) : (
             <QueryClientProvider client={queryClient}>
-              <Stack screenOptions={{ headerShown: false }} />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="settings" />
+              </Stack>
             </QueryClientProvider>
           )}
         </ThemeProvider>
