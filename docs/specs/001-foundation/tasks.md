@@ -5,7 +5,7 @@ Each task lists the criteria it proves and where the test lives.
 - [x] 1. Create the Expo app with TypeScript strict, Expo Router and a dev client; app config with name, package and versioning. (AC-001-19)
 - [x] 2. ESLint, Prettier, type check scripts; import-boundary rule for `src/domain/`. Test: `tests/boundaries.test.ts`. (AC-001-16, AC-001-19)
 - [x] 3. Jest with `jest-expo`, RNTL and fast-check; `npm test` runs everything in Node. (AC-001-18)
-- [ ] 4. `domain/money.ts` with property tests. Test: `src/domain/money.test.ts`. (AC-001-17)
+- [x] 4. `domain/money.ts` with property tests. Test: `src/domain/money.test.ts`. (AC-001-17)
 - [ ] 5. Theme tokens and `resolvePalette` for Quadro-negro light and dark. Test: `src/domain/theme/palette.test.ts`. (AC-001-8)
 - [ ] 6. NativeWind setup, `tailwind.config.js` with variable colors, `ThemeProvider` with `vars()`, Nunito fonts, base components; hex-color lint check; decide the Large text approach. Tests: `src/ui/theme/ThemeProvider.test.tsx`, `tests/no-hex.test.ts`. (AC-001-9, AC-001-10, AC-001-11)
 - [ ] 7. i18n with typed keys, pt-BR and en files, phone-language detection on first run. Test: `src/i18n/i18n.test.ts`. (AC-001-5, AC-001-6, AC-001-7)
