@@ -1,5 +1,5 @@
-// Every class name is a design-system token name; values come from design-system/tokens.json.
-const tokens = require('./design-system/tokens.json');
+// Every class name is a design-system token name; values come from src/ui/theme/tokens.json.
+const tokens = require('./src/ui/theme/tokens.json');
 
 const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 const px = (value) => value;

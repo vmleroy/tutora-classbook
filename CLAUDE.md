@@ -30,8 +30,8 @@ Read these when the spec points to them, not all up front:
 
 - [`docs/product.md`](docs/product.md): features, screens, flows, data model, visual identity.
 - [`docs/architecture.md`](docs/architecture.md): stack, layers, state, schema, money/FX/time rules, libraries, testing pyramid, build.
-- [`docs/design-system/`](docs/design-system/): `README.md` (usage rules), `Tailwind.md`, `Theming.md` and `components/<Name>/README.md` (guidelines per component).
-- [`design-system/`](design-system/): the non-Markdown sources. `tokens.json` (source of all colors, type, spacing), `components/index.d.ts` (props contract for the 30 components), and `components/bundle.js` with the `preview.html` files, a web reference implementation to port, not app code.
+- [`docs/design-system/`](docs/design-system/): `README.md` (usage rules, primitives, shared types), `Tailwind.md`, `Theming.md` and `components/<Name>/README.md` (rules and props per component).
+- `src/ui/` is the design system itself: `theme/tokens.json` (source of all colors, type, spacing), the theme code and the components. There is no separate reference implementation; the dev gallery `/dev/components` is the live preview.
 - [`docs/mockups/`](docs/mockups/): one HTML file per screen with the exact copy, layout and sample data.
 
 ## Rules that are easy to get wrong
@@ -41,7 +41,7 @@ Read these when the spec points to them, not all up front:
 - Screens never touch `src/data/`. Every write is a use case in one transaction.
 - No hex colors, raw font sizes or raw spacing in `src/app` or `src/ui/components`; use token classes (`bg-primary`, `text-ink-muted`, `p-4`). Mockup hex values map to tokens.
 - Every user-facing string goes through i18n with keys in both `src/i18n/pt-BR.json` and `src/i18n/en.json`.
-- New UI pieces come from the design system's 30 components. If a screen needs a new component, add it to the design system first: tokens and preview in `design-system/`, guideline README in `docs/design-system/components/<Name>/`.
+- New UI pieces come from the design system's 30 components. If a screen needs a new component, add it to the design system first: the component in `src/ui/components/`, its guideline with props in `docs/design-system/components/<Name>/README.md`, and an entry in the dev gallery.
 - All Markdown documentation lives under `docs/`. Only `README.md`, `CLAUDE.md` and `.claude/commands/` stay at the root.
 - Test names carry criterion ids: `it('AC-001-3: …')`.
 - If a spec is ambiguous, write the question under "Open questions" and ask Victor rather than guessing on anything the teacher would see.
@@ -65,7 +65,7 @@ Read these when the spec points to them, not all up front:
 ## Commands
 
 - `npm run typecheck`, `npm run lint`, `npm test` must all pass before any commit is pushed.
-- `npm run tokens` regenerates `src/ui/theme/tokens.ts` from `design-system/tokens.json`.
+- `npm run tokens` regenerates `src/ui/theme/tokens.ts` from `src/ui/theme/tokens.json`.
 - `npx expo run:android` for a dev build; Maestro flows live in `.maestro/`.
 
 ## Git

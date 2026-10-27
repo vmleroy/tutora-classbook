@@ -8,3 +8,13 @@ Initials on the student's color tag; there are no photos in Tutora.
 ## Rules
 - The tag is chosen when the student is created (next unused color) and reused everywhere: avatar, dots, agenda blocks, report rows.
 - Decorative for screen readers: the name next to it is the label.
+
+## Props
+
+```ts
+interface AvatarProps {
+  initials: string;
+  tag?: Tag;
+  size?: 'sm' | 'md' | 'lg';
+}
+```

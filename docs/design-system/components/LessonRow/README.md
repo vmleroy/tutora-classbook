@@ -8,3 +8,17 @@ One lesson in a day list: time, tag dot, who and where, and its state or value.
 ## Rules
 - Done: success badge with "Concluída" or the earned amount. Missed: danger "Faltou". Cancelled: neutral "Cancelada". Scheduled: expected value in ink-muted.
 - Rows are 56px+ tall with `space-2` between them; swipe actions are not used.
+
+## Props
+
+```ts
+interface LessonRowProps {
+  time: string;
+  tag: Tag;
+  title: string;
+  subtitle?: string;
+  status?: { tone: BadgeProps['tone']; label: string };
+  trailing?: string;
+  onPress?: () => void;
+}
+```

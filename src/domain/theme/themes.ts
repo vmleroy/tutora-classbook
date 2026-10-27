@@ -1,4 +1,4 @@
-// Quadro-negro token sets, copied from design-system/tokens.json.
+// Quadro-negro token sets, copied from src/ui/theme/tokens.json.
 // Spec 002 replaces this file with tokens generated from that file for all four themes.
 
 export type TokenName =

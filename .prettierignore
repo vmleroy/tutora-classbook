@@ -3,6 +3,6 @@ android
 ios
 .expo
 coverage
-design-system
 docs
 package-lock.json
+src/ui/theme/tokens.json

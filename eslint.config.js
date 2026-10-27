@@ -13,7 +13,6 @@ module.exports = defineConfig([
       'ios/',
       'dist/',
       'coverage/',
-      'design-system/',
       'expo-env.d.ts',
     ],
   },

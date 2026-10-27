@@ -1,4 +1,4 @@
-import tokens from '../../../design-system/tokens.json';
+import tokens from './tokens.json';
 
 const px = (name: string) => parseFloat(tokens.size.tokens.find((t) => t.name === name)!.value);
 const opacityOf = (name: string) =>

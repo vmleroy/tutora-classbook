@@ -22,3 +22,18 @@ Sizes: `sm` 36px (in rows and sheets), `md` 48px (default), `lg` 56px (the one b
 - Never two `primary` or two `accent` buttons side by side; pair `outline` + `primary` (1fr : 2fr in sheets).
 - `loading` keeps the label and disables the button; never hide the label.
 - NativeWind: `Pressable` with `tv()` variants, e.g. `bg-primary text-on-primary rounded-lg h-12 px-4`.
+
+## Props
+
+```ts
+interface ButtonProps {
+  variant?: 'primary' | 'accent' | 'outline' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  icon?: IconName;
+  fullWidth?: boolean;
+  loading?: boolean;
+  disabled?: boolean;
+  onPress?: () => void;
+  children: React.ReactNode;
+}
+```

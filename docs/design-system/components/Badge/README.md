@@ -8,3 +8,13 @@ Short status word on a tinted pill: paid, owed, live, school, group, cancelled.
 ## Rules
 - The word carries the meaning; color only reinforces it, so status is readable in grayscale.
 - One badge per row. Amounts in badges are compact ("Deve R$ 240").
+
+## Props
+
+```ts
+interface BadgeProps {
+  tone?: 'neutral' | 'success' | 'danger' | 'accent' | 'secondary' | 'violet';
+  icon?: IconName;
+  children: React.ReactNode;
+}
+```

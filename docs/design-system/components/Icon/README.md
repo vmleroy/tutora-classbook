@@ -10,3 +10,16 @@ Line icons at 24-unit grid, 2px round strokes, drawn in the current text color.
 ## Do / Don't
 - Do color icons with text tokens (`text-ink`, `text-primary`, `text-on-primary`).
 - Don't use emoji as icons or mix filled and outline icons, except `play`, which is filled.
+
+## Props
+
+```ts
+interface IconProps {
+  name: IconName;
+  size?: number;
+  strokeWidth?: number;
+  label?: string;
+  /** Color token. React Native has no currentColor, so the caller names the text color. Default `ink`. */
+  tone?: TokenName;
+}
+```

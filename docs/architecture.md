@@ -249,7 +249,7 @@ docs/specs/
 **Suggested spec order** (each one shippable on its own APK):
 
 1. Foundation: Expo app, router with 5 empty tabs, theme tokens, i18n, SQLite + migrations, CI
-2. Design system: tokens for 4 themes × light/dark, 30 shared components, custom colors, Large text ([`docs/design-system/`](design-system/), published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei))
+2. Design system: tokens for 4 themes × light/dark, 30 shared components, custom colors, Large text (code in `src/ui`, documented in [`docs/design-system/`](design-system/), published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei))
 3. Money and FX: `Money`, rounding, conversion, PTAX fetch with fallback and manual mode
 4. Places and students: built-in places, CRUD, student–place links, price resolution
 5. Schedule: recurring rules, 8-week generation, this-only vs this-and-following edits, Agenda and Today

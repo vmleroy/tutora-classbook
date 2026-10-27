@@ -1,4 +1,4 @@
-import tokens from '../../../design-system/tokens.json';
+import tokens from './tokens.json';
 
 export type TypeStyleName =
   | 'money-display'
