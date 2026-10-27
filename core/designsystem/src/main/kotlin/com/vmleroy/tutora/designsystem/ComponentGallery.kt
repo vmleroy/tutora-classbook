@@ -1,0 +1,369 @@
+package com.vmleroy.tutora.designsystem
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import com.vmleroy.tutora.designsystem.components.AgendaBlock
+import com.vmleroy.tutora.designsystem.components.AlertBanner
+import com.vmleroy.tutora.designsystem.components.AlertTone
+import com.vmleroy.tutora.designsystem.components.Avatar
+import com.vmleroy.tutora.designsystem.components.AvatarSize
+import com.vmleroy.tutora.designsystem.components.Badge
+import com.vmleroy.tutora.designsystem.components.BadgeTone
+import com.vmleroy.tutora.designsystem.components.BlockState
+import com.vmleroy.tutora.designsystem.components.BottomSheet
+import com.vmleroy.tutora.designsystem.components.Button
+import com.vmleroy.tutora.designsystem.components.ButtonVariant
+import com.vmleroy.tutora.designsystem.components.Card
+import com.vmleroy.tutora.designsystem.components.CardElevation
+import com.vmleroy.tutora.designsystem.components.Checkbox
+import com.vmleroy.tutora.designsystem.components.Chip
+import com.vmleroy.tutora.designsystem.components.ControlSize
+import com.vmleroy.tutora.designsystem.components.DurationField
+import com.vmleroy.tutora.designsystem.components.EarningsStat
+import com.vmleroy.tutora.designsystem.components.EarningsSummary
+import com.vmleroy.tutora.designsystem.components.EmptyState
+import com.vmleroy.tutora.designsystem.components.Fab
+import com.vmleroy.tutora.designsystem.components.HeaderAction
+import com.vmleroy.tutora.designsystem.components.HeaderVariant
+import com.vmleroy.tutora.designsystem.components.Icon
+import com.vmleroy.tutora.designsystem.components.IconButton
+import com.vmleroy.tutora.designsystem.components.IconButtonVariant
+import com.vmleroy.tutora.designsystem.components.IconName
+import com.vmleroy.tutora.designsystem.components.LessonRow
+import com.vmleroy.tutora.designsystem.components.ListGroup
+import com.vmleroy.tutora.designsystem.components.ListRow
+import com.vmleroy.tutora.designsystem.components.Money
+import com.vmleroy.tutora.designsystem.components.MoneyField
+import com.vmleroy.tutora.designsystem.components.MoneySize
+import com.vmleroy.tutora.designsystem.components.MoneyTone
+import com.vmleroy.tutora.designsystem.components.ProgressBar
+import com.vmleroy.tutora.designsystem.components.RowTrailing
+import com.vmleroy.tutora.designsystem.components.ScreenHeader
+import com.vmleroy.tutora.designsystem.components.SectionHeader
+import com.vmleroy.tutora.designsystem.components.SegmentedControl
+import com.vmleroy.tutora.designsystem.components.SelectField
+import com.vmleroy.tutora.designsystem.components.Stepper
+import com.vmleroy.tutora.designsystem.components.Switch
+import com.vmleroy.tutora.designsystem.components.TabBar
+import com.vmleroy.tutora.designsystem.components.TabItem
+import com.vmleroy.tutora.designsystem.components.Tag
+import com.vmleroy.tutora.designsystem.components.TagDot
+import com.vmleroy.tutora.designsystem.components.TextField
+import com.vmleroy.tutora.designsystem.components.TileTone
+import com.vmleroy.tutora.designsystem.components.TimerRing
+import com.vmleroy.tutora.designsystem.components.WeekDay
+import com.vmleroy.tutora.designsystem.components.WeekStrip
+import com.vmleroy.tutora.designsystem.tokens.TutoraTokens.Size
+import com.vmleroy.tutora.designsystem.tokens.TutoraTokens.Spacing
+import com.vmleroy.tutora.domain.ThemeMode
+import com.vmleroy.tutora.domain.theme.themeIds
+
+/** The 30 components, in a section each. */
+val galleryComponents =
+    listOf(
+        "Icon",
+        "Button",
+        "IconButton",
+        "Fab",
+        "SegmentedControl",
+        "Chip",
+        "Switch",
+        "Checkbox",
+        "Stepper",
+        "TextField",
+        "SelectField",
+        "Badge",
+        "Avatar",
+        "TagDot",
+        "Money",
+        "ProgressBar",
+        "Card",
+        "EarningsSummary",
+        "SectionHeader",
+        "LessonRow",
+        "ListGroup",
+        "ListRow",
+        "AlertBanner",
+        "ScreenHeader",
+        "TabBar",
+        "WeekStrip",
+        "AgendaBlock",
+        "BottomSheet",
+        "EmptyState",
+        "TimerRing",
+    )
+
+/**
+ * The developer screen (AC-002-15): every component in every variant, with theme, mode and
+ * text-size switchers. Opened from the debug build only.
+ */
+@Composable
+fun ComponentGallery(initialTheme: String = "quadro") {
+    var theme by remember { mutableStateOf(initialTheme) }
+    var mode by remember { mutableStateOf(ThemeMode.LIGHT) }
+    var large by remember { mutableStateOf(false) }
+    TutoraTheme(themeId = theme, mode = mode, largeText = large) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(TutoraTheme.colors.background)
+                .safeDrawingPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(Spacing.s5)
+                .testTag("component-gallery"),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s5),
+        ) {
+            SegmentedControl(themeIds.map { it to it }, theme, { theme = it }, "Theme", size = ControlSize.SM)
+            SegmentedControl(
+                listOf(ThemeMode.LIGHT to "Light", ThemeMode.DARK to "Dark"),
+                mode,
+                { mode = it },
+                "Mode",
+                size = ControlSize.SM,
+            )
+            SegmentedControl(listOf(false to "Normal", true to "Large"), large, { large = it }, "Text", size = ControlSize.SM)
+            GallerySections()
+        }
+    }
+}
+
+@Composable
+private fun Section(
+    name: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(Modifier.testTag("section-$name"), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        Text(name, style = TutoraTheme.type.overline, color = TutoraTheme.colors.inkMuted)
+        content()
+    }
+}
+
+@Composable
+fun GallerySections() {
+    var segment by remember { mutableStateOf("mes") }
+    var chip by remember { mutableStateOf(true) }
+    var switch by remember { mutableStateOf(true) }
+    var check by remember { mutableStateOf(true) }
+    var minutes by remember { mutableLongStateOf(60L) }
+    var cents by remember { mutableLongStateOf(12_000L) }
+    var name by remember { mutableStateOf("") }
+    var day by remember { mutableIntStateOf(2) }
+    var sheet by remember { mutableStateOf(false) }
+    val tags = Tag.entries
+    Section("Icon") { FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) { IconName.entries.forEach { Icon(it) } } }
+    Section("Button") {
+        ButtonVariant.entries.forEach { Button(it.name.lowercase(), {}, variant = it) }
+        Button("Salvar", {}, size = ControlSize.LG, icon = IconName.CHECK, fullWidth = true)
+        Button("Carregando", {}, loading = true)
+        Button("Desabilitado", {}, enabled = false)
+    }
+    Section("IconButton") { FlowRow { IconButtonVariant.entries.forEach { IconButton(IconName.PLUS, it.name, {}, variant = it) } } }
+    Section("Fab") { Fab({}) }
+    Section("SegmentedControl") {
+        SegmentedControl(listOf("mes" to "Mês", "tri" to "Trimestre", "ano" to "Ano"), segment, { segment = it }, "Período")
+        SegmentedControl(listOf("dia" to "Dia", "semana" to "Semana"), "dia", {}, "Visão", size = ControlSize.SM)
+    }
+    Section("Chip") {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            Chip("Online", chip, { chip = !chip })
+            Chip("Casa do Aluno", false, {})
+        }
+    }
+    Section("Switch") {
+        Switch(switch, { switch = it }, "Cronômetro")
+        Switch(false, {}, "Desligado", enabled = false)
+    }
+    Section("Checkbox") { Checkbox("Incluir pagamentos", check, { check = it }) }
+    Section("Stepper") {
+        Stepper(minutes, { minutes = it }, step = 15, min = 15, max = 300, format = { "$it min" })
+        Stepper(500, {}, step = 500, size = ControlSize.SM, format = { "R$ ${it / 100},00" }, onPressValue = {}, valueLabel = "Valor")
+    }
+    Section("TextField") {
+        TextField("Nome", name, { name = it }, placeholder = "Ex.: Ana Souza", helper = "Como aparece nos relatórios")
+        TextField("Telefone", "(11) 9", {}, error = "Número incompleto")
+        MoneyField("Valor da aula", cents, { cents = it })
+        DurationField("Duração", 90, {})
+    }
+    Section("SelectField") {
+        SelectField("Ana Souza", {}, label = "Aluno", sub = "Matemática", avatar = "AS" to Tag.AMBER, actionLabel = "Trocar")
+        SelectField("Seg, 26 out", {}, label = "Data", icon = IconName.CALENDAR)
+    }
+    Section("Badge") {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+        ) { BadgeTone.entries.forEach { Badge(it.name.lowercase(), tone = it) } }
+    }
+    Section("Avatar") {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+        ) { AvatarSize.entries.forEach { Avatar("AS", Tag.VIOLET, size = it) } }
+    }
+    Section("TagDot") {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            tags.forEach { TagDot(it) }
+            TagDot(Tag.RED, small = true)
+        }
+    }
+    Section("Money") {
+        Money(4737, size = MoneySize.DISPLAY, tone = MoneyTone.EARNINGS)
+        Money(24_000, size = MoneySize.XL, tone = MoneyTone.EARNINGS)
+        Money(18_000, size = MoneySize.LG)
+        Money(-56_000, size = MoneySize.MD, tone = MoneyTone.OWED, compact = true)
+        Money(12_000, size = MoneySize.SM, tone = MoneyTone.PAID, showSign = true)
+    }
+    Section("ProgressBar") {
+        ProgressBar(0.63f, "Ganho em relação ao previsto")
+        ProgressBar(0.3f, "Fino", thin = true)
+    }
+    Section("Card") {
+        CardElevation.entries.forEach { e ->
+            Card(elevation = e, label = e.name) { Text(e.name, style = TutoraTheme.type.body) }
+        }
+    }
+    Section("EarningsSummary") {
+        EarningsSummary(
+            "Ganho hoje",
+            24_000,
+            expectedCents = 38_000,
+            expectedLabel = "de R$ 380,00 previstos",
+            stats =
+                listOf(
+                    EarningsStat("Semana", 118_000),
+                    EarningsStat("Outubro", 502_000),
+                    EarningsStat("Alunos devem", 56_000, MoneyTone.OWED),
+                ),
+        )
+    }
+    Section("SectionHeader") {
+        SectionHeader("Aulas de hoje", aside = "4 aulas")
+        SectionHeader("Pagamentos", aside = "Ver todos", asidePrimary = true)
+    }
+    Section("LessonRow") {
+        LessonRow("10:00", Tag.GREEN, "Pedro Lima", subtitle = "Física · Presencial", trailing = "+ R$ 120", onClick = {})
+        LessonRow("08:00", Tag.BLUE, "9º ano B", subtitle = "Colégio Santa Clara", status = BadgeTone.SUCCESS to "Concluída", onClick = {})
+    }
+    Section("ListGroup") {
+        ListGroup(
+            title = "Seus dados",
+            rows =
+                listOf(
+                    { ListRow("Backup e planilha", subtitle = "Automático", icon = IconName.CLOUD, onClick = {}) },
+                    { ListRow("Cronômetro ao vivo", subtitle = "Desligado", icon = IconName.CLOCK, trailing = RowTrailing.SWITCH) },
+                ),
+        )
+    }
+    Section("ListRow") {
+        TileTone.entries.forEach { ListRow(it.name.lowercase(), icon = IconName.PIN, iconTone = it, onClick = {}) }
+        ListRow("Ana Souza", subtitle = "Matemática", avatar = "AS" to Tag.VIOLET, badge = BadgeTone.DANGER to "Deve", onClick = {})
+        ListRow("Sem seta", trailing = RowTrailing.NONE)
+    }
+    Section("AlertBanner") {
+        AlertTone.entries.forEach { AlertBanner("3 alunos com pagamento pendente", tone = it, value = "R$ 560", onClick = {}) }
+    }
+    Section("ScreenHeader") {
+        HeaderVariant.entries.forEach { v ->
+            ScreenHeader(
+                v.name.lowercase(),
+                variant = v,
+                eyebrow = "Segunda",
+                actions =
+                    listOf(
+                        HeaderAction(IconName.PLUS, "Nova aula", IconButtonVariant.ACCENT) {
+                        },
+                    ),
+                onBack =
+                    if (v ==
+                        HeaderVariant.PUSH
+                    ) {
+                        ({})
+                    } else {
+                        null
+                    },
+            )
+        }
+    }
+    Section("TabBar") {
+        TabBar(
+            listOf(
+                TabItem("today", "Hoje", IconName.HOME),
+                TabItem("schedule", "Agenda", IconName.CALENDAR),
+                TabItem("registry", "Cadastro", IconName.USERS),
+                TabItem("earnings", "Ganhos", IconName.WALLET),
+                TabItem("settings", "Ajustes", IconName.GEAR),
+            ),
+            active = "today",
+            onSelect = {},
+        )
+    }
+    Section("WeekStrip") {
+        WeekStrip(
+            listOf("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom").mapIndexed { i, w ->
+                WeekDay(
+                    w,
+                    26 + i,
+                    if (i % 2 ==
+                        0
+                    ) {
+                        tags[i % tags.size]
+                    } else {
+                        null
+                    },
+                )
+            },
+            selected = day,
+            onSelect = { day = it },
+            today = 0,
+        )
+    }
+    Section("AgendaBlock") {
+        BlockState.entries.forEach {
+            AgendaBlock(Tag.GREEN, "Ana Souza", subtitle = "Matemática", state = it, height = Size.agendaHour, onClick = {})
+        }
+    }
+    Section("BottomSheet") {
+        Button("Abrir folha", { sheet = true }, variant = ButtonVariant.OUTLINE)
+        if (sheet) {
+            BottomSheet(
+                "Remover aula?",
+                { sheet = false },
+                subtitle = "Isso não pode ser desfeito.",
+                actions =
+                    listOf({ m -> Button("Cancelar", { sheet = false }, m, variant = ButtonVariant.OUTLINE) }, { m ->
+                        Button("Remover", {
+                            sheet =
+                                false
+                        }, m, variant = ButtonVariant.DANGER)
+                    }),
+            )
+        }
+    }
+    Section("EmptyState") {
+        EmptyState(
+            "Nenhuma aula hoje",
+            icon = IconName.CALENDAR,
+            body = "As aulas do dia aparecem aqui.",
+            action = { Button("Nova aula", {}) },
+        )
+    }
+    Section("TimerRing") {
+        Column(Modifier.background(TutoraTheme.colors.header).padding(Spacing.s4)) { TimerRing("47:12", 0.78f, caption = "de 60 min") }
+    }
+}

@@ -3,8 +3,10 @@ package com.vmleroy.tutora.data
 import com.vmleroy.tutora.domain.Language
 import com.vmleroy.tutora.domain.Settings
 import com.vmleroy.tutora.domain.ThemeMode
+import com.vmleroy.tutora.domain.theme.CustomPart
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.json.JSONObject
 
 /** Settings as stored rows: one key per field, the value as JSON text. */
 class SettingsRepository(
@@ -42,10 +44,19 @@ class SettingsRepository(
                 "theme_id" to quote(s.themeId),
                 "theme_mode" to quote(s.themeMode.key),
                 "setup_done" to s.setupDone.toString(),
-                "custom_colors" to "{}",
+                "custom_colors" to JSONObject(s.customColors.mapKeys { it.key.key }).toString(),
                 "text_scale" to quote(s.textScale),
                 "show_default_places" to s.showDefaultPlaces.toString(),
             ).map { (k, v) -> SettingRow(k, v, now) }
+
+        private fun customColors(json: String): Map<CustomPart, String> {
+            val o = JSONObject(json)
+            return o
+                .keys()
+                .asSequence()
+                .mapNotNull { k -> CustomPart.fromKey(k)?.let { it to o.getString(k) } }
+                .toMap()
+        }
 
         fun toSettings(rows: List<SettingRow>): Settings {
             val v = rows.associate { it.key to it.value }
@@ -56,6 +67,7 @@ class SettingsRepository(
                 setupDone = v["setup_done"] == "true",
                 textScale = v["text_scale"]?.let(::unquote) ?: "normal",
                 showDefaultPlaces = v["show_default_places"] != "false",
+                customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
             )
         }
     }

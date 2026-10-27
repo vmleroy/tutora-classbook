@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ds_decrease">Diminuir</string>
+    <string name="ds_increase">Aumentar</string>
+    <string name="ds_close">Fechar</string>
+    <string name="ds_back">Voltar</string>
+    <string name="ds_next">Próxima</string>
+    <string name="ds_done">Concluída</string>
+    <string name="ds_week_days">Dias da semana</string>
+    <string name="ds_new_lesson">Nova aula</string>
+    <string name="ds_loading">Carregando</string>
+    <string name="ds_duration_invalid">Use hh:mm, até %1$s</string>
+</resources>

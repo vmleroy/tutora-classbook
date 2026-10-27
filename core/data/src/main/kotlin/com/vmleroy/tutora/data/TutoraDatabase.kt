@@ -34,9 +34,24 @@ interface SettingsDao {
     suspend fun upsert(rows: List<SettingRow>)
 }
 
-@Database(entities = [SettingRow::class], version = TutoraDatabase.VERSION, exportSchema = true)
+@Database(
+    entities = [
+        SettingRow::class, PlaceRow::class, StudentRow::class, LinkRow::class, GroupRow::class, MemberRow::class,
+        RuleRow::class, SkipRow::class, LessonRow::class,
+    ],
+    version = TutoraDatabase.VERSION,
+    exportSchema = true,
+)
 abstract class TutoraDatabase : RoomDatabase() {
     abstract fun settings(): SettingsDao
+
+    abstract fun places(): PlaceDao
+
+    abstract fun students(): StudentDao
+
+    abstract fun groups(): GroupDao
+
+    abstract fun schedule(): ScheduleDao
 
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
