@@ -7,7 +7,7 @@
 - [x] 5. Foundations and actions: Icon, Button, IconButton, Fab. (AC-002-10 to AC-002-12)
 - [x] 6. Selection and inputs: SegmentedControl, Chip, Switch, Checkbox, Stepper, TextField, SelectField.
 - [x] 7. Display: Badge, Avatar, TagDot, Money, ProgressBar, Card, EarningsSummary. Money locale tests. (AC-002-13)
-- [ ] 8. Lists and navigation: SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner, ScreenHeader, TabBar, WeekStrip, AgendaBlock.
+- [x] 8. Lists and navigation: SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner, ScreenHeader, TabBar, WeekStrip, AgendaBlock.
 - [ ] 9. Feedback: BottomSheet, EmptyState, TimerRing.
 - [ ] 10. Lint rule against raw colors, font sizes and spacing. (AC-002-14)
 - [ ] 11. Developer component screen with theme and mode switcher; Maestro screenshot flow with Large text. (AC-002-15, AC-002-16)

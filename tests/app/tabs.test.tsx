@@ -7,12 +7,12 @@ const tabNames = (language: 'pt' | 'en') =>
     ? ['Hoje', 'Agenda', 'Alunos', 'Locais', 'Ganhos']
     : ['Today', 'Schedule', 'Students', 'Places', 'Earnings'];
 
-// Bottom tab buttons carry testID tab-<route> and the tab name as their label.
+// Bottom tabs have the tab role and the tab name as their label.
 function tabBar() {
-  return screen.getAllByTestId(/^tab-/).map((tab) => tab.props.accessibilityLabel as string);
+  return screen.getAllByRole('tab').map((tab) => tab.props.accessibilityLabel as string);
 }
 
-const tab = (name: string) => screen.getByRole('button', { name });
+const tab = (name: string) => screen.getByRole('tab', { name });
 
 describe('tabs', () => {
   beforeEach(() => {
