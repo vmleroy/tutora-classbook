@@ -11,4 +11,4 @@
 - [x] 9. Feedback: BottomSheet, EmptyState, TimerRing.
 - [x] 10. Lint rule against raw colors, font sizes and spacing. (AC-002-14)
 - [ ] 11. Developer component screen with theme and mode switcher; Maestro screenshot flow with Large text. (AC-002-15, AC-002-16)
-- [ ] 12. Reduce-motion handling in animated components. (AC-002-17)
+- [x] 12. Reduce-motion handling in animated components. (AC-002-17)
