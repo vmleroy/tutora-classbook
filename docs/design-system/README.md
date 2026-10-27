@@ -50,6 +50,9 @@ Thirty components cover every mockup screen. They are grouped as Foundations (Ic
 
 ## In code
 
-The design system is the `:core:designsystem` module; there is no separate reference implementation. Tokens come from [`design/tokens.json`](../../design/tokens.json), generated into Kotlin. Spec 002 is re-planned for Compose and defines the module's layout, the `TutoraTheme` API and each component's parameters.
+The design system is the `:core:designsystem` module; there is no separate reference implementation.
 
-The guidelines in `components/<Name>/README.md` keep their rules. Their **Props** blocks still show the TypeScript props of the first (Expo) version: read them as the list of options each component offers until spec 002 rewrites them as Compose parameters.
+- **Tokens:** generated on every build from [`design/tokens.json`](../../design/tokens.json) into `TutoraTokens` (spacing, radius, size, opacity, type) and `TutoraColors`. The palette is resolved by the domain (`resolvePalette`), so custom colors and dark mode follow the Theming rules.
+- **Theme:** `TutoraTheme(themeId, mode, custom, largeText)`. Read colors as `TutoraTheme.colors.<token>` and type as `TutoraTheme.type.<style>`; never a raw color, dp or sp in screens or components (a source check fails the build).
+- **Components:** `components/` holds the 30 composables, grouped by family. Their Kotlin signatures are the reference for parameters. The **Props** blocks in each guideline still show the first (Expo) version's TypeScript; the options are the same, and the names map one to one (`onPress` → `onClick`, `children` → content or text). `TextField`'s kinds are `TextField`, `MoneyField` and `DurationField`.
+- **Gallery:** `ComponentGallery`, opened in debug builds with `adb shell am start -n com.vmleroy.tutora.app/.DevComponentsActivity`.

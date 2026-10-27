@@ -65,6 +65,9 @@ Read these when the spec points to them, not all up front:
 - The Compose test rule pulls Espresso 3.5, which crashes on Android 37; modules with UI tests depend on `espresso-core` 3.7.0 explicitly.
 - Design tokens are generated from `design/tokens.json` by `:core:designsystem:generateTutoraTokens` into `build/generated`; they are never committed.
 - Composable functions are named like types; `.editorconfig` tells ktlint so.
+- Room emits and writes on its own IO thread, which Compose's `waitForIdle` does not wait for. Screen tests use `Harness.settle()` / `awaitDb()` (real short sleeps) before looking; without them the tests are flaky.
+- Screens read Flows and call use cases through `LocalServices` (`app/state/AppServices`), never `:core:data`; a source check enforces it.
+- The app's copy for specs 003–005 is in `strings_features.xml` (both languages); Portuguese plurals need `one`, `many` and `other`.
 
 ## Commands
 

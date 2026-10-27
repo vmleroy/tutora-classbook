@@ -1,6 +1,6 @@
 # Spec 002: Design system
 
-Status: ready (Kotlin rebuild: re-plan)
+Status: done
 Depends on: 001 Foundation
 Source of truth: the design-system code (tokens in `design/tokens.json`, the components) and [`docs/design-system/`](../../design-system/) (usage rules, component guidelines and props), also published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei)
 
@@ -35,12 +35,12 @@ Every screen in Tutora is built from one set of tokens and 30 shared components,
 
 ### Components
 
-- **AC-002-10.** The 30 components listed in the design system exist in `src/ui/components/` with the names and props listed in each component's guideline (`docs/design-system/components/<Name>/README.md`, section Props).
+- **AC-002-10.** The 30 components listed in the design system exist in the design-system module with the names and options listed in each component's guideline (`docs/design-system/components/<Name>/README.md`).
 - **AC-002-11.** Each component has a render test in both a light and a dark token set, and a test per variant listed in its guidelines.
 - **AC-002-12.** Every pressable component has a hit area of at least 44 × 44 and an accessibility label (visible text or `accessibilityLabel`). A test walks the rendered tree of each component and fails otherwise.
-- **AC-002-13.** `Money` takes integer cents and formats with `Intl.NumberFormat` for the app language and currency, always with tabular figures. Tests cover pt-BR BRL, en BRL, pt-BR USD and en USD.
+- **AC-002-13.** `Money` takes integer cents and formats reais for the app language, always with tabular figures. Tests cover pt-BR and en.
 - **AC-002-14.** No raw color, font size or spacing number appears in screens or design-system components outside the generated tokens (static analysis rule).
-- **AC-002-15.** A hidden developer screen (`/dev/components`, only in development builds) shows every component in every variant, with a theme and mode switcher.
+- **AC-002-15.** A hidden developer screen (debug builds only) shows every component in every variant, with a theme and mode switcher.
 
 ### Text size and motion
 
