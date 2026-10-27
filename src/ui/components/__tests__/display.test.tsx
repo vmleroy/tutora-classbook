@@ -18,21 +18,25 @@ const moneyText = (s: string) =>
 
 describe('formatMoney', () => {
   it.each([
-    ['pt-BR', 'BRL', 'R$ 1.234,56'],
-    ['en', 'BRL', 'R$1,234.56'],
-    ['pt-BR', 'USD', 'US$ 1.234,56'],
-    ['en', 'USD', '$1,234.56'],
-  ] as const)('AC-002-13: %s with %s formats 123456 cents as %s', (locale, currency, expected) => {
-    expect(plain(formatMoney(123456, currency, locale))).toBe(expected);
+    ['pt-BR', 'R$ 1.234,56'],
+    ['en', 'R$1,234.56'],
+  ] as const)('AC-003-6: in %s 123456 cents read %s', (language, expected) => {
+    expect(plain(formatMoney(123456, language))).toBe(expected);
   });
 
-  it('AC-002-13: compact drops the cents, negative keeps its sign', () => {
-    expect(plain(formatMoney(118050, 'BRL', 'pt-BR', true))).toBe('R$ 1.181');
-    expect(plain(formatMoney(-24000, 'BRL', 'pt-BR'))).toBe('-R$ 240,00');
+  it('AC-003-5: negative amounts keep their sign in both languages', () => {
+    expect(plain(formatMoney(-24000, 'pt-BR'))).toBe('-R$ 240,00');
+    expect(plain(formatMoney(-24000, 'en'))).toBe('-R$240.00');
+    expect(plain(formatMoney(-118050, 'pt-BR', true))).toBe('-R$ 1.181');
+  });
+
+  it('AC-003-7: compact shows whole reais, half away from zero', () => {
+    expect(plain(formatMoney(118050, 'pt-BR', true))).toBe('R$ 1.181');
+    expect(plain(formatMoney(118050, 'en', true))).toBe('R$1,181');
   });
 
   it('AC-002-13: only integer cents are accepted', () => {
-    expect(() => formatMoney(10.5, 'BRL', 'pt-BR')).toThrow();
+    expect(() => formatMoney(10.5, 'pt-BR')).toThrow();
   });
 });
 
@@ -40,21 +44,16 @@ describe.each(testSets)('display in %s', (set) => {
   const c = colorSets[set];
 
   it.each([
-    ['pt-BR', 'BRL', 'R$ 240,00'],
-    ['en', 'BRL', 'R$240.00'],
-    ['pt-BR', 'USD', 'US$ 240,00'],
-    ['en', 'USD', '$240.00'],
-  ] as const)(
-    'AC-002-13: Money in %s and %s reads %s with tabular figures',
-    async (language, currency, text) => {
-      await renderComponent(<Money cents={24000} currency={currency} />, { set, language });
-      const money = screen.getByText(moneyText(text));
-      expect(money).toHaveStyle({
-        fontVariant: ['tabular-nums'],
-        fontFamily: 'Nunito_800ExtraBold',
-      });
-    },
-  );
+    ['pt-BR', 'R$ 240,00'],
+    ['en', 'R$240.00'],
+  ] as const)('AC-002-13: Money in %s reads %s with tabular figures', async (language, text) => {
+    await renderComponent(<Money cents={24000} />, { set, language });
+    const money = screen.getByText(moneyText(text));
+    expect(money).toHaveStyle({
+      fontVariant: ['tabular-nums'],
+      fontFamily: 'Nunito_800ExtraBold',
+    });
+  });
 
   it.each([
     ['default', 'ink'],

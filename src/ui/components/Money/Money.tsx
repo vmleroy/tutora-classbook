@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 
-import type { Currency } from '@/domain/money';
 import type { Language } from '@/domain/settings';
 import { cn } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
@@ -8,7 +7,6 @@ import { formatMoney } from '@/ui/format';
 
 export interface MoneyProps {
   cents: number;
-  currency?: Currency;
   locale?: string;
   size?: 'display' | 'xl' | 'lg' | 'md' | 'sm';
   tone?: 'default' | 'earnings' | 'owed' | 'paid' | 'onHeader';
@@ -34,11 +32,10 @@ const toneClass = {
   onHeader: 'text-earnings-on-header',
 } as const;
 
-/** Integer cents in the app language, always in tabular figures. */
+/** Integer cents of reais in the app language, always in tabular figures. */
 export function Money({
   className,
   cents,
-  currency = 'BRL',
   locale,
   size = 'md',
   tone = 'default',
@@ -47,7 +44,7 @@ export function Money({
 }: MoneyProps) {
   const { i18n } = useTranslation();
   const language = (locale ?? i18n.language) === 'en' ? 'en' : ('pt-BR' satisfies Language);
-  const text = formatMoney(cents, currency, language, compact);
+  const text = formatMoney(cents, language, compact);
   return (
     <Text variant={variant[size]} tabular className={cn(toneClass[tone], className)}>
       {showSign && cents > 0 ? `+ ${text}` : text}

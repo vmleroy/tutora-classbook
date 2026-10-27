@@ -176,3 +176,20 @@ describe.each(testSets)('selection and inputs in %s', (set) => {
     expect(pressableProblems()).toEqual([]);
   });
 });
+
+describe('money TextField', () => {
+  it('AC-003-8: fills from the right in the app language and keeps exact cents', async () => {
+    function Price() {
+      const [cents, setCents] = useState(0);
+      return <TextField kind="money" label="Valor" cents={cents} onChangeCents={setCents} />;
+    }
+    await renderComponent(<Price />, { language: 'en' });
+    const input = screen.getByLabelText('Valor');
+    for (const digit of '12000') {
+      await fireEvent.changeText(input, `${input.props.value}${digit}`);
+    }
+    expect(input.props.value.replace(/ /g, ' ')).toBe('R$120.00');
+    await fireEvent.changeText(input, 'R$120.0');
+    expect(input.props.value).toBe('R$12.00');
+  });
+});

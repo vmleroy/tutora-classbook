@@ -1,7 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { TextInput, View, type TextInputProps } from 'react-native';
 
+import { MAX_FIELD_CENTS, typedCents } from '@/domain/money';
+import type { Language } from '@/domain/settings';
 import { cn, tv } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
+import { formatMoney } from '@/ui/format';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 import { typeStyles } from '@/ui/theme/tokens';
 
@@ -14,6 +18,11 @@ export interface TextFieldProps {
   inputMode?: TextInputProps['inputMode'];
   tone?: 'default' | 'onPrimary';
   onChangeText?: (text: string) => void;
+  /** `money` shows `cents` in reais and fills from the right as digits are typed. */
+  kind?: 'text' | 'money';
+  cents?: number;
+  maxCents?: number;
+  onChangeCents?: (cents: number) => void;
   /** Extra classes merged over the component's own (layout such as margins). */
   className?: string;
 }
@@ -40,8 +49,16 @@ export function TextField({
   inputMode,
   tone = 'default',
   onChangeText,
+  kind = 'text',
+  cents = 0,
+  maxCents = MAX_FIELD_CENTS,
+  onChangeCents,
 }: TextFieldProps) {
   const { palette, textScale } = useTheme();
+  const { i18n } = useTranslation();
+  const language: Language = i18n.language === 'en' ? 'en' : 'pt-BR';
+  const money = kind === 'money';
+  const shown = money ? formatMoney(cents, language) : value;
   const body = typeStyles.body;
   const help = error ?? helper;
   return (
@@ -56,14 +73,18 @@ export function TextField({
         accessibilityLabel={label}
         accessibilityHint={help}
         aria-invalid={!!error}
-        value={value}
+        value={shown}
         placeholder={placeholder}
-        inputMode={inputMode}
-        onChangeText={onChangeText}
+        inputMode={money ? 'numeric' : inputMode}
+        // The caret stays at the end, where digits are added and removed.
+        selection={money ? { start: shown?.length ?? 0, end: shown?.length ?? 0 } : undefined}
+        onChangeText={
+          money ? (text) => onChangeCents?.(typedCents(text, cents, maxCents)) : onChangeText
+        }
         placeholderTextColor={
           tone === 'onPrimary' ? palette['on-primary-muted'] : palette['ink-muted']
         }
-        className={input({ tone, error: !!error })}
+        className={cn(input({ tone, error: !!error }), money && 'text-right')}
         style={{ fontSize: body.fontSize * textScale }}
       />
       {help ? (
