@@ -105,6 +105,8 @@ export const colorSets: Readonly<Record<ColorSetId, Readonly<Record<ColorToken, 
 
   const uiSource = `${header}
 
+import type { ColorSetId } from '@/domain/theme/colorSets';
+
 export {
   colorSetIds,
   colorSets,
@@ -113,7 +115,6 @@ export {
   type ColorToken,
   type ThemeId,
 } from '@/domain/theme/colorSets';
-import type { ColorSetId } from '@/domain/theme/colorSets';
 
 export type TypeStyleName = ${Object.keys(typeStyles)
     .map((n) => `'${n}'`)
