@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Touchable } from './Touchable';
 
+import { View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { touchSlop } from '../theme/metrics';
@@ -38,11 +39,12 @@ export function Switch({ value, onChange, label, disabled }: SwitchProps) {
       className={`justify-center rounded-full ${on ? 'bg-btn-primary' : 'bg-line-strong'} ${disabled ? 'opacity-40' : ''}`}
       style={TRACK}
     >
-      <Animated.View
-        testID="switch-knob"
-        className={`absolute rounded-full ${on ? 'bg-on-btn-primary' : 'bg-surface'}`}
-        style={[{ width: KNOB, height: KNOB }, knob]}
-      />
+      <Animated.View style={[{ position: 'absolute', width: KNOB, height: KNOB }, knob]}>
+        <View
+          testID="switch-knob"
+          className={`flex-1 rounded-full ${on ? 'bg-on-btn-primary' : 'bg-surface'}`}
+        />
+      </Animated.View>
     </Touchable>
   );
 }

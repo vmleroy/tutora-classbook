@@ -51,9 +51,14 @@ export function SegmentedControl<T extends string = string>({
       {segment > 0 ? (
         <Animated.View
           pointerEvents="none"
-          className="absolute top-1 rounded-sm bg-surface"
-          style={[{ width: segment, height }, shadowStyle('thumb', setId), thumb]}
-        />
+          style={[{ position: 'absolute', top: gap, width: segment, height }, thumb]}
+        >
+          <View
+            testID="segment-thumb"
+            className="flex-1 rounded-sm bg-surface"
+            style={shadowStyle('thumb', setId)}
+          />
+        </Animated.View>
       ) : null}
       {options.map((option, i) => {
         const on = i === index;

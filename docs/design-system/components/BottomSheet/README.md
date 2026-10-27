@@ -8,7 +8,7 @@ Panel that rises from the bottom for choices, confirmations and pickers, over a 
 ## Rules
 - Use for: report options, record payment, confirm restore or delete, student and place pickers.
 - Never stack two sheets. Destructive confirmations name what will be lost ("Os dados atuais serão substituídos").
-- In RN: `@gorhom/bottom-sheet` with the grabber, dismiss on swipe down and on scrim tap.
+- In the app: a Reanimated panel with the grabber that slides up (instantly when the phone asks for reduced motion) and closes on scrim tap. Swipe-to-dismiss comes with the first screen that needs a sheet.
 
 ## Props
 
@@ -18,5 +18,9 @@ interface BottomSheetProps {
   subtitle?: string;
   actions?: React.ReactNode;
   children?: React.ReactNode;
+  /** Whether the sheet is up. Default true. */
+  open?: boolean;
+  /** Tapping the scrim dismisses the sheet. */
+  onClose?: () => void;
 }
 ```

@@ -28,3 +28,5 @@ export { ScreenHeader, type ScreenHeaderProps } from './ScreenHeader';
 export { SectionHeader, type SectionHeaderProps } from './SectionHeader';
 export { TabBar, tabs, type TabBarProps, type TabName } from './TabBar';
 export { WeekStrip, type WeekStripProps } from './WeekStrip';
+export { BottomSheet, type BottomSheetProps } from './BottomSheet';
+export { TimerRing, type TimerRingProps } from './TimerRing';

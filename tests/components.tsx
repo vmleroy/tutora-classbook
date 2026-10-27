@@ -89,6 +89,12 @@ export function pressableProblems(): string[] {
       textOf(node).trim();
     const id = String(node.props.testID ?? '') || name || 'pressable';
     if (!name) problems.push(`${id}: no accessible name`);
+    // A view pinned to all four edges (a scrim) covers the screen.
+    const covers =
+      style.position === 'absolute' &&
+      (style.inset === 0 ||
+        [style.top, style.bottom, style.left, style.right].every((v) => v === 0));
+    if (covers) continue;
     if (Number.isNaN(height)) problems.push(`${id}: no height`);
     else if (height + (slop.top ?? 0) + (slop.bottom ?? 0) < 44)
       problems.push(`${id}: height ${height} + slop < 44`);
