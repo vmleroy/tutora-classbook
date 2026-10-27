@@ -4,7 +4,7 @@ The 27 screens of Tutora v1, also viewable (and clickable) on the [Tutora app sc
 
 These files are design references, not app code. Each one is plain HTML with inline styles for a 390 × 844 phone, plus a small `Component` class at the bottom with the sample data and interactions. They need the canvas runtime (`support.js`) to render, so open the canvas link to see them; read the source here to get exact copy, layout order, sample values and states.
 
-Colors in the mockups are hex values from the Quadro-negro light theme. In the app, never copy a hex: use the matching token from [`design-system/`](../../design-system/) (for example `#2E5E4E` is `primary`, `#FAF7F0` is `background`, `#5C6A70` is `ink-muted`).
+Colors in the mockups are hex values from the Quadro-negro light theme. In the app, never copy a hex: use the matching token from [`docs/design-system/`](../design-system/) (for example `#2E5E4E` is `primary`, `#FAF7F0` is `background`, `#5C6A70` is `ink-muted`).
 
 | File | Screen |
 | --- | --- |

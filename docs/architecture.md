@@ -77,7 +77,7 @@ src/
   ui/                     theme/, components/, charts/
   i18n/                   pt-BR.json, en.json, index.ts
 modules/live-timer/       local Expo module (Kotlin) for the ongoing notification
-specs/                    one folder per feature (see SDD section)
+docs/specs/               one folder per feature (see SDD section)
 ```
 
 ## State management and data flow
@@ -233,7 +233,7 @@ Each feature starts as a spec with numbered acceptance criteria, and each criter
 **Repo layout for specs** (compatible with GitHub Spec Kit if you want its commands, but it works as plain Markdown):
 
 ```text
-specs/
+docs/specs/
   constitution.md            non-negotiables: offline, integer money, UTC instants,
                              domain imports nothing, every criterion has a test
   001-foundation/            spec.md  plan.md  tasks.md
@@ -249,7 +249,7 @@ specs/
 **Suggested spec order** (each one shippable on its own APK):
 
 1. Foundation: Expo app, router with 5 empty tabs, theme tokens, i18n, SQLite + migrations, CI
-2. Design system: tokens for 4 themes × light/dark, 30 shared components, custom colors, Large text ([`design-system/`](../design-system/), published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei))
+2. Design system: tokens for 4 themes × light/dark, 30 shared components, custom colors, Large text ([`docs/design-system/`](design-system/), published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei))
 3. Money and FX: `Money`, rounding, conversion, PTAX fetch with fallback and manual mode
 4. Places and students: built-in places, CRUD, student–place links, price resolution
 5. Schedule: recurring rules, 8-week generation, this-only vs this-and-following edits, Agenda and Today
@@ -315,4 +315,4 @@ Five choices are yours; each has a recommendation so work can start on it now. A
 - Losing the signing key means the next install wipes data. Plan: back up the keystore on day one and keep JSON backups automatic.
 - Android developer verification may affect sideloading in Brazil. Plan: confirm the current rule before the first release; `adb` install or a free limited-distribution account cover it.
 
-Next step once you approve: create the repo skeleton and write `specs/constitution.md` and spec 001 (Foundation), then link GitHub so they can land as a PR.
+Next step once you approve: create the repo skeleton and write `docs/specs/constitution.md` and spec 001 (Foundation), then link GitHub so they can land as a PR.
