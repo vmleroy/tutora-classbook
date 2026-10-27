@@ -2,10 +2,19 @@ import { vars } from 'nativewind';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { View } from 'react-native';
 
+import type { TextSize } from '@/domain/settings';
 import { hexToChannels } from '@/domain/theme/channels';
-import { resolvePalette, resolveScheme, type ThemeMode } from '@/domain/theme/palette';
-import type { Palette, Scheme, ThemeId } from '@/domain/theme/themes';
+import type { ThemeId } from '@/domain/theme/colorSets';
+import {
+  resolvePalette,
+  resolveScheme,
+  type CustomColors,
+  type Palette,
+  type Scheme,
+  type ThemeMode,
+} from '@/domain/theme/palette';
 
+import { LARGE_TEXT_SCALE } from './type';
 import { useSystemScheme } from './useSystemScheme';
 
 type ThemeValue = Readonly<{ palette: Palette; scheme: Scheme; textScale: number }>;
@@ -15,17 +24,26 @@ const ThemeContext = createContext<ThemeValue | null>(null);
 type Props = {
   theme: ThemeId;
   mode: ThemeMode;
-  textScale?: number;
+  customColors?: CustomColors;
+  textSize?: TextSize;
   children: ReactNode;
 };
 
+const NO_CUSTOM: CustomColors = {};
+
 /** Sets the resolved palette as CSS variables, so every color class follows it at once. */
-export function ThemeProvider({ theme, mode, textScale = 1, children }: Props) {
+export function ThemeProvider({
+  theme,
+  mode,
+  customColors = NO_CUSTOM,
+  textSize = 'normal',
+  children,
+}: Props) {
   const systemScheme = useSystemScheme();
   const scheme = resolveScheme(mode, systemScheme);
   const palette = useMemo(
-    () => resolvePalette(theme, mode, systemScheme),
-    [theme, mode, systemScheme],
+    () => resolvePalette(theme, mode, systemScheme, customColors),
+    [theme, mode, systemScheme, customColors],
   );
   const style = useMemo(
     () =>
@@ -36,6 +54,7 @@ export function ThemeProvider({ theme, mode, textScale = 1, children }: Props) {
       ),
     [palette],
   );
+  const textScale = textSize === 'large' ? LARGE_TEXT_SCALE : 1;
   const value = useMemo(() => ({ palette, scheme, textScale }), [palette, scheme, textScale]);
 
   return (

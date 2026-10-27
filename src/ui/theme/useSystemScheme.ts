@@ -1,6 +1,6 @@
 import { useColorScheme } from 'react-native';
 
-import type { Scheme } from '@/domain/theme/themes';
+import type { Scheme } from '@/domain/theme/palette';
 
 /** The phone's light or dark setting; null when it reports neither. */
 export function useSystemScheme(): Scheme | null {

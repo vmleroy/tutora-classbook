@@ -55,3 +55,5 @@ The screens themselves (each screen's spec composes these components). Icons bey
 
 - Large text scales all type styles by 1.15 (decided 26 Oct 2026; revisit only if the Maestro check finds clipping).
 - In dark mode the hero header and the live lesson screen use the `header` token, a deep shade of the theme's primary, with light text on it. Light mode keeps primary as the header (decided 26 Oct 2026).
+- In dark mode, custom colors for buttons, highlight, earnings, active tab and header are lightened 40% in OKLCH. A custom **background** or **cards** color is not lightened, since that would turn the dark ground light. It keeps its hue at the lightness of the theme's own dark background or surface, with only a light tint of chroma (0.04 at most). Proposed 26 Oct 2026 during task 4; Victor to confirm.
+- On-color text (on primary buttons, accent and header) is whichever of white and ink reads better in light mode, and of light ink and the dark background in dark mode.

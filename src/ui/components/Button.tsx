@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { tv } from 'tailwind-variants';
 
-import type { TokenName } from '@/domain/theme/themes';
+import type { PaletteToken as TokenName } from '@/domain/theme/palette';
 
 import { opacity, size as sizes, touchSlop } from '../theme/metrics';
 import { useTheme } from '../theme/ThemeProvider';

@@ -35,6 +35,8 @@ describe('prepareDatabase', () => {
       themeId: 'quadro',
       themeMode: 'system',
       setupDone: false,
+      customColors: {},
+      textSize: 'normal',
     });
     t.close();
   });
