@@ -60,6 +60,21 @@ export const BUILTIN_IDS: Record<BuiltinPlace, string> = {
   online: '00000000-0000-7000-8000-000000000002',
 };
 
+export const tagColors: readonly TagColor[] = [
+  'amber',
+  'green',
+  'blue',
+  'violet',
+  'orange',
+  'red',
+  'teal',
+];
+
+/** A color tag picked from `random` in [0, 1), so new students don't all look alike. */
+export function randomTag(random: number): TagColor {
+  return tagColors[Math.floor(random * tagColors.length)] ?? 'amber';
+}
+
 export const ownKinds = ['school', 'salinha', 'course', 'private'] as const;
 
 /** Escola and Cursinho count as school and formal job in Ganhos; the rest as private lessons. */

@@ -1,4 +1,12 @@
-import { builtinPlace, earningsType, payMode, unlink, withDefault } from './places';
+import {
+  builtinPlace,
+  earningsType,
+  payMode,
+  randomTag,
+  tagColors,
+  unlink,
+  withDefault,
+} from './places';
 
 describe('places', () => {
   it('AC-004-4: Escola and Cursinho count as job, the rest as private lessons', () => {
@@ -17,6 +25,11 @@ describe('places', () => {
 
   it('AC-004-6: an Escola is paid by a monthly salary', () => {
     expect(payMode('school')).toBe('salary');
+  });
+
+  it('AC-004-28: a new student gets any of the color tags at random', () => {
+    const picked = new Set([0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.99].map(randomTag));
+    expect([...picked].sort()).toEqual([...tagColors].sort());
   });
 
   it('AC-004-8: places default to 60 minutes', () => {

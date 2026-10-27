@@ -2,9 +2,11 @@ import { View } from 'react-native';
 
 import type { PaletteToken } from '@/domain/theme/palette';
 import { cn } from '@/ui/cn';
+import { Avatar } from '@/ui/components/Avatar';
 import { Badge, type BadgeProps } from '@/ui/components/Badge';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Switch } from '@/ui/components/Switch';
+import type { Tag } from '@/ui/components/TagDot';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
 
@@ -15,6 +17,8 @@ export interface ListRowProps {
   subtitle?: string;
   icon?: IconName;
   iconTone?: IconTone;
+  /** A person's initials in their color tag, in place of the icon tile. */
+  avatar?: { initials: string; tag: Tag };
   trailing?: 'chevron' | 'switch' | 'none';
   switchValue?: boolean;
   badge?: { tone: BadgeProps['tone']; label: string };
@@ -48,6 +52,7 @@ export function ListRow({
   subtitle,
   icon,
   iconTone = 'secondary',
+  avatar,
   trailing = 'chevron',
   switchValue,
   badge,
@@ -55,7 +60,9 @@ export function ListRow({
 }: ListRowProps) {
   const content = (
     <>
-      {icon ? (
+      {avatar ? (
+        <Avatar initials={avatar.initials} tag={avatar.tag} size="sm" />
+      ) : icon ? (
         <View className={cn('h-8 w-8 items-center justify-center rounded-md', tile[iconTone])}>
           <Icon name={icon} size={18} tone={tileInk[iconTone]} />
         </View>

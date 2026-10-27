@@ -3,7 +3,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { unlink, withDefault, type PlaceLink, type Student, type TagColor } from '@/domain/places';
+import {
+  randomTag,
+  tagColors,
+  unlink,
+  withDefault,
+  type PlaceLink,
+  type Student,
+} from '@/domain/places';
 import { useCatalogActions, usePlaces, useStudent } from '@/state/catalog';
 import {
   ArchiveActions,
@@ -28,8 +35,6 @@ import { Text } from '@/ui/components/Text';
 import { TextField } from '@/ui/components/TextField';
 import { Touchable } from '@/ui/components/Touchable';
 
-const colors: TagColor[] = ['amber', 'green', 'blue', 'violet', 'orange', 'red', 'teal'];
-
 const blank: Student & { links?: PlaceLink[] } = {
   id: '',
   name: '',
@@ -44,9 +49,11 @@ const blank: Student & { links?: PlaceLink[] } = {
 export default function StudentEdit() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { data } = useStudent(id);
+  // A new student starts with a random color; the teacher can still pick another.
+  const [fresh] = useState(() => ({ ...blank, color: randomTag(Math.random()) }));
   // The form mounts once the saved student is loaded, starting from it.
   if (id && !data) return <Screen testID="student-edit">{null}</Screen>;
-  const { links = [], ...student } = data ?? blank;
+  const { links = [], ...student } = data ?? fresh;
   return <StudentForm id={id} initial={student} initialLinks={links} />;
 }
 
@@ -196,7 +203,7 @@ function StudentForm({
           {t('students.color')}
         </Text>
         <View accessibilityRole="radiogroup" className="flex-row flex-wrap gap-2">
-          {colors.map((color) => (
+          {tagColors.map((color) => (
             <Touchable
               key={color}
               accessibilityRole="radio"

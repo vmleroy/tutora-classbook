@@ -308,6 +308,11 @@ export default function ComponentGallery() {
                 icon="clock"
                 trailing="switch"
               />
+              <ListRow
+                title="Ana Souza"
+                subtitle="Matemática · Online, Casa do Aluno"
+                avatar={{ initials: 'AS', tag: 'violet' }}
+              />
             </ListGroup>
           </Section>
           <Section name="ListRow">

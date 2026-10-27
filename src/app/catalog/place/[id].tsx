@@ -4,7 +4,14 @@ import { useTranslation } from 'react-i18next';
 
 import { payMode } from '@/domain/places';
 import { useCatalogActions, usePlace, useStudents } from '@/state/catalog';
-import { placeName, placePriceText, rateMoney, travelText, useLanguage } from '@/ui/catalog';
+import {
+  initials,
+  placeName,
+  placePriceText,
+  rateMoney,
+  travelText,
+  useLanguage,
+} from '@/ui/catalog';
 import { BottomSheet } from '@/ui/components/BottomSheet';
 import { Button } from '@/ui/components/Button';
 import { Card } from '@/ui/components/Card';
@@ -85,6 +92,7 @@ export default function PlaceDetail() {
             <ListRow
               key={s.id}
               title={s.name}
+              avatar={{ initials: initials(s.name), tag: s.color }}
               subtitle={s.subject ?? undefined}
               onPress={() => router.push(`/catalog/student/${s.id}`)}
             />
@@ -135,6 +143,7 @@ export default function PlaceDetail() {
                 <ListRow
                   key={s.id}
                   title={s.name}
+                  avatar={{ initials: initials(s.name), tag: s.color }}
                   trailing="none"
                   onPress={() => {
                     linkStudentToPlace(s.id, place.id);

@@ -2,7 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { useGroups, usePlaces, useStudents } from '@/state/catalog';
-import { placeName } from '@/ui/catalog';
+import { initials, placeName } from '@/ui/catalog';
 import { ListGroup } from '@/ui/components/ListGroup';
 import { ListRow } from '@/ui/components/ListRow';
 import { Screen } from '@/ui/components/Screen';
@@ -30,6 +30,7 @@ export default function Archived() {
             <ListRow
               key={s.id}
               title={s.name}
+              avatar={{ initials: initials(s.name), tag: s.color }}
               onPress={() => router.push(`/catalog/student/edit?id=${s.id}`)}
             />
           ))}

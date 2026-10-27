@@ -60,6 +60,16 @@ describe('Alunos', () => {
     expect(screen.getByLabelText('Online / Remoto')).toBeTruthy();
   });
 
+  it('AC-004-28: every student row shows their initials in their color', async () => {
+    await open('/students');
+    await screen.findByText('Ana Souza');
+    // Avatars are decorative (the name is read aloud), so they are hidden from accessibility.
+    const hidden = { includeHiddenElements: true };
+    expect(screen.getByText('AS', hidden)).toBeTruthy();
+    expect(screen.getByText('LM', hidden)).toBeTruthy();
+    expect(screen.getAllByTestId('avatar-amber', hidden)).toHaveLength(2);
+  });
+
   it("AC-004-15: a student's detail shows contact, rate and places, which open the place", async () => {
     await open('/catalog/student/:ana');
     expect(await screen.findByText('Ana Souza')).toBeTruthy();

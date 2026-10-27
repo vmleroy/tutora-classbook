@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 import type { Group } from '@/domain/places';
 import { useGroups, usePlaces, useStudents, type StudentWithLinks } from '@/state/catalog';
-import { placeName, rateMoney, useLanguage } from '@/ui/catalog';
+import { initials, placeName, rateMoney, useLanguage } from '@/ui/catalog';
 import { Chip } from '@/ui/components/Chip';
 import { EmptyState } from '@/ui/components/EmptyState';
 import { ListGroup } from '@/ui/components/ListGroup';
@@ -40,6 +40,7 @@ export default function StudentsScreen() {
     <ListRow
       key={s.id}
       title={s.name}
+      avatar={{ initials: initials(s.name), tag: s.color }}
       subtitle={[
         s.subject,
         s.links.length > 0
