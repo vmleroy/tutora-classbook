@@ -2,6 +2,7 @@ import { getLocales } from 'expo-localization';
 
 import { languageBeforeMigration, openAppDatabase } from '@/data/appDatabase';
 import { MigrationError } from '@/data/db';
+import { ensureBuiltinPlaces } from '@/data/repos/placeRepo';
 import { ensureDefaultSettings, loadSettings, type Db } from '@/data/repos/settingsRepo';
 import type { Language, Settings } from '@/domain/settings';
 import { firstRunLanguage, startupLanguage } from '@/i18n/language';
@@ -25,7 +26,7 @@ const defaultDeps: StartDeps = {
 };
 
 /**
- * Opens and migrates the database, then makes sure every setting exists. First run picks
+ * Opens and migrates the database, then makes sure every setting and built-in place exists. First run picks
  * the language from the phone; afterwards the saved setting rules (AC-001-6).
  */
 export function startApp(deps: StartDeps = defaultDeps): StartResult {
@@ -33,6 +34,7 @@ export function startApp(deps: StartDeps = defaultDeps): StartResult {
   try {
     const opened = deps.openDatabase();
     ensureDefaultSettings(opened.db, firstRunLanguage(phone), deps.now());
+    ensureBuiltinPlaces(opened.db, deps.now());
     return {
       ok: true,
       db: opened.db,
