@@ -72,7 +72,7 @@ Two building blocks sit under the 30 components and are not counted among them:
 ```ts
 type IconName = 'plus' | 'minus' | 'check' | 'close' | 'chevron-left' | 'chevron-right' | 'home' | 'calendar' | 'users' | 'pin' | 'wallet' | 'clock' | 'alert' | 'file' | 'cloud' | 'gear' | 'calendar-check' | 'no-show' | 'play';
 type Tag = 'amber' | 'green' | 'blue' | 'violet' | 'orange' | 'red' | 'teal';
-type Currency = 'BRL' | 'USD';
 type TokenName = /* every color token name in tokens.json */;
-function formatMoney(cents: number, currency?: Currency, locale?: string, compact?: boolean): string;
+function formatMoney(cents: number, language?: Language, compact?: boolean): string; // always reais
+function formatDayMonth(date: Date, language?: Language): string;
 ```

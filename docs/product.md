@@ -60,7 +60,7 @@ Nine must-have areas make up v1. Every lesson can be entered by hand or by the l
 
 *Cancellation and no-show fees:* a default rule in Settings sets the notice window (2, 12, 24 or 48 hours) and what to charge for a late cancellation and for a no-show (50%, 100% or a fixed amount). Each student or place can follow the default, use its own rule or never charge. When a class is marked Cancelled inside the window, or Missed, Edit class suggests the fee and the teacher keeps or waives it; a kept fee counts as earned and adds to the student's or place's balance.
 
-*Currencies:* the app has a main currency (BRL or USD) and each student or place can charge in either. Totals convert to the main currency, BRL to USD or USD to BRL, with a rate that is Automatic by default or Manual. Automatic fetches the day's rate when there is internet (at most once a day, or when the teacher taps Update) and saves it; offline, the app keeps using the last saved rate and shows its date. Manual uses a rate the teacher sets (e.g. US$ 1 = R$ 5,40). Each lesson and payment stores the rate used when it was saved, so past months never change when the rate moves. By default every amount shows in the app currency only; a Show both currencies switch adds the original amount next to the converted one (e.g. US$ 30,00 ≈ R$ 162,00) for students who pay in the other currency. Reports follow the same setting.
+*Currency:* every amount is in reais (R$). The app language changes only how amounts are written (R$ 1.234,56 in Portuguese, R$1,234.56 in English), never the amount. Other currencies and exchange rates are not in v1.
 
 ## Screens
 
@@ -74,7 +74,7 @@ The app has five tabs in a bottom bar (Today, Schedule, Students, Places, Earnin
 | Students | Tab 3 | Search, filter (private / school), cards with rate, next class and balance owed |
 | Student detail | Tap a student | Full picture first: linked places, balance, lessons this month, rate, next and recent lessons, payments; buttons for Record payment, Report and New lesson; Editar opens the edit form, whose main section is "Where the lessons happen and how much they pay": how the student is charged (per hour, per lesson or package), then one card per linked place with a star for the default place (pre-selected in New lesson), a remove button, and a Place price / Custom switch with a − / + stepper for this student's own price there. Places that pay you directly (a salinha or cursinho) show what the place pays instead of a student price. "+ Link to another place" adds a place inline |
 | Earnings | Tab 5 | Filters (period: month, quarter or year with ‹ › to move; type: all, private lessons, school and formal job), one summary card (earned, received, to receive, with a bar), a "Where it came from" list ranked by value that opens each student or place, and a Relatório button for the full earnings report as PDF or Excel |
-| Settings | Gear on Today | Grouped list. General: two independent switches at the top, App language (Português / English, changes only texts and dates) and Currency (R$ / US$, sets the currency of all totals and reports); changing one never changes the other. Then Exchange rate R$ ↔ US$ (automatic or manual, show both currencies), Appearance, Calendar sync. Your data: Backup and spreadsheet (automatic or manual, .json and .xlsx, restore, recent backups). Lessons and charging: Cancellations and no-shows (default fee rule), live timer on/off, reminders |
+| Settings | Gear on Today | Grouped list. General: App language at the top (Português / English, changes only texts and dates, with a sample of each format under its option), then Appearance, Calendar sync. Your data: Backup and spreadsheet (automatic or manual, .json and .xlsx, restore, recent backups). Lessons and charging: Cancellations and no-shows (default fee rule), live timer on/off, reminders |
 | Add / edit class | + button, tapping a class, or Mark as done | Two modes: Schedule (future class, repeat rule) or Log a lesson given (past date, real duration, value computed as you type, paid yes/no). The same screen opens pre-filled to edit any class or to mark it done |
 | Record payment | Student detail or alert | Amount, method, date, which lessons it covers |
 
@@ -117,7 +117,7 @@ The timer is optional: any lesson can be marked done from the schedule with its 
 
 **First launch**
 
-1. First-run setup in four skippable steps: language and currency; how you teach (private lessons, school or formal job, salinha or cursinho); default prices for Online / Remoto and Casa do Aluno, and whether travel varies per class, is fixed, or is not charged; automatic backup folder and class reminders.
+1. First-run setup in four skippable steps: language; how you teach (private lessons, school or formal job, salinha or cursinho); default prices for Online / Remoto and Casa do Aluno, and whether travel varies per class, is fixed, or is not charged; automatic backup folder and class reminders.
 2. Enter your name and default hourly rate.
 3. Optionally add your first student or school, or skip to an empty Today screen.
 
@@ -187,16 +187,16 @@ Ten SQLite tables plus one link table cover v1; money is stored as integer cents
 
 | Table | Key columns | Relations |
 | --- | --- | --- |
-| place | id, name, kind (school / salinha / course / student\_home / online), address, color, default\_duration\_min, rate\_type, rate\_cents, payer (place / student), commission\_pct, travel\_mode (varies / fixed / none), travel\_fee\_cents, is\_builtin, pay\_cycle (per\_lesson / weekly / monthly), monthly\_salary\_cents, job\_type (formal / private), currency (BRL / USD), fee\_rule (default / custom / none) | has many groups and lessons; can be the payer on payments |
-| student | id, name, phone, email, rate\_type (hour / lesson / package), rate\_cents, currency (BRL / USD), fee\_rule (default / custom / none), color, notes, active | has many lessons, payments, packages; linked to places through student\_place (student\_id, place\_id, is\_default, rate\_cents: the student's own price there, empty to use the place's), many to many |
+| place | id, name, kind (school / salinha / course / student\_home / online), address, color, default\_duration\_min, rate\_type, rate\_cents, payer (place / student), commission\_pct, travel\_mode (varies / fixed / none), travel\_fee\_cents, is\_builtin, pay\_cycle (per\_lesson / weekly / monthly), monthly\_salary\_cents, job\_type (formal / private), fee\_rule (default / custom / none) | has many groups and lessons; can be the payer on payments |
+| student | id, name, phone, email, rate\_type (hour / lesson / package), rate\_cents, fee\_rule (default / custom / none), color, notes, active | has many lessons, payments, packages; linked to places through student\_place (student\_id, place\_id, is\_default, rate\_cents: the student's own price there, empty to use the place's), many to many |
 | group\_class | id, place\_id, name (e.g. "9th grade B"), subject, rate\_cents | belongs to place; has many lessons |
 | schedule\_rule | id, student\_id or group\_id, weekday, start\_time, duration\_min, repeat (weekly / biweekly), starts\_on, ends\_on | generates lessons |
-| lesson | id, rule\_id (nullable), student\_id or group\_id, place\_id, start\_at, end\_at, status (scheduled / live / done / cancelled / missed), rate\_type, rate\_cents, earned\_cents, currency, fx\_rate, travel\_fee\_cents, fee\_cents, fee\_waived, paid, source (manual / timer), calendar\_event\_id, notes | belongs to student or group; optional rule |
+| lesson | id, rule\_id (nullable), student\_id or group\_id, place\_id, start\_at, end\_at, status (scheduled / live / done / cancelled / missed), rate\_type, rate\_cents, earned\_cents, travel\_fee\_cents, fee\_cents, fee\_waived, paid, source (manual / timer), calendar\_event\_id, notes | belongs to student or group; optional rule |
 | lesson\_timer | lesson\_id, started\_at, paused\_ms, last\_resume\_at | one per live lesson, so the timer survives the app being closed |
 | payment | id, student\_id or place\_id, amount\_cents, method (cash / pix / transfer / card), paid\_at, note | belongs to student; covers lessons via payment\_lesson |
 | payment\_lesson | payment\_id, lesson\_id | links a payment to the lessons it pays |
 | package | id, student\_id, lessons\_total, lessons\_used, price\_cents, bought\_at | belongs to student |
-| settings | key, value | language (pt-BR / en), currency (BRL / USD), rate\_mode (auto / manual), usd\_rate, usd\_rate\_fetched\_at, default rate, reminder minutes, theme\_id, theme\_mode (light / dark / system), custom\_colors (JSON map of element to hex, e.g. {"primaryBtn":"#7A2E3B"}), text\_scale, calendar\_sync\_on, calendar\_id, auto\_backup (off / daily / weekly / monthly), backup\_folder\_uri, backup\_keep, cancel\_window\_h, late\_cancel\_fee, no\_show\_fee, setup\_done, last\_backup\_at |
+| settings | key, value | language (pt-BR / en), default rate, reminder minutes, theme\_id, theme\_mode (light / dark / system), custom\_colors (JSON map of element to hex, e.g. {"primaryBtn":"#7A2E3B"}), text\_scale, calendar\_sync\_on, calendar\_id, auto\_backup (off / daily / weekly / monthly), backup\_folder\_uri, backup\_keep, cancel\_window\_h, late\_cancel\_fee, no\_show\_fee, setup\_done, last\_backup\_at |
 
 **Notes**
 
@@ -245,8 +245,8 @@ Recommended stack: **React Native with Expo**, one codebase for Android now and 
 - **Storage:** expo-sqlite, with a small migrations table so the schema can grow.
 - **Export:** build the JSON backup in the app and the .xlsx with SheetJS (runs fully offline), save them with expo-file-system, and open the system share sheet (expo-sharing) so the teacher picks Google Drive, WhatsApp, email or any cloud app. No Google login is needed in v1.
 - **Live timer:** computed from stored timestamps and re-rendered every second; a persistent notification shows the running amount while the app is in the background.
-- **Reminders:** expo-notifications, scheduled locally. Languages: all text lives in pt-BR and English string files (i18next, with expo-localization picking the phone's language on first run), and money and dates are formatted with Intl for the chosen language and currency. Automatic backup: the teacher picks a folder once with Android's folder picker, which can be a Google Drive or OneDrive folder, and expo-background-task writes the JSON there on schedule and keeps the last N files; if Android skipped a run, the app does it the next time it opens. No Google sign-in is needed. Exchange rate: the only optional network call in the app. It reads the official daily rate from the Banco Central do Brasil PTAX open API (free, no key), with Frankfurter (ECB rates, also free) as a backup, saves it in settings, and never blocks the app when offline.
-- **Speed:** all screens read from SQLite on device, so lists open instantly; no network calls except the optional daily exchange rate.
+- **Reminders:** expo-notifications, scheduled locally. Languages: all text lives in pt-BR and English string files (i18next, with expo-localization picking the phone's language on first run), and money and dates are formatted with Intl for the chosen language, always in reais. Automatic backup: the teacher picks a folder once with Android's folder picker, which can be a Google Drive or OneDrive folder, and expo-background-task writes the JSON there on schedule and keeps the last N files; if Android skipped a run, the app does it the next time it opens. No Google sign-in is needed.
+- **Speed:** all screens read from SQLite on device, so lists open instantly; v1 makes no network calls.
 - **Alternative:** Flutter (with sqflite) would work equally well if you prefer Dart.
 
 **Calendar sync without a backend:** expo-calendar writes events into the phone's own calendar store. Android and iOS already sync that store with Google or Outlook accounts, so classes reach the cloud calendar while Tutora itself stays offline. Sync is one-way in v1 (Tutora to calendar); edits made in Google Calendar are not pulled back, and other events are only read to show busy time. Direct Google/Microsoft API sync would need sign-in and is left for a later version.
@@ -257,7 +257,7 @@ Recommended stack: **React Native with Expo**, one codebase for Android now and 
 
 **Decisions from your answers**
 
-- [ ] Language and currency: two separate settings that never change each other. Language is Portuguese (pt-BR) or English. Currency is BRL or USD; a student or place can pay in the other one, amounts show in one currency by default with an option to show both, and the exchange rate is automatic (manual as a fallback).
+- [ ] Language and currency: language is Portuguese (pt-BR) or English and never changes an amount. v1 is reais only; USD and exchange rates are out (constitution rule 9).
 - [ ] School salary: counts in Earnings together with private lessons, with a filter for private lessons vs school and formal job.
 - [ ] Cancellation and no-show fees: added as an optional rule, off by default for new users, with a per-student override.
 - [ ] Name: the app is called Tutora ("Tutora – Controle de aulas").

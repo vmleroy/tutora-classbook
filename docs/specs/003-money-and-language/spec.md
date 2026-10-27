@@ -1,6 +1,6 @@
 # Spec 003: Money and language
 
-Status: draft
+Status: in progress
 Depends on: 001 Foundation, 002 Design system
 Mockups: docs/mockups/Settings.dc.html
 
@@ -33,11 +33,11 @@ Every amount in Tutora follows one set of rules in reais, so lesson values, comm
 
 - **AC-003-8.** A money field fills from the right as digits are typed (1, 2, 0, 0, 0 → R$ 120,00), formatted in the app language, and keeps the exact centavos.
 - **AC-003-9.** A money field accepts only digits; deleting removes the last digit.
-- **AC-003-10.** A money field refuses digits beyond its upper limit (see Open questions).
+- **AC-003-10.** A money field refuses digits beyond R$ 99.999,99.
 
 ### Language in Ajustes
 
-- **AC-003-11.** Ajustes opens with a "Geral" group whose first row is "Idioma do app", offering Português and English.
+- **AC-003-11.** Ajustes opens with a "Geral" group whose first row is "Idioma do app", offering Português and English, each with a sample of how it writes dates and amounts ("Datas 26/10 · R$ 1.234,56" / "Dates 10/26 · R$1,234.56").
 - **AC-003-12.** Switching language repaints every text, number and date at once, with no restart; the choice is saved and survives a restart.
 - **AC-003-13.** The phone's language never overrides a saved choice.
 - **AC-003-14.** No currency choice is offered anywhere, and every amount is in R$ (USD is gone from the app).
@@ -46,7 +46,7 @@ Every amount in Tutora follows one set of rules in reais, so lesson values, comm
 
 Price resolution per student and place (004), cancellation fees (006), payments, packages and balances (008). USD and exchange rates are not in v1 (constitution rule 9).
 
-## Open questions
+## Answered questions
 
-- Upper limit of a money field: proposal R$ 99.999,99.
-- Should the language row show sample formats under each option ("Datas 26/10 · R$ 1.234,56" / "Dates 10/26 · R$1,234.56"), as the old Currency mockup did?
+- Upper limit of a money field: R$ 99.999,99 (Victor, 27 Oct 2026).
+- The language row shows a sample format under each option (Victor, 27 Oct 2026).
