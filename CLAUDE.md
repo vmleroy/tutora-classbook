@@ -10,14 +10,14 @@ Nothing is built without a spec. The cycle for every feature is:
 
 1. `/spec NNN`: write `docs/specs/NNN-name/spec.md` (what and why, acceptance criteria `AC-NNN-n`). Victor reviews it.
 2. `/plan NNN`: write `plan.md` (how) and `tasks.md` (ordered tasks, each naming its tests).
-3. `/implement NNN`: on branch `spec/NNN-name`, one task at a time, tests first, commit per task.
+3. `/implement NNN`: on branch `spec/NNN-name`, all tasks in one pass with lean tests (one focused Jest test per criterion, full checks once at the end), a few logical commits.
 4. `/verify NNN`: every criterion has a passing test whose name contains its id; push the branch and open one PR per spec.
 
 How a session usually runs:
 
 - Victor asks for work in plan mode. Read what's needed, ask about anything only he can decide, write the plan and get it approved before touching code.
 - Specs build on each other. When spec N starts before spec N−1 has merged, branch `spec/N-…` from `spec/(N−1)-…` and base its PR on that branch. Retarget the PR to `main` once the earlier one merges.
-- Device criteria (Maestro flows, timing on Android, Large-text screenshots) run on a local Android emulator with Maestro. The emulator stands in for the reference phone. Performance budgets and the real signing key still get checked on Victor's phone, and the PR lists them as pending.
+- Test only what proves a criterion. No emulator or Maestro runs unless Victor asks; device checks (Maestro flows, timing on Android, Large-text screenshots, performance budgets, the real signing key) are listed in the PR as pending.
 - Release builds in development use a throwaway keystore kept outside the repo. The real release key belongs to Victor (constitution rule 19).
 
 Start each session by reading, in this order:
