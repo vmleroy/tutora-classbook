@@ -1,4 +1,5 @@
 import {
+  Archive,
   Calendar,
   CalendarCheck,
   Check,
@@ -13,7 +14,9 @@ import {
   Minus,
   Play,
   Plus,
+  Search,
   Settings,
+  Star,
   UserX,
   Users,
   Wallet,
@@ -44,7 +47,10 @@ export type IconName =
   | 'gear'
   | 'calendar-check'
   | 'no-show'
-  | 'play';
+  | 'play'
+  | 'star'
+  | 'search'
+  | 'archive';
 
 const icons: Record<IconName, LucideIcon> = {
   plus: Plus,
@@ -66,6 +72,9 @@ const icons: Record<IconName, LucideIcon> = {
   'calendar-check': CalendarCheck,
   'no-show': UserX,
   play: Play,
+  star: Star,
+  search: Search,
+  archive: Archive,
 };
 
 export interface IconProps {

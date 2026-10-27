@@ -70,7 +70,7 @@ Two building blocks sit under the 30 components and are not counted among them:
 ### Shared types
 
 ```ts
-type IconName = 'plus' | 'minus' | 'check' | 'close' | 'chevron-left' | 'chevron-right' | 'home' | 'calendar' | 'users' | 'pin' | 'wallet' | 'clock' | 'alert' | 'file' | 'cloud' | 'gear' | 'calendar-check' | 'no-show' | 'play';
+type IconName = 'plus' | 'minus' | 'check' | 'close' | 'chevron-left' | 'chevron-right' | 'home' | 'calendar' | 'users' | 'pin' | 'wallet' | 'clock' | 'alert' | 'file' | 'cloud' | 'gear' | 'calendar-check' | 'no-show' | 'play' | 'star' | 'search' | 'archive';
 type Tag = 'amber' | 'green' | 'blue' | 'violet' | 'orange' | 'red' | 'teal';
 type TokenName = /* every color token name in tokens.json */;
 function formatMoney(cents: number, language?: Language, compact?: boolean): string; // always reais

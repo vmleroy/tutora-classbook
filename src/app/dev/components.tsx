@@ -127,6 +127,9 @@ export default function ComponentGallery() {
                   'alert',
                   'gear',
                   'play',
+                  'star',
+                  'search',
+                  'archive',
                 ] as const
               ).map((name) => (
                 <Icon key={name} name={name} />
