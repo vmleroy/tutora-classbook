@@ -19,10 +19,6 @@
       "title": "Nenhum aluno ainda",
       "body": "Seus alunos, os locais onde cada um estuda e quem está devendo aparecem aqui."
     },
-    "places": {
-      "title": "Nenhum local ainda",
-      "body": "Casa do aluno, online e os lugares onde você dá aula aparecem aqui."
-    },
     "earnings": {
       "title": "Nada ganho ainda",
       "body": "Quanto você ganhou e quanto ainda vai receber aparecem aqui."
@@ -60,7 +56,8 @@
     "increase": "Aumentar",
     "lessonTime": "Tempo de aula",
     "earnedVsExpected": "Ganho em relação ao previsto",
-    "loading": "Carregando"
+    "loading": "Carregando",
+    "durationInvalid": "Use hh:mm, até {{max}}"
   },
   "dev": {
     "title": "Componentes",
@@ -81,5 +78,183 @@
   "languages": {
     "pt-BR": "Português",
     "en": "English"
+  },
+  "places": {
+    "builtin": {
+      "student_home": "Casa do Aluno",
+      "online": "Online / Remoto"
+    },
+    "subtitle": "Onde você dá aula · cada um com seus alunos",
+    "builtinGroup": "Já vem no app",
+    "builtinHint": "alunos herdam o preço",
+    "own": "Seus locais",
+    "defaultBadge": "Padrão",
+    "noPrice": "Sem preço",
+    "noPriceHint": "Sem preço · toque para definir",
+    "students_zero": "nenhum aluno",
+    "students_one": "{{count}} aluno",
+    "students_other": "{{count}} alunos",
+    "minutes": "{{count}} min",
+    "perHour": "{{price}}/h",
+    "perLesson": "{{price}}/aula",
+    "paidByPlace": "{{price}} pagos pelo local",
+    "salary": "Salário {{price}}/mês",
+    "travel": {
+      "varies": "Deslocamento: varia, você informa em cada aula",
+      "fixed": "Deslocamento: {{price}} por aula",
+      "none": "Sem deslocamento"
+    },
+    "kind": {
+      "school": "Escola",
+      "salinha": "Salinha",
+      "course": "Cursinho",
+      "private": "Particular",
+      "student_home": "Casa do aluno",
+      "online": "Online"
+    },
+    "earnings": {
+      "job": "Nos Ganhos conta como Escola e emprego",
+      "private": "Nos Ganhos conta como Aulas particulares"
+    },
+    "new": "Novo local",
+    "edit": "Editar local",
+    "detail": "Local",
+    "name": "Nome",
+    "namePlaceholder": "Ex.: Salinha Aprender+",
+    "address": "Endereço (opcional)",
+    "type": "Tipo",
+    "whoPays": "Quem paga você?",
+    "payerPlace": "O local",
+    "payerStudent": "O aluno",
+    "placePays": "O local me paga",
+    "studentPays": "O aluno paga",
+    "charging": "Cobrança",
+    "perHourOption": "Por hora",
+    "perLessonOption": "Por aula",
+    "commission": "O local fica com",
+    "cycle": "Acerto com o local",
+    "cycles": {
+      "lesson": "Por aula",
+      "weekly": "Semanal",
+      "monthly": "Mensal"
+    },
+    "salaryLabel": "Salário mensal",
+    "duration": "Duração padrão",
+    "travelLabel": "Deslocamento",
+    "travelOptions": {
+      "varies": "Varia",
+      "fixed": "Fixo",
+      "none": "Não cobro"
+    },
+    "travelFee": "Valor do deslocamento",
+    "previewTitle": "Ao registrar uma aula de 60 min aqui",
+    "preview": {
+      "placePays": "Você ganha {{earned}}, a receber do local {{cycle}}",
+      "studentPays": "Aluno paga {{paid}}, você fica com {{kept}}",
+      "salary": "Coberta pelo salário do mês",
+      "unset": "Defina um preço para ver quanto rende"
+    },
+    "cycleWords": {
+      "lesson": "a cada aula",
+      "weekly": "no fechamento semanal",
+      "monthly": "no fechamento do mês"
+    },
+    "save": "Salvar modelo",
+    "model": "Modelo usado nas aulas daqui",
+    "whoPaysValue": "Quem paga: {{who}}",
+    "whoPlace": "o local",
+    "whoStudent": "o aluno",
+    "studentsHere": "Alunos daqui",
+    "linkStudent": "+ Ligar aluno",
+    "linkWhich": "Ligar qual aluno?",
+    "noStudentsToLink": "Todos os alunos já estão ligados a este local.",
+    "groups": "Turmas",
+    "newGroup": "+ Nova turma",
+    "empty": "Nenhum local seu ainda",
+    "emptyBody": "Toque em + para cadastrar uma escola, salinha ou cursinho."
+  },
+  "students": {
+    "new": "Novo aluno",
+    "edit": "Editar aluno",
+    "detail": "Aluno",
+    "count_zero": "nenhum aluno",
+    "count_one": "{{count}} aluno",
+    "count_other": "{{count}} alunos",
+    "search": "Buscar aluno",
+    "all": "Todos · {{count}}",
+    "byPlace": "Por local",
+    "noPlace": "Sem local",
+    "name": "Nome",
+    "namePlaceholder": "Ex.: Ana Souza",
+    "subject": "Matéria e série",
+    "subjectPlaceholder": "Ex.: Matemática · 9º ano",
+    "phone": "Telefone",
+    "notes": "Observações",
+    "charging": "Como cobra",
+    "perHour": "Por hora",
+    "perLesson": "Por aula",
+    "wherePays": "Onde tem aula e quanto paga",
+    "starHint": "★ = local padrão",
+    "makeDefault": "Tornar {{place}} o local padrão",
+    "unlink": "Desligar de {{place}}",
+    "fromPlace": "Do local",
+    "custom": "Personalizado",
+    "placePrice": "Preço do local: {{price}}",
+    "ownPrice": "Preço personalizado",
+    "paidByPlace": "Pago pelo local · {{price}} para você",
+    "linkPlace": "+ Ligar a outro local",
+    "linkWhich": "Ligar a qual local?",
+    "color": "Cor",
+    "colors": {
+      "amber": "Amarelo",
+      "green": "Verde",
+      "blue": "Azul",
+      "violet": "Roxo",
+      "orange": "Laranja",
+      "red": "Vermelho",
+      "teal": "Azul-esverdeado"
+    },
+    "rate": "Valor",
+    "places": "Locais",
+    "contact": "Contato",
+    "noSearchResults": "Nenhum aluno com esse nome"
+  },
+  "groups": {
+    "new": "Nova turma",
+    "edit": "Editar turma",
+    "name": "Nome da turma",
+    "namePlaceholder": "Ex.: Turma ENEM",
+    "subject": "Matéria",
+    "price": "Preço por aula",
+    "coveredBySalary": "Coberta pelo salário da escola",
+    "members": "Alunos da turma",
+    "membersHint": "Opcional: só alunos ligados a este local",
+    "size_zero": "nenhum aluno",
+    "size_one": "{{count}} aluno",
+    "size_other": "{{count}} alunos"
+  },
+  "catalog": {
+    "edit": "Editar",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "archive": "Arquivar",
+    "restore": "Restaurar",
+    "archived": "Arquivados",
+    "noArchived": "Nada arquivado.",
+    "remove": "Remover para sempre",
+    "removeTitle": "Remover {{name}}?",
+    "removeBody": "Isso não pode ser desfeito.",
+    "removePlaceBody": "Isso não pode ser desfeito. As turmas e os vínculos com alunos deste local também saem; os alunos ficam.",
+    "exactAmount": "Valor exato",
+    "done": "Pronto",
+    "errors": {
+      "nameRequired": "Dê um nome para salvar.",
+      "placeRequired": "Ligue o aluno a pelo menos um local.",
+      "builtinFixed": "Os locais que já vêm no app não podem ser renomeados nem arquivados.",
+      "commissionRange": "A comissão vai de 0% a 90%.",
+      "notArchived": "Arquive antes de remover.",
+      "notFound": "Não encontrado."
+    },
+    "exactDuration": "Duração exata"
   }
 }

@@ -9,8 +9,10 @@ import { ensureDefaultSettings, loadSettings } from './repos/settingsRepo';
 const NOW = '2026-10-26T20:40:00.000Z';
 const v2: Migration = { tag: '9999_test_add_note', sql: 'ALTER TABLE `settings` ADD `note` text;' };
 const broken: Migration = { tag: '9999_test_broken', sql: 'ALTER TABLE `nope` ADD `x` text;' };
+// The app's own schema version; the test migrations come after it.
+const N = migrations.length;
 
-function atVersion1() {
+function atCurrentVersion() {
   const t = tempDatabase();
   prepareDatabase(t.driver, nodeFiles, migrations);
   ensureDefaultSettings(t.db, 'en', NOW);
@@ -42,7 +44,7 @@ describe('prepareDatabase', () => {
   });
 
   it('AC-001-12: defaults never overwrite saved settings', () => {
-    const t = atVersion1();
+    const t = atCurrentVersion();
     ensureDefaultSettings(t.db, 'pt-BR', NOW);
     expect(loadSettings(t.db).language).toBe('en');
     t.close();
@@ -56,20 +58,20 @@ describe('prepareDatabase', () => {
   });
 
   it('AC-001-13: an older database is copied to tutora-pre-v{n}.db, then migrated in order, keeping data', () => {
-    const t = atVersion1();
+    const t = atCurrentVersion();
     const applied: string[] = [];
     const result = prepareDatabase(t.driver, nodeFiles, [...migrations, v2], (m) =>
       applied.push(m.tag),
     );
 
-    const backupPath = `${t.dir}/tutora-pre-v2.db`;
-    expect(result).toEqual({ schemaVersion: 2, backupPath });
+    const backupPath = `${t.dir}/tutora-pre-v${N + 1}.db`;
+    expect(result).toEqual({ schemaVersion: N + 1, backupPath });
     expect(applied).toEqual([v2.tag]);
-    expect(schemaVersion(t.driver)).toBe(2);
+    expect(schemaVersion(t.driver)).toBe(N + 1);
     expect(loadSettings(t.db).language).toBe('en');
 
     const copy = new Database(backupPath, { readonly: true });
-    expect(copy.pragma('user_version', { simple: true })).toBe(1);
+    expect(copy.pragma('user_version', { simple: true })).toBe(N);
     expect(copy.prepare("SELECT value FROM settings WHERE key='language'").get()).toEqual({
       value: '"en"',
     });
@@ -78,16 +80,16 @@ describe('prepareDatabase', () => {
   });
 
   it('AC-001-13: an up-to-date database opens without a copy', () => {
-    const t = atVersion1();
+    const t = atCurrentVersion();
     expect(prepareDatabase(t.driver, nodeFiles, migrations)).toEqual({
-      schemaVersion: 1,
+      schemaVersion: N,
       backupPath: null,
     });
     t.close();
   });
 
   it('AC-001-14: a failed migration rolls back, keeps the copy and reports its path', () => {
-    const t = atVersion1();
+    const t = atCurrentVersion();
     let error: unknown;
     try {
       prepareDatabase(t.driver, nodeFiles, [...migrations, v2, broken]);
@@ -96,24 +98,24 @@ describe('prepareDatabase', () => {
     }
     expect(error).toBeInstanceOf(MigrationError);
     const failure = error as MigrationError;
-    expect(failure.backupPath).toBe(`${t.dir}/tutora-pre-v3.db`);
+    expect(failure.backupPath).toBe(`${t.dir}/tutora-pre-v${N + 2}.db`);
     expect(failure.failedTag).toBe(broken.tag);
     expect(nodeFiles.exists(failure.backupPath!)).toBe(true);
-    // v2 committed, the broken step rolled back.
-    expect(schemaVersion(t.driver)).toBe(2);
+    // The extra step committed, the broken step rolled back.
+    expect(schemaVersion(t.driver)).toBe(N + 1);
     expect(loadSettings(t.db).language).toBe('en');
     t.close();
   });
 
   it('AC-001-14: retrying a failed upgrade keeps the first copy, taken before any step ran', () => {
-    const t = atVersion1();
+    const t = atCurrentVersion();
     const upgrade = [...migrations, v2, broken];
     expect(() => prepareDatabase(t.driver, nodeFiles, upgrade)).toThrow(MigrationError);
-    expect(schemaVersion(t.driver)).toBe(2);
+    expect(schemaVersion(t.driver)).toBe(N + 1);
     expect(() => prepareDatabase(t.driver, nodeFiles, upgrade)).toThrow(MigrationError);
 
-    const copy = new Database(`${t.dir}/tutora-pre-v3.db`, { readonly: true });
-    expect(copy.pragma('user_version', { simple: true })).toBe(1);
+    const copy = new Database(`${t.dir}/tutora-pre-v${N + 2}.db`, { readonly: true });
+    expect(copy.pragma('user_version', { simple: true })).toBe(N);
     copy.close();
     t.close();
   });

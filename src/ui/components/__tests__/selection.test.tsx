@@ -193,3 +193,21 @@ describe('money TextField', () => {
     expect(input.props.value).toBe('R$12.00');
   });
 });
+
+describe('duration TextField', () => {
+  it('AC-004-27: types hh:mm from the right and flags minutes over 59', async () => {
+    const onChangeMinutes = jest.fn();
+    await renderComponent(
+      <TextField kind="duration" label="Duração" minutes={0} onChangeMinutes={onChangeMinutes} />,
+    );
+    const field = () => screen.getByLabelText('Duração');
+    for (const digit of '130') {
+      await fireEvent.changeText(field(), `${field().props.value}${digit}`);
+    }
+    expect(field().props.value).toBe('01:30');
+    expect(onChangeMinutes).toHaveBeenLastCalledWith(90);
+    await fireEvent.changeText(field(), '00:90');
+    expect(onChangeMinutes).toHaveBeenLastCalledWith(null);
+    expect(screen.getByText('Use hh:mm, até 05:00')).toBeTruthy();
+  });
+});

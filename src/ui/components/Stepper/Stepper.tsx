@@ -15,6 +15,9 @@ export interface StepperProps {
   max?: number;
   format?: (value: number) => string;
   onChange?: (value: number) => void;
+  /** Tapping the value opens exact entry (a money field in a sheet, for prices). */
+  onPressValue?: () => void;
+  valueLabel?: string;
   decrementLabel?: string;
   incrementLabel?: string;
   size?: 'sm' | 'md';
@@ -34,6 +37,8 @@ export function Stepper({
   max = Number.MAX_SAFE_INTEGER,
   format = String,
   onChange,
+  onPressValue,
+  valueLabel,
   decrementLabel,
   incrementLabel,
   size = 'md',
@@ -79,9 +84,22 @@ export function Stepper({
       style={{ height: HEIGHT[size] }}
     >
       {button('minus')}
-      <Text variant="money-md" accessibilityLiveRegion="polite">
-        {format(current)}
-      </Text>
+      {onPressValue ? (
+        <Touchable
+          accessibilityRole="button"
+          accessibilityLabel={valueLabel ? `${valueLabel}, ${format(current)}` : format(current)}
+          onPress={onPressValue}
+          className="h-full flex-1 items-center justify-center"
+        >
+          <Text variant="money-md" accessibilityLiveRegion="polite">
+            {format(current)}
+          </Text>
+        </Touchable>
+      ) : (
+        <Text variant="money-md" accessibilityLiveRegion="polite">
+          {format(current)}
+        </Text>
+      )}
       {button('plus')}
     </View>
   );

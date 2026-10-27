@@ -127,6 +127,9 @@ export default function ComponentGallery() {
                   'alert',
                   'gear',
                   'play',
+                  'star',
+                  'search',
+                  'archive',
                 ] as const
               ).map((name) => (
                 <Icon key={name} name={name} />
@@ -304,6 +307,11 @@ export default function ComponentGallery() {
                 subtitle="Desligado"
                 icon="clock"
                 trailing="switch"
+              />
+              <ListRow
+                title="Ana Souza"
+                subtitle="Matemática · Online, Casa do Aluno"
+                avatar={{ initials: 'AS', tag: 'violet' }}
               />
             </ListGroup>
           </Section>

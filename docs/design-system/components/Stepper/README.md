@@ -6,6 +6,8 @@ Minus / value / plus control for durations (15-minute steps) and small money adj
 `value`, `onChange`, `step`, `min`, `max`, `format` (value → label), and labels for both buttons ("Menos 15 minutos").
 
 ## Rules
+- Durations step by 5 minutes and read "90 min · 1h30"; with `onPressValue` the value opens hh:mm entry.
+- Prices step by R$ 5; with `onPressValue` the value is a button that opens a sheet with a money field for the exact amount.
 - The value uses tabular figures and announces changes politely to screen readers.
 - Long-press repeats the step in the app (not in this preview).
 - Tapping the value opens a number pad for exact entry.
@@ -20,6 +22,9 @@ interface StepperProps {
   max?: number;
   format?: (value: number) => string;
   onChange?: (value: number) => void;
+  /** Tapping the value opens exact entry (a money field in a sheet, for prices). */
+  onPressValue?: () => void;
+  valueLabel?: string;
   decrementLabel?: string;
   incrementLabel?: string;
   size?: 'sm' | 'md';

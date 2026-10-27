@@ -1,6 +1,6 @@
 import { Children, Fragment, isValidElement, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, type LayoutChangeEvent } from 'react-native';
+import { KeyboardAvoidingView, Modal, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -31,7 +31,11 @@ function alphaOf(hex: string): number {
   return hex.length === 9 ? Math.round((parseInt(hex.slice(7), 16) / 255) * 100) / 100 : 1;
 }
 
-/** A panel from the bottom over a scrim, for choices, confirmations and pickers. */
+/**
+ * A panel from the bottom over a scrim, for choices, confirmations and pickers. It renders
+ * in a transparent Modal, so it covers the whole screen wherever it is placed, and the
+ * Android back button closes it.
+ */
 export function BottomSheet({
   className,
   title,
@@ -56,58 +60,68 @@ export function BottomSheet({
       : Children.toArray(actions);
   const [cancel, confirm] = actionList;
   return (
-    <View className={cn('absolute inset-0 justify-end', className)}>
-      <Touchable
-        testID="sheet-scrim"
-        accessibilityRole="button"
-        accessibilityLabel={t('ui.close')}
-        onPress={onClose}
-        pressedFeedback={false}
-        className="absolute inset-0 bg-scrim"
-        style={{ opacity: alphaOf(palette.scrim) }}
-      />
-      {/* Animated.View carries only the motion: NativeWind styles plain views. */}
-      <Animated.View
-        onLayout={(e: LayoutChangeEvent) => setHeight(e.nativeEvent.layout.height)}
-        style={slide}
-      >
-        <View
-          testID="sheet"
-          accessibilityViewIsModal
-          accessibilityLabel={title}
-          className="gap-3.5 rounded-t-3xl bg-surface px-5 pt-3"
-          style={{ paddingBottom: insets.bottom + spacing['7'] }}
+    <Modal
+      transparent
+      visible
+      animationType="none"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onClose}
+    >
+      {/* The panel rises above the keyboard when a field inside it has focus. */}
+      <KeyboardAvoidingView behavior="padding" className={cn('flex-1 justify-end', className)}>
+        <Touchable
+          testID="sheet-scrim"
+          accessibilityRole="button"
+          accessibilityLabel={t('ui.close')}
+          onPress={onClose}
+          pressedFeedback={false}
+          className="absolute inset-0 bg-scrim"
+          style={{ opacity: alphaOf(palette.scrim) }}
+        />
+        {/* Animated.View carries only the motion: NativeWind styles plain views. */}
+        <Animated.View
+          onLayout={(e: LayoutChangeEvent) => setHeight(e.nativeEvent.layout.height)}
+          style={slide}
         >
-          <View className="self-center rounded-full bg-line-strong" style={GRABBER} />
-          <View className="gap-0.5">
-            <Text variant="title-lg" accessibilityRole="header">
-              {title}
-            </Text>
-            {subtitle ? (
-              <Text variant="caption" className="text-ink-muted">
-                {subtitle}
+          <View
+            testID="sheet"
+            accessibilityViewIsModal
+            accessibilityLabel={title}
+            className="gap-3.5 rounded-t-3xl bg-surface px-5 pt-3"
+            style={{ paddingBottom: insets.bottom + spacing['7'] }}
+          >
+            <View className="self-center rounded-full bg-line-strong" style={GRABBER} />
+            <View className="gap-0.5">
+              <Text variant="title-lg" accessibilityRole="header">
+                {title}
               </Text>
+              {subtitle ? (
+                <Text variant="caption" className="text-ink-muted">
+                  {subtitle}
+                </Text>
+              ) : null}
+            </View>
+            {children}
+            {actions ? (
+              <View className="flex-row gap-2.5">
+                {confirm ? (
+                  <>
+                    <View testID="sheet-action-secondary" className="flex-1">
+                      {cancel}
+                    </View>
+                    <View testID="sheet-action-primary" className="flex-[2]">
+                      {confirm}
+                    </View>
+                  </>
+                ) : (
+                  <View className="flex-1">{cancel}</View>
+                )}
+              </View>
             ) : null}
           </View>
-          {children}
-          {actions ? (
-            <View className="flex-row gap-2.5">
-              {confirm ? (
-                <>
-                  <View testID="sheet-action-secondary" className="flex-1">
-                    {cancel}
-                  </View>
-                  <View testID="sheet-action-primary" className="flex-[2]">
-                    {confirm}
-                  </View>
-                </>
-              ) : (
-                <View className="flex-1">{cancel}</View>
-              )}
-            </View>
-          ) : null}
-        </View>
-      </Animated.View>
-    </View>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }

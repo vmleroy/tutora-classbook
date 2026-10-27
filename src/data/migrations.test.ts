@@ -9,7 +9,7 @@ import journal from './migrations/meta/_journal.json';
 
 // tests/fixtures/migrations/seed-v{n}.sql fills a database at schema version n with typical
 // rows; migration n+1 is applied on top of it. Add one for every new schema version.
-const fixtures = path.join(__dirname, '@tests/fixtures/migrations');
+const fixtures = path.join(__dirname, '../../tests/fixtures/migrations');
 
 describe('migrations', () => {
   it('AC-001-15: every drizzle-kit journal entry is bundled, in order', () => {

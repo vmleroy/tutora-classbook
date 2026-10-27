@@ -16,7 +16,7 @@ describe('Ajustes', () => {
   it('AC-001-22: the Sobre row shows app version, build number and schema version', async () => {
     await renderRouter('./src/app', { initialUrl: '/settings' });
     expect(screen.getByText('Sobre')).toBeTruthy();
-    expect(screen.getByText('Versão 1.1.0 · build 7 · banco v1')).toBeTruthy();
+    expect(screen.getByText('Versão 1.1.0 · build 7 · banco v2')).toBeTruthy();
   });
 
   it('AC-003-11: Ajustes opens with Geral, whose first row is Idioma do app with both languages', async () => {
@@ -35,7 +35,7 @@ describe('Ajustes', () => {
     await renderRouter('./src/app', { initialUrl: '/settings' });
     await act(async () => fireEvent.press(screen.getByRole('radio', { name: 'English' })));
     expect(screen.getByText('App language')).toBeTruthy();
-    expect(screen.getByText('Version 1.1.0 · build 7 · database v1')).toBeTruthy();
+    expect(screen.getByText('Version 1.1.0 · build 7 · database v2')).toBeTruthy();
     expect(useSettingsStore.getState().settings?.language).toBe('en');
   });
 
