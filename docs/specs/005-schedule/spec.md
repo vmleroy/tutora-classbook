@@ -1,6 +1,6 @@
 # Spec 005: Schedule
 
-Status: draft
+Status: in progress
 Depends on: 004 Places and students
 Mockups: docs/mockups/Main.dc.html, Schedule.dc.html, AddLesson.dc.html (Agendar mode), EditLesson.dc.html (date, time, duration, value and "Aplicar mudanças em")
 
@@ -37,7 +37,7 @@ The teacher puts their week into Tutora once: recurring classes (weekly or every
 - **AC-005-10.** Tapping a class opens its edit form with date, start time, duration, value and notes. The form shows the series ("Repete toda segunda") for a recurring class.
 - **AC-005-11.** For a recurring class, "Aplicar mudanças em" offers "Só esta aula" and "Esta e as próximas".
 - **AC-005-12.** "Só esta aula" changes only that class. The class then stands on its own: filling the series later never overwrites it.
-- **AC-005-13.** "Esta e as próximas" applies the change to that class and every later class of the series, and the series continues from there with the new day, time, duration or value. Earlier classes do not change.
+- **AC-005-13.** "Esta e as próximas" applies the change to that class and every later class of the series, and the series continues from there with the new day, time, duration or value. Earlier classes do not change, and a later class that was changed on its own keeps its changes.
 - **AC-005-14.** Removing a class asks the same question. "Esta e as próximas" ends the series at that date, so it stops filling in.
 - **AC-005-15.** Classes in the past never change when the series changes.
 
@@ -47,15 +47,15 @@ The teacher puts their week into Tutora once: recurring classes (weekly or every
 
 ### Agenda
 
-- **AC-005-17.** Agenda shows the month and a week strip from Monday to Sunday. Today is marked, each day with classes has a dot, and the teacher can move to the previous or next week.
-- **AC-005-18.** Dia shows the chosen day as an hour grid with a colored block per class: name, subject or place, and time. The next class is marked "Próxima".
+- **AC-005-17.** Agenda shows the month and a week strip from Monday to Sunday, in both languages. Today is marked, each day with classes has a dot, and the teacher can move to the previous or next week.
+- **AC-005-18.** Dia shows the chosen day as a 24-hour grid, opening at the first class (or the current time on a day without classes), with a colored block per class: name, subject or place, and time. The next class is marked "Próxima".
 - **AC-005-19.** Above the grid the day reads "Hoje · 5 aulas" (or the date) and "Previsto R$ 380". Expected counts the classes with a price; when a class is covered by a salary, it adds "+ escola".
 - **AC-005-20.** Semana shows the seven days side by side with the same blocks.
 - **AC-005-21.** Two classes at overlapping times are both visible, side by side.
 
 ### Hoje
 
-- **AC-005-22.** Hoje opens with the date ("Segunda, 26 de outubro") and a greeting for the time of day (Bom dia, Boa tarde, Boa noite).
+- **AC-005-22.** Hoje opens with the date ("Segunda, 26 de outubro") and a greeting for the time of day (Bom dia, Boa tarde, Boa noite), with no name until first-run setup asks for it.
 - **AC-005-23.** "Próxima aula" shows the next class that has not started yet ("em 25 min", or the day and time if it is not today), with the student or group, subject, place, rate, start time and duration.
 - **AC-005-24.** "Aulas de hoje" lists today's classes in time order with their count, time, name, place and duration, and the expected value.
 - **AC-005-25.** With no classes, Hoje and Agenda keep their empty states.
@@ -80,10 +80,7 @@ The teacher puts their week into Tutora once: recurring classes (weekly or every
 - Hoje shows the next class and the day's list. Money cards come with 006, 008 and 009.
 - No drag to reschedule.
 - Scheduled classes follow price changes. Only a class whose value was typed by hand keeps its value, until it is done (006).
-
-## Open questions
-
-- Week start in English: proposal Monday in both languages, as in the mockup, since a teacher's week starts on Monday.
-- "Esta e as próximas" over a later class that was already changed on its own: proposal it keeps its own changes.
-- Hour grid range on Dia: proposal 07:00 to 22:00, widening to fit any class outside it.
-- Greeting without a name until first-run setup asks for it (014): proposal "Boa tarde".
+- The week starts on Monday in both languages.
+- "Esta e as próximas" leaves a later class that was changed on its own as it is.
+- The Dia grid covers the full 24 hours.
+- The greeting has no name until 014.
