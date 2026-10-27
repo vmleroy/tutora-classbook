@@ -1,7 +1,5 @@
 import { typeStyles, type TypeStyleName } from '@/ui/theme/tokens';
 
-export { typeStyles, type TypeStyleName };
-
 export type TypeStyle = (typeof typeStyles)[TypeStyleName];
 
 /** Font family class per weight: Nunito ships one file per weight. */

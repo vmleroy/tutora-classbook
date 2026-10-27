@@ -2,8 +2,7 @@ import { fireEvent, render, screen } from 'react-native-css-interop/test';
 
 import { Button, Card, EmptyState, Screen, Text } from '@/ui/components';
 import { ThemeProvider } from '@/ui/theme/ThemeProvider';
-
-import { withAppStyles } from '../../../../tests/nativewind';
+import { withAppStyles } from '@tests/nativewind';
 
 withAppStyles();
 

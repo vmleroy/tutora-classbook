@@ -6,7 +6,7 @@ import type { PaletteToken as TokenName } from '@/domain/theme/palette';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
-import { size as sizes, touchSlop } from '@/ui/theme/metrics';
+import { sizes, touchSlop } from '@/ui/theme/sizes';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 
 type Variant = 'primary' | 'accent' | 'outline' | 'ghost' | 'danger';

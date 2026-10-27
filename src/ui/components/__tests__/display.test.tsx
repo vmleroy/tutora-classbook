@@ -3,8 +3,7 @@ import { screen } from 'react-native-css-interop/test';
 import { colorSets } from '@/domain/theme/colorSets';
 import { Avatar, Badge, Card, EarningsSummary, Money, ProgressBar, TagDot } from '@/ui/components';
 import { formatMoney } from '@/ui/format';
-
-import { renderComponent, testSets, withAppStyles } from '../../../../tests/components';
+import { renderComponent, testSets, withAppStyles } from '@tests/components';
 
 withAppStyles();
 

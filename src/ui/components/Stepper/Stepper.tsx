@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { Icon } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
-import { touchSlop } from '@/ui/theme/metrics';
+import { touchSlop } from '@/ui/theme/sizes';
 
 export interface StepperProps {
   value?: number;

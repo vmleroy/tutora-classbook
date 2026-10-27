@@ -50,7 +50,8 @@ Thirty components cover every mockup screen. They are grouped as Foundations (Ic
 
 The design system is the code in `src/ui`; there is no separate reference implementation.
 
-- **Tokens:** `src/ui/theme/tokens.json` is the source of every color, type style, spacing, radius, size and opacity. `tailwind.config.js` and the theme code read it; nothing copies values by hand.
+- **Theme:** `src/ui/theme/` holds `tokens/` (`tokens.json`, the source, and the generated `tokens.ts`), `ThemeProvider/` (sets the palette as CSS variables; `useTheme()`), `typography.ts` (weights, Large text scale), `sizes.ts` (touch target, control sizes, `touchSlop`), `shadow.ts` and `motion.ts`. Import from `@/ui/theme` or the file itself.
+- **Tokens:** `src/ui/theme/tokens/tokens.json` is the source of every color, type style, spacing, radius, size and opacity. `tailwind.config.js` and the theme code read it; nothing copies values by hand.
 - **Components:** `src/ui/components/<Name>/<Name>.tsx`, one folder per component with an `index.ts`; import them as `@/ui/components` or `@/ui/components/<Name>`. Component tests live in `src/ui/components/__tests__/`. Each takes the props listed in its guideline (`docs/design-system/components/<Name>/README.md`, section Props), styled with NativeWind classes that map to the tokens (see the Tailwind section).
 - **Preview:** the developer screen `/dev/components` (development builds only) shows every component in every variant, with a theme, mode and text-size switcher. The published [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei) is the original visual reference. The web prototype it was built from (`design-system/components/bundle.js`, `bundle.css` and the `preview.html` files) is kept only in git history, at commit `7c3c831`, for exact measurements while porting.
 

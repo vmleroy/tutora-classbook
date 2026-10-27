@@ -13,8 +13,9 @@ import {
   type Scheme,
   type ThemeMode,
 } from '@/domain/theme/palette';
-import { LARGE_TEXT_SCALE } from '@/ui/theme/type';
-import { useSystemScheme } from '@/ui/theme/useSystemScheme';
+import { LARGE_TEXT_SCALE } from '@/ui/theme/typography';
+
+import { useSystemScheme } from './useSystemScheme';
 
 type ThemeValue = Readonly<{
   palette: Palette;

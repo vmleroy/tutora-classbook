@@ -3,13 +3,7 @@ import { fireEvent, screen } from 'react-native-css-interop/test';
 
 import { colorSets } from '@/domain/theme/colorSets';
 import { BottomSheet, Button, EmptyState, TimerRing } from '@/ui/components';
-
-import {
-  pressableProblems,
-  renderComponent,
-  testSets,
-  withAppStyles,
-} from '../../../../tests/components';
+import { pressableProblems, renderComponent, testSets, withAppStyles } from '@tests/components';
 
 withAppStyles();
 

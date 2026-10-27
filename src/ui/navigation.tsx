@@ -1,8 +1,8 @@
 import { Icon } from '@/ui/components/Icon';
 import { Touchable } from '@/ui/components/Touchable';
-import { size, touchSlop } from '@/ui/theme/metrics';
+import { sizes, touchSlop } from '@/ui/theme/sizes';
 import { useTheme } from '@/ui/theme/ThemeProvider';
-import { typeStyles } from '@/ui/theme/type';
+import { typeStyles } from '@/ui/theme/tokens';
 
 /** Header and tab-bar options shared by every stack, painted from the palette. */
 export function useStackOptions() {
@@ -36,7 +36,7 @@ export function HeaderIconButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
-      hitSlop={touchSlop(size.touch)}
+      hitSlop={touchSlop(sizes.touch)}
       className="h-touch w-touch items-center justify-center rounded-full"
     >
       <Icon name={icon} tone="ink" />

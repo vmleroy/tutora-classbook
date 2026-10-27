@@ -6,6 +6,7 @@ module.exports = {
   resolver: 'react-native-reanimated/jest/resolver',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@tests/(.*)$': '<rootDir>/tests/$1',
     // global.css is compiled by Metro; tests register the compiled CSS themselves.
     '\\.css$': '<rootDir>/tests/styleStub.js',
     // The package's default entry is ESM (.mjs); Jest loads its CommonJS build instead.

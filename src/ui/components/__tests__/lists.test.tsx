@@ -13,13 +13,7 @@ import {
   TabBar,
   WeekStrip,
 } from '@/ui/components';
-
-import {
-  pressableProblems,
-  renderComponent,
-  testSets,
-  withAppStyles,
-} from '../../../../tests/components';
+import { pressableProblems, renderComponent, testSets, withAppStyles } from '@tests/components';
 
 withAppStyles();
 

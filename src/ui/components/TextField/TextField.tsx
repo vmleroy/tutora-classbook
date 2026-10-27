@@ -3,7 +3,7 @@ import { tv } from 'tailwind-variants';
 
 import { Text } from '@/ui/components/Text';
 import { useTheme } from '@/ui/theme/ThemeProvider';
-import { typeStyles } from '@/ui/theme/type';
+import { typeStyles } from '@/ui/theme/tokens';
 
 export interface TextFieldProps {
   label: string;

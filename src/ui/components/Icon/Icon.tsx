@@ -22,7 +22,7 @@ import {
 } from 'lucide-react-native';
 
 import type { PaletteToken as TokenName } from '@/domain/theme/palette';
-import { size as sizes } from '@/ui/theme/metrics';
+import { sizes } from '@/ui/theme/sizes';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 
 export type IconName =

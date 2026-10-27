@@ -4,9 +4,9 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
-import { size as sizes, touchSlop } from '@/ui/theme/metrics';
 import { useMotion } from '@/ui/theme/motion';
 import { shadowStyle } from '@/ui/theme/shadow';
+import { sizes, touchSlop } from '@/ui/theme/sizes';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 
 export interface SegmentedControlProps<T extends string = string> {

@@ -1,7 +1,7 @@
 # Plan 002: Design system
 
 Architecture reference: [`docs/architecture.md`](../../architecture.md), sections "Theming and i18n" and "Architecture layers".
-Design reference: `src/ui/theme/tokens.json` holds every token; [`docs/design-system/`](../../design-system/) holds `README.md` (usage rules, primitives, shared types), `Tailwind.md`, `Theming.md` and `components/<Name>/README.md` (rules and props). The published [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei) is the visual reference.
+Design reference: `src/ui/theme/tokens/tokens.json` holds every token; [`docs/design-system/`](../../design-system/) holds `README.md` (usage rules, primitives, shared types), `Tailwind.md`, `Theming.md` and `components/<Name>/README.md` (rules and props). The published [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei) is the visual reference.
 
 ## Approach
 
@@ -10,8 +10,8 @@ Design reference: `src/ui/theme/tokens.json` holds every token; [`docs/design-sy
 ## Files created or changed
 
 ```text
-scripts/tokens.ts                 src/ui/theme/tokens.json → src/ui/theme/tokens.ts (+ --check mode for CI)
-src/ui/theme/tokens.ts            GENERATED: 8 color sets, type styles, spacing, radius, size, opacity, shadow
+scripts/tokens.ts                 src/ui/theme/tokens/tokens.json → src/ui/theme/tokens/tokens.ts (+ --check mode for CI)
+src/ui/theme/tokens/tokens.ts            GENERATED: 8 color sets, type styles, spacing, radius, size, opacity, shadow
 src/domain/theme/palette.ts       resolvePalette(theme, mode, systemScheme, customColors) → Record<token, hex>
 src/domain/theme/contrast.ts      WCAG ratio, onColor(bg) flip, OKLCH lighten/deepen (culori)
 src/ui/theme/ThemeProvider.tsx    hex → "r g b" channels, vars(), wraps the root view

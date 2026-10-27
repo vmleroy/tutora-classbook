@@ -2,7 +2,8 @@ import { Text as RNText, type TextProps } from 'react-native';
 
 import { cn } from '@/ui/cn';
 import { useTheme } from '@/ui/theme/ThemeProvider';
-import { typeStyles, weightClass, type TypeStyle, type TypeStyleName } from '@/ui/theme/type';
+import { typeStyles, type TypeStyleName } from '@/ui/theme/tokens';
+import { weightClass, type TypeStyle } from '@/ui/theme/typography';
 
 type Props = TextProps & {
   variant?: TypeStyleName;

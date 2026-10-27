@@ -11,13 +11,7 @@ import {
   Switch,
   TextField,
 } from '@/ui/components';
-
-import {
-  pressableProblems,
-  renderComponent,
-  testSets,
-  withAppStyles,
-} from '../../../../tests/components';
+import { pressableProblems, renderComponent, testSets, withAppStyles } from '@tests/components';
 
 withAppStyles();
 

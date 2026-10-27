@@ -4,12 +4,11 @@ import { act, render, screen } from 'react-native-css-interop/test';
 
 import { Text } from '@/ui/components/Text';
 import { ThemeProvider } from '@/ui/theme/ThemeProvider';
-
-import { withAppStyles } from '../../../tests/nativewind';
+import { withAppStyles } from '@tests/nativewind';
 
 let mockScheme: 'light' | 'dark' | null = 'light';
 const mockListeners = new Set<() => void>();
-jest.mock('@/ui/theme/useSystemScheme', () => {
+jest.mock('@/ui/theme/ThemeProvider/useSystemScheme', () => {
   const { useSyncExternalStore } = jest.requireActual('react');
   return {
     useSystemScheme: () =>

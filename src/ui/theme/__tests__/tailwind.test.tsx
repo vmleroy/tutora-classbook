@@ -3,8 +3,7 @@ import { render, screen } from 'react-native-css-interop/test';
 
 import { ThemeProvider } from '@/ui/theme/ThemeProvider';
 import { colorSets, radius, spacing, typeStyles, type ColorToken } from '@/ui/theme/tokens';
-
-import { appCss, withAppStyles } from '../../../tests/nativewind';
+import { appCss, withAppStyles } from '@tests/nativewind';
 
 withAppStyles();
 

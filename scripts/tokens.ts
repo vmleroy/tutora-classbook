@@ -1,4 +1,4 @@
-// Turns src/ui/theme/tokens.json into src/ui/theme/tokens.ts.
+// Turns src/ui/theme/tokens/tokens.json into src/ui/theme/tokens/tokens.ts.
 //   npm run tokens            write the file
 //   npm run tokens -- --check fail if the committed file is out of date (CI)
 import fs from 'node:fs';
@@ -6,8 +6,8 @@ import path from 'node:path';
 
 import { format, resolveConfig } from 'prettier';
 
-export const TOKENS_JSON = 'src/ui/theme/tokens.json';
-export const TOKENS_TS = 'src/ui/theme/tokens.ts';
+export const TOKENS_JSON = 'src/ui/theme/tokens/tokens.json';
+export const TOKENS_TS = 'src/ui/theme/tokens/tokens.ts';
 export const COLOR_SETS_TS = 'src/domain/theme/colorSets.ts';
 
 const root = path.resolve(__dirname, '..');

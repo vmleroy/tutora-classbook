@@ -1,7 +1,7 @@
 import { contrastRatio } from '@/domain/theme/contrast';
 import { colorSetIds, colorSets, type ColorToken } from '@/ui/theme/tokens';
 
-// Text pairs named in the token usage notes (src/ui/theme/tokens.json): [text, ground, minimum].
+// Text pairs named in the token usage notes (src/ui/theme/tokens/tokens.json): [text, ground, minimum].
 const AA = 4.5;
 const LARGE = 3;
 const tags = ['amber', 'green', 'blue', 'violet', 'orange', 'red', 'teal'] as const;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 
-import { opacity } from '@/ui/theme/metrics';
+import { opacities } from '@/ui/theme/sizes';
 
 type Props = Omit<PressableProps, 'style'> & {
   className?: string;
@@ -33,7 +33,7 @@ export function Touchable({
         setPressed(false);
         onPressOut?.(e);
       }}
-      style={[style, pressedFeedback && pressed && { opacity: opacity.pressed }]}
+      style={[style, pressedFeedback && pressed && { opacity: opacities.pressed }]}
     />
   );
 }

@@ -3,7 +3,7 @@ import { tv } from 'tailwind-variants';
 
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
-import { size, touchSlop } from '@/ui/theme/metrics';
+import { sizes, touchSlop } from '@/ui/theme/sizes';
 
 export interface ChipProps {
   label: string;
@@ -30,7 +30,7 @@ export function Chip({ label, selected, onPress }: ChipProps) {
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: on }}
-      hitSlop={touchSlop(size.controlSm)}
+      hitSlop={touchSlop(sizes.controlSm)}
       onPress={() => {
         setOwn(!on);
         onPress?.(!on);

@@ -18,7 +18,7 @@ Expo (React Native, TypeScript strict, Expo Router) · NativeWind (Tailwind) · 
 | [`docs/architecture.md`](docs/architecture.md) | Architecture and technology v1                                                                  |
 | [`docs/mockups/`](docs/mockups/)               | The 27 screen mockups                                                                           |
 | [`docs/design-system/`](docs/design-system/)   | Design system usage rules, Tailwind and theming notes, and a guideline with props per component |
-| [`src/ui/`](src/ui/)                           | The design system in code: tokens (`theme/tokens.json`), theme and the shared components        |
+| [`src/ui/`](src/ui/)                           | The design system in code: tokens (`theme/tokens/tokens.json`), theme and the shared components        |
 | [`.claude/commands/`](.claude/commands/)       | `/spec`, `/plan`, `/implement`, `/verify`                                                       |
 
 ## Working with Claude Code

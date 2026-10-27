@@ -2,14 +2,13 @@ import { fireEvent, screen } from 'react-native-css-interop/test';
 
 import { colorSets } from '@/domain/theme/colorSets';
 import { Button, Fab, Icon, IconButton } from '@/ui/components';
-
 import {
   pressableCount,
   pressableProblems,
   renderComponent,
   testSets,
   withAppStyles,
-} from '../../../../tests/components';
+} from '@tests/components';
 
 withAppStyles();
 

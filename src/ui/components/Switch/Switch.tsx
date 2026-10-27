@@ -3,8 +3,8 @@ import { View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { Touchable } from '@/ui/components/Touchable';
-import { touchSlop } from '@/ui/theme/metrics';
 import { useMotion } from '@/ui/theme/motion';
+import { touchSlop } from '@/ui/theme/sizes';
 
 export interface SwitchProps {
   value?: boolean;

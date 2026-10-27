@@ -3,8 +3,7 @@ import * as Reanimated from 'react-native-reanimated';
 
 import { BottomSheet, SegmentedControl, Switch } from '@/ui/components';
 import { MOTION_MS } from '@/ui/theme/motion';
-
-import { renderComponent, withAppStyles } from '../../../tests/components';
+import { renderComponent, withAppStyles } from '@tests/components';
 
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual('react-native-reanimated');
