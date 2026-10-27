@@ -36,7 +36,7 @@ Read these when the spec points to them, not all up front:
 
 ## Rules that are easy to get wrong
 
-- Money is integer cents with a currency. Never floats. Rounding lives only in `src/domain/money.ts`.
+- Money is integer cents of reais (v1 has no USD). Never floats. Rounding lives only in `src/domain/money.ts`.
 - `src/domain/` imports nothing from React, Expo, React Native or SQLite. Pass `now` in.
 - Screens never touch `src/data/`. Every write is a use case in one transaction.
 - No hex colors, raw font sizes or raw spacing in `src/app` or `src/ui/components`; use token classes (`bg-primary`, `text-ink-muted`, `p-4`). Mockup hex values map to tokens.
