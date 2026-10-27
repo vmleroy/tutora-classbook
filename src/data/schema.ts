@@ -112,3 +112,72 @@ export const groupMember = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.groupId, t.studentId] })],
 );
+
+/** A repeating class (spec 005): wall-clock time in its own zone, filled 8 weeks ahead. */
+export const scheduleRule = sqliteTable(
+  'schedule_rule',
+  {
+    id: text('id').primaryKey(),
+    studentId: text('student_id').references(() => student.id, { onDelete: 'cascade' }),
+    groupId: text('group_id').references(() => groupClass.id, { onDelete: 'cascade' }),
+    placeId: text('place_id')
+      .notNull()
+      .references(() => place.id, { onDelete: 'cascade' }),
+    weekday: integer('weekday').notNull(),
+    startTime: text('start_time').notNull(),
+    durationMin: integer('duration_min').notNull(),
+    repeat: text('repeat', { enum: ['weekly', 'biweekly'] }).notNull(),
+    startsOn: text('starts_on').notNull(),
+    endsOn: text('ends_on'),
+    timeZone: text('time_zone').notNull(),
+    valueCents: integer('value_cents'),
+    travelFeeCents: integer('travel_fee_cents'),
+    generatedUntil: text('generated_until').notNull(),
+    ...stamps,
+  },
+  (t) => [check('schedule_rule_who', sql`(${t.studentId} IS NULL) <> (${t.groupId} IS NULL)`)],
+);
+
+/** A date removed from a series with "Só esta aula", so filling never brings it back. */
+export const ruleSkip = sqliteTable(
+  'rule_skip',
+  {
+    ruleId: text('rule_id')
+      .notNull()
+      .references(() => scheduleRule.id, { onDelete: 'cascade' }),
+    occurrenceDate: text('occurrence_date').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.ruleId, t.occurrenceDate] })],
+);
+
+/** A class. While scheduled it stores no price: its value follows the current price. */
+export const lesson = sqliteTable(
+  'lesson',
+  {
+    id: text('id').primaryKey(),
+    ruleId: text('rule_id').references(() => scheduleRule.id, { onDelete: 'set null' }),
+    occurrenceDate: text('occurrence_date'),
+    studentId: text('student_id').references(() => student.id, { onDelete: 'cascade' }),
+    groupId: text('group_id').references(() => groupClass.id, { onDelete: 'cascade' }),
+    placeId: text('place_id')
+      .notNull()
+      .references(() => place.id, { onDelete: 'cascade' }),
+    startAt: text('start_at').notNull(),
+    plannedMin: integer('planned_min').notNull(),
+    status: text('status', { enum: ['scheduled'] })
+      .notNull()
+      .default('scheduled'),
+    valueCents: integer('value_cents'),
+    travelFeeCents: integer('travel_fee_cents'),
+    isDetached: integer('is_detached', { mode: 'boolean' }).notNull().default(false),
+    notes: text('notes'),
+    ...stamps,
+  },
+  (t) => [
+    check('lesson_who', sql`(${t.studentId} IS NULL) <> (${t.groupId} IS NULL)`),
+    uniqueIndex('lesson_occurrence').on(t.ruleId, t.occurrenceDate),
+    index('lesson_start').on(t.startAt),
+    index('lesson_student_start').on(t.studentId, t.startAt),
+    index('lesson_place_start').on(t.placeId, t.startAt),
+  ],
+);
