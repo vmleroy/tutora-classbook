@@ -1,5 +1,7 @@
 package com.vmleroy.tutora.domain
 
+import com.vmleroy.tutora.domain.theme.CustomPart
+
 enum class ThemeMode(
     val key: String,
 ) {
@@ -16,4 +18,5 @@ data class Settings(
     val setupDone: Boolean = false,
     val textScale: String = "normal",
     val showDefaultPlaces: Boolean = true,
+    val customColors: Map<CustomPart, String> = emptyMap(),
 )
