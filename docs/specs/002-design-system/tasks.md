@@ -10,5 +10,10 @@
 - [x] 8. Lists and navigation: SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner, ScreenHeader, TabBar, WeekStrip, AgendaBlock.
 - [x] 9. Feedback: BottomSheet, EmptyState, TimerRing.
 - [x] 10. Lint rule against raw colors, font sizes and spacing. (AC-002-14)
-- [ ] 11. Developer component screen with theme and mode switcher; Maestro screenshot flow with Large text. (AC-002-15, AC-002-16)
+- [x] 11. Developer component screen with theme and mode switcher; Maestro screenshot flow with Large text. (AC-002-15, AC-002-16)
 - [x] 12. Reduce-motion handling in animated components. (AC-002-17)
+
+## Criteria proven on a device
+
+- **AC-002-16:** `.maestro/ds-large-text.yaml` screenshots all 30 components with Large text at 360 dp, in light and dark (60 screenshots). It ran on an API 36 emulator against a release build made with `EXPO_PUBLIC_DEV_GALLERY=1` on 26 Oct 2026. Nothing clips or overlaps. The run first caught a sheet's actions stacking and then "Cancelar" wrapping mid-word; both were fixed and checked again.
+- **AC-002-5 and AC-002-8b on screen:** the same run shows dark mode switching in place and the hero header on the deep `header` shade.

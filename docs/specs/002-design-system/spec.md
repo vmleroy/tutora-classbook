@@ -1,6 +1,6 @@
 # Spec 002: Design system
 
-Status: in progress
+Status: done
 Depends on: 001 Foundation
 Source of truth: the code in `src/ui` (tokens in `src/ui/theme/tokens.json`, the components) and [`docs/design-system/`](../../design-system/) (usage rules, component guidelines and props), also published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei)
 
