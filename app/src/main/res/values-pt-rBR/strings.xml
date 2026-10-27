@@ -5,6 +5,8 @@
     <string name="tab_registry">Cadastro</string>
     <string name="tab_earnings">Ganhos</string>
     <string name="tab_settings">Ajustes</string>
+    <string name="tab_students">Alunos</string>
+    <string name="tab_places">Locais</string>
 
     <string name="empty_today_title">Nenhuma aula hoje</string>
     <string name="empty_today_body">As aulas do dia, o que você ganhou e a próxima aula aparecem aqui.</string>

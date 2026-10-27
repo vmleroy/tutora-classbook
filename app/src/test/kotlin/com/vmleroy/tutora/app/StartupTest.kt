@@ -39,6 +39,11 @@ class StartupTest {
             openDatabase = { openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver()) },
             phoneTags = { listOf(phone) },
             now = { "2026-10-27T12:00:00.000Z" },
+            newId = {
+                java.util.UUID
+                    .randomUUID()
+                    .toString()
+            },
         )
 
     @Test
@@ -77,7 +82,11 @@ class StartupTest {
             }
             val result = startApp("pt-BR")()
             assertTrue(result is StartResult.Failed)
-            compose.setContent { TutoraTheme { StartupError("/data/tutora-pre-v2.db", (result as StartResult.Failed).message) } }
+            compose.setContent {
+                TutoraTheme(
+                    dark = false,
+                ) { StartupError("/data/tutora-pre-v2.db", (result as StartResult.Failed).message) }
+            }
             compose.onNodeWithText("Não foi possível atualizar seus dados").assertExists()
             compose.onNodeWithText("Cópia salva em: /data/tutora-pre-v2.db").assertExists()
             compose.onNodeWithTag("tab-today").assertDoesNotExist()

@@ -18,8 +18,8 @@ android {
         targetSdk = 37
         // Must grow on every release build installed over the previous one.
         versionCode = env("TUTORA_VERSION_CODE")?.toInt() ?: 1
-        // Follows the last spec shipped: 1.1.0 = spec 001.
-        versionName = "1.1.0"
+        // Follows the last spec shipped: 1.5.0 = specs 001 to 005.
+        versionName = "1.5.0"
     }
 
     signingConfigs {
@@ -44,6 +44,9 @@ android {
         compose = true
         buildConfig = true
     }
+    // The app switches language itself (Ajustes), so every language stays in the base APK.
+    bundle { language { enableSplit = false } }
+
     androidResources {
         // Lets the per-app language list include pt-BR and en (Android 13+ settings page).
         generateLocaleConfig = true

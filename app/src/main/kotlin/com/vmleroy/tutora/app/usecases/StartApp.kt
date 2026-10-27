@@ -12,6 +12,7 @@ sealed interface StartResult {
         val db: TutoraDatabase,
         val settings: Settings,
         val schemaVersion: Int,
+        val ctx: Ctx,
     ) : StartResult
 
     data class Failed(
@@ -22,13 +23,15 @@ sealed interface StartResult {
 }
 
 /**
- * Opens and migrates the database, then makes sure every setting exists. A first run takes
+ * Opens and migrates the database, makes sure every setting and built-in place exists, and
+ * fills repeating classes. A first run takes
  * the language from the phone; afterwards the saved setting rules (AC-001-5, AC-001-6).
  */
 class StartApp(
     private val openDatabase: () -> Pair<TutoraDatabase, String?>,
     private val phoneTags: () -> List<String>,
     private val now: () -> String,
+    private val newId: () -> String,
 ) {
     suspend operator fun invoke(): StartResult {
         val phone = phoneTags()
@@ -39,7 +42,11 @@ class StartApp(
             // The first query runs Room's pending migrations.
             val repo = SettingsRepository(db)
             repo.ensureDefaults(firstRunLanguage(phone), now())
-            StartResult.Ready(db, repo.load(), TutoraDatabase.VERSION)
+            val ctx = Ctx(db, now, newId)
+            Catalog(ctx).ensureBuiltinPlaces()
+            // Repeating classes stay filled 8 weeks ahead (AC-005-8).
+            Schedule(ctx).fillSchedule()
+            StartResult.Ready(db, repo.load(), TutoraDatabase.VERSION, ctx)
         } catch (e: Exception) {
             StartResult.Failed(startupLanguage(null, phone), backup, e.message ?: e.toString())
         }
