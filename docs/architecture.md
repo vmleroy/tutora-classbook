@@ -146,6 +146,11 @@ CREATE INDEX lesson_student_start ON lesson(student_id, start_at);
 CREATE INDEX lesson_place_start ON lesson(place_id, start_at);
 ```
 
+**As built in spec 005.**
+- A scheduled `lesson` stores no `rate_type` / `rate_cents`. Its value is resolved on every read from the current prices (`lessonWorth`), so price changes reach every class still on the schedule. Only a value the teacher typed (`value_cents`) is kept. 006 adds `actual_min`, `earned_cents`, fees and the full status set, and freezes the value when a class is done.
+- `schedule_rule` keeps `starts_on` / `ends_on` (local dates), `start_time`, `time_zone` and `generated_until`. `rule_skip` remembers dates removed with "Só esta aula". A unique `(rule_id, occurrence_date)` index makes filling idempotent.
+- Filling runs at start-up and whenever the app returns to the foreground.
+
 Balances stay computed, never stored: a `v_balance` view sums `earned_cents + travel + kept fees` on done, cancelled-with-fee and missed lessons per payer, minus `payment` amounts, all in reais.
 
 **Migrations.** Drizzle schema in `data/schema.ts` is the source; `drizzle-kit generate` writes numbered SQL files that are bundled with the app and applied at start-up before the first screen renders, tracked in Drizzle's migrations table. Rules: migrations only go forward; each is tested against a seeded database of the previous version; before applying any pending migration the app copies the database file to `tutora-pre-v{n}.db` so a bad update is recoverable. The start-up also sets `PRAGMA journal_mode=WAL` and `foreign_keys=ON`.

@@ -63,7 +63,7 @@ This departs from the architecture's `lesson` sketch: `rate_type` / `rate_cents`
   - start time as a `TextField kind="duration"` limited to 23:59, in hh:mm
   - `DurationStepper` and `PriceStepper`
   - travel PriceStepper, Repetir Chips, and the scope SegmentedControl
-- Design system: `WeekStrip` gets a `today` index (the day number underlined in primary) and `AgendaBlock` gets `top` / `left` / `width` placement through `className` and `style`. Both READMEs are updated, and AgendaBlock's guideline drops drag (not planned). `TextField kind="duration"` doubles as a time-of-day field with `maxMinutes={1439}`.
+- Design system: `WeekStrip` gets a `today` index (the day number in primary). AgendaBlock needed no change: the grid places each block in a positioned view, and its guideline now says so and drops drag (not planned). `TextField kind="duration"` doubles as a time-of-day field with `maxMinutes={1439}`.
 
 ## Test strategy
 

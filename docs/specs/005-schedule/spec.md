@@ -1,6 +1,6 @@
 # Spec 005: Schedule
 
-Status: in progress
+Status: done
 Depends on: 004 Places and students
 Mockups: docs/mockups/Main.dc.html, Schedule.dc.html, AddLesson.dc.html (Agendar mode), EditLesson.dc.html (date, time, duration, value and "Aplicar mudanças em")
 
