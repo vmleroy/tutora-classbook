@@ -1,9 +1,8 @@
-import { Touchable } from './components/Touchable';
-
-import { Icon } from './components/Icon';
-import { size, touchSlop } from './theme/metrics';
-import { useTheme } from './theme/ThemeProvider';
-import { typeStyles } from './theme/type';
+import { Icon } from '@/ui/components/Icon';
+import { Touchable } from '@/ui/components/Touchable';
+import { size, touchSlop } from '@/ui/theme/metrics';
+import { useTheme } from '@/ui/theme/ThemeProvider';
+import { typeStyles } from '@/ui/theme/type';
 
 /** Header and tab-bar options shared by every stack, painted from the palette. */
 export function useStackOptions() {

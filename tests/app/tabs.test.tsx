@@ -1,6 +1,6 @@
-import { mockPhone } from './mockPhone';
-
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+
+import { mockPhone } from './mockPhone';
 
 const tabNames = (language: 'pt' | 'en') =>
   language === 'pt'

@@ -1,4 +1,4 @@
-import { opacity as opacityTokens, size as sizeTokens } from './tokens';
+import { opacity as opacityTokens, size as sizeTokens } from '@/ui/theme/tokens';
 
 /** Fixed sizes from the design system, for props that take numbers (icons, hitSlop). */
 export const size = {

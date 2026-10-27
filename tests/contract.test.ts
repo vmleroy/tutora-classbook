@@ -45,7 +45,10 @@ describe('design-system contract', () => {
   it.each(names)('AC-002-10: %s exists in src/ui/components with the documented props', (name) => {
     expect(typeof (components as Record<string, unknown>)[name]).toBe('function');
     const doc = fs.readFileSync(path.join(docsDir, name, 'README.md'), 'utf8');
-    const code = fs.readFileSync(path.join(repoRoot, 'src/ui/components', `${name}.tsx`), 'utf8');
+    const code = fs.readFileSync(
+      path.join(repoRoot, 'src/ui/components', name, `${name}.tsx`),
+      'utf8',
+    );
     const documented = props(doc, name);
     expect(documented.length).toBeGreaterThan(0);
     expect(props(code, name)).toEqual(documented);

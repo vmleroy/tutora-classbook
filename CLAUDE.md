@@ -41,8 +41,9 @@ Read these when the spec points to them, not all up front:
 - Screens never touch `src/data/`. Every write is a use case in one transaction.
 - No hex colors, raw font sizes or raw spacing in `src/app` or `src/ui/components`; use token classes (`bg-primary`, `text-ink-muted`, `p-4`). Mockup hex values map to tokens.
 - Every user-facing string goes through i18n with keys in both `src/i18n/pt-BR.json` and `src/i18n/en.json`.
-- New UI pieces come from the design system's 30 components. If a screen needs a new component, add it to the design system first: the component in `src/ui/components/`, its guideline with props in `docs/design-system/components/<Name>/README.md`, and an entry in the dev gallery.
+- New UI pieces come from the design system's 30 components. If a screen needs a new component, add it to the design system first: the component in its own folder `src/ui/components/<Name>/` (`<Name>.tsx` + `index.ts`), its guideline with props in `docs/design-system/components/<Name>/README.md`, and an entry in the dev gallery.
 - All Markdown documentation lives under `docs/`. Only `README.md`, `CLAUDE.md` and `.claude/commands/` stay at the root.
+- Import app code with the `@/` alias (`@/ui/components`, `@/ui/theme/tokens`, `@/domain/money`), never long relative paths. Inside a component folder only its own `index.ts` uses `./`.
 - Test names carry criterion ids: `it('AC-001-3: …')`.
 - If a spec is ambiguous, write the question under "Open questions" and ask Victor rather than guessing on anything the teacher would see.
 

@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { colorSetIds, colorSets } from '../src/ui/theme/tokens';
+import { colorSetIds, colorSets } from '@/ui/theme/tokens';
+
 import { checkTokens, COLOR_SETS_TS, renderTokens, TOKENS_JSON, TOKENS_TS } from './tokens';
 
 const root = path.resolve(__dirname, '..');

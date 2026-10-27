@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { nodeFiles, tempDatabase } from '../../tests/sqliteNode';
 import { prepareDatabase, schemaVersion } from './db';
 import { migrations } from './migrations';
+import { nodeFiles, tempDatabase } from '../../tests/sqliteNode';
 import journal from './migrations/meta/_journal.json';
 
 // tests/fixtures/migrations/seed-v{n}.sql fills a database at schema version n with typical

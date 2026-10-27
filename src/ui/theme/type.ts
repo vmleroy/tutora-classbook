@@ -1,4 +1,4 @@
-import { typeStyles, type TypeStyleName } from './tokens';
+import { typeStyles, type TypeStyleName } from '@/ui/theme/tokens';
 
 export { typeStyles, type TypeStyleName };
 

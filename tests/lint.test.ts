@@ -3,8 +3,8 @@ import path from 'node:path';
 
 import { Linter, type ESLint } from 'eslint';
 
-import tutoraPlugin from '../eslint/tutora-plugin';
 import { repoRoot } from './sourceFiles';
+import tutoraPlugin from '../eslint/tutora-plugin';
 
 // The plugin is plain JS (ESLint loads it directly), so it is typed here.
 const plugin = tutoraPlugin as unknown as ESLint.Plugin;

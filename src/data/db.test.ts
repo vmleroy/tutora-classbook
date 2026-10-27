@@ -1,9 +1,9 @@
 import Database from 'better-sqlite3';
 
-import { nodeFiles, tempDatabase } from '../../tests/sqliteNode';
 import { MigrationError, prepareDatabase, schemaVersion } from './db';
 import { migrations, type Migration } from './migrations';
 import { ensureDefaultSettings, loadSettings } from './repos/settingsRepo';
+import { nodeFiles, tempDatabase } from '../../tests/sqliteNode';
 
 const NOW = '2026-10-26T20:40:00.000Z';
 const v2: Migration = { tag: '9999_test_add_note', sql: 'ALTER TABLE `settings` ADD `note` text;' };

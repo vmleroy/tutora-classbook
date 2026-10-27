@@ -3,8 +3,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Text, View } from 'react-native';
 import { registerCSS, setupAllComponents } from 'react-native-css-interop/test';
 
-import { appCss } from '../nativewind';
 import RootLayout from '@/app/_layout';
+
+import { appCss } from '../nativewind';
 
 // --- Phone: fonts load on demand, locale is Portuguese, splash is observable. ---
 const mockFonts: { loaded: boolean; resolve: (() => void) | null } = {

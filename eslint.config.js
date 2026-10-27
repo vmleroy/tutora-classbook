@@ -11,6 +11,21 @@ module.exports = defineConfig([
     ignores: ['node_modules/', '.expo/', 'android/', 'ios/', 'dist/', 'coverage/', 'expo-env.d.ts'],
   },
   {
+    // One import order everywhere: packages, then @/ modules, then relative files.
+    rules: {
+      'import/order': [
+        'warn',
+        {
+          groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
+          pathGroups: [{ pattern: '@/**', group: 'internal' }],
+          pathGroupsExcludedImportTypes: ['builtin'],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
+      ],
+    },
+  },
+  {
     // Constitution rule 7: the domain core is pure. tests/boundaries.test.ts checks the same list.
     files: ['src/domain/**/*.{ts,tsx}'],
     rules: {

@@ -1,8 +1,9 @@
 import './mockPhone';
 
-import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import fs from 'node:fs';
 import path from 'node:path';
+
+import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { pressableCount, pressableProblems } from '../components';
 import { repoRoot } from '../sourceFiles';

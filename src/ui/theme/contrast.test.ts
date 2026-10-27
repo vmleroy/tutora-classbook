@@ -1,6 +1,5 @@
 import { contrastRatio } from '@/domain/theme/contrast';
-
-import { colorSetIds, colorSets, type ColorToken } from './tokens';
+import { colorSetIds, colorSets, type ColorToken } from '@/ui/theme/tokens';
 
 // Text pairs named in the token usage notes (src/ui/theme/tokens.json): [text, ground, minimum].
 const AA = 4.5;

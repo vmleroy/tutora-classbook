@@ -1,8 +1,7 @@
 import { Platform, type ViewStyle } from 'react-native';
 
 import type { ColorSetId } from '@/domain/theme/colorSets';
-
-import { shadows } from './tokens';
+import { shadows } from '@/ui/theme/tokens';
 
 /**
  * A shadow token as platform props: iOS shadow*, Android elevation. Dark sets have none.

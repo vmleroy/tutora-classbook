@@ -6,7 +6,6 @@ import { registerCSS, setupAllComponents } from 'react-native-css-interop/test';
 import tailwind from 'tailwindcss';
 
 import config from '../tailwind.config.js';
-
 import { repoRoot } from './sourceFiles';
 
 // Metro compiles with the native NativeWind preset; without this, tests get the web preset

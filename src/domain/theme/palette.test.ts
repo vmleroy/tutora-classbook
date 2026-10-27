@@ -1,5 +1,6 @@
 import * as fc from 'fast-check';
 
+import { mix, oklchLightness } from './color';
 import { colorSetIds, colorSets, themeIds } from './colorSets';
 import { contrastRatio } from './contrast';
 import {
@@ -10,7 +11,6 @@ import {
   type CustomColors,
   type CustomPart,
 } from './palette';
-import { mix, oklchLightness } from './color';
 
 // Quadro-negro colors from docs/product.md, "Visual identity" (light / dark).
 const productDoc = {
