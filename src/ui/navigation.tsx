@@ -1,7 +1,7 @@
-import { Pressable } from 'react-native';
+import { Touchable } from './components/Touchable';
 
 import { Icon } from './components/Icon';
-import { opacity, size, touchSlop } from './theme/metrics';
+import { size, touchSlop } from './theme/metrics';
 import { useTheme } from './theme/ThemeProvider';
 import { typeStyles } from './theme/type';
 
@@ -32,16 +32,15 @@ export function HeaderIconButton({
   testID?: string;
 }) {
   return (
-    <Pressable
+    <Touchable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}
       hitSlop={touchSlop(size.touch)}
       className="h-touch w-touch items-center justify-center rounded-full"
-      style={({ pressed }) => (pressed ? { opacity: opacity.pressed } : undefined)}
     >
       <Icon name={icon} tone="ink" />
-    </Pressable>
+    </Touchable>
   );
 }

@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { tv } from 'tailwind-variants';
+import { Touchable } from './Touchable';
 
 import type { PaletteToken as TokenName } from '@/domain/theme/palette';
 
-import { opacity, size as sizes, touchSlop } from '../theme/metrics';
+import { size as sizes, touchSlop } from '../theme/metrics';
 import { useTheme } from '../theme/ThemeProvider';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
@@ -69,14 +70,13 @@ export function Button({
   const { palette } = useTheme();
   const inactive = !!(disabled || loading);
   return (
-    <Pressable
+    <Touchable
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive, busy: !!loading }}
       disabled={inactive}
       onPress={onPress}
       hitSlop={touchSlop(heights[size])}
       className={button({ variant, size, fullWidth, inactive })}
-      style={({ pressed }) => (pressed ? { opacity: opacity.pressed } : undefined)}
     >
       {loading ? (
         <ActivityIndicator size="small" color={palette[labelTone[variant]]} />
@@ -93,6 +93,6 @@ export function Button({
           {children}
         </Text>
       </View>
-    </Pressable>
+    </Touchable>
   );
 }

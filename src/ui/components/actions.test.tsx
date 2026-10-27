@@ -70,7 +70,7 @@ describe.each(testSets)('actions in %s', (set) => {
     );
     const button = screen.getByRole('button', { name: 'Gerar PDF' });
     expect(button.props.accessibilityState).toMatchObject({ busy: true, disabled: true });
-    fireEvent.press(button);
+    await fireEvent.press(button);
     expect(onPress).not.toHaveBeenCalled();
   });
 
@@ -84,7 +84,7 @@ describe.each(testSets)('actions in %s', (set) => {
       );
       const button = screen.getByRole('button', { name: 'Fechar' });
       expect(button).toHaveStyle({ width: 44, height: 44, borderRadius: 999 });
-      fireEvent.press(button);
+      await fireEvent.press(button);
       expect(onPress).toHaveBeenCalled();
       expect(pressableProblems()).toEqual([]);
     },
@@ -110,6 +110,20 @@ describe('custom colors on actions', () => {
     expect(screen.getByRole('button', { name: 'Salvar' })).toHaveStyle({
       backgroundColor: rgba('#7a2e3b'),
     });
+  });
+});
+
+describe('pressed state', () => {
+  it('AC-002-11: a pressed button dims to opacity-pressed and keeps its class styles', async () => {
+    await renderComponent(<Button>Salvar</Button>);
+    const button = screen.getByRole('button', { name: 'Salvar' });
+    await fireEvent(button, 'pressIn');
+    expect(screen.getByRole('button', { name: 'Salvar' })).toHaveStyle({
+      opacity: 0.85,
+      height: 48,
+    });
+    await fireEvent(button, 'pressOut');
+    expect(screen.getByRole('button', { name: 'Salvar' })).not.toHaveStyle({ opacity: 0.85 });
   });
 });
 

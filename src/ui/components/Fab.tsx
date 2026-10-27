@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable } from 'react-native';
+import { Touchable } from './Touchable';
 
-import { opacity } from '../theme/metrics';
 import { useTheme } from '../theme/ThemeProvider';
 import { shadowStyle } from '../theme/shadow';
 import { Icon, type IconName } from './Icon';
@@ -17,14 +16,14 @@ export function Fab({ icon = 'plus', label, onPress }: FabProps) {
   const { t } = useTranslation();
   const { setId } = useTheme();
   return (
-    <Pressable
+    <Touchable
       accessibilityRole="button"
       accessibilityLabel={label ?? t('ui.newLesson')}
       onPress={onPress}
       className="h-fab w-fab items-center justify-center rounded-2xl bg-accent"
-      style={({ pressed }) => [shadowStyle('fab', setId), pressed && { opacity: opacity.pressed }]}
+      style={shadowStyle('fab', setId)}
     >
       <Icon name={icon} size={26} strokeWidth={2.5} tone="on-accent" />
-    </Pressable>
+    </Touchable>
   );
 }

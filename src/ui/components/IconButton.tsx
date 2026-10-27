@@ -1,9 +1,8 @@
-import { Pressable } from 'react-native';
 import { tv } from 'tailwind-variants';
+import { Touchable } from './Touchable';
 
 import type { PaletteToken } from '@/domain/theme/palette';
 
-import { opacity } from '../theme/metrics';
 import { Icon, type IconName } from './Icon';
 
 export interface IconButtonProps {
@@ -43,16 +42,15 @@ export function IconButton({
   onPress,
 }: IconButtonProps) {
   return (
-    <Pressable
+    <Touchable
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
       onPress={onPress}
       className={button({ variant, disabled })}
-      style={({ pressed }) => (pressed ? { opacity: opacity.pressed } : undefined)}
     >
       <Icon name={icon} size={20} strokeWidth={2.2} tone={tone[variant]} />
-    </Pressable>
+    </Touchable>
   );
 }

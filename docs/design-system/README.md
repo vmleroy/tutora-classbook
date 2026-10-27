@@ -60,6 +60,7 @@ Two building blocks sit under the 30 components and are not counted among them:
 
 - **Text:** all app text. `variant` is a type style name (`body`, `title-xl`, `money-xl`…), sized from the tokens and multiplied by the Large text scale; money styles and `tabular` get tabular figures.
 - **Screen:** a screen's scrolling body on `background` with the 20px gutter.
+- **Touchable:** every pressable. It adds the `opacity-pressed` state. Use it instead of `Pressable`: NativeWind drops a function `style` when `className` is set, so pressed styles and sizes passed that way would silently disappear.
 
 ### Shared types
 
