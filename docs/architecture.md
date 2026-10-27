@@ -60,7 +60,7 @@ A use case is the only place that writes: it loads rows through repositories, as
 ```text
 src/
   app/                    Expo Router routes (screens only)
-    (tabs)/today, schedule, students, places, earnings
+    (tabs)/today, schedule, registry (Alunos | Locais), earnings, settings
     lesson/[id].tsx, lesson/[id]/edit.tsx, lesson/new.tsx
     live/[lessonId].tsx   full-screen live lesson
     settings/...          appearance, colors, calendar, backup, fees

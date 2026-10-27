@@ -58,7 +58,7 @@ async function open(path: string, seed?: () => void) {
 
 describe('Locais', () => {
   it('AC-004-1: built-ins first, then your places, with price, duration and students', async () => {
-    await open('/places', seedSalinha);
+    await open('/registry?view=places', seedSalinha);
     expect(await screen.findByText('Salinha Aprender+')).toBeTruthy();
     expect(screen.getByText('Casa do Aluno')).toBeTruthy();
     expect(screen.getByLabelText('Padrão · alunos herdam o preço')).toBeTruthy();
@@ -78,7 +78,7 @@ describe('Locais', () => {
 
   it('AC-004-17: a place shows who pays, its students with + Ligar aluno, and its groups', async () => {
     let id = '';
-    await open('/places', () => (id = seedSalinha()));
+    await open('/registry?view=places', () => (id = seedSalinha()));
     await act(async () => router.push(`/catalog/place/${id}`));
     expect(await screen.findByText('Salinha · Rua das Flores, 120')).toBeTruthy();
     expect(screen.getByText('Quem paga: o local')).toBeTruthy();
@@ -92,7 +92,7 @@ describe('Locais', () => {
   });
 
   it('AC-004-26: built-in names follow the language; typed names never change', async () => {
-    await open('/places', seedSalinha);
+    await open('/registry?view=places', seedSalinha);
     await act(async () => useSettingsStore.getState().setLanguage('en'));
     expect(await screen.findByText("Student's home")).toBeTruthy();
     expect(screen.getByText('Online / Remote')).toBeTruthy();
@@ -101,13 +101,13 @@ describe('Locais', () => {
   });
 
   it('AC-004-23: Arquivados opens from the archive icon in the header', async () => {
-    await open('/places');
+    await open('/registry?view=places');
     await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Arquivados' })));
     expect(await screen.findByTestId('archived')).toBeTruthy();
   });
 
   it('AC-004-29: turning off Mostrar locais padrão hides them from Locais', async () => {
-    await open('/places', seedSalinha);
+    await open('/registry?view=places', seedSalinha);
     await screen.findByText('Salinha Aprender+');
     await act(async () => useSettingsStore.getState().updateSettings({ showDefaultPlaces: false }));
     expect(screen.queryByText('Casa do Aluno')).toBeNull();

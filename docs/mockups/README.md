@@ -8,7 +8,7 @@ Colors in the mockups are hex values from the Quadro-negro light theme. In the a
 
 | File | Screen |
 | --- | --- |
-| [NavMap.dc.html](NavMap.dc.html) | Mapa de navegação |
+| [NavMap.dc.html](NavMap.dc.html) | Mapa de navegação. Out of date since 005: Alunos and Locais are sub-pages of the Cadastro tab, and Ajustes is the fifth tab (no gear on Hoje) |
 | [Palette.dc.html](Palette.dc.html) | Paleta e tipografia |
 | [Themes.dc.html](Themes.dc.html) | Temas · claro e escuro |
 | [Main.dc.html](Main.dc.html) | Hoje · aba 1 |

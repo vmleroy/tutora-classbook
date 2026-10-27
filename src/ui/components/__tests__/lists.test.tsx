@@ -177,18 +177,18 @@ describe.each(testSets)('lists and navigation in %s', (set) => {
 
   it('AC-002-11: TabBar shows five tabs in order with the active one on a soft pill', async () => {
     const onSelect = jest.fn();
-    await renderComponent(<TabBar active="students" onSelect={onSelect} />, { set });
+    await renderComponent(<TabBar active="registry" onSelect={onSelect} />, { set });
     expect(screen.getAllByRole('tab').map((t) => t.props.accessibilityLabel)).toEqual([
       'Hoje',
       'Agenda',
-      'Alunos',
-      'Locais',
+      'Cadastro',
       'Ganhos',
+      'Ajustes',
     ]);
-    expect(screen.getByRole('tab', { name: 'Alunos' }).props.accessibilityState).toMatchObject({
+    expect(screen.getByRole('tab', { name: 'Cadastro' }).props.accessibilityState).toMatchObject({
       selected: true,
     });
-    expect(screen.getByTestId('tab-pill-students')).toHaveStyle({
+    expect(screen.getByTestId('tab-pill-registry')).toHaveStyle({
       backgroundColor: rgba(c['primary-soft']),
     });
     await fireEvent.press(screen.getByRole('tab', { name: 'Ganhos' }));

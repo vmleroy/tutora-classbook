@@ -60,6 +60,10 @@ The teacher puts their week into Tutora once: recurring classes (weekly or every
 - **AC-005-24.** "Aulas de hoje" lists today's classes in time order with their count, time, name, place and duration, and the expected value.
 - **AC-005-25.** With no classes, Hoje and Agenda keep their empty states.
 
+### Navigation
+
+- **AC-005-27.** The tab bar holds Hoje, Agenda, Cadastro, Ganhos and Ajustes. Cadastro has Alunos and Locais as sub-pages, switched at its top; Ajustes is reachable from every screen through its tab (Victor, 27 Oct 2026).
+
 ### Language
 
 - **AC-005-26.** Weekday and month names, dates and times follow the app language; switching it never moves a class.

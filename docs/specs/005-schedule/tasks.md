@@ -11,6 +11,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 7. Nova aula / Editar aula screens. Test: `tests/app/schedule.test.tsx`. (AC-005-1)
 - [x] 8. Agenda (Dia, Semana) and Hoje. Test: `tests/app/schedule.test.tsx`. (AC-005-17, AC-005-18, AC-005-20, AC-005-24, AC-005-25, AC-005-26)
 - [x] 9. Docs: architecture lesson table and time rules as built; full checks.
+- [x] 10. After review: any class can be edited or removed on its own (past ones too); times never wrap; tabs become Hoje, Agenda, Cadastro (Alunos | Locais), Ganhos, Ajustes. Tests: `src/usecases/schedule.test.ts`, `tests/app/schedule.test.tsx`, `tests/app/tabs.test.tsx`. (AC-005-15, AC-005-26, AC-005-27)
 
 ## Pending on a device
 

@@ -4,8 +4,8 @@ import { mockPhone } from './mockPhone';
 
 const tabNames = (language: 'pt' | 'en') =>
   language === 'pt'
-    ? ['Hoje', 'Agenda', 'Alunos', 'Locais', 'Ganhos']
-    : ['Today', 'Schedule', 'Students', 'Places', 'Earnings'];
+    ? ['Hoje', 'Agenda', 'Cadastro', 'Ganhos', 'Ajustes']
+    : ['Today', 'Schedule', 'Directory', 'Earnings', 'Settings'];
 
 // Bottom tabs have the tab role and the tab name as their label.
 function tabBar() {
@@ -39,9 +39,9 @@ describe('tabs', () => {
     await renderRouter('./src/app');
     const expected: [string, string, string][] = [
       ['Agenda', '/schedule', 'Agenda vazia'],
-      ['Alunos', '/students', 'Nenhum aluno ainda'],
-      ['Locais', '/places', 'Casa do Aluno'],
+      ['Cadastro', '/registry', 'Nenhum aluno ainda'],
       ['Ganhos', '/earnings', 'Nada ganho ainda'],
+      ['Ajustes', '/settings', 'Sobre'],
       ['Hoje', '/today', 'Nenhuma aula hoje'],
     ];
     for (const [name, path, title] of expected) {
@@ -51,14 +51,20 @@ describe('tabs', () => {
     }
   });
 
-  it('AC-001-3: the gear on Hoje opens an empty Ajustes with a back button', async () => {
+  it('AC-001-3: Ajustes is a tab, reachable from every screen', async () => {
     await renderRouter('./src/app');
-    await fireEvent.press(screen.getByRole('button', { name: 'Ajustes' }));
+    await fireEvent.press(tab('Ajustes'));
     expect(screen).toHavePathname('/settings');
     // The native header title is not in the JS tree; .maestro/shell.yaml checks it on screen.
     expect(screen.getByTestId('settings-screen')).toBeTruthy();
+  });
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Voltar' }));
-    expect(screen).toHavePathname('/today');
+  it('AC-005-27: Cadastro holds Alunos and Locais as sub-pages', async () => {
+    await renderRouter('./src/app');
+    await fireEvent.press(tab('Cadastro'));
+    expect(screen.getByTestId('students-screen')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('radio', { name: 'Locais' }));
+    expect(await screen.findByTestId('places-screen')).toBeTruthy();
+    expect(screen.getByText('Casa do Aluno')).toBeTruthy();
   });
 });

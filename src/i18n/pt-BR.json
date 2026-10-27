@@ -4,7 +4,9 @@
     "schedule": "Agenda",
     "students": "Alunos",
     "places": "Locais",
-    "earnings": "Ganhos"
+    "registry": "Cadastro",
+    "earnings": "Ganhos",
+    "settings": "Ajustes"
   },
   "empty": {
     "today": {

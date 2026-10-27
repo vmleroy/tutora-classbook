@@ -4,7 +4,9 @@
     "schedule": "Schedule",
     "students": "Students",
     "places": "Places",
-    "earnings": "Earnings"
+    "registry": "Directory",
+    "earnings": "Earnings",
+    "settings": "Settings"
   },
   "empty": {
     "today": {

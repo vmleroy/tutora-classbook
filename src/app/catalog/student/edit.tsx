@@ -247,7 +247,7 @@ function StudentForm({
           }}
           onRemove={() => {
             actions.removePermanently('student', id);
-            router.dismissTo('/students');
+            router.dismissTo('/registry');
           }}
         />
       ) : null}

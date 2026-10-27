@@ -43,7 +43,7 @@ async function open(path: string) {
 
 describe('Alunos', () => {
   it('AC-004-14: lists students and groups by name with search and Por local', async () => {
-    await open('/students');
+    await open('/registry');
     expect(await screen.findByText('Matemática · Online / Remoto, Casa do Aluno')).toBeTruthy();
     expect(
       screen.getByText(/^Redação · Online \/ Remoto · nenhum aluno · R\$\s180\/aula$/),
@@ -61,7 +61,7 @@ describe('Alunos', () => {
   });
 
   it('AC-004-28: every student row shows their initials in their color', async () => {
-    await open('/students');
+    await open('/registry');
     await screen.findByText('Ana Souza');
     // Avatars are decorative (the name is read aloud), so they are hidden from accessibility.
     const hidden = { includeHiddenElements: true };

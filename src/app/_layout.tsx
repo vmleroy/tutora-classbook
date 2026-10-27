@@ -59,7 +59,6 @@ export default function RootLayout() {
               <ScheduleKeeper ready={status === 'ready'} />
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="settings" />
                 <Stack.Screen name="catalog" />
                 <Stack.Screen name="lesson" />
                 <Stack.Screen name="dev/components" />

@@ -267,7 +267,7 @@ function PlaceForm({ id, initial }: { id?: string; initial: Place }) {
           }}
           onRemove={() => {
             actions.removePermanently('place', id);
-            router.dismissTo('/places');
+            router.dismissTo('/registry?view=places');
           }}
         />
       ) : null}
