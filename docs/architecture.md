@@ -10,7 +10,7 @@ The first version (specs 001–005) was built with Expo + React Native and is ar
 
 | Concern | Choice | Why |
 | --- | --- | --- |
-| Language | Kotlin (latest stable), JDK 17, warnings as errors | One language from database to screen; the best Android tooling |
+| Language | Kotlin (latest stable), JDK 21 toolchain, warnings as errors | One language from database to screen; the best Android tooling |
 | UI | Jetpack Compose, Material 3 as the base layer under a Tutora theme built from our tokens | Declarative UI, previews, themes as data; Material 3 gives accessibility and motion for free, our tokens give the look |
 | Navigation | Navigation Compose with type-safe routes: 5 tabs, each with its own back stack, plus full-screen routes | Mirrors the navigation map; typed arguments |
 | Database | Room with exported schemas, `BundledSQLiteDriver` | First-party, compile-checked queries, Flow queries refresh screens by themselves; Room is KMP-capable |
@@ -21,7 +21,7 @@ The first version (specs 001–005) was built with Expo + React Native and is ar
 | Serialization | `kotlinx.serialization` (JSON backups, typed routes) | One library for routes and backups, KMP-ready |
 | i18n | String resources (`values/` English, `values-pt-rBR/` Portuguese) and `<plurals>`; per-app language through `AppCompatDelegate.setApplicationLocales` | The platform's own per-app language, no restart needed; a missing translation fails lint |
 | Tests | JUnit + `kotest-property` (domain), Room on the JVM (data), Compose UI tests under Robolectric (screens), Roborazzi screenshots, Maestro end to end | Everything except Maestro runs on the computer with no emulator |
-| Static analysis | Android Lint, detekt, ktlint | Style, smells, and a custom check for raw colors and sizes in UI code |
+| Static analysis | Android Lint (warnings as errors), ktlint; detekt once it supports the Kotlin in use | Style, missing translations, and source checks for raw colors and domain purity |
 | Build | Gradle with a version catalog; `./gradlew assembleRelease`, one signing key kept safe forever | Free, local; updates install over the old APK and keep data |
 
 ## Why native Kotlin now

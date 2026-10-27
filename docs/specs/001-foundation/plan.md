@@ -6,7 +6,7 @@ Architecture reference: [`docs/architecture.md`](../../architecture.md), all sec
 
 | Piece | Version |
 | --- | --- |
-| Gradle | 9.4.1 (already cached locally) |
+| Gradle | 9.8.2 (AGP 9.4 needs 9.6 or newer) |
 | Android Gradle Plugin | 9.4.1 (built-in Kotlin support) |
 | Kotlin | 2.4.21; KSP 2.3.12 |
 | Compose BOM | 2026.09.00 |
@@ -16,6 +16,8 @@ Architecture reference: [`docs/architecture.md`](../../architecture.md), all sec
 | Tests | JUnit 4.13.2, kotest-property 6.2.6, Robolectric 4.17, Roborazzi 1.77.0 |
 | Lint | Android Lint, ktlint-gradle 14.2.0. Detekt is left out: its Kotlin 2.4 support is still alpha (2.0.0-alpha). |
 | SDK | compileSdk 37, targetSdk 37, minSdk 26 |
+| JDK | 21 toolchain (Robolectric needs it for SDK 36+), downloaded by the Foojay resolver |
+| Espresso | 3.7.0, pinned for UI tests (the Compose rule brings 3.5, which breaks on Android 37) |
 
 ## Approach
 
@@ -68,5 +70,5 @@ Lean: one focused test per criterion, all on the JVM.
 ## Risks
 
 - **New versions together** (AGP 9 built-in Kotlin, Kotlin 2.4, Room 2.8 with KSP 2.3): if a combination fails to build, step back one minor version and record it here.
-- **Robolectric and SDK 37:** Robolectric may not ship SDK 37 yet; tests pin `@Config(sdk = [36])` if needed.
+- **Robolectric and SDK 37** (happened): it needs JDK 21 and two JVM flags; settled by the JDK 21 toolchain.
 - **Nunito variable font:** weights 400–800 through `FontVariation`; check the rendering on a device.
