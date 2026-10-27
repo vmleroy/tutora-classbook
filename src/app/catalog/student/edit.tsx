@@ -12,6 +12,7 @@ import {
   type Student,
 } from '@/domain/places';
 import { useCatalogActions, usePlaces, useStudent } from '@/state/catalog';
+import { useSettingsStore } from '@/state/settingsStore';
 import {
   ArchiveActions,
   PriceStepper,
@@ -80,7 +81,10 @@ function StudentForm({
   const setLink = (placeId: string, patch: Partial<PlaceLink>) =>
     setLinks((ls) => ls.map((l) => (l.placeId === placeId ? { ...l, ...patch } : l)));
   const placeById = new Map(places.map((p) => [p.id, p]));
-  const available = places.filter((p) => !links.some((l) => l.placeId === p.id));
+  const showDefaults = useSettingsStore((s) => s.settings?.showDefaultPlaces ?? true);
+  const available = places.filter(
+    (p) => !links.some((l) => l.placeId === p.id) && (showDefaults || !p.builtin),
+  );
   const unit = (cents: number) => rateText(cents, draft.rateType, t, language);
 
   const save = () => {
@@ -243,7 +247,7 @@ function StudentForm({
           }}
           onRemove={() => {
             actions.removePermanently('student', id);
-            router.dismissTo('/students');
+            router.dismissTo('/registry');
           }}
         />
       ) : null}

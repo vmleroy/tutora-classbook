@@ -21,7 +21,7 @@ An installable Tutora app shell that every later spec builds on: the five tabs f
 
 - **AC-001-1.** Given a fresh install, when the app opens, then the Hoje tab is shown with a bottom bar of five tabs in this order: Hoje, Agenda, Alunos, Locais, Ganhos.
 - **AC-001-2.** Given any tab, when the teacher taps another tab, then it opens in under 300 ms on the reference phone and keeps its own navigation stack.
-- **AC-001-3.** Given the Hoje tab, when the teacher taps the gear icon, then an empty Ajustes screen opens with a back button.
+- **AC-001-3.** Ajustes opens from anywhere. (Changed in 005, AC-005-27: Ajustes is the fifth tab; it was a gear on Hoje with a back button.)
 - **AC-001-4.** Given the app is opening, then the splash screen stays until fonts, settings and migrations are ready, and the first screen never flashes unstyled or in the wrong theme.
 
 ### Language

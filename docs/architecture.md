@@ -60,7 +60,7 @@ A use case is the only place that writes: it loads rows through repositories, as
 ```text
 src/
   app/                    Expo Router routes (screens only)
-    (tabs)/today, schedule, students, places, earnings
+    (tabs)/today, schedule, registry (Alunos | Locais), earnings, settings
     lesson/[id].tsx, lesson/[id]/edit.tsx, lesson/new.tsx
     live/[lessonId].tsx   full-screen live lesson
     settings/...          appearance, colors, calendar, backup, fees
@@ -145,6 +145,11 @@ CREATE INDEX lesson_start ON lesson(start_at);
 CREATE INDEX lesson_student_start ON lesson(student_id, start_at);
 CREATE INDEX lesson_place_start ON lesson(place_id, start_at);
 ```
+
+**As built in spec 005.**
+- A scheduled `lesson` stores no `rate_type` / `rate_cents`. Its value is resolved on every read from the current prices (`lessonWorth`), so price changes reach every class still on the schedule. Only a value the teacher typed (`value_cents`) is kept. 006 adds `actual_min`, `earned_cents`, fees and the full status set, and freezes the value when a class is done.
+- `schedule_rule` keeps `starts_on` / `ends_on` (local dates), `start_time`, `time_zone` and `generated_until`. `rule_skip` remembers dates removed with "Só esta aula". A unique `(rule_id, occurrence_date)` index makes filling idempotent.
+- Filling runs at start-up and whenever the app returns to the foreground.
 
 Balances stay computed, never stored: a `v_balance` view sums `earned_cents + travel + kept fees` on done, cancelled-with-fee and missed lessons per payer, minus `payment` amounts, all in reais.
 

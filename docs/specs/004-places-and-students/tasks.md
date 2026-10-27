@@ -16,6 +16,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 
 - [x] 12. Exact duration entry: `typedDuration` in `src/domain/duration.ts`, `TextField kind="duration"`, `DurationStepper`; bottom sheets rise above the keyboard. Tests: `src/domain/duration.test.ts`, `src/ui/components/__tests__/selection.test.tsx`. (AC-004-27)
 - [x] 13. `ListRow` `avatar` slot (guideline and gallery); avatars on every student row; `randomTag` for new students. Tests: `src/domain/places.test.ts`, `tests/app/students.test.tsx`. (AC-004-28)
+- [x] 14. After review: "Padrão" for the default places and no empty state while they show; "Mostrar locais padrão" in Ajustes (ListRow `onSwitchChange`); Arquivados as a header icon. Tests: `tests/app/places.test.tsx`, `tests/app/settings.test.tsx`. (AC-004-1, AC-004-23, AC-004-29)
 
 ## Pending on a device
 

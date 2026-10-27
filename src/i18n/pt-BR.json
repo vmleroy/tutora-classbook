@@ -4,7 +4,9 @@
     "schedule": "Agenda",
     "students": "Alunos",
     "places": "Locais",
-    "earnings": "Ganhos"
+    "registry": "Cadastro",
+    "earnings": "Ganhos",
+    "settings": "Ajustes"
   },
   "empty": {
     "today": {
@@ -35,7 +37,9 @@
     "general": "Geral",
     "language": "Idioma do app",
     "languageHint": "Só textos e datas",
-    "languageSample": "Datas {{date}} · {{money}}"
+    "languageSample": "Datas {{date}} · {{money}}",
+    "showDefaultPlaces": "Mostrar locais padrão",
+    "showDefaultPlacesHint": "Casa do Aluno e Online / Remoto"
   },
   "startupError": {
     "title": "Não foi possível atualizar seus dados",
@@ -85,10 +89,9 @@
       "online": "Online / Remoto"
     },
     "subtitle": "Onde você dá aula · cada um com seus alunos",
-    "builtinGroup": "Já vem no app",
+    "builtinGroup": "Padrão",
     "builtinHint": "alunos herdam o preço",
     "own": "Seus locais",
-    "defaultBadge": "Padrão",
     "noPrice": "Sem preço",
     "noPriceHint": "Sem preço · toque para definir",
     "students_zero": "nenhum aluno",
@@ -256,5 +259,76 @@
       "notFound": "Não encontrado."
     },
     "exactDuration": "Duração exata"
+  },
+  "schedule": {
+    "day": "Dia",
+    "week": "Semana",
+    "today": "Hoje",
+    "count_zero": "nenhuma aula",
+    "count_one": "{{count}} aula",
+    "count_other": "{{count}} aulas",
+    "expected": "Previsto {{money}}",
+    "plusSchool": "+ escola",
+    "next": "Próxima",
+    "prevWeek": "Semana anterior",
+    "nextWeek": "Próxima semana",
+    "grid": "Aulas do dia por horário"
+  },
+  "home": {
+    "greeting": {
+      "morning": "Bom dia",
+      "afternoon": "Boa tarde",
+      "evening": "Boa noite"
+    },
+    "next": "Próxima aula",
+    "inMinutes": "em {{count}} min",
+    "inHours": "em {{time}}",
+    "lessonsToday": "Aulas de hoje"
+  },
+  "lesson": {
+    "new": "Nova aula",
+    "edit": "Editar aula",
+    "scheduleMode": "Agendar aula",
+    "who": "Aluno ou turma",
+    "pickWho": "Escolher aluno ou turma",
+    "change": "Trocar",
+    "place": "Local · só os ligados ao aluno",
+    "groupPlace": "Local da turma",
+    "date": "Data",
+    "pickDate": "Escolher data",
+    "start": "Início",
+    "duration": "Duração",
+    "value": "Valor da aula",
+    "setValue": "Definir valor",
+    "usePrice": "Usar o preço",
+    "handValue": "Valor definido por você",
+    "noPrice": "Sem preço",
+    "travel": "Deslocamento desta aula",
+    "repeat": "Repetir",
+    "repeats": {
+      "none": "Não repete",
+      "weekly": "Semanal",
+      "biweekly": "Quinzenal"
+    },
+    "series": "{{repeat}} · {{weekday}}, {{time}}",
+    "scope": "Aplicar mudanças em",
+    "scopes": {
+      "one": "Só esta aula",
+      "following": "Esta e as próximas"
+    },
+    "notes": "Anotações",
+    "save": "Agendar",
+    "saveEdit": "Salvar",
+    "remove": "Remover aula",
+    "removeTitle": "Remover esta aula?",
+    "removeSeries": "Remover qual?",
+    "errors": {
+      "whoRequired": "Escolha o aluno ou a turma.",
+      "placeRequired": "Escolha o local.",
+      "placeNotLinked": "Esse local não está ligado ao aluno.",
+      "started": "Esta aula já começou e não pode mais ser mudada aqui.",
+      "notFound": "Aula não encontrada.",
+      "timeInvalid": "Use hh:mm, de 00:00 a 23:59."
+    }
   }
 }

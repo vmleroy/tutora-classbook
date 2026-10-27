@@ -6,6 +6,7 @@ import { useAppVersion } from '@/state/appInfo';
 import { useSettingsStore } from '@/state/settingsStore';
 import { Card } from '@/ui/components/Card';
 import { ListGroup } from '@/ui/components/ListGroup';
+import { ListRow } from '@/ui/components/ListRow';
 import { Screen } from '@/ui/components/Screen';
 import { SegmentedControl } from '@/ui/components/SegmentedControl';
 import { Text } from '@/ui/components/Text';
@@ -53,10 +54,20 @@ function LanguageRow() {
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const { version, build, schemaVersion } = useAppVersion();
+  const showDefaults = useSettingsStore((s) => s.settings?.showDefaultPlaces ?? true);
+  const updateSettings = useSettingsStore((s) => s.updateSettings);
   return (
     <Screen testID="settings-screen">
       <ListGroup title={t('settings.general')}>
         <LanguageRow />
+        <ListRow
+          title={t('settings.showDefaultPlaces')}
+          subtitle={t('settings.showDefaultPlacesHint')}
+          icon="pin"
+          trailing="switch"
+          switchValue={showDefaults}
+          onSwitchChange={(showDefaultPlaces) => updateSettings({ showDefaultPlaces })}
+        />
       </ListGroup>
       <Card label={t('settings.about')}>
         <Text variant="row-title">{t('settings.about')}</Text>

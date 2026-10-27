@@ -10,6 +10,8 @@ import { Touchable } from '@/ui/components/Touchable';
 export interface WeekStripProps {
   days: { weekday: string; day: number; dot?: Tag; a11y?: string }[];
   selected?: number;
+  /** Index of today, whose number is shown in primary when it is not the selected day. */
+  today?: number;
   label?: string;
   onSelect?: (index: number) => void;
   /** Extra classes merged over the component's own (layout such as margins). */
@@ -20,7 +22,7 @@ const DAY_HEIGHT = 64;
 const DOT = 5;
 
 /** Seven days; the selected one is a main-buttons fill, a dot marks days with lessons. */
-export function WeekStrip({ className, days, selected, label, onSelect }: WeekStripProps) {
+export function WeekStrip({ className, days, selected, today, label, onSelect }: WeekStripProps) {
   const { t } = useTranslation();
   const [own, setOwn] = useState(selected ?? 0);
   const current = selected ?? own;
@@ -55,7 +57,11 @@ export function WeekStrip({ className, days, selected, label, onSelect }: WeekSt
             >
               {d.weekday}
             </Text>
-            <Text variant="section" tabular className={on ? 'text-on-btn-primary' : 'text-ink'}>
+            <Text
+              variant="section"
+              tabular
+              className={on ? 'text-on-btn-primary' : i === today ? 'text-primary' : 'text-ink'}
+            >
               {d.day}
             </Text>
             <View

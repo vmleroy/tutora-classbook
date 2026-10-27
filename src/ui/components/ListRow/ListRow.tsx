@@ -21,6 +21,7 @@ export interface ListRowProps {
   avatar?: { initials: string; tag: Tag };
   trailing?: 'chevron' | 'switch' | 'none';
   switchValue?: boolean;
+  onSwitchChange?: (value: boolean) => void;
   badge?: { tone: BadgeProps['tone']; label: string };
   onPress?: () => void;
   /** Extra classes merged over the component's own (layout such as margins). */
@@ -55,6 +56,7 @@ export function ListRow({
   avatar,
   trailing = 'chevron',
   switchValue,
+  onSwitchChange,
   badge,
   onPress,
 }: ListRowProps) {
@@ -86,7 +88,7 @@ export function ListRow({
     return (
       <View className={cn(ROW, className)}>
         {content}
-        <Switch label={title} value={switchValue} />
+        <Switch label={title} value={switchValue} onChange={onSwitchChange} />
       </View>
     );
   }

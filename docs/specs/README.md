@@ -4,7 +4,7 @@ Tutora is built spec by spec. Each folder holds `spec.md` (what and why), `plan.
 
 ## Roadmap
 
-Each spec ships on its own APK. Only 001 to 004 are written so far; write the next one with `/spec` when its turn comes.
+Each spec ships on its own APK. Only 001 to 005 are written so far; write the next one with `/spec` when its turn comes.
 
 | # | Spec | Status | Mockups |
 | --- | --- | --- | --- |
@@ -12,7 +12,7 @@ Each spec ships on its own APK. Only 001 to 004 are written so far; write the ne
 | 002 | [Design system](002-design-system/spec.md): tokens for 4 themes × light/dark, 30 components, custom colors, Large text | done | Palette, Themes |
 | 003 | [Money and language](003-money-and-language/spec.md): R$ money rules, amount entry, language switch in Ajustes | done | Settings |
 | 004 | [Places and students](004-places-and-students/spec.md): built-in places, own places, students, groups, student–place links, price resolution, archive | done | Students, StudentDetail, StudentEdit, Places, PlaceDetail, PlaceEdit |
-| 005 | Schedule: recurring rules, 8-week generation, this-only vs this-and-following edits, Agenda and Today | not written | Main, Schedule |
+| 005 | [Schedule](005-schedule/spec.md): recurring and one-off classes, 8 weeks ahead, this-only vs this-and-following edits, Agenda and Hoje | done | Main, Schedule, AddLesson, EditLesson |
 | 006 | Lessons: add, log a past lesson, mark done, edit, status changes, cancellation and no-show fees | not written | AddLesson, LessonDetail, EditLesson, Fees |
 | 007 | Live timer: timestamps, pause and resume, background notification (after the Kotlin spike) | not written | Live |
 | 008 | Payments and packages: record payment, covered lessons, balances | not written | StudentDetail |

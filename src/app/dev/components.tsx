@@ -347,7 +347,7 @@ export default function ComponentGallery() {
             <TabBar active="schedule" />
           </Section>
           <Section name="WeekStrip">
-            <WeekStrip days={week} selected={0} />
+            <WeekStrip days={week} selected={2} today={0} />
           </Section>
           <Section name="AgendaBlock">
             <AgendaBlock tag="green" title="Ana Souza" subtitle="Matemática" state="done" />

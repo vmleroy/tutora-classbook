@@ -1,7 +1,8 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { HeaderIconButton, useStackOptions } from '@/ui/navigation';
+import { IconButton } from '@/ui/components/IconButton';
+import { useStackOptions } from '@/ui/navigation';
 
 export default function TodayStack() {
   const { t } = useTranslation();
@@ -13,11 +14,11 @@ export default function TodayStack() {
         options={{
           title: t('tabs.today'),
           headerRight: () => (
-            <HeaderIconButton
-              icon="gear"
-              testID="settings-button"
-              label={t('nav.settings')}
-              onPress={() => router.push('/settings')}
+            <IconButton
+              icon="plus"
+              variant="accent"
+              label={t('lesson.new')}
+              onPress={() => router.push('/lesson/new')}
             />
           ),
         }}

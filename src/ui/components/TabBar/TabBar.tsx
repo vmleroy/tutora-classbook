@@ -8,7 +8,7 @@ import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
 import { size } from '@/ui/theme/tokens';
 
-export type TabName = 'today' | 'schedule' | 'students' | 'places' | 'earnings';
+export type TabName = 'today' | 'schedule' | 'registry' | 'earnings' | 'settings';
 
 export interface TabBarProps {
   active?: TabName;
@@ -21,9 +21,9 @@ export interface TabBarProps {
 export const tabs: readonly { name: TabName; icon: IconName }[] = [
   { name: 'today', icon: 'home' },
   { name: 'schedule', icon: 'calendar' },
-  { name: 'students', icon: 'users' },
-  { name: 'places', icon: 'pin' },
+  { name: 'registry', icon: 'users' },
   { name: 'earnings', icon: 'wallet' },
+  { name: 'settings', icon: 'gear' },
 ];
 
 /** The five tabs, always in this order, labels always shown. Active = the active-menu part. */

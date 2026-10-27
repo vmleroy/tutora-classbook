@@ -1,4 +1,4 @@
-# AC-001-1, AC-001-2, AC-001-3, AC-001-21: open the app, tap through the five tabs and the gear.
+# AC-001-1, AC-001-2, AC-001-3, AC-001-21, AC-005-27: open the app and tap through the five tabs.
 # Language-neutral: elements are found by testID, titles by a pt-BR|en pattern.
 # Each tab must show its screen within 300 ms of the tap (AC-001-2).
 appId: com.vmleroy.tutora
@@ -20,20 +20,14 @@ appId: com.vmleroy.tutora
 - assertVisible: 'Agenda vazia|Your schedule is empty'
 
 - tapOn:
-    id: tab-students
+    id: tab-registry
 - extendedWaitUntil:
     visible:
       id: students-screen
     timeout: 300
 - assertVisible: 'Nenhum aluno ainda|No students yet'
-
-- tapOn:
-    id: tab-places
-- extendedWaitUntil:
-    visible:
-      id: places-screen
-    timeout: 300
-- assertVisible: 'Nenhum local seu ainda|No places of your own yet'
+- tapOn: 'Locais|Places'
+- assertVisible: 'Casa do Aluno|Student's home'
 
 - tapOn:
     id: tab-earnings
@@ -51,14 +45,16 @@ appId: com.vmleroy.tutora
     timeout: 300
 
 - tapOn:
-    id: settings-button
-- assertVisible:
-    id: settings-screen
+    id: tab-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 300
 - assertVisible: 'Ajustes|Settings'
 - assertVisible: 'Sobre|About'
 - takeScreenshot: .maestro/screenshots/settings
 - tapOn:
-    id: back-button
+    id: tab-today
 - assertVisible:
     id: today-screen
 - takeScreenshot: .maestro/screenshots/today

@@ -15,6 +15,7 @@ import { I18nextProvider } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { queryClient } from '@/state/queryClient';
+import { useKeepScheduleFilled } from '@/state/schedule';
 import { useSettingsStore } from '@/state/settingsStore';
 import { StartupError } from '@/ui/StartupError';
 import { ThemeProvider } from '@/ui/theme/ThemeProvider';
@@ -55,10 +56,11 @@ export default function RootLayout() {
             <StartupError t={i18n.t} backupPath={failure.backupPath} message={failure.message} />
           ) : (
             <QueryClientProvider client={queryClient}>
+              <ScheduleKeeper ready={status === 'ready'} />
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="settings" />
                 <Stack.Screen name="catalog" />
+                <Stack.Screen name="lesson" />
                 <Stack.Screen name="dev/components" />
               </Stack>
             </QueryClientProvider>
@@ -67,4 +69,10 @@ export default function RootLayout() {
       </I18nextProvider>
     </SafeAreaProvider>
   );
+}
+
+/** Fills repeating classes 8 weeks ahead at start-up and whenever the app comes back. */
+function ScheduleKeeper({ ready }: { ready: boolean }) {
+  useKeepScheduleFilled(ready);
+  return null;
 }

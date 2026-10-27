@@ -21,6 +21,7 @@ interface ListRowProps {
   avatar?: { initials: string; tag: Tag };
   trailing?: 'chevron' | 'switch' | 'none';
   switchValue?: boolean;
+  onSwitchChange?: (value: boolean) => void;
   badge?: { tone: BadgeProps['tone']; label: string };
   onPress?: () => void;
   /** Extra classes merged over the component's own (layout such as margins). */

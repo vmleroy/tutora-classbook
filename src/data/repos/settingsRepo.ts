@@ -15,6 +15,7 @@ const keyOf: Record<keyof Settings, string> = {
   setupDone: 'setup_done',
   customColors: 'custom_colors',
   textSize: 'text_scale',
+  showDefaultPlaces: 'show_default_places',
 };
 
 function rows(values: Partial<Settings>, now: string) {

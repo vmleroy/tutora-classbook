@@ -10,6 +10,8 @@ export type Settings = Readonly<{
   setupDone: boolean;
   customColors: CustomColors;
   textSize: TextSize;
+  /** Whether Casa do Aluno and Online / Remoto show in Locais and the place pickers. */
+  showDefaultPlaces: boolean;
 }>;
 
 export type TextSize = 'normal' | 'large';
@@ -23,5 +25,6 @@ export function defaultSettings(language: Language): Settings {
     setupDone: false,
     customColors: {},
     textSize: 'normal',
+    showDefaultPlaces: true,
   };
 }
