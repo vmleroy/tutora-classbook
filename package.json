@@ -68,7 +68,8 @@
     "lint": "eslint .",
     "test": "jest",
     "format": "prettier --write .",
-    "release:android": "bash scripts/release-android.sh"
+    "release:android": "bash scripts/release-android.sh",
+    "tokens": "tsx scripts/tokens.ts"
   },
   "private": true,
   "allowScripts": {

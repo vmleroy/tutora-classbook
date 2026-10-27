@@ -1,47 +1,8 @@
-import tokens from './tokens.json';
+import { typeStyles, type TypeStyleName } from './tokens';
 
-export type TypeStyleName =
-  | 'money-display'
-  | 'money-xl'
-  | 'money-lg'
-  | 'money-md'
-  | 'title-xl'
-  | 'title-lg'
-  | 'title-md'
-  | 'section'
-  | 'body-strong'
-  | 'body'
-  | 'row-title'
-  | 'caption'
-  | 'meta'
-  | 'button'
-  | 'field-label'
-  | 'badge'
-  | 'overline'
-  | 'tab';
+export { typeStyles, type TypeStyleName };
 
-export type TypeStyle = Readonly<{
-  fontSize: number;
-  lineHeight: number;
-  letterSpacing: number;
-  weight: 400 | 600 | 700 | 800;
-}>;
-
-const px = (value: string | undefined) => (value ? parseFloat(value) : 0);
-
-export const typeStyles = Object.fromEntries(
-  tokens.type.groups.flatMap((group) =>
-    group.styles.map((s) => [
-      s.name,
-      {
-        fontSize: px(s.fontSize),
-        lineHeight: px(s.lineHeight),
-        letterSpacing: px('letterSpacing' in s ? s.letterSpacing : undefined),
-        weight: s.fontWeight as TypeStyle['weight'],
-      },
-    ]),
-  ),
-) as Record<TypeStyleName, TypeStyle>;
+export type TypeStyle = (typeof typeStyles)[TypeStyleName];
 
 /** Font family class per weight: Nunito ships one file per weight. */
 export const weightClass: Record<TypeStyle['weight'], string> = {

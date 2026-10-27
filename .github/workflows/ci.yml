@@ -16,6 +16,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Generated tokens are up to date (AC-002-1)
+        run: npm run tokens -- --check
       - run: npm run typecheck
       - run: npm run lint
       - name: Tests (AC-001-18 budget is 60 s)
