@@ -1,11 +1,13 @@
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 
-import { Linter } from 'eslint';
+import { Linter, type ESLint } from 'eslint';
 
-import plugin from '../eslint/tutora-plugin';
+import tutoraPlugin from '../eslint/tutora-plugin';
 import { repoRoot } from './sourceFiles';
 
+// The plugin is plain JS (ESLint loads it directly), so it is typed here.
+const plugin = tutoraPlugin as unknown as ESLint.Plugin;
 const linter = new Linter({ configType: 'flat' });
 const lint = (code: string) =>
   linter
