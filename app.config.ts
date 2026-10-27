@@ -28,6 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     buildNumber: String(versionCode),
   },
   plugins: [
+    './plugins/withReleaseSigning',
     'expo-router',
     'expo-status-bar',
     'expo-font',

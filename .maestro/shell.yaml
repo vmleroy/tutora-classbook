@@ -1,0 +1,64 @@
+# AC-001-1, AC-001-2, AC-001-3, AC-001-21: open the app, tap through the five tabs and the gear.
+# Language-neutral: elements are found by testID, titles by a pt-BR|en pattern.
+# Each tab must show its screen within 300 ms of the tap (AC-001-2).
+appId: com.vmleroy.tutora
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: today-screen
+    timeout: 15000
+- assertVisible: 'Nenhuma aula hoje|No lessons today'
+
+- tapOn:
+    id: tab-schedule
+- extendedWaitUntil:
+    visible:
+      id: schedule-screen
+    timeout: 300
+- assertVisible: 'Agenda vazia|Your schedule is empty'
+
+- tapOn:
+    id: tab-students
+- extendedWaitUntil:
+    visible:
+      id: students-screen
+    timeout: 300
+- assertVisible: 'Nenhum aluno ainda|No students yet'
+
+- tapOn:
+    id: tab-places
+- extendedWaitUntil:
+    visible:
+      id: places-screen
+    timeout: 300
+- assertVisible: 'Nenhum local ainda|No places yet'
+
+- tapOn:
+    id: tab-earnings
+- extendedWaitUntil:
+    visible:
+      id: earnings-screen
+    timeout: 300
+- assertVisible: 'Nada ganho ainda|Nothing earned yet'
+
+- tapOn:
+    id: tab-today
+- extendedWaitUntil:
+    visible:
+      id: today-screen
+    timeout: 300
+
+- tapOn:
+    id: settings-button
+- assertVisible:
+    id: settings-screen
+- assertVisible: 'Ajustes|Settings'
+- assertVisible: 'Sobre|About'
+- takeScreenshot: .maestro/screenshots/settings
+- tapOn:
+    id: back-button
+- assertVisible:
+    id: today-screen
+- takeScreenshot: .maestro/screenshots/today

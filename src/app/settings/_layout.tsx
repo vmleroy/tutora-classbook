@@ -15,6 +15,7 @@ export default function SettingsStack() {
           headerLeft: () => (
             <HeaderIconButton
               icon="chevron-left"
+              testID="back-button"
               label={t('nav.back')}
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/today'))}
             />

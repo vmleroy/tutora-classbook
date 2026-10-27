@@ -24,13 +24,16 @@ export function HeaderIconButton({
   icon,
   label,
   onPress,
+  testID,
 }: {
   icon: 'gear' | 'chevron-left';
   label: string;
   onPress: () => void;
+  testID?: string;
 }) {
   return (
     <Pressable
+      testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
       onPress={onPress}

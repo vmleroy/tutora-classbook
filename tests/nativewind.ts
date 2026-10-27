@@ -9,6 +9,10 @@ import config from '../tailwind.config.js';
 
 import { repoRoot } from './sourceFiles';
 
+// Metro compiles with the native NativeWind preset; without this, tests get the web preset
+// and miss native-only overrides (the preset's `font-sans` is the system font on Android).
+process.env.NATIVEWIND_OS = 'android';
+
 let compiled: string | undefined;
 
 /** The app's real global.css, compiled with the app's tailwind.config.js. */

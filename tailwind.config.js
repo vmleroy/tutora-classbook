@@ -31,11 +31,13 @@ module.exports = {
   content: ['./src/**/*.{ts,tsx}'],
   presets: [require('nativewind/preset')],
   // Nunito ships one file per weight; the weight is chosen by family, never by fontWeight.
+  // Regular is `font-regular`, not `font-sans`: NativeWind's native preset extends `sans`
+  // with the system font, which would win over ours on Android.
   corePlugins: { fontWeight: false },
   theme: {
     colors,
     fontFamily: {
-      sans: ['Nunito_400Regular'],
+      regular: ['Nunito_400Regular'],
       semibold: ['Nunito_600SemiBold'],
       bold: ['Nunito_700Bold'],
       black: ['Nunito_800ExtraBold'],

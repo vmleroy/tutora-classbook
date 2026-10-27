@@ -45,7 +45,7 @@ export const typeStyles = Object.fromEntries(
 
 /** Font family class per weight: Nunito ships one file per weight. */
 export const weightClass: Record<TypeStyle['weight'], string> = {
-  400: 'font-sans',
+  400: 'font-regular',
   600: 'font-semibold',
   700: 'font-bold',
   800: 'font-black',

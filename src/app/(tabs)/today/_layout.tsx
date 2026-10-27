@@ -15,6 +15,7 @@ export default function TodayStack() {
           headerRight: () => (
             <HeaderIconButton
               icon="gear"
+              testID="settings-button"
               label={t('nav.settings')}
               onPress={() => router.push('/settings')}
             />
