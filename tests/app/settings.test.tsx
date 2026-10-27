@@ -39,6 +39,14 @@ describe('Ajustes', () => {
     expect(useSettingsStore.getState().settings?.language).toBe('en');
   });
 
+  it('AC-004-29: Ajustes has Mostrar locais padrão, on by default, and saves the choice', async () => {
+    await renderRouter('./src/app', { initialUrl: '/settings' });
+    const row = screen.getByRole('switch', { name: 'Mostrar locais padrão' });
+    expect(row.props.accessibilityState?.checked ?? row.props['aria-checked']).toBe(true);
+    await act(async () => fireEvent.press(row));
+    expect(useSettingsStore.getState().settings?.showDefaultPlaces).toBe(false);
+  });
+
   it('AC-003-13: a saved language survives a restart and beats the phone language', () => {
     const t = tempDatabase();
     const now = '2026-10-27T12:00:00.000Z';

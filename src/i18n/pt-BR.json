@@ -35,7 +35,9 @@
     "general": "Geral",
     "language": "Idioma do app",
     "languageHint": "Só textos e datas",
-    "languageSample": "Datas {{date}} · {{money}}"
+    "languageSample": "Datas {{date}} · {{money}}",
+    "showDefaultPlaces": "Mostrar locais padrão",
+    "showDefaultPlacesHint": "Casa do Aluno e Online / Remoto"
   },
   "startupError": {
     "title": "Não foi possível atualizar seus dados",
@@ -85,10 +87,9 @@
       "online": "Online / Remoto"
     },
     "subtitle": "Onde você dá aula · cada um com seus alunos",
-    "builtinGroup": "Já vem no app",
+    "builtinGroup": "Padrão",
     "builtinHint": "alunos herdam o preço",
     "own": "Seus locais",
-    "defaultBadge": "Padrão",
     "noPrice": "Sem preço",
     "noPriceHint": "Sem preço · toque para definir",
     "students_zero": "nenhum aluno",

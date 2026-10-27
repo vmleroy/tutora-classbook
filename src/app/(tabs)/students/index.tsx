@@ -126,13 +126,6 @@ export default function StudentsScreen() {
           )}
         </>
       )}
-      <ListGroup>
-        <ListRow
-          title={t('catalog.archived')}
-          icon="archive"
-          onPress={() => router.push('/catalog/archived')}
-        />
-      </ListGroup>
     </Screen>
   );
 }

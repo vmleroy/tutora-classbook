@@ -39,6 +39,7 @@ describe('prepareDatabase', () => {
       setupDone: false,
       customColors: {},
       textSize: 'normal',
+      showDefaultPlaces: true,
     });
     t.close();
   });

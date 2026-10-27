@@ -40,7 +40,7 @@ describe('tabs', () => {
     const expected: [string, string, string][] = [
       ['Agenda', '/schedule', 'Agenda vazia'],
       ['Alunos', '/students', 'Nenhum aluno ainda'],
-      ['Locais', '/places', 'Nenhum local seu ainda'],
+      ['Locais', '/places', 'Casa do Aluno'],
       ['Ganhos', '/earnings', 'Nada ganho ainda'],
       ['Hoje', '/today', 'Nenhuma aula hoje'],
     ];

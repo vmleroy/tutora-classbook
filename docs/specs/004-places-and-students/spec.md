@@ -20,7 +20,7 @@ The teacher registers once where they teach and whom they teach: their places (t
 
 ### Places
 
-- **AC-004-1.** Locais lists the two built-in places, Casa do Aluno and Online / Remoto, under "Já vem no app", then the teacher's own places under "Seus locais". Each row shows its price, default duration and how many students are linked.
+- **AC-004-1.** Locais lists the two default places, Casa do Aluno and Online / Remoto, under "Padrão", then the teacher's own places under "Seus locais". The default places are places like any other: Locais shows its empty state only when nothing is listed. Each row shows its price, default duration and how many students are linked.
 - **AC-004-2.** A built-in place starts with no price and shows "Sem preço" until the teacher sets one. It can be edited (price, charging per hour or per lesson, duration) but never renamed, archived or removed.
 - **AC-004-3.** A new place has a name, an optional address and a type: Escola, Salinha, Cursinho or Particular. Saving without a name is refused with a message that says so.
 - **AC-004-4.** A place's type decides how it counts in Ganhos: Escola and Cursinho count as "Escola e emprego", the rest as "Aulas particulares". The edit form says which, under the type.
@@ -56,9 +56,13 @@ The teacher registers once where they teach and whom they teach: their places (t
 
 ### Archive and remove
 
-- **AC-004-23.** Arquivar hides a student, group or own place from lists, filters and pickers, and keeps everything about it. An "Arquivados" section shows archived items and restores them.
+- **AC-004-23.** Arquivar hides a student, group or own place from lists, filters and pickers, and keeps everything about it. Arquivados opens from an archive icon in the Alunos and Locais headers (not a row at the end of the list) and shows archived items to restore them.
 - **AC-004-24.** Only an archived item can be removed permanently, after a confirmation that names it and says it cannot be undone. Removing a place removes its links and groups, never the students.
 - **AC-004-25.** Archiving a place keeps its students; their links to it are hidden until it is restored. A student whose only place is archived shows "Sem local" in the list.
+
+### Default places in Ajustes
+
+- **AC-004-29.** Ajustes has "Mostrar locais padrão", on by default. Turned off, Casa do Aluno and Online / Remoto leave Locais and the "Ligar a outro local" picker; students already linked to them keep those links.
 
 ### Language
 

@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
 
 import { IconButton } from '@/ui/components/IconButton';
 import { useStackOptions } from '@/ui/navigation';
@@ -14,12 +15,20 @@ export default function StudentsStack() {
         options={{
           title: t('tabs.students'),
           headerRight: () => (
-            <IconButton
-              icon="plus"
-              variant="accent"
-              label={t('students.new')}
-              onPress={() => router.push('/catalog/student/edit')}
-            />
+            <View className="flex-row items-center gap-1">
+              <IconButton
+                icon="archive"
+                variant="plain"
+                label={t('catalog.archived')}
+                onPress={() => router.push('/catalog/archived')}
+              />
+              <IconButton
+                icon="plus"
+                variant="accent"
+                label={t('students.new')}
+                onPress={() => router.push('/catalog/student/edit')}
+              />
+            </View>
           ),
         }}
       />

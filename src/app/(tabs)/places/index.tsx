@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { usePlaces, type PlaceRow } from '@/state/catalog';
+import { useSettingsStore } from '@/state/settingsStore';
 import { placeName, placePriceText, travelText, useLanguage } from '@/ui/catalog';
 import { EmptyState } from '@/ui/components/EmptyState';
 import { ListGroup } from '@/ui/components/ListGroup';
@@ -14,7 +15,8 @@ export default function PlacesScreen() {
   const language = useLanguage();
   const router = useRouter();
   const { data: places = [] } = usePlaces();
-  const builtins = places.filter((p) => p.builtin);
+  const showDefaults = useSettingsStore((s) => s.settings?.showDefaultPlaces ?? true);
+  const builtins = showDefaults ? places.filter((p) => p.builtin) : [];
   const own = places.filter((p) => !p.builtin);
 
   const summary = (p: PlaceRow) =>
@@ -32,11 +34,7 @@ export default function PlacesScreen() {
       key={p.id}
       title={placeName(p, t)}
       subtitle={summary(p)}
-      badge={
-        p.builtin
-          ? { tone: 'neutral', label: t('places.defaultBadge') }
-          : { tone: 'secondary', label: t(`places.kind.${p.kind}`) }
-      }
+      badge={p.builtin ? undefined : { tone: 'secondary', label: t(`places.kind.${p.kind}`) }}
       onPress={() => router.push(`/catalog/place/${p.id}`)}
     />
   );
@@ -46,21 +44,16 @@ export default function PlacesScreen() {
       <Text variant="meta" className="text-ink-muted">
         {t('places.subtitle')}
       </Text>
-      <ListGroup title={`${t('places.builtinGroup')} · ${t('places.builtinHint')}`}>
-        {builtins.map(row)}
-      </ListGroup>
-      {own.length > 0 ? (
-        <ListGroup title={t('places.own')}>{own.map(row)}</ListGroup>
-      ) : (
+      {builtins.length > 0 ? (
+        <ListGroup title={`${t('places.builtinGroup')} · ${t('places.builtinHint')}`}>
+          {builtins.map(row)}
+        </ListGroup>
+      ) : null}
+      {own.length > 0 ? <ListGroup title={t('places.own')}>{own.map(row)}</ListGroup> : null}
+      {/* Only when nothing at all is listed: the default places are places too. */}
+      {builtins.length + own.length === 0 ? (
         <EmptyState icon="pin" title={t('places.empty')} body={t('places.emptyBody')} />
-      )}
-      <ListGroup>
-        <ListRow
-          title={t('catalog.archived')}
-          icon="archive"
-          onPress={() => router.push('/catalog/archived')}
-        />
-      </ListGroup>
+      ) : null}
     </Screen>
   );
 }

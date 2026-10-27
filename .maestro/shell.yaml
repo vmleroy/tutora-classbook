@@ -33,7 +33,7 @@ appId: com.vmleroy.tutora
     visible:
       id: places-screen
     timeout: 300
-- assertVisible: 'Nenhum local seu ainda|No places of your own yet'
+- assertVisible: 'Casa do Aluno|Student's home'
 
 - tapOn:
     id: tab-earnings

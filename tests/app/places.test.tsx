@@ -61,6 +61,8 @@ describe('Locais', () => {
     await open('/places', seedSalinha);
     expect(await screen.findByText('Salinha Aprender+')).toBeTruthy();
     expect(screen.getByText('Casa do Aluno')).toBeTruthy();
+    expect(screen.getByLabelText('Padrão · alunos herdam o preço')).toBeTruthy();
+    expect(screen.queryByText('Nenhum local seu ainda')).toBeNull();
     expect(screen.getByText('Online / Remoto')).toBeTruthy();
     expect(
       screen.getByText(/^Sem preço · 60 min · nenhum aluno · Deslocamento: varia/),
@@ -96,6 +98,21 @@ describe('Locais', () => {
     expect(screen.getByText('Online / Remote')).toBeTruthy();
     expect(screen.getByText('Salinha Aprender+')).toBeTruthy();
     expect(screen.getByText('Your places')).toBeTruthy();
+  });
+
+  it('AC-004-23: Arquivados opens from the archive icon in the header', async () => {
+    await open('/places');
+    await act(async () => fireEvent.press(screen.getByRole('button', { name: 'Arquivados' })));
+    expect(await screen.findByTestId('archived')).toBeTruthy();
+  });
+
+  it('AC-004-29: turning off Mostrar locais padrão hides them from Locais', async () => {
+    await open('/places', seedSalinha);
+    await screen.findByText('Salinha Aprender+');
+    await act(async () => useSettingsStore.getState().updateSettings({ showDefaultPlaces: false }));
+    expect(screen.queryByText('Casa do Aluno')).toBeNull();
+    expect(screen.queryByText('Online / Remoto')).toBeNull();
+    expect(screen.getByText('Salinha Aprender+')).toBeTruthy();
   });
 
   it('AC-004-2: a built-in place has no name field and no archive button', async () => {
