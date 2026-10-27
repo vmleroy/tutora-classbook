@@ -13,6 +13,6 @@ Each task lists the criteria it proves and where the test lives.
 - [x] 9. Settings repo and Zustand store loaded at start-up; splash held until ready. Test: `tests/app/layout.test.tsx`. (AC-001-4)
 - [x] 10. Tabs layout with five empty states, gear to Ajustes, About row. Tests: `tests/app/tabs.test.tsx`, `tests/app/settings.test.tsx`. (AC-001-1, AC-001-3, AC-001-22)
 - [x] 11. Maestro flow through tabs and settings. Test: `.maestro/shell.yaml`. (AC-001-2, AC-001-21)
-- [ ] 12. Release keystore, `docs/release.md`, build and install-over-update check on a real phone. Manual check recorded in the PR. (AC-001-20)
+- [x] 12. Release keystore, `docs/release.md`, build and install-over-update check on a real phone. Manual check recorded in the PR. (AC-001-20)
 
 Screen tests live in `tests/app/`, not beside the routes: Expo Router turns every file under `src/app` into a route.
