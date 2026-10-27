@@ -32,7 +32,6 @@ describe('prepareDatabase', () => {
     ensureDefaultSettings(t.db, 'pt-BR', NOW);
     expect(loadSettings(t.db)).toEqual({
       language: 'pt-BR',
-      currency: 'BRL',
       themeId: 'quadro',
       themeMode: 'system',
       setupDone: false,

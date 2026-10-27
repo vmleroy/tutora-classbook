@@ -18,6 +18,7 @@ type State = {
   i18n: i18n | null;
   boot: () => Promise<void>;
   updateSettings: (patch: Partial<Settings>) => void;
+  setLanguage: (language: Language) => Promise<void>;
   setCustomColor: (
     part: CustomPart,
     hex: string,
@@ -71,6 +72,11 @@ export const useSettingsStore = create<State>()((set, get) => ({
   // Each action writes SQLite first, then updates the store, so the screen follows at once.
   updateSettings: (patch) => {
     set({ settings: settingsUseCases.updateSettings(currentDatabase(), patch, now()) });
+  },
+  // Saved first, then every mounted text repaints through react-i18next, with no restart.
+  setLanguage: async (language) => {
+    set({ settings: settingsUseCases.updateSettings(currentDatabase(), { language }, now()) });
+    await get().i18n?.changeLanguage(language);
   },
   setCustomColor: (part, hex, scheme, options = {}) => {
     const theme = get().settings?.themeId ?? 'quadro';

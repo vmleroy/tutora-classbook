@@ -10,7 +10,6 @@ export type Db = BaseSQLiteDatabase<'sync', unknown>;
 // Column names follow the product doc's settings keys.
 const keyOf: Record<keyof Settings, string> = {
   language: 'language',
-  currency: 'currency',
   themeId: 'theme_id',
   themeMode: 'theme_mode',
   setupDone: 'setup_done',

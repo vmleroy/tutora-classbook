@@ -34,4 +34,4 @@ Colors in the mockups are hex values from the Quadro-negro light theme. In the a
 | [Backup.dc.html](Backup.dc.html) | Ajustes › Backup e planilha |
 | [Fees.dc.html](Fees.dc.html) | Ajustes › Cancelamentos e faltas |
 | [Setup.dc.html](Setup.dc.html) | Primeira abertura › Configuração inicial (4 passos) |
-| [Currency.dc.html](Currency.dc.html) | Ajustes › Cotação R$ ↔ US$ |
+| [Currency.dc.html](Currency.dc.html) | Out of v1 (reais only, constitution rule 9). The Moeda and Cotação rows in Settings.dc.html are out too |

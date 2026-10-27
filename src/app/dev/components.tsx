@@ -66,6 +66,11 @@ const week = [
   { weekday: 'Dom', day: 1 },
 ];
 
+function PriceField() {
+  const [cents, setCents] = useState(12000);
+  return <TextField kind="money" label="Valor da aula" cents={cents} onChangeCents={setCents} />;
+}
+
 export default function ComponentGallery() {
   const { t } = useTranslation();
   const [theme, setTheme] = useState<ThemeId>('quadro');
@@ -193,6 +198,7 @@ export default function ComponentGallery() {
               value="(11) 9"
               error="Número incompleto: faltam 8 dígitos"
             />
+            <PriceField />
           </Section>
           <Section name="SelectField">
             <SelectField

@@ -3,11 +3,11 @@
 Labelled single-line input; the label sits above, never only as a placeholder.
 
 ## Consumer provides
-`label`, `value`, `onChangeText`, optional `placeholder` (an example, starting "Ex.:"), `helper`, `error`, `keyboardType`, and `tone="onPrimary"` on the live screen.
+`label`, `value`, `onChangeText` (or `kind="money"` with `cents` and `onChangeCents`), optional `placeholder` (an example, starting "Ex.:"), `helper`, `error`, `keyboardType`, and `tone="onPrimary"` on the live screen.
 
 ## Rules
 - Errors say what is wrong and how to fix it, in one line, replacing the helper.
-- Money fields format as you type in the app currency (`R$ 120,00`) and store cents.
+- Money fields (`kind="money"`) show reais in the app language and fill from the right: typing 1, 2, 0, 0, 0 reads `R$ 120,00`. Only digits count, deleting drops the last digit, and digits past `maxCents` (R$ 99.999,99 by default) are refused. The value is integer cents; the rules live in `typedCents` in `@/domain/money`.
 - Height 48px, `radius-lg`, `line` border; error = 2px `danger` border plus `danger-ink` text.
 
 ## Props
@@ -19,9 +19,13 @@ interface TextFieldProps {
   placeholder?: string;
   helper?: string;
   error?: string;
-  inputMode?: string;
+  inputMode?: TextInputProps['inputMode'];
   tone?: 'default' | 'onPrimary';
   onChangeText?: (text: string) => void;
+  kind?: 'text' | 'money';
+  cents?: number;
+  maxCents?: number;
+  onChangeCents?: (cents: number) => void;
   /** Extra classes merged over the component's own (layout such as margins). */
   className?: string;
 }

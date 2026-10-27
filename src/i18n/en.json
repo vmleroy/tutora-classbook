@@ -35,7 +35,11 @@
   "settings": {
     "title": "Settings",
     "about": "About",
-    "aboutValue": "Version {{version}} · build {{build}} · database v{{schema}}"
+    "aboutValue": "Version {{version}} · build {{build}} · database v{{schema}}",
+    "general": "General",
+    "language": "App language",
+    "languageHint": "Only texts and dates",
+    "languageSample": "Dates {{date}} · {{money}}"
   },
   "startupError": {
     "title": "Your data could not be updated",
@@ -73,5 +77,9 @@
     "caderno": "Caderno azul",
     "biblioteca": "Biblioteca",
     "giz": "Giz pastel"
+  },
+  "languages": {
+    "pt-BR": "Português",
+    "en": "English"
   }
 }

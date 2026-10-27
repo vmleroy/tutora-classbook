@@ -3,7 +3,7 @@
 Two to four mutually exclusive options that switch a view or a mode in place.
 
 ## Use
-- Modes of one screen (Registrar / Agendar), periods (Mês / Trimestre / Ano), Dia / Semana on Agenda, language and currency in Ajustes.
+- Modes of one screen (Registrar / Agendar), periods (Mês / Trimestre / Ano), Dia / Semana on Agenda, language in Ajustes.
 - `md` (44px segments) in forms, `sm` (36px) in filters and settings rows.
 
 ## Consumer provides

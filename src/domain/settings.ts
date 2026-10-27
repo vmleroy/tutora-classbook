@@ -1,4 +1,3 @@
-import type { Currency } from './money';
 import type { ThemeId } from './theme/colorSets';
 import type { CustomColors, ThemeMode } from './theme/palette';
 
@@ -6,7 +5,6 @@ export type Language = 'pt-BR' | 'en';
 
 export type Settings = Readonly<{
   language: Language;
-  currency: Currency;
   themeId: ThemeId;
   themeMode: ThemeMode;
   setupDone: boolean;
@@ -20,7 +18,6 @@ export type TextSize = 'normal' | 'large';
 export function defaultSettings(language: Language): Settings {
   return {
     language,
-    currency: 'BRL',
     themeId: 'quadro',
     themeMode: 'system',
     setupDone: false,

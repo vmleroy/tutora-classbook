@@ -35,7 +35,11 @@
   "settings": {
     "title": "Ajustes",
     "about": "Sobre",
-    "aboutValue": "Versão {{version}} · build {{build}} · banco v{{schema}}"
+    "aboutValue": "Versão {{version}} · build {{build}} · banco v{{schema}}",
+    "general": "Geral",
+    "language": "Idioma do app",
+    "languageHint": "Só textos e datas",
+    "languageSample": "Datas {{date}} · {{money}}"
   },
   "startupError": {
     "title": "Não foi possível atualizar seus dados",
@@ -73,5 +77,9 @@
     "caderno": "Caderno azul",
     "biblioteca": "Biblioteca",
     "giz": "Giz pastel"
+  },
+  "languages": {
+    "pt-BR": "Português",
+    "en": "English"
   }
 }

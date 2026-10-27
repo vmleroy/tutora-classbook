@@ -1,78 +1,73 @@
 import * as fc from 'fast-check';
 
-import { add, money, multiplyRate, roundHalfAwayFromZero, type Currency } from './money';
-
-const currency = fc.constantFrom<Currency>('BRL', 'USD');
-const cents = fc.integer({ min: -1_000_000_000, max: 1_000_000_000 });
-const amount = (c: Currency) => cents.map((v) => money(v, c));
+import {
+  afterCommission,
+  cents,
+  lessonValue,
+  multiplyRate,
+  roundHalfAwayFromZero,
+  sum,
+  typedCents,
+  wholeReais,
+} from './money';
 
 describe('money', () => {
-  it('AC-001-17: a Money is integer cents with a currency', () => {
-    expect(money(12345, 'BRL')).toEqual({ cents: 12345, currency: 'BRL' });
-    expect(() => money(10.5, 'BRL')).toThrow();
-    expect(() => money(Number.NaN, 'USD')).toThrow();
+  it('AC-001-17: money is integer cents and rounding is half away from zero', () => {
+    expect(() => cents(10.5)).toThrow();
+    expect(() => cents(Number.NaN)).toThrow();
+    expect(roundHalfAwayFromZero(5, 2)).toBe(3);
+    expect(roundHalfAwayFromZero(-5, 2)).toBe(-3);
+    expect(roundHalfAwayFromZero(7, 3)).toBe(2);
+    expect(multiplyRate(10000, 50, 60)).toBe(8333);
   });
 
-  it('AC-001-17: add is exact, commutative and associative within one currency', () => {
+  it('AC-003-1: an hourly lesson is price × minutes ÷ 60, rounded once', () => {
+    expect(lessonValue(10000, 'hour', 50)).toBe(8333);
+    expect(lessonValue(10000, 'hour', 45)).toBe(7500);
+    expect(lessonValue(5, 'hour', 30)).toBe(3); // 2,5 centavos → 3
+  });
+
+  it('AC-003-2: a per-lesson price is the same whatever the duration', () => {
+    for (const minutes of [30, 50, 60, 90])
+      expect(lessonValue(12000, 'lesson', minutes)).toBe(12000);
+  });
+
+  it('AC-003-3: with a commission the teacher keeps price × (100% − commission), rounded once', () => {
+    expect(afterCommission(10000, 3000)).toBe(7000);
+    expect(afterCommission(8333, 3000)).toBe(5833); // 5833,1
+  });
+
+  it('AC-003-4: a total is the exact sum of stored values, with no drift', () => {
+    const value = fc.integer({ min: -10_000_000, max: 10_000_000 });
     fc.assert(
-      fc.property(currency, cents, cents, cents, (c, a, b, d) => {
-        const [x, y, z] = [money(a, c), money(b, c), money(d, c)];
-        expect(add(x, y)).toEqual(money(a + b, c));
-        expect(add(x, y)).toEqual(add(y, x));
-        expect(add(add(x, y), z)).toEqual(add(x, add(y, z)));
+      fc.property(fc.array(value, { maxLength: 500 }), (values) => {
+        expect(sum(values)).toBe(values.reduce((a, b) => a + b, 0));
       }),
     );
+    expect(sum(Array(1000).fill(8333))).toBe(8_333_000);
   });
 
-  it('AC-001-17: add refuses to mix currencies', () => {
-    expect(() => add(money(100, 'BRL'), money(100, 'USD'))).toThrow();
+  it('AC-003-7: compact amounts are whole reais, half away from zero', () => {
+    expect(wholeReais(118050)).toBe(1181);
+    expect(wholeReais(118049)).toBe(1180);
+    expect(wholeReais(-118050)).toBe(-1181);
   });
 
-  it('AC-001-17: rounding is half away from zero', () => {
-    expect(roundHalfAwayFromZero(5, 2)).toBe(3); // 2.5
-    expect(roundHalfAwayFromZero(-5, 2)).toBe(-3); // -2.5
-    expect(roundHalfAwayFromZero(7, 3)).toBe(2); // 2.33
-    expect(roundHalfAwayFromZero(-7, 3)).toBe(-2);
-    expect(roundHalfAwayFromZero(3, 2)).toBe(2); // 1.5
-    expect(roundHalfAwayFromZero(1, 3)).toBe(0);
+  it('AC-003-8: a money field fills from the right as digits are typed', () => {
+    let value = 0;
+    for (const digit of '12000') value = typedCents(`R$ ${value}${digit}`, value);
+    expect(value).toBe(12000);
   });
 
-  it('AC-001-17: rounding lands within half a unit, ties away from zero, symmetric around zero', () => {
-    const den = fc.integer({ min: 1, max: 1_000_000 });
-    fc.assert(
-      fc.property(cents, den, (n, d) => {
-        const r = roundHalfAwayFromZero(n, d);
-        expect(Number.isSafeInteger(r)).toBe(true);
-        const twiceError = Math.abs(2 * n - 2 * r * d); // |n/d − r| × 2d
-        expect(twiceError).toBeLessThanOrEqual(d);
-        if (twiceError === d) expect(Math.abs(r)).toBeGreaterThan(Math.abs(n / d));
-        expect(roundHalfAwayFromZero(-n, d)).toBe(-r || 0);
-      }),
-    );
+  it('AC-003-9: only digits count and deleting drops the last digit', () => {
+    expect(typedCents('R$ 120,0a', 12000)).toBe(1200);
+    expect(typedCents('R$ 120,0', 12000)).toBe(1200);
+    expect(typedCents('R$ ,', 1)).toBe(0);
   });
 
-  it('AC-001-17: multiplyRate scales by a ratio and rounds once at the end', () => {
-    // R$ 100,00/h for 50 min → R$ 83,33
-    expect(multiplyRate(money(10000, 'BRL'), 50, 60)).toEqual(money(8333, 'BRL'));
-    // 30% commission: keep 7000 of 10000 basis points
-    expect(multiplyRate(money(10000, 'BRL'), 10000 - 3000, 10000)).toEqual(money(7000, 'BRL'));
-    // US$ 1,00 at 5,4321 → R$ 5,43 (ratio applied to cents, currency set by caller)
-    expect(multiplyRate(money(100, 'USD'), 54321, 10000, 'BRL')).toEqual(money(543, 'BRL'));
-  });
-
-  it('AC-001-17: multiplyRate keeps the currency and always returns integer cents', () => {
-    fc.assert(
-      fc.property(
-        currency.chain((c) => amount(c)),
-        fc.integer({ min: 0, max: 100_000 }),
-        fc.integer({ min: 1, max: 100_000 }),
-        (m, num, den) => {
-          const r = multiplyRate(m, num, den);
-          expect(r.currency).toBe(m.currency);
-          expect(Number.isSafeInteger(r.cents)).toBe(true);
-          expect(r.cents).toBe(roundHalfAwayFromZero(m.cents * num, den));
-        },
-      ),
-    );
+  it('AC-003-10: digits past R$ 99.999,99 are refused', () => {
+    expect(typedCents('R$ 99.999,99', 999999)).toBe(9999999);
+    expect(typedCents('R$ 99.999,990', 9999999)).toBe(9999999);
+    expect(typedCents('R$ 10.000,000', 1000000)).toBe(1000000);
   });
 });

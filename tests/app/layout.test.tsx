@@ -112,7 +112,6 @@ describe('start-up', () => {
     const { useSettingsStore } = jest.requireActual('@/state/settingsStore');
     expect(useSettingsStore.getState().settings).toMatchObject({
       language: 'pt-BR',
-      currency: 'BRL',
       themeMode: 'system',
     });
   });
