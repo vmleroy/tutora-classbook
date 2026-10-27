@@ -9,6 +9,6 @@
 - [x] 7. Display: Badge, Avatar, TagDot, Money, ProgressBar, Card, EarningsSummary. Money locale tests. (AC-002-13)
 - [x] 8. Lists and navigation: SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner, ScreenHeader, TabBar, WeekStrip, AgendaBlock.
 - [x] 9. Feedback: BottomSheet, EmptyState, TimerRing.
-- [ ] 10. Lint rule against raw colors, font sizes and spacing. (AC-002-14)
+- [x] 10. Lint rule against raw colors, font sizes and spacing. (AC-002-14)
 - [ ] 11. Developer component screen with theme and mode switcher; Maestro screenshot flow with Large text. (AC-002-15, AC-002-16)
 - [ ] 12. Reduce-motion handling in animated components. (AC-002-17)

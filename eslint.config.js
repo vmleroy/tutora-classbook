@@ -2,6 +2,8 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const prettierRecommended = require('eslint-plugin-prettier/recommended');
 
+const tutora = require('./eslint/tutora-plugin');
+
 module.exports = defineConfig([
   expoConfig,
   prettierRecommended,
@@ -30,5 +32,12 @@ module.exports = defineConfig([
         },
       ],
     },
+  },
+  {
+    // AC-002-14: screens and components use tokens only. Test files may use fixtures.
+    files: ['src/app/**/*.{ts,tsx}', 'src/ui/components/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    plugins: { tutora },
+    rules: { 'tutora/no-raw-design-values': 'error' },
   },
 ]);
