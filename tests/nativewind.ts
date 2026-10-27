@@ -13,17 +13,25 @@ import { repoRoot } from './sourceFiles';
 // and miss native-only overrides (the preset's `font-sans` is the system font on Android).
 process.env.NATIVEWIND_OS = 'android';
 
-let compiled: string | undefined;
+const compiled = new Map<string, Promise<string>>();
 
-/** The app's real global.css, compiled with the app's tailwind.config.js. */
-export async function appCss(): Promise<string> {
-  if (compiled) return compiled;
-  const input = fs.readFileSync(path.join(repoRoot, 'global.css'), 'utf8');
-  const result = await postcss([
-    tailwind({ ...config, content: [path.join(repoRoot, 'src/**/*.{ts,tsx}')] }),
-  ]).process(input, { from: undefined });
-  compiled = result.css;
-  return compiled;
+/**
+ * The app's real global.css, compiled with the app's tailwind.config.js. `safelist` adds
+ * classes that no source file uses yet, for tests that inspect the generated rules.
+ */
+export function appCss(safelist: string[] = []): Promise<string> {
+  const key = safelist.join(' ');
+  let css = compiled.get(key);
+  if (!css) {
+    const input = fs.readFileSync(path.join(repoRoot, 'global.css'), 'utf8');
+    css = postcss([
+      tailwind({ ...config, safelist, content: [path.join(repoRoot, 'src/**/*.{ts,tsx}')] }),
+    ])
+      .process(input, { from: undefined })
+      .then((r) => r.css);
+    compiled.set(key, css);
+  }
+  return css;
 }
 
 /** Call at the top of a test file that asserts on NativeWind styles. */

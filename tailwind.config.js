@@ -6,6 +6,9 @@ const px = (value) => value;
 
 const colors = { transparent: 'transparent' };
 for (const { name } of tokens.color.tokens) colors[name] = v(name);
+// Custom-color parts (docs/design-system/Theming.md): default to primary, repainted on their own.
+for (const part of ['btn-primary', 'on-btn-primary', 'tab-active', 'tab-active-soft'])
+  colors[part] = v(part);
 
 const spacing = {};
 for (const { name, value } of tokens.spacing.tokens)
