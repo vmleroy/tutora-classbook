@@ -28,6 +28,7 @@ The teacher registers once where they teach and whom they teach: their places (t
 - **AC-004-6.** An Escola is paid by a monthly salary instead of a rate.
 - **AC-004-7.** The edit form previews a 60-minute lesson as the teacher changes it: "Você ganha R$ 60,00, a receber do local no fechamento do mês" when the place pays, "Aluno paga R$ 100,00, você fica com R$ 70,00" when the student pays with 30% to the place.
 - **AC-004-8.** Every place has a default duration, 60 minutes unless changed.
+- **AC-004-27.** A duration is set with − / + in 5-minute steps, shown as "90 min · 1h30". Tapping it lets the teacher type the exact time as hh:mm, filling from the right (1, 3, 0 → 01:30); minutes over 59 or more than 5 hours are refused with a message.
 - **AC-004-9.** Casa do Aluno has a travel fee rule: varies (asked in each lesson), a fixed amount, or none. It starts as "varies" and the list row states the rule.
 
 ### Students

@@ -56,7 +56,8 @@
     "increase": "Aumentar",
     "lessonTime": "Tempo de aula",
     "earnedVsExpected": "Ganho em relação ao previsto",
-    "loading": "Carregando"
+    "loading": "Carregando",
+    "durationInvalid": "Use hh:mm, até {{max}}"
   },
   "dev": {
     "title": "Componentes",
@@ -253,6 +254,7 @@
       "commissionRange": "A comissão vai de 0% a 90%.",
       "notArchived": "Arquive antes de remover.",
       "notFound": "Não encontrado."
-    }
+    },
+    "exactDuration": "Duração exata"
   }
 }

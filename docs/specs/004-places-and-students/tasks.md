@@ -14,9 +14,11 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 10. Students screens: list with search and Por local, detail, edit/new with place cards and color; group edit; shared Arquivados screen. Test: `tests/app/students.test.tsx`. (AC-004-14, AC-004-15)
 - [x] 11. Docs: product doc data model (place kinds, `archived_at`, group members), architecture schema table; full typecheck, lint, test.
 
+- [x] 12. Exact duration entry: `typedDuration` in `src/domain/duration.ts`, `TextField kind="duration"`, `DurationStepper`; bottom sheets rise above the keyboard. Tests: `src/domain/duration.test.ts`, `src/ui/components/__tests__/selection.test.tsx`. (AC-004-27)
+
 ## Pending on a device
 
 - Cross-tab navigation from a student to a place and back feels right on Android.
-- Steppers and the exact-amount sheet on a small screen with Large text.
+- Steppers and the exact-amount and exact-duration sheets on a small screen with Large text, with the keyboard open (the sheet must sit above it).
 - Removing an item for good returns to its tab (`router.dismissTo`).
 - `.maestro/shell.yaml` now expects "Nenhum local seu ainda" on Locais (not run).

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { MAX_DURATION_MIN } from '@/domain/duration';
 import type { Cents, RateType } from '@/domain/money';
 import type { Place } from '@/domain/places';
 import type { Language } from '@/domain/settings';
@@ -104,6 +105,73 @@ export function PriceStepper({
           }
         >
           <TextField kind="money" label={label} cents={exact} onChangeCents={setExact} />
+        </BottomSheet>
+      ) : null}
+    </>
+  );
+}
+
+/** "45 min", or "90 min · 1h30" from an hour on, as in the mockups. */
+export function durationText(minutes: number, t: TFunction): string {
+  const label = t('places.minutes', { count: minutes });
+  if (minutes < 60) return label;
+  const rest = minutes % 60;
+  return `${label} · ${Math.floor(minutes / 60)}h${rest ? String(rest).padStart(2, '0') : ''}`;
+}
+
+/** A duration stepper in 5-minute steps; tapping the time opens hh:mm entry. */
+export function DurationStepper({
+  label,
+  minutes,
+  onChange,
+  min = 15,
+  max = MAX_DURATION_MIN,
+}: {
+  label: string;
+  minutes: number;
+  onChange: (minutes: number) => void;
+  min?: number;
+  max?: number;
+}) {
+  const { t } = useTranslation();
+  const [exact, setExact] = useState<number | null | undefined>(undefined);
+  const valid = typeof exact === 'number' && exact >= min;
+  return (
+    <>
+      <Stepper
+        value={minutes}
+        step={5}
+        min={min}
+        max={max}
+        valueLabel={label}
+        format={(v) => durationText(v, t)}
+        onChange={onChange}
+        onPressValue={() => setExact(minutes)}
+      />
+      {exact !== undefined ? (
+        <BottomSheet
+          title={label}
+          subtitle={t('catalog.exactDuration')}
+          onClose={() => setExact(undefined)}
+          actions={
+            <Button
+              disabled={!valid}
+              onPress={() => {
+                if (typeof exact === 'number') onChange(exact);
+                setExact(undefined);
+              }}
+            >
+              {t('catalog.done')}
+            </Button>
+          }
+        >
+          <TextField
+            kind="duration"
+            label={label}
+            minutes={minutes}
+            maxMinutes={max}
+            onChangeMinutes={setExact}
+          />
         </BottomSheet>
       ) : null}
     </>

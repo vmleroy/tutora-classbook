@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View, type TextInputProps } from 'react-native';
 
+import { durationDigits, hhmm, MAX_DURATION_MIN, typedDuration } from '@/domain/duration';
 import { MAX_FIELD_CENTS, typedCents } from '@/domain/money';
 import type { Language } from '@/domain/settings';
 import { cn, tv } from '@/ui/cn';
@@ -18,11 +20,18 @@ export interface TextFieldProps {
   inputMode?: TextInputProps['inputMode'];
   tone?: 'default' | 'onPrimary';
   onChangeText?: (text: string) => void;
-  /** `money` shows `cents` in reais and fills from the right as digits are typed. */
-  kind?: 'text' | 'money';
+  /**
+   * `money` shows `cents` in reais and `duration` shows `minutes` as hh:mm; both fill from
+   * the right as digits are typed.
+   */
+  kind?: 'text' | 'money' | 'duration';
   cents?: number;
   maxCents?: number;
   onChangeCents?: (cents: number) => void;
+  minutes?: number;
+  maxMinutes?: number;
+  /** null while the typed time is not a valid duration (minutes over 59, over the max). */
+  onChangeMinutes?: (minutes: number | null) => void;
   /** Extra classes merged over the component's own (layout such as margins). */
   className?: string;
 }
@@ -53,14 +62,26 @@ export function TextField({
   cents = 0,
   maxCents = MAX_FIELD_CENTS,
   onChangeCents,
+  minutes = 0,
+  maxMinutes = MAX_DURATION_MIN,
+  onChangeMinutes,
 }: TextFieldProps) {
   const { palette, textScale } = useTheme();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const language: Language = i18n.language === 'en' ? 'en' : 'pt-BR';
   const money = kind === 'money';
-  const shown = money ? formatMoney(cents, language) : value;
+  const duration = kind === 'duration';
+  // An hh:mm field keeps its own digits: "00:90" is mid-typing, not yet a duration.
+  const [digits, setDigits] = useState(() => durationDigits(minutes));
+  const durationValid = typedDuration(digits, digits, maxMinutes).minutes !== null;
+  const shown = money ? formatMoney(cents, language) : duration ? hhmm(digits) : value;
+  const invalid = duration && !durationValid;
+  const fieldError =
+    error ??
+    (invalid ? t('ui.durationInvalid', { max: hhmm(durationDigits(maxMinutes)) }) : undefined);
+  const numeric = money || duration;
   const body = typeStyles.body;
-  const help = error ?? helper;
+  const help = fieldError ?? helper;
   return (
     <View className={cn('gap-1.5', className)}>
       <Text
@@ -72,26 +93,34 @@ export function TextField({
       <TextInput
         accessibilityLabel={label}
         accessibilityHint={help}
-        aria-invalid={!!error}
+        aria-invalid={!!fieldError}
         value={shown}
         placeholder={placeholder}
-        inputMode={money ? 'numeric' : inputMode}
+        inputMode={numeric ? 'numeric' : inputMode}
         // The caret stays at the end, where digits are added and removed.
-        selection={money ? { start: shown?.length ?? 0, end: shown?.length ?? 0 } : undefined}
+        selection={numeric ? { start: shown?.length ?? 0, end: shown?.length ?? 0 } : undefined}
         onChangeText={
-          money ? (text) => onChangeCents?.(typedCents(text, cents, maxCents)) : onChangeText
+          money
+            ? (text) => onChangeCents?.(typedCents(text, cents, maxCents))
+            : duration
+              ? (text) => {
+                  const next = typedDuration(text, digits, maxMinutes);
+                  setDigits(next.digits);
+                  onChangeMinutes?.(next.minutes);
+                }
+              : onChangeText
         }
         placeholderTextColor={
           tone === 'onPrimary' ? palette['on-primary-muted'] : palette['ink-muted']
         }
-        className={cn(input({ tone, error: !!error }), money && 'text-right')}
+        className={cn(input({ tone, error: !!fieldError }), numeric && 'text-right')}
         style={{ fontSize: body.fontSize * textScale }}
       />
       {help ? (
         <Text
           variant="meta"
-          weight={error ? 700 : undefined}
-          className={error ? 'text-danger-ink' : 'text-ink-muted'}
+          weight={fieldError ? 700 : undefined}
+          className={fieldError ? 'text-danger-ink' : 'text-ink-muted'}
         >
           {help}
         </Text>

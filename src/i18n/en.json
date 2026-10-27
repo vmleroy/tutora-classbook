@@ -56,7 +56,8 @@
     "increase": "Increase",
     "lessonTime": "Lesson time",
     "earnedVsExpected": "Earned compared with expected",
-    "loading": "Loading"
+    "loading": "Loading",
+    "durationInvalid": "Use hh:mm, up to {{max}}"
   },
   "dev": {
     "title": "Components",
@@ -253,6 +254,7 @@
       "commissionRange": "Commission goes from 0% to 90%.",
       "notArchived": "Archive it before removing.",
       "notFound": "Not found."
-    }
+    },
+    "exactDuration": "Exact duration"
   }
 }

@@ -13,7 +13,14 @@ import {
 } from '@/domain/places';
 import { previewLesson } from '@/domain/pricing';
 import { useCatalogActions, usePlace } from '@/state/catalog';
-import { ArchiveActions, PriceStepper, placeName, rateMoney, useLanguage } from '@/ui/catalog';
+import {
+  ArchiveActions,
+  DurationStepper,
+  PriceStepper,
+  placeName,
+  rateMoney,
+  useLanguage,
+} from '@/ui/catalog';
 import { Button } from '@/ui/components/Button';
 import { Card } from '@/ui/components/Card';
 import { Chip } from '@/ui/components/Chip';
@@ -199,12 +206,9 @@ function PlaceForm({ id, initial }: { id?: string; initial: Place }) {
       )}
 
       <Field label={t('places.duration')}>
-        <Stepper
-          value={draft.defaultDurationMin}
-          step={5}
-          min={15}
-          max={300}
-          format={(v) => t('places.minutes', { count: v })}
+        <DurationStepper
+          label={t('places.duration')}
+          minutes={draft.defaultDurationMin}
           onChange={(defaultDurationMin) => set({ defaultDurationMin })}
         />
       </Field>

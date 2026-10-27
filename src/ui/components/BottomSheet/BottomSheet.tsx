@@ -1,6 +1,6 @@
 import { Children, Fragment, isValidElement, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, View, type LayoutChangeEvent } from 'react-native';
+import { KeyboardAvoidingView, Modal, View, type LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -68,7 +68,8 @@ export function BottomSheet({
       navigationBarTranslucent
       onRequestClose={onClose}
     >
-      <View className={cn('flex-1 justify-end', className)}>
+      {/* The panel rises above the keyboard when a field inside it has focus. */}
+      <KeyboardAvoidingView behavior="padding" className={cn('flex-1 justify-end', className)}>
         <Touchable
           testID="sheet-scrim"
           accessibilityRole="button"
@@ -120,7 +121,7 @@ export function BottomSheet({
             ) : null}
           </View>
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
