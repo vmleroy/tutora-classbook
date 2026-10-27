@@ -57,5 +57,21 @@
     "lessonTime": "Tempo de aula",
     "earnedVsExpected": "Ganho em relação ao previsto",
     "loading": "Carregando"
+  },
+  "dev": {
+    "title": "Componentes",
+    "theme": "Tema",
+    "mode": "Modo",
+    "textSize": "Texto",
+    "light": "Claro",
+    "dark": "Escuro",
+    "normal": "Normal",
+    "large": "Grande"
+  },
+  "themes": {
+    "quadro": "Quadro-negro",
+    "caderno": "Caderno azul",
+    "biblioteca": "Biblioteca",
+    "giz": "Giz pastel"
   }
 }

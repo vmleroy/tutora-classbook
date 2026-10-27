@@ -1,0 +1,381 @@
+# AC-002-16: every component with Large text at 360 dp, in light and dark.
+# Needs a build with the gallery: EXPO_PUBLIC_DEV_GALLERY=1 (or a dev build).
+appId: com.vmleroy.tutora
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: today-screen
+    timeout: 15000
+- openLink: tutora://dev/components
+- extendedWaitUntil:
+    visible:
+      id: gallery-ground
+    timeout: 10000
+- tapOn: 'Grande|Large'
+- scrollUntilVisible:
+    element:
+      id: gallery-Icon
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Icon
+- scrollUntilVisible:
+    element:
+      id: gallery-Button
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Button
+- scrollUntilVisible:
+    element:
+      id: gallery-IconButton
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-IconButton
+- scrollUntilVisible:
+    element:
+      id: gallery-Fab
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Fab
+- scrollUntilVisible:
+    element:
+      id: gallery-SegmentedControl
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-SegmentedControl
+- scrollUntilVisible:
+    element:
+      id: gallery-Chip
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Chip
+- scrollUntilVisible:
+    element:
+      id: gallery-Switch
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Switch
+- scrollUntilVisible:
+    element:
+      id: gallery-Checkbox
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Checkbox
+- scrollUntilVisible:
+    element:
+      id: gallery-Stepper
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Stepper
+- scrollUntilVisible:
+    element:
+      id: gallery-TextField
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-TextField
+- scrollUntilVisible:
+    element:
+      id: gallery-SelectField
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-SelectField
+- scrollUntilVisible:
+    element:
+      id: gallery-Badge
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Badge
+- scrollUntilVisible:
+    element:
+      id: gallery-Avatar
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Avatar
+- scrollUntilVisible:
+    element:
+      id: gallery-TagDot
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-TagDot
+- scrollUntilVisible:
+    element:
+      id: gallery-Money
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Money
+- scrollUntilVisible:
+    element:
+      id: gallery-ProgressBar
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-ProgressBar
+- scrollUntilVisible:
+    element:
+      id: gallery-Card
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-Card
+- scrollUntilVisible:
+    element:
+      id: gallery-EarningsSummary
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-EarningsSummary
+- scrollUntilVisible:
+    element:
+      id: gallery-SectionHeader
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-SectionHeader
+- scrollUntilVisible:
+    element:
+      id: gallery-LessonRow
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-LessonRow
+- scrollUntilVisible:
+    element:
+      id: gallery-ListGroup
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-ListGroup
+- scrollUntilVisible:
+    element:
+      id: gallery-ListRow
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-ListRow
+- scrollUntilVisible:
+    element:
+      id: gallery-AlertBanner
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-AlertBanner
+- scrollUntilVisible:
+    element:
+      id: gallery-ScreenHeader
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-ScreenHeader
+- scrollUntilVisible:
+    element:
+      id: gallery-TabBar
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-TabBar
+- scrollUntilVisible:
+    element:
+      id: gallery-WeekStrip
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-WeekStrip
+- scrollUntilVisible:
+    element:
+      id: gallery-AgendaBlock
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-AgendaBlock
+- scrollUntilVisible:
+    element:
+      id: gallery-BottomSheet
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-BottomSheet
+- scrollUntilVisible:
+    element:
+      id: gallery-EmptyState
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-EmptyState
+- scrollUntilVisible:
+    element:
+      id: gallery-TimerRing
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-light-TimerRing
+- scrollUntilVisible:
+    element:
+      id: gallery-sample-body
+    direction: UP
+- tapOn: 'Escuro|Dark'
+- scrollUntilVisible:
+    element:
+      id: gallery-Icon
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Icon
+- scrollUntilVisible:
+    element:
+      id: gallery-Button
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Button
+- scrollUntilVisible:
+    element:
+      id: gallery-IconButton
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-IconButton
+- scrollUntilVisible:
+    element:
+      id: gallery-Fab
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Fab
+- scrollUntilVisible:
+    element:
+      id: gallery-SegmentedControl
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-SegmentedControl
+- scrollUntilVisible:
+    element:
+      id: gallery-Chip
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Chip
+- scrollUntilVisible:
+    element:
+      id: gallery-Switch
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Switch
+- scrollUntilVisible:
+    element:
+      id: gallery-Checkbox
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Checkbox
+- scrollUntilVisible:
+    element:
+      id: gallery-Stepper
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Stepper
+- scrollUntilVisible:
+    element:
+      id: gallery-TextField
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-TextField
+- scrollUntilVisible:
+    element:
+      id: gallery-SelectField
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-SelectField
+- scrollUntilVisible:
+    element:
+      id: gallery-Badge
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Badge
+- scrollUntilVisible:
+    element:
+      id: gallery-Avatar
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Avatar
+- scrollUntilVisible:
+    element:
+      id: gallery-TagDot
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-TagDot
+- scrollUntilVisible:
+    element:
+      id: gallery-Money
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Money
+- scrollUntilVisible:
+    element:
+      id: gallery-ProgressBar
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-ProgressBar
+- scrollUntilVisible:
+    element:
+      id: gallery-Card
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-Card
+- scrollUntilVisible:
+    element:
+      id: gallery-EarningsSummary
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-EarningsSummary
+- scrollUntilVisible:
+    element:
+      id: gallery-SectionHeader
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-SectionHeader
+- scrollUntilVisible:
+    element:
+      id: gallery-LessonRow
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-LessonRow
+- scrollUntilVisible:
+    element:
+      id: gallery-ListGroup
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-ListGroup
+- scrollUntilVisible:
+    element:
+      id: gallery-ListRow
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-ListRow
+- scrollUntilVisible:
+    element:
+      id: gallery-AlertBanner
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-AlertBanner
+- scrollUntilVisible:
+    element:
+      id: gallery-ScreenHeader
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-ScreenHeader
+- scrollUntilVisible:
+    element:
+      id: gallery-TabBar
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-TabBar
+- scrollUntilVisible:
+    element:
+      id: gallery-WeekStrip
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-WeekStrip
+- scrollUntilVisible:
+    element:
+      id: gallery-AgendaBlock
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-AgendaBlock
+- scrollUntilVisible:
+    element:
+      id: gallery-BottomSheet
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-BottomSheet
+- scrollUntilVisible:
+    element:
+      id: gallery-EmptyState
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-EmptyState
+- scrollUntilVisible:
+    element:
+      id: gallery-TimerRing
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: .maestro/screenshots/large-dark-TimerRing

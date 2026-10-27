@@ -57,5 +57,21 @@
     "lessonTime": "Lesson time",
     "earnedVsExpected": "Earned compared with expected",
     "loading": "Loading"
+  },
+  "dev": {
+    "title": "Components",
+    "theme": "Theme",
+    "mode": "Mode",
+    "textSize": "Text",
+    "light": "Light",
+    "dark": "Dark",
+    "normal": "Normal",
+    "large": "Large"
+  },
+  "themes": {
+    "quadro": "Quadro-negro",
+    "caderno": "Caderno azul",
+    "biblioteca": "Biblioteca",
+    "giz": "Giz pastel"
   }
 }
