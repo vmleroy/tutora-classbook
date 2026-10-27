@@ -1,6 +1,6 @@
 import { View } from 'react-native';
-import { tv } from 'tailwind-variants';
 
+import { cn, tv } from '@/ui/cn';
 import { tagInk, tagSoft, type Tag } from '@/ui/components/TagDot';
 import { Text } from '@/ui/components/Text';
 
@@ -30,7 +30,7 @@ export function Avatar({ initials, tag = 'amber', size = 'md' }: AvatarProps) {
       testID={`avatar-${tag}`}
       importantForAccessibility="no-hide-descendants"
       accessibilityElementsHidden
-      className={`${avatar({ size })} ${tagSoft[tag]}`}
+      className={cn(avatar({ size }), tagSoft[tag])}
     >
       <Text variant={textVariant[size]} weight={800} className={tagInk[tag]}>
         {initials}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { tv } from 'tailwind-variants';
 
+import { tv } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
 import { sizes, touchSlop } from '@/ui/theme/sizes';

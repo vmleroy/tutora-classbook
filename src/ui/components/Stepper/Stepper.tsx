@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { cn } from '@/ui/cn';
 import { Icon } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
@@ -56,7 +57,10 @@ export function Stepper({
         disabled={disabled}
         hitSlop={touchSlop(BUTTON[size])}
         onPress={() => go(kind === 'minus' ? current - step : current + step)}
-        className={`items-center justify-center rounded-md bg-surface-sunken ${disabled ? 'opacity-40' : ''}`}
+        className={cn(
+          'items-center justify-center rounded-md bg-surface-sunken',
+          disabled && 'opacity-40',
+        )}
         style={{ width: BUTTON[size], height: BUTTON[size] }}
       >
         <Icon name={kind} size={18} strokeWidth={2.6} />

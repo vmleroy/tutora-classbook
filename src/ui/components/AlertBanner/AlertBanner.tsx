@@ -1,4 +1,5 @@
 import type { PaletteToken } from '@/domain/theme/palette';
+import { cn } from '@/ui/cn';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
@@ -45,10 +46,13 @@ export function AlertBanner({
       accessibilityRole="button"
       accessibilityLabel={value ? `${message}, ${value}` : message}
       onPress={onPress}
-      className={`min-h-touch flex-row items-center gap-2.5 rounded-xl px-3.5 py-3 ${ground[tone]}`}
+      className={cn(
+        'min-h-touch flex-row items-center gap-2.5 rounded-xl px-3.5 py-3',
+        ground[tone],
+      )}
     >
       <Icon name={icon} size={20} tone={ink[tone]} />
-      <Text variant="row-title" className={`flex-1 ${text[tone]}`}>
+      <Text variant="row-title" className={cn('flex-1', text[tone])}>
         {message}
       </Text>
       {value ? (

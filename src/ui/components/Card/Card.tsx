@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
-import { tv } from 'tailwind-variants';
 
+import { tv } from '@/ui/cn';
 import { shadowStyle } from '@/ui/theme/shadow';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 

@@ -1,6 +1,6 @@
 import { TextInput, View, type TextInputProps } from 'react-native';
-import { tv } from 'tailwind-variants';
 
+import { tv } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 import { typeStyles } from '@/ui/theme/tokens';

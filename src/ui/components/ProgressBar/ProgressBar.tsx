@@ -1,5 +1,7 @@
 import { View } from 'react-native';
 
+import { cn } from '@/ui/cn';
+
 export interface ProgressBarProps {
   value: number;
   tone?: 'accent' | 'success' | 'primary' | 'secondary';
@@ -35,9 +37,13 @@ export function ProgressBar({
       accessibilityRole="progressbar"
       accessibilityLabel={label}
       accessibilityValue={{ min: 0, max: 100, now: pct }}
-      className={`flex-row overflow-hidden rounded-full ${thin ? 'h-1' : 'h-2'} ${trackClass[track]}`}
+      className={cn(
+        'flex-row overflow-hidden rounded-full',
+        thin ? 'h-1' : 'h-2',
+        trackClass[track],
+      )}
     >
-      <View className={`h-full rounded-full ${fillClass[tone]}`} style={{ width: `${pct}%` }} />
+      <View className={cn('h-full rounded-full', fillClass[tone])} style={{ width: `${pct}%` }} />
     </View>
   );
 }

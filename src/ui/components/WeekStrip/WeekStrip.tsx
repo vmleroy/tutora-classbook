@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { cn } from '@/ui/cn';
 import { tagFill, type Tag } from '@/ui/components/TagDot';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
@@ -39,7 +40,10 @@ export function WeekStrip({ days, selected, label, onSelect }: WeekStripProps) {
               setOwn(i);
               onSelect?.(i);
             }}
-            className={`flex-1 items-center justify-center gap-0.5 rounded-xl ${on ? 'bg-btn-primary' : ''}`}
+            className={cn(
+              'flex-1 items-center justify-center gap-0.5 rounded-xl',
+              on && 'bg-btn-primary',
+            )}
             style={{ height: DAY_HEIGHT }}
           >
             <Text
@@ -53,7 +57,7 @@ export function WeekStrip({ days, selected, label, onSelect }: WeekStripProps) {
               {d.day}
             </Text>
             <View
-              className={`rounded-full ${d.dot ? (on ? 'bg-accent' : tagFill[d.dot]) : ''}`}
+              className={cn('rounded-full', d.dot ? (on ? 'bg-accent' : tagFill[d.dot]) : '')}
               style={{ width: DOT, height: DOT }}
             />
           </Touchable>

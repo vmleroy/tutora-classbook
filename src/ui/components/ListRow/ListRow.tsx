@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
 import type { PaletteToken } from '@/domain/theme/palette';
+import { cn } from '@/ui/cn';
 import { Badge, type BadgeProps } from '@/ui/components/Badge';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Switch } from '@/ui/components/Switch';
@@ -52,7 +53,7 @@ export function ListRow({
   const content = (
     <>
       {icon ? (
-        <View className={`h-8 w-8 items-center justify-center rounded-md ${tile[iconTone]}`}>
+        <View className={cn('h-8 w-8 items-center justify-center rounded-md', tile[iconTone])}>
           <Icon name={icon} size={18} tone={tileInk[iconTone]} />
         </View>
       ) : null}

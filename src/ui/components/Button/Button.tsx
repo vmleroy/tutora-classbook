@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { tv } from 'tailwind-variants';
 
 import type { PaletteToken as TokenName } from '@/domain/theme/palette';
+import { tv } from '@/ui/cn';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';

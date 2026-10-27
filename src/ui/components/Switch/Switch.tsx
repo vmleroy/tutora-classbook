@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
+import { cn } from '@/ui/cn';
 import { Touchable } from '@/ui/components/Touchable';
 import { useMotion } from '@/ui/theme/motion';
 import { touchSlop } from '@/ui/theme/sizes';
@@ -35,13 +36,17 @@ export function Switch({ value, onChange, label, disabled }: SwitchProps) {
         setOwn(!on);
         onChange?.(!on);
       }}
-      className={`justify-center rounded-full ${on ? 'bg-btn-primary' : 'bg-line-strong'} ${disabled ? 'opacity-40' : ''}`}
+      className={cn(
+        'justify-center rounded-full',
+        on ? 'bg-btn-primary' : 'bg-line-strong',
+        disabled && 'opacity-40',
+      )}
       style={TRACK}
     >
       <Animated.View style={[{ position: 'absolute', width: KNOB, height: KNOB }, knob]}>
         <View
           testID="switch-knob"
-          className={`flex-1 rounded-full ${on ? 'bg-on-btn-primary' : 'bg-surface'}`}
+          className={cn('flex-1 rounded-full', on ? 'bg-on-btn-primary' : 'bg-surface')}
         />
       </Animated.View>
     </Touchable>

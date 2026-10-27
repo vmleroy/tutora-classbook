@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
 import type { PaletteToken } from '@/domain/theme/palette';
+import { cn } from '@/ui/cn';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 
@@ -45,7 +46,7 @@ export function Badge({ tone = 'neutral', icon, children }: BadgeProps) {
   return (
     <View
       testID="badge"
-      className={`flex-row items-center gap-1 self-start rounded-sm px-2 py-1 ${ground[tone]}`}
+      className={cn('flex-row items-center gap-1 self-start rounded-sm px-2 py-1', ground[tone])}
     >
       {icon ? <Icon name={icon} size={12} strokeWidth={3} tone={ink[tone]} /> : null}
       <Text variant="badge" numberOfLines={1} className={textClass[tone]}>

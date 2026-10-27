@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { cn } from '@/ui/cn';
 import { Icon } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
@@ -29,7 +30,10 @@ export function Checkbox({ label, checked, onChange }: CheckboxProps) {
       className="min-h-touch flex-row items-center gap-2.5"
     >
       <View
-        className={`items-center justify-center rounded-xs border-2 ${on ? 'border-btn-primary bg-btn-primary' : 'border-line-strong bg-surface'}`}
+        className={cn(
+          'items-center justify-center rounded-xs border-2',
+          on ? 'border-btn-primary bg-btn-primary' : 'border-line-strong bg-surface',
+        )}
         style={{ width: BOX, height: BOX }}
       >
         {on ? <Icon name="check" size={14} strokeWidth={3} tone="on-btn-primary" /> : null}

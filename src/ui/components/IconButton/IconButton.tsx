@@ -1,6 +1,5 @@
-import { tv } from 'tailwind-variants';
-
 import type { PaletteToken } from '@/domain/theme/palette';
+import { tv } from '@/ui/cn';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Touchable } from '@/ui/components/Touchable';
 

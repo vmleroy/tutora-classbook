@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { cn } from '@/ui/cn';
 import { Icon } from '@/ui/components/Icon';
 import { TagDot, tagInk, tagSoft, type Tag } from '@/ui/components/TagDot';
 import { Text } from '@/ui/components/Text';
@@ -36,7 +37,12 @@ export function AgendaBlock({
         .join(', ')}
       onPress={onPress}
       hitSlop={touchSlop(h)}
-      className={`w-full flex-row flex-wrap items-center gap-x-2 gap-y-0.5 rounded-md px-3 py-2 ${tagSoft[tag]} ${state === 'next' ? 'border-2 border-accent' : ''} ${state === 'done' ? 'opacity-85' : ''}`}
+      className={cn(
+        'w-full flex-row flex-wrap items-center gap-x-2 gap-y-0.5 rounded-md px-3 py-2',
+        tagSoft[tag],
+        state === 'next' && 'border-2 border-accent',
+        state === 'done' && 'opacity-85',
+      )}
       style={{ minHeight: h }}
     >
       <TagDot tag={tag} size="sm" />
@@ -44,7 +50,7 @@ export function AgendaBlock({
         {title}
       </Text>
       {subtitle ? (
-        <Text variant="meta" className={`flex-1 ${tagInk[tag]}`}>
+        <Text variant="meta" className={cn('flex-1', tagInk[tag])}>
           {subtitle}
         </Text>
       ) : null}

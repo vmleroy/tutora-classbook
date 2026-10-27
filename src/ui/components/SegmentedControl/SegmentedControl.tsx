@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
+import { cn } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
 import { useMotion } from '@/ui/theme/motion';
@@ -73,7 +74,11 @@ export function SegmentedControl<T extends string = string>({
               setOwn(option.value);
               onChange?.(option.value);
             }}
-            className={`flex-1 items-center justify-center rounded-sm ${size === 'sm' ? 'h-control-sm' : 'h-touch'} ${on && segment === 0 ? 'bg-surface' : ''}`}
+            className={cn(
+              'flex-1 items-center justify-center rounded-sm',
+              size === 'sm' ? 'h-control-sm' : 'h-touch',
+              on && segment === 0 && 'bg-surface',
+            )}
           >
             <Text
               variant={size === 'sm' ? 'caption' : 'row-title'}

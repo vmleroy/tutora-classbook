@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { cn } from '@/ui/cn';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
@@ -51,7 +52,7 @@ export function TabBar({ active = 'today', onSelect }: TabBarProps) {
           >
             <View
               testID={`tab-pill-${tab.name}`}
-              className={`rounded-xl px-4 py-0.5 ${on ? 'bg-tab-active-soft' : ''}`}
+              className={cn('rounded-xl px-4 py-0.5', on && 'bg-tab-active-soft')}
             >
               <Icon name={tab.icon} tone={on ? 'tab-active' : 'ink-muted'} />
             </View>

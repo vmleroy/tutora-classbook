@@ -1,5 +1,6 @@
 import { View } from 'react-native';
-import { tv } from 'tailwind-variants';
+
+import { cn, tv } from '@/ui/cn';
 
 export type Tag = 'amber' | 'green' | 'blue' | 'violet' | 'orange' | 'red' | 'teal';
 
@@ -50,7 +51,7 @@ export function TagDot({ tag = 'amber', size = 'md' }: TagDotProps) {
       testID={`tag-dot-${tag}`}
       importantForAccessibility="no-hide-descendants"
       accessibilityElementsHidden
-      className={`${dot({ size })} ${tagFill[tag]}`}
+      className={cn(dot({ size }), tagFill[tag])}
     />
   );
 }
