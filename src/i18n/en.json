@@ -43,5 +43,19 @@
     "backupPath": "Copy saved at: {{path}}",
     "noBackup": "The database was not changed.",
     "detail": "Error: {{message}}"
+  },
+  "ui": {
+    "back": "Back",
+    "close": "Close",
+    "mainNav": "Main navigation",
+    "next": "Next",
+    "done": "Done",
+    "weekDays": "Days of the week",
+    "newLesson": "New lesson",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "lessonTime": "Lesson time",
+    "earnedVsExpected": "Earned compared with expected",
+    "loading": "Loading"
   }
 }

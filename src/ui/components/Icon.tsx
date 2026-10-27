@@ -88,6 +88,7 @@ export function Icon({ name, size = sizes.icon, strokeWidth = 2, label, tone = '
       strokeWidth={strokeWidth}
       color={color}
       fill={name === 'play' ? color : 'none'}
+      aria-hidden={!label}
       accessible={!!label}
       accessibilityRole={label ? 'image' : undefined}
       accessibilityLabel={label}

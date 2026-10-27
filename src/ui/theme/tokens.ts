@@ -176,6 +176,7 @@ export const size = {
   'control-sm': 36,
   'control-md': 48,
   'control-lg': 56,
+  fab: 60,
   tabbar: 72,
   'avatar-sm': 36,
   'avatar-md': 44,

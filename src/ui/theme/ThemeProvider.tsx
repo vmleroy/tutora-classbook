@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 import type { TextSize } from '@/domain/settings';
 import { hexToChannels } from '@/domain/theme/channels';
-import type { ThemeId } from '@/domain/theme/colorSets';
+import type { ColorSetId, ThemeId } from '@/domain/theme/colorSets';
 import {
   resolvePalette,
   resolveScheme,
@@ -17,7 +17,12 @@ import {
 import { LARGE_TEXT_SCALE } from './type';
 import { useSystemScheme } from './useSystemScheme';
 
-type ThemeValue = Readonly<{ palette: Palette; scheme: Scheme; textScale: number }>;
+type ThemeValue = Readonly<{
+  palette: Palette;
+  scheme: Scheme;
+  setId: ColorSetId;
+  textScale: number;
+}>;
 
 const ThemeContext = createContext<ThemeValue | null>(null);
 
@@ -55,7 +60,11 @@ export function ThemeProvider({
     [palette],
   );
   const textScale = textSize === 'large' ? LARGE_TEXT_SCALE : 1;
-  const value = useMemo(() => ({ palette, scheme, textScale }), [palette, scheme, textScale]);
+  const setId: ColorSetId = `${theme}-${scheme}`;
+  const value = useMemo(
+    () => ({ palette, scheme, setId, textScale }),
+    [palette, scheme, setId, textScale],
+  );
 
   return (
     <ThemeContext.Provider value={value}>

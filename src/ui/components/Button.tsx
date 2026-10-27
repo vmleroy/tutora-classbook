@@ -26,7 +26,7 @@ const button = tv({
   base: 'flex-row items-center justify-center gap-1.5 rounded-lg px-4',
   variants: {
     variant: {
-      primary: 'bg-primary',
+      primary: 'bg-btn-primary',
       accent: 'bg-accent',
       outline: 'border border-line-strong bg-surface',
       ghost: 'bg-transparent',
@@ -39,7 +39,7 @@ const button = tv({
 });
 
 const labelTone: Record<Variant, TokenName> = {
-  primary: 'on-primary',
+  primary: 'on-btn-primary',
   accent: 'on-accent',
   outline: 'ink',
   ghost: 'primary',
@@ -47,7 +47,7 @@ const labelTone: Record<Variant, TokenName> = {
 };
 
 const labelClass: Record<Variant, string> = {
-  primary: 'text-on-primary',
+  primary: 'text-on-btn-primary',
   accent: 'text-on-accent',
   outline: 'text-ink',
   ghost: 'text-primary',
