@@ -150,10 +150,11 @@ export type LessonChange = Partial<
 export type Scope = 'one' | 'following';
 
 /**
- * Editar aula. "Só esta aula" changes this class and detaches it from its series.
- * "Esta e as próximas" ends the series the day before and starts a new one from this class
- * with the change; later classes changed on their own keep their changes. A class that
- * already started never changes (AC-005-15).
+ * Editar aula. "Só esta aula" changes this class and detaches it from its series; any class
+ * can be changed this way, past ones included. "Esta e as próximas" ends the series the day
+ * before and starts a new one from this class with the change; later classes changed on
+ * their own keep their changes. It only starts from a class still ahead, so a series change
+ * never reaches classes that already happened (AC-005-15).
  */
 export function editLesson(
   ctx: Ctx,
@@ -164,7 +165,7 @@ export function editLesson(
   return ctx.db.transaction((tx) => {
     const row = repo.getLessonRow(tx, id);
     if (!row) return fail('notFound' as const);
-    if (row.startAt <= ctx.now) return fail('started' as const);
+    if (scope === 'following' && row.startAt <= ctx.now) return fail('started' as const);
     const rule = row.ruleId ? repo.getRule(tx, row.ruleId) : undefined;
     const zone = rule?.timeZone ?? ctx.zone;
     const local = utcToLocal(row.startAt, zone);
@@ -213,14 +214,15 @@ export function editLesson(
 }
 
 /**
- * Remover. "Só esta aula" removes it and remembers the date, so filling never brings it
- * back. "Esta e as próximas" ends the series and removes it from this class on.
+ * Remover. "Só esta aula" removes it, past ones included, and remembers the date, so filling
+ * never brings it back. "Esta e as próximas" ends the series and removes it from this class
+ * on; like editing, it only starts from a class still ahead.
  */
 export function removeLesson(ctx: Ctx, id: string, scope: Scope): Result<null, ScheduleError> {
   return ctx.db.transaction((tx) => {
     const row = repo.getLessonRow(tx, id);
     if (!row) return fail('notFound' as const);
-    if (row.startAt <= ctx.now) return fail('started' as const);
+    if (scope === 'following' && row.startAt <= ctx.now) return fail('started' as const);
     if (scope === 'following' && row.ruleId && row.occurrenceDate) {
       repo.updateRule(tx, row.ruleId, { endsOn: addDays(row.occurrenceDate, -1) }, ctx.now);
       repo.deleteSeriesFrom(tx, row.ruleId, row.occurrenceDate, ctx.now, { detachedToo: true });

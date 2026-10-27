@@ -117,7 +117,10 @@ describe('Agenda', () => {
     expect(screen.getAllByRole('tab')[0]?.props.accessibilityLabel).toBe('Mon 26');
     await act(async () => router.push('/today'));
     // The next-class card and the list both show it.
-    expect(await screen.findAllByText(/^2:00\sPM$/)).toHaveLength(2);
+    const times = await screen.findAllByText(/^2:00\sPM$/);
+    expect(times).toHaveLength(2);
+    // "2:00 PM" is wider than "14:00": it stays on one line, never "2:00 P / M".
+    expect(times.every((el) => el.props.numberOfLines === 1)).toBe(true);
   });
 });
 

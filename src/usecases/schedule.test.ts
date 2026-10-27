@@ -184,9 +184,11 @@ describe('editing and removing', () => {
     expect(dates(ctx)).toEqual(['2026-10-26', '2026-11-09']);
   });
 
-  it('AC-005-15: a class that already started never changes', () => {
+  it('AC-005-15: past classes can change on their own; series changes never reach them', () => {
     const { ctx, lessons } = series();
     const after = later(ctx, 8); // past the 26/10 and 02/11 classes
+    expect(editLesson(after, lessons[0]!.id, { plannedMin: 30 }, 'one').ok).toBe(true);
+    expect(getLesson(ctx.db, lessons[0]!.id)?.plannedMin).toBe(30);
     expect(editLesson(after, lessons[0]!.id, { plannedMin: 30 }, 'following')).toEqual({
       ok: false,
       error: 'started',
@@ -194,5 +196,6 @@ describe('editing and removing', () => {
     editLesson(after, lessons[2]!.id, { time: '18:00' }, 'following');
     expect(getLesson(ctx.db, lessons[1]!.id)?.plannedMin).toBe(60);
     expect(utcToLocal(getLesson(ctx.db, lessons[1]!.id)!.startAt, ZONE).time).toBe('14:00');
+    expect(removeLesson(after, lessons[1]!.id, 'one').ok).toBe(true);
   });
 });

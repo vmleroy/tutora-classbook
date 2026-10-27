@@ -51,8 +51,10 @@ export default function EditLesson() {
       <LessonForm
         initial={initial}
         editing
+        // A class that already happened changes on its own; the series question is for
+        // classes still ahead.
         series={
-          lesson.repeat && !lesson.isDetached
+          lesson.repeat && !lesson.isDetached && lesson.startAt > new Date().toISOString()
             ? { repeat: lesson.repeat, startAt: lesson.startAt, zone }
             : undefined
         }

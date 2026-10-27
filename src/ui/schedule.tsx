@@ -14,7 +14,7 @@ import { IconButton } from '@/ui/components/IconButton';
 import type { Tag } from '@/ui/components/TagDot';
 import { Text } from '@/ui/components/Text';
 import { WeekStrip } from '@/ui/components/WeekStrip';
-import { formatMoney, formatMonthYear, formatTime, formatWeekdayShort } from '@/ui/format';
+import { formatHour, formatMoney, formatMonthYear, formatWeekdayShort } from '@/ui/format';
 
 import { placeName } from './catalog';
 
@@ -166,10 +166,11 @@ export function DayGrid({
             key={h}
             variant="meta"
             tabular
+            numberOfLines={1}
             className="text-ink-muted"
-            style={{ position: 'absolute', top: h * HOUR - 6 }}
+            style={{ position: 'absolute', top: h * HOUR - 6, width: LABEL - 4 }}
           >
-            {formatTime(`${String(h).padStart(2, '0')}:00`, language)}
+            {formatHour(h, language)}
           </Text>
         ))}
       </View>

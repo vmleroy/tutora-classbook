@@ -74,7 +74,7 @@ export default function TodayScreen() {
               </Text>
             </View>
             <View className="items-end">
-              <Text variant="section" tabular>
+              <Text variant="section" tabular numberOfLines={1}>
                 {formatTime(utcToLocal(next.startAt, zone).time, language)}
               </Text>
               <Text variant="meta" className="text-ink-muted">

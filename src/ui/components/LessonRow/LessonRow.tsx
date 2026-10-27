@@ -38,8 +38,9 @@ export function LessonRow({
         className,
       )}
     >
-      <View className="w-11">
-        <Text variant="row-title" tabular className="text-ink-muted">
+      {/* Wide enough for "14:00"; grows for "10:30 AM" and Large text, never wraps. */}
+      <View className="min-w-11 shrink-0">
+        <Text variant="row-title" tabular numberOfLines={1} className="text-ink-muted">
           {time}
         </Text>
       </View>

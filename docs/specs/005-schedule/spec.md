@@ -39,7 +39,7 @@ The teacher puts their week into Tutora once: recurring classes (weekly or every
 - **AC-005-12.** "Só esta aula" changes only that class. The class then stands on its own: filling the series later never overwrites it.
 - **AC-005-13.** "Esta e as próximas" applies the change to that class and every later class of the series, and the series continues from there with the new day, time, duration or value. Earlier classes do not change, and a later class that was changed on its own keeps its changes.
 - **AC-005-14.** Removing a class asks the same question. "Esta e as próximas" ends the series at that date, so it stops filling in.
-- **AC-005-15.** Classes in the past never change when the series changes.
+- **AC-005-15.** Any class can be edited or removed on its own, including one that already happened. "Esta e as próximas" is offered only from a class still ahead, so a series change never reaches classes that already happened.
 
 ### Prices on the schedule
 

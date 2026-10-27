@@ -70,6 +70,14 @@ export function formatShortDate(date: string, language: Language): string {
   );
 }
 
+/** An hour mark for the Agenda grid: "08:00" / "8 AM". */
+export function formatHour(hour: number, language: Language): string {
+  if (language === 'pt-BR') return `${String(hour).padStart(2, '0')}:00`;
+  return new Intl.DateTimeFormat(localeOf[language], { hour: 'numeric', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(2026, 0, 1, hour)),
+  );
+}
+
 /** A local `HH:MM` time in the app language: "14:00" / "2:00 PM". */
 export function formatTime(time: string, language: Language): string {
   return new Intl.DateTimeFormat(localeOf[language], {
