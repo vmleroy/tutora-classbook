@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
+import { cn } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 
@@ -10,6 +11,8 @@ export interface TimerRingProps {
   progress: number;
   caption?: string;
   label?: string;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const SIZE = 260;
@@ -19,7 +22,7 @@ const C = 2 * Math.PI * R;
 const TRACK_ALPHA = 0.14;
 
 /** The live lesson clock on the header ground; the ring stays full past the planned time. */
-export function TimerRing({ elapsed, progress, caption, label }: TimerRingProps) {
+export function TimerRing({ className, elapsed, progress, caption, label }: TimerRingProps) {
   const { t } = useTranslation();
   const { palette } = useTheme();
   const name = label ?? t('ui.lessonTime');
@@ -29,7 +32,7 @@ export function TimerRing({ elapsed, progress, caption, label }: TimerRingProps)
       accessible
       accessibilityRole="timer"
       accessibilityLabel={`${name}: ${elapsed}`}
-      className="items-center justify-center"
+      className={cn('items-center justify-center', className)}
       style={{ width: SIZE, height: SIZE }}
     >
       <Svg

@@ -1,6 +1,6 @@
 import { TextInput, View, type TextInputProps } from 'react-native';
 
-import { tv } from '@/ui/cn';
+import { cn, tv } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
 import { useTheme } from '@/ui/theme/ThemeProvider';
 import { typeStyles } from '@/ui/theme/tokens';
@@ -14,6 +14,8 @@ export interface TextFieldProps {
   inputMode?: TextInputProps['inputMode'];
   tone?: 'default' | 'onPrimary';
   onChangeText?: (text: string) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const input = tv({
@@ -29,6 +31,7 @@ const input = tv({
 
 /** Labelled single-line input: the label sits above, never only as a placeholder. */
 export function TextField({
+  className,
   label,
   value,
   placeholder,
@@ -42,7 +45,7 @@ export function TextField({
   const body = typeStyles.body;
   const help = error ?? helper;
   return (
-    <View className="gap-1.5">
+    <View className={cn('gap-1.5', className)}>
       <Text
         variant="field-label"
         className={tone === 'onPrimary' ? 'text-on-primary-muted' : 'text-ink-muted'}

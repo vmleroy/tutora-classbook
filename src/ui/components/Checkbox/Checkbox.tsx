@@ -10,12 +10,14 @@ export interface CheckboxProps {
   label: string;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const BOX = 22;
 
 /** Independent yes/no option in a list; the whole 44px row is pressable. */
-export function Checkbox({ label, checked, onChange }: CheckboxProps) {
+export function Checkbox({ className, label, checked, onChange }: CheckboxProps) {
   const [own, setOwn] = useState(!!checked);
   const on = checked ?? own;
   return (
@@ -27,7 +29,7 @@ export function Checkbox({ label, checked, onChange }: CheckboxProps) {
         setOwn(!on);
         onChange?.(!on);
       }}
-      className="min-h-touch flex-row items-center gap-2.5"
+      className={cn('min-h-touch flex-row items-center gap-2.5', className)}
     >
       <View
         className={cn(

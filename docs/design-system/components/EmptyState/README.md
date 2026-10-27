@@ -14,5 +14,7 @@ interface EmptyStateProps {
   title: string;
   body?: string;
   action?: React.ReactNode;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

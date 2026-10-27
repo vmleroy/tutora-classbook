@@ -12,6 +12,8 @@ export interface SwitchProps {
   onChange?: (value: boolean) => void;
   label: string;
   disabled?: boolean;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 // Track 52 × 32, knob 26 with 3px inset: the knob travels 20px.
@@ -20,7 +22,7 @@ const KNOB = 26;
 const INSET = (TRACK.height - KNOB) / 2;
 
 /** On/off that applies at once. On = main-buttons color, off = line-strong; never green. */
-export function Switch({ value, onChange, label, disabled }: SwitchProps) {
+export function Switch({ className, value, onChange, label, disabled }: SwitchProps) {
   const [own, setOwn] = useState(!!value);
   const on = value ?? own;
   const x = useMotion(on ? TRACK.width - KNOB - INSET : INSET);
@@ -40,6 +42,7 @@ export function Switch({ value, onChange, label, disabled }: SwitchProps) {
         'justify-center rounded-full',
         on ? 'bg-btn-primary' : 'bg-line-strong',
         disabled && 'opacity-40',
+        className,
       )}
       style={TRACK}
     >

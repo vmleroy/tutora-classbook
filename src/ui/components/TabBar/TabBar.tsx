@@ -14,6 +14,8 @@ export interface TabBarProps {
   active?: TabName;
   /** Called with the tab the teacher pressed; the router does the navigation. */
   onSelect?: (tab: TabName) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 export const tabs: readonly { name: TabName; icon: IconName }[] = [
@@ -25,14 +27,14 @@ export const tabs: readonly { name: TabName; icon: IconName }[] = [
 ];
 
 /** The five tabs, always in this order, labels always shown. Active = the active-menu part. */
-export function TabBar({ active = 'today', onSelect }: TabBarProps) {
+export function TabBar({ className, active = 'today', onSelect }: TabBarProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   return (
     <View
       accessibilityRole="tablist"
       accessibilityLabel={t('ui.mainNav')}
-      className="flex-row border-t border-line bg-surface"
+      className={cn('flex-row border-t border-line bg-surface', className)}
       style={{ height: size.tabbar + insets.bottom, paddingBottom: insets.bottom }}
     >
       {tabs.map((tab) => {

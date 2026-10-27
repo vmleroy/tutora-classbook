@@ -20,5 +20,7 @@ interface ChipProps {
   label: string;
   selected?: boolean;
   onPress?: (selected: boolean) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

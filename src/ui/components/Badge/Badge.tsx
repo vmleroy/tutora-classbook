@@ -12,6 +12,8 @@ export interface BadgeProps {
   tone?: Tone;
   icon?: IconName;
   children: ReactNode;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const ground: Record<Tone, string> = {
@@ -42,11 +44,15 @@ const textClass: Record<Tone, string> = {
 };
 
 /** A short status word on a tint; the word carries the meaning, color only reinforces it. */
-export function Badge({ tone = 'neutral', icon, children }: BadgeProps) {
+export function Badge({ className, tone = 'neutral', icon, children }: BadgeProps) {
   return (
     <View
       testID="badge"
-      className={cn('flex-row items-center gap-1 self-start rounded-sm px-2 py-1', ground[tone])}
+      className={cn(
+        'flex-row items-center gap-1 self-start rounded-sm px-2 py-1',
+        ground[tone],
+        className,
+      )}
     >
       {icon ? <Icon name={icon} size={12} strokeWidth={3} tone={ink[tone]} /> : null}
       <Text variant="badge" numberOfLines={1} className={textClass[tone]}>

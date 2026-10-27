@@ -21,5 +21,7 @@ interface ListRowProps {
   switchValue?: boolean;
   badge?: { tone: BadgeProps['tone']; label: string };
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

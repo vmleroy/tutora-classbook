@@ -53,6 +53,6 @@ module.exports = defineConfig([
     files: ['src/app/**/*.{ts,tsx}', 'src/ui/components/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     plugins: { tutora },
-    rules: { 'tutora/no-raw-design-values': 'error' },
+    rules: { 'tutora/no-raw-design-values': 'error', 'tutora/class-names-with-cn': 'error' },
   },
 ]);

@@ -13,5 +13,7 @@ interface CheckboxProps {
   label: string;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

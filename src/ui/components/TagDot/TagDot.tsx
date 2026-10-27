@@ -7,6 +7,8 @@ export type Tag = 'amber' | 'green' | 'blue' | 'violet' | 'orange' | 'red' | 'te
 export interface TagDotProps {
   tag?: Tag;
   size?: 'sm' | 'md';
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 export const tagFill: Record<Tag, string> = {
@@ -45,13 +47,13 @@ const dot = tv({
 });
 
 /** A student's or place's color mark; never the only signal, so hidden from screen readers. */
-export function TagDot({ tag = 'amber', size = 'md' }: TagDotProps) {
+export function TagDot({ className, tag = 'amber', size = 'md' }: TagDotProps) {
   return (
     <View
       testID={`tag-dot-${tag}`}
       importantForAccessibility="no-hide-descendants"
       accessibilityElementsHidden
-      className={cn(dot({ size }), tagFill[tag])}
+      className={cn(dot({ size }), tagFill[tag], className)}
     />
   );
 }

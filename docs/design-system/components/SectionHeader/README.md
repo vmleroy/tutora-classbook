@@ -12,5 +12,7 @@ interface SectionHeaderProps {
   title: string;
   aside?: string;
   asideTone?: 'muted' | 'primary';
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

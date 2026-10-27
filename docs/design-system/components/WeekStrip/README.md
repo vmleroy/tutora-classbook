@@ -14,5 +14,7 @@ interface WeekStripProps {
   selected?: number;
   label?: string;
   onSelect?: (index: number) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

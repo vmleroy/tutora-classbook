@@ -1,18 +1,21 @@
 import { Children, type ReactNode } from 'react';
 import { View } from 'react-native';
 
+import { cn } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
 
 export interface ListGroupProps {
   title?: string;
   children: ReactNode;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 /** A titled white block of rows separated by hairlines, as in Ajustes. */
-export function ListGroup({ title, children }: ListGroupProps) {
+export function ListGroup({ className, title, children }: ListGroupProps) {
   const rows = Children.toArray(children);
   return (
-    <View accessibilityLabel={title} className="gap-1.5">
+    <View accessibilityLabel={title} className={cn('gap-1.5', className)}>
       {title ? (
         <Text variant="badge" className="px-1 text-ink-muted">
           {title}

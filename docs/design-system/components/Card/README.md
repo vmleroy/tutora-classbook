@@ -13,5 +13,7 @@ interface CardProps {
   elevation?: 'flat' | 'raised' | 'outline';
   label?: string;
   children: React.ReactNode;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

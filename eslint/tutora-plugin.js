@@ -61,4 +61,32 @@ const noRawDesignValues = {
   },
 };
 
-module.exports = { rules: { 'no-raw-design-values': noRawDesignValues } };
+const classNamesWithCn = {
+  meta: {
+    type: 'suggestion',
+    docs: { description: 'Build conditional class names with cn(), not template strings.' },
+    schema: [],
+  },
+  create(context) {
+    return {
+      JSXAttribute(node) {
+        const value = node.value;
+        if (
+          /className$/.test(node.name.name) &&
+          value?.type === 'JSXExpressionContainer' &&
+          value.expression.type === 'TemplateLiteral' &&
+          value.expression.expressions.length > 0
+        ) {
+          context.report({
+            node,
+            message: 'Build class names with cn(…) instead of a template string.',
+          });
+        }
+      },
+    };
+  },
+};
+
+module.exports = {
+  rules: { 'no-raw-design-values': noRawDesignValues, 'class-names-with-cn': classNamesWithCn },
+};

@@ -19,5 +19,7 @@ interface EarningsSummaryProps {
   expectedCents?: number;
   expectedLabel?: string;
   stats?: { label: string; cents: number; tone?: MoneyProps['tone'] }[];
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

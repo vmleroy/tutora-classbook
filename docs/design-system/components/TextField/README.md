@@ -22,5 +22,7 @@ interface TextFieldProps {
   inputMode?: string;
   tone?: 'default' | 'onPrimary';
   onChangeText?: (text: string) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

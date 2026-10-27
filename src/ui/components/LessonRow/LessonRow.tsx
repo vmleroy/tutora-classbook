@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 
+import { cn } from '@/ui/cn';
 import { Badge, type BadgeProps } from '@/ui/components/Badge';
 import { TagDot, type Tag } from '@/ui/components/TagDot';
 import { Text } from '@/ui/components/Text';
@@ -13,10 +14,13 @@ export interface LessonRowProps {
   status?: { tone: BadgeProps['tone']; label: string };
   trailing?: string;
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 /** One lesson in a day list: time, tag, who and where, and its state or value. */
 export function LessonRow({
+  className,
   time,
   tag,
   title,
@@ -29,7 +33,10 @@ export function LessonRow({
     <Touchable
       accessibilityRole="button"
       onPress={onPress}
-      className="min-h-control-lg flex-row items-center gap-3 rounded-xl bg-surface px-3.5 py-3"
+      className={cn(
+        'min-h-control-lg flex-row items-center gap-3 rounded-xl bg-surface px-3.5 py-3',
+        className,
+      )}
     >
       <View className="w-11">
         <Text variant="row-title" tabular className="text-ink-muted">

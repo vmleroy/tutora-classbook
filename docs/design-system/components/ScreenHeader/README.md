@@ -22,5 +22,7 @@ interface ScreenHeaderProps {
   actions?: { icon: IconName; label: string; variant?: IconButtonProps['variant']; onPress?: () => void }[];
   action?: React.ReactNode;
   onBack?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

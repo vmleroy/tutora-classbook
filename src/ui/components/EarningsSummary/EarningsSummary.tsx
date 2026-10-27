@@ -12,10 +12,13 @@ export interface EarningsSummaryProps {
   expectedCents?: number;
   expectedLabel?: string;
   stats?: { label: string; cents: number; tone?: MoneyProps['tone'] }[];
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 /** The money card on Hoje: earned, progress to expected, and up to three compact stats. */
 export function EarningsSummary({
+  className,
   title,
   earnedCents,
   expectedCents,
@@ -24,7 +27,7 @@ export function EarningsSummary({
 }: EarningsSummaryProps) {
   const { t } = useTranslation();
   return (
-    <Card elevation="raised" label={title}>
+    <Card className={className} elevation="raised" label={title}>
       <View className="flex-row items-baseline justify-between">
         <Text variant="field-label" className="text-ink-muted">
           {title}

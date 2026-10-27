@@ -16,10 +16,13 @@ export interface SegmentedControlProps<T extends string = string> {
   onChange?: (value: T) => void;
   label: string;
   size?: 'sm' | 'md';
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 /** Two to four exclusive options; the selected one is a surface thumb with primary text. */
 export function SegmentedControl<T extends string = string>({
+  className,
   options,
   value,
   onChange,
@@ -47,7 +50,7 @@ export function SegmentedControl<T extends string = string>({
       accessibilityRole="radiogroup"
       accessibilityLabel={label}
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
-      className="flex-row gap-1 rounded-md bg-surface-sunken p-1"
+      className={cn('flex-row gap-1 rounded-md bg-surface-sunken p-1', className)}
     >
       {segment > 0 ? (
         <Animated.View

@@ -4,6 +4,7 @@ import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { cn } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
 import { useMotion } from '@/ui/theme/motion';
@@ -19,6 +20,8 @@ export interface BottomSheetProps {
   open?: boolean;
   /** Tapping the scrim or the close target dismisses the sheet. */
   onClose?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const GRABBER = { width: 36, height: 4 };
@@ -30,6 +33,7 @@ function alphaOf(hex: string): number {
 
 /** A panel from the bottom over a scrim, for choices, confirmations and pickers. */
 export function BottomSheet({
+  className,
   title,
   subtitle,
   actions,
@@ -52,7 +56,7 @@ export function BottomSheet({
       : Children.toArray(actions);
   const [cancel, confirm] = actionList;
   return (
-    <View className="absolute inset-0 justify-end">
+    <View className={cn('absolute inset-0 justify-end', className)}>
       <Touchable
         testID="sheet-scrim"
         accessibilityRole="button"

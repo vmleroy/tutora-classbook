@@ -18,7 +18,7 @@ const lint = (code: string) =>
           files: ['**/*.tsx'],
           languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
           plugins: { tutora: plugin },
-          rules: { 'tutora/no-raw-design-values': 'error' },
+          rules: { 'tutora/no-raw-design-values': 'error', 'tutora/class-names-with-cn': 'error' },
         },
       ],
       'sample.tsx',
@@ -60,6 +60,13 @@ describe('no raw design values', () => {
     expect(lint(`const v = <View className="flex-[2] gap-2 p-4" />;`)).toEqual([]);
   });
 
+  it('AC-002-14: class names are built with cn(), not template strings', () => {
+    expect(lint('const v = <View className={`p-4 ${on ? "bg-primary" : ""}`} />;')).toEqual([
+      expect.stringMatching(/cn\(/),
+    ]);
+    expect(lint(`const v = <View className={cn('p-4', on && 'bg-primary')} />;`)).toEqual([]);
+  });
+
   it('AC-002-14: src/app and src/ui/components pass the rule, and it is switched on there', () => {
     // ESLint's Node API loads config through a dynamic import Jest cannot run; use the CLI.
     const eslint = (...args: string[]) =>
@@ -79,7 +86,7 @@ describe('no raw design values', () => {
     ) as { filePath: string; messages: { ruleId: string; line: number; message: string }[] }[];
     const raw = results.flatMap((r) =>
       r.messages
-        .filter((m) => m.ruleId === 'tutora/no-raw-design-values')
+        .filter((m) => m.ruleId?.startsWith('tutora/'))
         .map((m) => `${r.filePath.replace(repoRoot, '')}:${m.line} ${m.message}`),
     );
     expect(raw).toEqual([]);

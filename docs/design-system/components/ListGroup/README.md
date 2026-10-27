@@ -12,5 +12,7 @@ Titled white block of ListRows separated by hairlines, as in Ajustes and detail 
 interface ListGroupProps {
   title?: string;
   children: React.ReactNode;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

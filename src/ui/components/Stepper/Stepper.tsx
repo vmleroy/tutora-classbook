@@ -18,6 +18,8 @@ export interface StepperProps {
   decrementLabel?: string;
   incrementLabel?: string;
   size?: 'sm' | 'md';
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const BUTTON = { md: 44, sm: 32 } as const;
@@ -25,6 +27,7 @@ const HEIGHT = { md: 50, sm: 40 } as const;
 
 /** Minus / value / plus, for durations and small amounts. */
 export function Stepper({
+  className,
   value,
   step = 15,
   min = 0,
@@ -69,7 +72,10 @@ export function Stepper({
   };
   return (
     <View
-      className="flex-row items-center justify-between rounded-xl border border-line bg-surface px-1"
+      className={cn(
+        'flex-row items-center justify-between rounded-xl border border-line bg-surface px-1',
+        className,
+      )}
       style={{ height: HEIGHT[size] }}
     >
       {button('minus')}

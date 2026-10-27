@@ -12,6 +12,8 @@ export interface AlertBannerProps {
   message: string;
   value?: string;
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const ground: Record<Tone, string> = {
@@ -35,6 +37,7 @@ const text: Record<Tone, string> = {
 
 /** A tinted row that names what needs attention and opens it. One per screen. */
 export function AlertBanner({
+  className,
   tone = 'danger',
   icon = 'alert',
   message,
@@ -49,6 +52,7 @@ export function AlertBanner({
       className={cn(
         'min-h-touch flex-row items-center gap-2.5 rounded-xl px-3.5 py-3',
         ground[tone],
+        className,
       )}
     >
       <Icon name={icon} size={20} tone={ink[tone]} />

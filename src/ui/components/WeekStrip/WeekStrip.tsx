@@ -12,13 +12,15 @@ export interface WeekStripProps {
   selected?: number;
   label?: string;
   onSelect?: (index: number) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const DAY_HEIGHT = 64;
 const DOT = 5;
 
 /** Seven days; the selected one is a main-buttons fill, a dot marks days with lessons. */
-export function WeekStrip({ days, selected, label, onSelect }: WeekStripProps) {
+export function WeekStrip({ className, days, selected, label, onSelect }: WeekStripProps) {
   const { t } = useTranslation();
   const [own, setOwn] = useState(selected ?? 0);
   const current = selected ?? own;
@@ -26,7 +28,7 @@ export function WeekStrip({ days, selected, label, onSelect }: WeekStripProps) {
     <View
       accessibilityRole="tablist"
       accessibilityLabel={label ?? t('ui.weekDays')}
-      className="flex-row gap-1"
+      className={cn('flex-row gap-1', className)}
     >
       {days.map((d, i) => {
         const on = i === current;

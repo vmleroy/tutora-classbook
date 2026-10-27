@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 
+import { cn } from '@/ui/cn';
 import { Avatar } from '@/ui/components/Avatar';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import type { Tag } from '@/ui/components/TagDot';
@@ -16,10 +17,13 @@ export interface SelectFieldProps {
   icon?: IconName;
   actionLabel?: string;
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 /** A field that opens a picker; always shows the current choice, never an empty box. */
 export function SelectField({
+  className,
   label,
   value,
   sub,
@@ -29,7 +33,7 @@ export function SelectField({
   onPress,
 }: SelectFieldProps) {
   return (
-    <View className="gap-1.5">
+    <View className={cn('gap-1.5', className)}>
       {label ? (
         <Text variant="field-label" className="text-ink-muted">
           {label}

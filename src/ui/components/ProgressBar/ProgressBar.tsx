@@ -8,6 +8,8 @@ export interface ProgressBarProps {
   track?: 'accent' | 'danger' | 'sunken';
   thin?: boolean;
   label: string;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const trackClass = {
@@ -24,6 +26,7 @@ const fillClass = {
 
 /** A bar always shown beside the numbers it stands for. */
 export function ProgressBar({
+  className,
   value,
   tone = 'accent',
   track = 'accent',
@@ -41,6 +44,7 @@ export function ProgressBar({
         'flex-row overflow-hidden rounded-full',
         thin ? 'h-1' : 'h-2',
         trackClass[track],
+        className,
       )}
     >
       <View className={cn('h-full rounded-full', fillClass[tone])} style={{ width: `${pct}%` }} />

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import type { PaletteToken as TokenName } from '@/domain/theme/palette';
-import { tv } from '@/ui/cn';
+import { cn, tv } from '@/ui/cn';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
@@ -20,6 +20,8 @@ export interface ButtonProps {
   disabled?: boolean;
   onPress?: () => void;
   children: ReactNode;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const button = tv({
@@ -59,6 +61,7 @@ const MIN_LABEL_SCALE = 0.85;
 const heights = { sm: sizes.controlSm, md: sizes.controlMd, lg: sizes.controlLg } as const;
 
 export function Button({
+  className,
   variant = 'primary',
   size = 'md',
   icon,
@@ -77,7 +80,7 @@ export function Button({
       disabled={inactive}
       onPress={onPress}
       hitSlop={touchSlop(heights[size])}
-      className={button({ variant, size, fullWidth, inactive })}
+      className={cn(button({ variant, size, fullWidth, inactive }), className)}
     >
       {loading ? (
         <ActivityIndicator size="small" color={palette[labelTone[variant]]} />

@@ -1,5 +1,5 @@
 import type { PaletteToken } from '@/domain/theme/palette';
-import { tv } from '@/ui/cn';
+import { cn, tv } from '@/ui/cn';
 import { Icon, type IconName } from '@/ui/components/Icon';
 import { Touchable } from '@/ui/components/Touchable';
 
@@ -9,6 +9,8 @@ export interface IconButtonProps {
   variant?: 'sunken' | 'plain' | 'onPrimary' | 'accent';
   disabled?: boolean;
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const button = tv({
@@ -33,6 +35,7 @@ const tone: Record<NonNullable<IconButtonProps['variant']>, PaletteToken> = {
 
 /** Round 44 px button with one icon; `label` is its accessible name. */
 export function IconButton({
+  className,
   icon,
   label,
   variant = 'sunken',
@@ -46,7 +49,7 @@ export function IconButton({
       accessibilityState={{ disabled: !!disabled }}
       disabled={disabled}
       onPress={onPress}
-      className={button({ variant, disabled })}
+      className={cn(button({ variant, disabled }), className)}
     >
       <Icon name={icon} size={20} strokeWidth={2.2} tone={tone[variant]} />
     </Touchable>

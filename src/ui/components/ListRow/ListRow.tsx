@@ -19,6 +19,8 @@ export interface ListRowProps {
   switchValue?: boolean;
   badge?: { tone: BadgeProps['tone']; label: string };
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const tile: Record<IconTone, string> = {
@@ -41,6 +43,7 @@ const ROW = 'min-h-control-lg flex-row items-center gap-3 px-4 py-2.5';
 
 /** A settings or navigation row whose subtitle states the current value. */
 export function ListRow({
+  className,
   title,
   subtitle,
   icon,
@@ -74,7 +77,7 @@ export function ListRow({
   // A switch row is not pressable as a whole: only the switch is.
   if (trailing === 'switch') {
     return (
-      <View className={ROW}>
+      <View className={cn(ROW, className)}>
         {content}
         <Switch label={title} value={switchValue} />
       </View>
@@ -85,7 +88,7 @@ export function ListRow({
       accessibilityRole="button"
       accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title}
       onPress={onPress}
-      className={ROW}
+      className={cn(ROW, className)}
     >
       {content}
     </Touchable>

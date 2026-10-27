@@ -12,5 +12,7 @@ Small round mark in a student's or place's color, used beside names in rows, tim
 interface TagDotProps {
   tag?: Tag;
   size?: 'sm' | 'md';
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

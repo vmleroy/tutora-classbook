@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { tv } from '@/ui/cn';
+import { cn, tv } from '@/ui/cn';
 import { Text } from '@/ui/components/Text';
 import { Touchable } from '@/ui/components/Touchable';
 import { sizes, touchSlop } from '@/ui/theme/sizes';
@@ -9,6 +9,8 @@ export interface ChipProps {
   label: string;
   selected?: boolean;
   onPress?: (selected: boolean) => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const chip = tv({
@@ -22,7 +24,7 @@ const chip = tv({
 });
 
 /** Pill-shaped choice for filters and short pick lists; never wraps. */
-export function Chip({ label, selected, onPress }: ChipProps) {
+export function Chip({ className, label, selected, onPress }: ChipProps) {
   const [own, setOwn] = useState(!!selected);
   const on = selected ?? own;
   return (
@@ -35,7 +37,7 @@ export function Chip({ label, selected, onPress }: ChipProps) {
         setOwn(!on);
         onPress?.(!on);
       }}
-      className={chip({ on })}
+      className={cn(chip({ on }), className)}
     >
       <Text
         variant="caption"

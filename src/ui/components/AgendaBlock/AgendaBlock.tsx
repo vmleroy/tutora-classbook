@@ -14,12 +14,15 @@ export interface AgendaBlockProps {
   state?: 'default' | 'done' | 'next';
   height?: number;
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 
 const MIN_HEIGHT = 42;
 
 /** A lesson on the Agenda timeline, sized by its duration (44 px per hour). */
 export function AgendaBlock({
+  className,
   tag,
   title,
   subtitle,
@@ -42,6 +45,7 @@ export function AgendaBlock({
         tagSoft[tag],
         state === 'next' && 'border-2 border-accent',
         state === 'done' && 'opacity-85',
+        className,
       )}
       style={{ minHeight: h }}
     >
