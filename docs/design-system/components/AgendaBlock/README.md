@@ -7,7 +7,7 @@ A lesson placed on the Agenda day timeline, sized by its duration (44px per hour
 
 ## Rules
 - Fill = the student's `tag-*-soft`, text = `tag-*-ink`.
-- Long-press and drag moves the lesson in 15-minute steps (spec: Schedule).
+- Placed by the screen in a positioned view: top from the start time, height from the duration, and side by side when classes overlap. Moving a class goes through its edit form (no drag).
 - The now-line is a 2px `danger` rule with a dot at the left.
 
 ## Props
