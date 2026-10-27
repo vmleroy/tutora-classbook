@@ -256,5 +256,76 @@
       "notFound": "Not found."
     },
     "exactDuration": "Exact duration"
+  },
+  "schedule": {
+    "day": "Day",
+    "week": "Week",
+    "today": "Today",
+    "count_zero": "no lessons",
+    "count_one": "{{count}} lesson",
+    "count_other": "{{count}} lessons",
+    "expected": "Expected {{money}}",
+    "plusSchool": "+ school",
+    "next": "Next",
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "grid": "Lessons of the day by time"
+  },
+  "home": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "next": "Next lesson",
+    "inMinutes": "in {{count}} min",
+    "inHours": "in {{time}}",
+    "lessonsToday": "Today's lessons"
+  },
+  "lesson": {
+    "new": "New lesson",
+    "edit": "Edit lesson",
+    "scheduleMode": "Schedule lesson",
+    "who": "Student or group",
+    "pickWho": "Choose a student or group",
+    "change": "Change",
+    "place": "Place · only the student's",
+    "groupPlace": "Group's place",
+    "date": "Date",
+    "pickDate": "Choose a date",
+    "start": "Start",
+    "duration": "Duration",
+    "value": "Lesson value",
+    "setValue": "Set value",
+    "usePrice": "Use the price",
+    "handValue": "Value set by you",
+    "noPrice": "No price",
+    "travel": "Travel for this lesson",
+    "repeat": "Repeat",
+    "repeats": {
+      "none": "Doesn't repeat",
+      "weekly": "Weekly",
+      "biweekly": "Every 2 weeks"
+    },
+    "series": "{{repeat}} · {{weekday}}, {{time}}",
+    "scope": "Apply changes to",
+    "scopes": {
+      "one": "This lesson only",
+      "following": "This and following"
+    },
+    "notes": "Notes",
+    "save": "Schedule",
+    "saveEdit": "Save",
+    "remove": "Remove lesson",
+    "removeTitle": "Remove this lesson?",
+    "removeSeries": "Remove which?",
+    "errors": {
+      "whoRequired": "Choose the student or group.",
+      "placeRequired": "Choose the place.",
+      "placeNotLinked": "That place isn't linked to the student.",
+      "started": "This lesson has started and can't be changed here.",
+      "notFound": "Lesson not found.",
+      "timeInvalid": "Use hh:mm, from 00:00 to 23:59."
+    }
   }
 }
