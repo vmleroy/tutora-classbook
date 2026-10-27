@@ -48,4 +48,25 @@ Line icons on a 24-unit grid with 2px round strokes, as in the mockups; in the a
 
 Thirty components cover every mockup screen. They are grouped as Foundations (Icon), Actions (Button, IconButton, Fab), Selection (SegmentedControl, Chip, Switch, Checkbox, Stepper), Inputs (TextField, SelectField), Display (Badge, Avatar, TagDot, Money, ProgressBar, Card, EarningsSummary), Lists (SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner), Navigation (ScreenHeader, TabBar, WeekStrip, AgendaBlock) and Feedback (BottomSheet, EmptyState, TimerRing). Each has its rules in its own guidelines.
 
-The previews here are a web reference. In the app each component is a React Native component in `src/ui/components/<Name>.tsx` with the same name and props, styled with NativeWind classes that map to these tokens (see the Tailwind section).
+The design system is the code in `src/ui`; there is no separate reference implementation.
+
+- **Tokens:** `src/ui/theme/tokens.json` is the source of every color, type style, spacing, radius, size and opacity. `tailwind.config.js` and the theme code read it; nothing copies values by hand.
+- **Components:** `src/ui/components/<Name>.tsx`, one per component, with the props listed in its guideline (`docs/design-system/components/<Name>/README.md`, section Props), styled with NativeWind classes that map to the tokens (see the Tailwind section).
+- **Preview:** the developer screen `/dev/components` (development builds only) shows every component in every variant, with a theme, mode and text-size switcher. The published [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei) is the original visual reference. The web prototype it was built from (`design-system/components/bundle.js`, `bundle.css` and the `preview.html` files) is kept only in git history, at commit `7c3c831`, for exact measurements while porting.
+
+### Primitives
+
+Two building blocks sit under the 30 components and are not counted among them:
+
+- **Text:** all app text. `variant` is a type style name (`body`, `title-xl`, `money-xl`…), sized from the tokens and multiplied by the Large text scale; money styles and `tabular` get tabular figures.
+- **Screen:** a screen's scrolling body on `background` with the 20px gutter.
+
+### Shared types
+
+```ts
+type IconName = 'plus' | 'minus' | 'check' | 'close' | 'chevron-left' | 'chevron-right' | 'home' | 'calendar' | 'users' | 'pin' | 'wallet' | 'clock' | 'alert' | 'file' | 'cloud' | 'gear' | 'calendar-check' | 'no-show' | 'play';
+type Tag = 'amber' | 'green' | 'blue' | 'violet' | 'orange' | 'red' | 'teal';
+type Currency = 'BRL' | 'USD';
+type TokenName = /* every color token name in tokens.json */;
+function formatMoney(cents: number, currency?: Currency, locale?: string, compact?: boolean): string;
+```

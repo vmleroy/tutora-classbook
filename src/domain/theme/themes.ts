@@ -1,0 +1,179 @@
+// Quadro-negro token sets, copied from src/ui/theme/tokens.json.
+// Spec 002 replaces this file with tokens generated from that file for all four themes.
+
+export type TokenName =
+  | 'background'
+  | 'surface'
+  | 'surface-sunken'
+  | 'line'
+  | 'line-soft'
+  | 'line-strong'
+  | 'ink'
+  | 'ink-muted'
+  | 'primary'
+  | 'primary-soft'
+  | 'on-primary'
+  | 'on-primary-muted'
+  | 'header'
+  | 'on-header'
+  | 'on-header-muted'
+  | 'accent'
+  | 'accent-soft'
+  | 'on-accent'
+  | 'accent-ink'
+  | 'earnings'
+  | 'earnings-on-header'
+  | 'success'
+  | 'success-soft'
+  | 'success-ink'
+  | 'danger'
+  | 'danger-soft'
+  | 'danger-ink'
+  | 'secondary'
+  | 'secondary-soft'
+  | 'secondary-ink'
+  | 'tag-amber'
+  | 'tag-amber-soft'
+  | 'tag-amber-ink'
+  | 'tag-green'
+  | 'tag-green-soft'
+  | 'tag-green-ink'
+  | 'tag-blue'
+  | 'tag-blue-soft'
+  | 'tag-blue-ink'
+  | 'tag-violet'
+  | 'tag-violet-soft'
+  | 'tag-violet-ink'
+  | 'tag-orange'
+  | 'tag-orange-soft'
+  | 'tag-orange-ink'
+  | 'tag-red'
+  | 'tag-red-soft'
+  | 'tag-red-ink'
+  | 'tag-teal'
+  | 'tag-teal-soft'
+  | 'tag-teal-ink'
+  | 'focus'
+  | 'scrim';
+
+export type Palette = Readonly<Record<TokenName, string>>;
+
+export type ThemeId = 'quadro';
+export type Scheme = 'light' | 'dark';
+
+export const themes: Readonly<Record<ThemeId, Record<Scheme, Palette>>> = {
+  quadro: {
+    light: {
+      background: '#faf7f0',
+      surface: '#ffffff',
+      'surface-sunken': '#f3eee2',
+      line: '#e4ddcd',
+      'line-soft': '#f0eadc',
+      'line-strong': '#dcd5c6',
+      ink: '#1f2a2e',
+      'ink-muted': '#5c6a70',
+      primary: '#2e5e4e',
+      'primary-soft': '#e1eee8',
+      'on-primary': '#ffffff',
+      'on-primary-muted': '#d3e6dd',
+      header: '#2e5e4e',
+      'on-header': '#ffffff',
+      'on-header-muted': '#d3e6dd',
+      accent: '#f2b33d',
+      'accent-soft': '#fce7b8',
+      'on-accent': '#1f2a2e',
+      'accent-ink': '#5a4300',
+      earnings: '#1f2a2e',
+      'earnings-on-header': '#f2b33d',
+      success: '#3e9d6b',
+      'success-soft': '#e2f2e9',
+      'success-ink': '#276b48',
+      danger: '#d64545',
+      'danger-soft': '#fbe9e7',
+      'danger-ink': '#9e2f2b',
+      secondary: '#3d6fb4',
+      'secondary-soft': '#e3ecf8',
+      'secondary-ink': '#24497e',
+      'tag-amber': '#c98a10',
+      'tag-amber-soft': '#fce7b8',
+      'tag-amber-ink': '#6b4a00',
+      'tag-green': '#3e9d6b',
+      'tag-green-soft': '#ddf0e5',
+      'tag-green-ink': '#1f5c3c',
+      'tag-blue': '#3d6fb4',
+      'tag-blue-soft': '#e3ecf8',
+      'tag-blue-ink': '#24497e',
+      'tag-violet': '#8e6cc0',
+      'tag-violet-soft': '#eee7f7',
+      'tag-violet-ink': '#4d3577',
+      'tag-orange': '#d9772f',
+      'tag-orange-soft': '#fde8dc',
+      'tag-orange-ink': '#7a3b10',
+      'tag-red': '#d64545',
+      'tag-red-soft': '#fbe3e0',
+      'tag-red-ink': '#8f2b28',
+      'tag-teal': '#2d7f86',
+      'tag-teal-soft': '#ddf1f2',
+      'tag-teal-ink': '#1c5459',
+      focus: '#3d6fb4',
+      scrim: '#141c1980',
+    },
+    dark: {
+      background: '#141c19',
+      surface: '#1e2925',
+      'surface-sunken': '#293430',
+      line: '#3a403e',
+      'line-soft': '#29302e',
+      'line-strong': '#484e4c',
+      ink: '#ecefea',
+      'ink-muted': '#9aa8a2',
+      primary: '#6fb39a',
+      'primary-soft': '#293c35',
+      'on-primary': '#141c19',
+      'on-primary-muted': '#283d35',
+      header: '#314c42',
+      'on-header': '#ecefea',
+      'on-header-muted': '#b4beb8',
+      accent: '#f5c462',
+      'accent-soft': '#494831',
+      'on-accent': '#141c19',
+      'accent-ink': '#f5c462',
+      earnings: '#f5c462',
+      'earnings-on-header': '#f5c462',
+      success: '#6ccb97',
+      'success-soft': '#2e493c',
+      'success-ink': '#91d8b1',
+      danger: '#ef7a7a',
+      'danger-soft': '#483936',
+      'danger-ink': '#f39b9b',
+      secondary: '#7fa6de',
+      'secondary-soft': '#31424a',
+      'secondary-ink': '#9fbce6',
+      'tag-amber': '#d9ad58',
+      'tag-amber-soft': '#443e20',
+      'tag-amber-ink': '#e7ca93',
+      'tag-green': '#78ba97',
+      'tag-green-soft': '#254334',
+      'tag-green-ink': '#a8d3bc',
+      'tag-blue': '#779aca',
+      'tag-blue-soft': '#253844',
+      'tag-blue-ink': '#a8bedd',
+      'tag-violet': '#b098d3',
+      'tag-violet-soft': '#373847',
+      'tag-violet-ink': '#ccbde3',
+      'tag-orange': '#e4a06d',
+      'tag-orange-soft': '#473a27',
+      'tag-orange-ink': '#eec2a1',
+      'tag-red': '#e27d7d',
+      'tag-red-soft': '#462f2c',
+      'tag-red-ink': '#edabab',
+      'tag-teal': '#6ca5aa',
+      'tag-teal-soft': '#213c3a',
+      'tag-teal-ink': '#a0c5c9',
+      focus: '#9cbcf0',
+      scrim: '#00000099',
+    },
+  },
+};
+
+export const tokenNames = Object.keys(themes.quadro.light) as TokenName[];

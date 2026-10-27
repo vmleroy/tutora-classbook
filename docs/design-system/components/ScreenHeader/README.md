@@ -11,3 +11,16 @@ Top of every screen: `hero` on Hoje, `tab` on the other tabs, `push` for detail 
 ## Rules
 - Titles name the place, not the action ("Ajustes", "Registrar aula").
 - Respect the status-bar inset (`useSafeAreaInsets`).
+
+## Props
+
+```ts
+interface ScreenHeaderProps {
+  variant?: 'hero' | 'tab' | 'push' | 'modal';
+  title: string;
+  eyebrow?: string;
+  actions?: { icon: IconName; label: string; variant?: IconButtonProps['variant']; onPress?: () => void }[];
+  action?: React.ReactNode;
+  onBack?: () => void;
+}
+```

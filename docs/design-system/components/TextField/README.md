@@ -9,3 +9,18 @@ Labelled single-line input; the label sits above, never only as a placeholder.
 - Errors say what is wrong and how to fix it, in one line, replacing the helper.
 - Money fields format as you type in the app currency (`R$ 120,00`) and store cents.
 - Height 48px, `radius-lg`, `line` border; error = 2px `danger` border plus `danger-ink` text.
+
+## Props
+
+```ts
+interface TextFieldProps {
+  label: string;
+  value?: string;
+  placeholder?: string;
+  helper?: string;
+  error?: string;
+  inputMode?: string;
+  tone?: 'default' | 'onPrimary';
+  onChangeText?: (text: string) => void;
+}
+```

@@ -2,7 +2,7 @@
 
 Status: ready
 Depends on: 001 Foundation
-Source of truth: [`design-system/`](../../../design-system/) (tokens and component previews) and [`docs/design-system/`](../../design-system/) (usage rules and component guidelines), also published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei)
+Source of truth: the code in `src/ui` (tokens in `src/ui/theme/tokens.json`, the components) and [`docs/design-system/`](../../design-system/) (usage rules, component guidelines and props), also published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei)
 
 ## Goal
 
@@ -19,7 +19,7 @@ Every screen in Tutora is built from one set of tokens and 30 shared components,
 
 ### Tokens
 
-- **AC-002-1.** `src/ui/theme/tokens.ts` is generated from `design-system/tokens.json` by a script (`npm run tokens`), never edited by hand; CI fails if the generated file is out of date.
+- **AC-002-1.** `src/ui/theme/tokens.ts` is generated from `src/ui/theme/tokens.json` by a script (`npm run tokens`), never edited by hand; CI fails if the generated file is out of date.
 - **AC-002-2.** For each of the 8 token sets (4 themes × light/dark), every text pair named in the token usage notes has contrast ≥ 4.5:1 (≥ 3:1 for large money on primary). A unit test checks all pairs.
 - **AC-002-3.** `tailwind.config.js` exposes every color token as a class name equal to the token name (`bg-surface-sunken`, `text-danger-ink`), plus the spacing, radius and font-size scales from the design system's Tailwind section.
 - **AC-002-4.** NativeWind runs with rem = 16, so `p-4` renders 16 px. A component test asserts the computed padding.
@@ -35,7 +35,7 @@ Every screen in Tutora is built from one set of tokens and 30 shared components,
 
 ### Components
 
-- **AC-002-10.** The 30 components listed in the design system exist in `src/ui/components/` with the same names and props as its `index.d.ts`.
+- **AC-002-10.** The 30 components listed in the design system exist in `src/ui/components/` with the names and props listed in each component's guideline (`docs/design-system/components/<Name>/README.md`, section Props).
 - **AC-002-11.** Each component has a render test in both a light and a dark token set, and a test per variant listed in its guidelines.
 - **AC-002-12.** Every pressable component has a hit area of at least 44 × 44 and an accessibility label (visible text or `accessibilityLabel`). A test walks the rendered tree of each component and fails otherwise.
 - **AC-002-13.** `Money` takes integer cents and formats with `Intl.NumberFormat` for the app language and currency, always with tabular figures. Tests cover pt-BR BRL, en BRL, pt-BR USD and en USD.

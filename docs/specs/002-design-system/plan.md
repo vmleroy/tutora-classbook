@@ -1,16 +1,16 @@
 # Plan 002: Design system
 
 Architecture reference: [`docs/architecture.md`](../../architecture.md), sections "Theming and i18n" and "Architecture layers".
-Design reference: [`design-system/`](../../../design-system/) holds `tokens.json`, `components/index.d.ts` (props contract), `components/bundle.js` and the previews; [`docs/design-system/`](../../design-system/) holds `README.md` (usage rules), `Tailwind.md`, `Theming.md` and `components/<Name>/README.md`.
+Design reference: `src/ui/theme/tokens.json` holds every token; [`docs/design-system/`](../../design-system/) holds `README.md` (usage rules, primitives, shared types), `Tailwind.md`, `Theming.md` and `components/<Name>/README.md` (rules and props). The published [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei) is the visual reference.
 
 ## Approach
 
-The design system folder is the source of truth and the app never copies values by hand. A script turns `tokens.json` into TypeScript; a pure `resolvePalette` turns the teacher's choices into one flat palette; `ThemeProvider` writes that palette as CSS variables with NativeWind's `vars()`; Tailwind classes read the variables. Components are React Native ports of the web reference in `design-system/components/bundle.js`, with the same names and props as `index.d.ts`.
+`src/ui` is the design system: the tokens and components live there, and the app never copies values by hand. A script turns `tokens.json` into TypeScript; a pure `resolvePalette` turns the teacher's choices into one flat palette; `ThemeProvider` writes that palette as CSS variables with NativeWind's `vars()`; Tailwind classes read the variables. Components are React Native components with the names and props in their guidelines, matched to the published design system's look; the dev gallery is their live preview.
 
 ## Files created or changed
 
 ```text
-scripts/tokens.ts                 tokens.json → src/ui/theme/tokens.ts (+ --check mode for CI)
+scripts/tokens.ts                 src/ui/theme/tokens.json → src/ui/theme/tokens.ts (+ --check mode for CI)
 src/ui/theme/tokens.ts            GENERATED: 8 color sets, type styles, spacing, radius, size, opacity, shadow
 src/domain/theme/palette.ts       resolvePalette(theme, mode, systemScheme, customColors) → Record<token, hex>
 src/domain/theme/contrast.ts      WCAG ratio, onColor(bg) flip, OKLCH lighten/deepen (culori)

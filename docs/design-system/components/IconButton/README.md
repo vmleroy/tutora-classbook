@@ -11,3 +11,15 @@ Round 44px button with one icon, for back, close, settings and period arrows.
 ## Rules
 - The hit area is always 44×44 even when the drawn circle is smaller.
 - One `accent` icon button per screen at most.
+
+## Props
+
+```ts
+interface IconButtonProps {
+  icon: IconName;
+  label: string;
+  variant?: 'sunken' | 'plain' | 'onPrimary' | 'accent';
+  disabled?: boolean;
+  onPress?: () => void;
+}
+```

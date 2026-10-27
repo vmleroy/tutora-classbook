@@ -33,7 +33,8 @@ module.exports = {
       // tag-amber … tag-teal follow the same DEFAULT / soft / ink shape
       focus: v('focus'), scrim: 'rgb(var(--scrim) / 0.5)',
     },
-    fontFamily: { sans: ['Nunito_400Regular'], bold: ['Nunito_700Bold'], black: ['Nunito_800ExtraBold'] },
+    // `regular`, not `sans`: NativeWind's native preset extends `sans` with the system font.
+    fontFamily: { regular: ['Nunito_400Regular'], semibold: ['Nunito_600SemiBold'], bold: ['Nunito_700Bold'], black: ['Nunito_800ExtraBold'] },
     borderRadius: { xs: '6px', sm: '9px', md: '12px', lg: '14px', xl: '16px', '2xl': '20px', '3xl': '28px', full: '999px' },
     extend: {
       spacing: { 0.5: '2px', 1.5: '6px', 2.5: '10px', 3.5: '14px', 4.5: '18px', 7: '28px', 11: '44px', 12: '48px', 14: '56px', 18: '72px' },

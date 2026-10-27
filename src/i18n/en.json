@@ -1,0 +1,47 @@
+{
+  "tabs": {
+    "today": "Today",
+    "schedule": "Schedule",
+    "students": "Students",
+    "places": "Places",
+    "earnings": "Earnings"
+  },
+  "empty": {
+    "today": {
+      "title": "No lessons today",
+      "body": "Today's lessons, what you earned and your next lesson show up here."
+    },
+    "schedule": {
+      "title": "Your schedule is empty",
+      "body": "Your lessons for the week show up here, day by day."
+    },
+    "students": {
+      "title": "No students yet",
+      "body": "Your students, where each one studies and who owes you show up here."
+    },
+    "places": {
+      "title": "No places yet",
+      "body": "Student's home, online and the places where you teach show up here."
+    },
+    "earnings": {
+      "title": "Nothing earned yet",
+      "body": "What you earned and what you are still owed show up here."
+    }
+  },
+  "nav": {
+    "settings": "Settings",
+    "back": "Back"
+  },
+  "settings": {
+    "title": "Settings",
+    "about": "About",
+    "aboutValue": "Version {{version}} · build {{build}} · database v{{schema}}"
+  },
+  "startupError": {
+    "title": "Your data could not be updated",
+    "body": "A copy of the database was saved before the update. Nothing was lost.",
+    "backupPath": "Copy saved at: {{path}}",
+    "noBackup": "The database was not changed.",
+    "detail": "Error: {{message}}"
+  }
+}

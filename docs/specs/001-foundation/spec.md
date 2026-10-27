@@ -1,6 +1,6 @@
 # Spec 001: Foundation
 
-Status: ready
+Status: done
 Depends on: nothing
 
 ## Goal
@@ -61,7 +61,7 @@ An installable Tutora app shell that every later spec builds on: the five tabs f
 
 Students, places, lessons, money screens, custom colors, other themes, first-run setup, backups. The tabs show an empty state only.
 
-## Open questions
+## Decisions
 
-- Large text: confirm how NativeWind's rem setting scales type, or fall back to scaling in a `Text` component (decide during plan, before task 6).
-- NativeWind v4 (Tailwind 3) or v5 (Tailwind 4): pin whichever is stable on the Expo SDK chosen at repo creation.
+- Large text scales type in the `Text` component, which multiplies the type tokens by the text scale. NativeWind's rem stays at 16 so spacing never changes (decided 26 Oct 2026, task 6; matches plan 002).
+- NativeWind 4.2.7 with Tailwind CSS 3.4 on Expo SDK 58. NativeWind 5 was still a release candidate (`5.0.0-rc.0`) at repo creation (decided 26 Oct 2026, task 6).

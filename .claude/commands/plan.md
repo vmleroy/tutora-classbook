@@ -1,7 +1,8 @@
 ---
 description: Write plan.md and tasks.md for a spec
-argument-hint: "NNN"
+argument-hint: 'NNN'
 ---
+
 Write `plan.md` and `tasks.md` for spec $ARGUMENTS.
 
 1. Read the spec, `docs/specs/constitution.md`, `docs/architecture.md`, the mockups it lists, and the code that already exists.

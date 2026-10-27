@@ -9,3 +9,15 @@ Horizontal bar for earned vs expected, received vs owed, and each origin's share
 
 ## Rules
 - Always next to the numbers it shows; the bar alone never carries the value.
+
+## Props
+
+```ts
+interface ProgressBarProps {
+  value: number;
+  tone?: 'accent' | 'success' | 'primary' | 'secondary';
+  track?: 'accent' | 'danger' | 'sunken';
+  thin?: boolean;
+  label: string;
+}
+```

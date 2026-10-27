@@ -1,0 +1,47 @@
+{
+  "tabs": {
+    "today": "Hoje",
+    "schedule": "Agenda",
+    "students": "Alunos",
+    "places": "Locais",
+    "earnings": "Ganhos"
+  },
+  "empty": {
+    "today": {
+      "title": "Nenhuma aula hoje",
+      "body": "As aulas do dia, o que você ganhou e a próxima aula aparecem aqui."
+    },
+    "schedule": {
+      "title": "Agenda vazia",
+      "body": "Suas aulas da semana aparecem aqui, dia a dia."
+    },
+    "students": {
+      "title": "Nenhum aluno ainda",
+      "body": "Seus alunos, os locais onde cada um estuda e quem está devendo aparecem aqui."
+    },
+    "places": {
+      "title": "Nenhum local ainda",
+      "body": "Casa do aluno, online e os lugares onde você dá aula aparecem aqui."
+    },
+    "earnings": {
+      "title": "Nada ganho ainda",
+      "body": "Quanto você ganhou e quanto ainda vai receber aparecem aqui."
+    }
+  },
+  "nav": {
+    "settings": "Ajustes",
+    "back": "Voltar"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "about": "Sobre",
+    "aboutValue": "Versão {{version}} · build {{build}} · banco v{{schema}}"
+  },
+  "startupError": {
+    "title": "Não foi possível atualizar seus dados",
+    "body": "Uma cópia do banco de dados foi salva antes da atualização. Nada foi perdido.",
+    "backupPath": "Cópia salva em: {{path}}",
+    "noBackup": "O banco de dados não foi alterado.",
+    "detail": "Erro: {{message}}"
+  }
+}

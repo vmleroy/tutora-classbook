@@ -1,7 +1,8 @@
 ---
 description: Check that every acceptance criterion of a spec has a passing test
-argument-hint: "NNN"
+argument-hint: 'NNN'
 ---
+
 Verify spec $ARGUMENTS.
 
 1. List every `AC-NNN-n` in the spec. For each, grep the tests for that id and report covered or missing; criteria marked "manual" in tasks.md need a note in the PR instead.

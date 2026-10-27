@@ -10,3 +10,17 @@ Formatted money from integer cents, always in tabular figures so totals and the 
 - One `xl` figure per card; `display` only on the live lesson screen.
 - Owed money uses `danger-ink`; never color a positive total red.
 - With "Mostrar as duas moedas" on, the converted value follows in `caption` ink-muted: "US$ 30,00 ≈ R$ 162,00".
+
+## Props
+
+```ts
+interface MoneyProps {
+  cents: number;
+  currency?: Currency;
+  locale?: string;
+  size?: 'display' | 'xl' | 'lg' | 'md' | 'sm';
+  tone?: 'default' | 'earnings' | 'owed' | 'paid' | 'onHeader';
+  compact?: boolean;
+  showSign?: boolean;
+}
+```

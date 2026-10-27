@@ -12,3 +12,13 @@ coverage/
 !.env.example
 .DS_Store
 *.log
+expo-env.d.ts
+.kotlin/
+*.orig.*
+*.p8
+*.p12
+*.key
+*.pem
+.metro-health-check*
+*.tsbuildinfo
+.maestro/screenshots/
