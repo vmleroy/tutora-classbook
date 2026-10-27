@@ -10,9 +10,9 @@ Architecture reference: [`docs/architecture.md`](../../architecture.md), section
   - `src/domain/places.ts` holds the rules: which types count as "Escola e emprego", which types offer "who pays", default duration, and moving the default star when a link is removed.
   - `src/domain/id.ts` holds a pure `uuidv7(nowMs, randomBytes)`.
 - **Data.** New tables live in `src/data/schema.ts` (see Data below), with repos `placeRepo.ts`, `studentRepo.ts` and `groupRepo.ts` in `src/data/repos/`. Repos read and write rows only; they hold no rules.
-- **Use cases** (`src/usecases/`): `savePlace`, `saveStudent` (student plus their links in one transaction), `saveGroup`, `linkStudentToPlace`, `archive`, `restore` and `removePermanently` (one for each kind). Each runs in one transaction and returns what the screen needs.
+- **Use cases** (`src/usecases/catalog.ts`): `savePlace`, `saveStudent` (student plus their links in one transaction), `saveGroup`, `linkStudentToPlace`, `archive`, `restore` and `removePermanently` (taking the kind: place, student or group). Each runs in one transaction and returns what the screen needs.
 - **Built-in places.** `startApp` calls `ensureBuiltinPlaces`, which inserts Casa do Aluno and Online / Remoto with fixed ids if they are missing. It works the same way `ensureDefaultSettings` does, so no hand-written SQL goes into a generated migration. Built-ins store `builtin = 'student_home' | 'online'` and no name; the screen shows `t('places.builtin.<key>')`, so their names follow the language (AC-004-26).
-- **State.** TanStack Query hooks live in `src/state/places.ts` and `src/state/students.ts`. A small `invalidate(tables)` map in `src/state/queryKeys.ts` maps place → places, students, groups; student → students, places; group → groups, places, students. Use cases are called through mutation hooks that invalidate the keys afterwards.
+- **State.** TanStack Query hooks live in `src/state/catalog.ts`, over the one cache in `src/state/queryClient.ts`. `useCatalogActions` binds the use cases to the open database, and every write invalidates `places`, `students` and `groups`, because any write can change what the others show (counts, links, groups).
 - **Random bytes for ids.** A new adapter, `src/adapters/random.ts`, wraps `expo-crypto`'s `getRandomBytes` (installed with `npx expo install expo-crypto`). Tests pass Node's `crypto` instead.
 
 ## Data
@@ -45,11 +45,13 @@ CHECK constraints keep `commission_bp` between 0 and 9000. A partial unique inde
 ## Screens and components
 
 Routes:
-- `src/app/(tabs)/places/`: `index`, `[id]`, `[id]/edit`, `new`, `archived`
-- `src/app/(tabs)/students/`: `index`, `[id]`, `[id]/edit`, `new`, `archived`
-- `src/app/(tabs)/places/groups/`: `[id]/edit` and `new?placeId=`
-
-Group rows open the group edit screen from both tabs. Student ↔ place links push onto the other tab's stack with `router.push('/places/[id]')`.
+- The tab lists stay in `src/app/(tabs)/places/index` and `src/app/(tabs)/students/index`. Each has an accent `+` in the header, since the Fab is for Agenda only.
+- Details and forms live in a root `src/app/catalog/` stack, so student ↔ place links never cross tab stacks (the first risk below, settled up front):
+  - `place/[id]` and `place/edit?id=`
+  - `student/[id]` and `student/edit?id=`
+  - `group/edit?id=|placeId=`
+  - `archived`
+- A new item uses the same edit route with no id.
 
 Every screen is built from existing components:
 - **Lists and details:** ListGroup, ListRow, Card, Avatar, Badge, SectionHeader, EmptyState, Fab.
@@ -60,7 +62,7 @@ Every screen is built from existing components:
   - Stepper for price, percentage and duration, with tapping the value opening a BottomSheet that holds the money field
 - **Sheets and actions:** BottomSheet for "Ligar a qual local?", "+ Ligar aluno" and the removal confirmation; Button for actions.
 
-The color tag picker is a row of TagDots inside Touchables with the radio role, built inside the student edit screen.
+The color tag picker is a row of TagDots inside Touchables with the radio role, built inside the student edit screen. Text helpers, `PriceStepper` (a stepper plus a sheet with the money field) and `ArchiveActions` (Arquivar, Restaurar, and Remover para sempre with confirmation) live in `src/ui/catalog.tsx`. They are built only from design-system components.
 
 Design-system changes, made first:
 - **Icon** gets `star`, `search` and `archive`, with its README updated.
@@ -70,12 +72,12 @@ Design-system changes, made first:
 
 Lean, as in `/implement`: one focused Jest test per criterion.
 - **Domain:** `src/domain/pricing.test.ts` (AC-004-7, 18–22) and `src/domain/places.test.ts` (AC-004-4, 5, 6, 8, 11).
-- **Use cases** run against a real migrated database in Node: `src/usecases/places.test.ts` and `src/usecases/students.test.ts`. They cover saving, refusals, built-ins, archive, restore and remove (AC-004-2, 3, 9, 10, 12, 13, 16, 23, 24, 25).
+- **Use cases** run against a real migrated database in Node: `src/usecases/catalog.test.ts`. They cover saving, refusals, built-ins, linking, archive, restore and remove (AC-004-2, 3, 9, 10, 12, 13, 16, 17, 23, 24, 25).
 - **Screens** with `renderRouter`: `tests/app/places.test.tsx` and `tests/app/students.test.tsx`, for list contents, detail links, search and filter, and language (AC-004-1, 14, 15, 17, 26).
 - No Maestro.
 
 ## Risks
 
-- **Cross-tab navigation.** Pushing a place's detail from the Students tab can switch tabs in Expo Router. I'll check the SDK 58 docs for nested-stack linking. If needed, details become root-level routes (`/place/[id]`, `/student/[id]`) outside the tabs, as the architecture does for `lesson/[id]`.
+- **Cross-tab navigation.** Settled by putting details in the root `catalog` stack, outside the tabs, as the architecture does for `lesson/[id]`. The tab bar is hidden on those screens.
 - **Generated migration and partial index.** drizzle-kit 0.31 supports `.where()` on indexes for SQLite. If the generated SQL drops it, the default rule stays in `saveStudent` and the index waits for a later migration.
 - **Scope.** This is the largest spec so far, with 26 criteria and about ten screens. Tasks are ordered so data and rules land first; screens follow, places before students.

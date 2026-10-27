@@ -110,6 +110,8 @@ Keep the product doc's data model and tighten it in seven ways so restore and sy
 | `lesson` has a CHECK that exactly one of `student_id` / `group_id` is set; same for `payment` payer | The database refuses impossible rows, not just the UI |
 | Fee rule is columns on `place` and `student` (`fee_mode`, `fee_window_h`, `late_fee_kind`, `late_fee_value`, `no_show_fee_kind`, `no_show_fee_value`) with defaults in `settings` | One shape for default, custom and none; the domain resolves it |
 | `lesson.is_detached` (edited on its own) and `schedule_rule` split on "this and following" | Regenerating the next 8 weeks never overwrites a class you changed by hand |
+| `archived_at` on place, student and group\_class; removal for good only once archived, cascading links, groups and members (spec 004) | Arquivar keeps history; nothing disappears by accident |
+| Built-in places have fixed ids and `builtin` set, no stored name, and are inserted at start-up when missing | Their names follow the app language; restore and sync always find them |
 | `calendar_link` (lesson\_id, calendar\_id, event\_id) instead of a column | Re-targeting the calendar or turning sync off cleans up exactly what Tutora created |
 
 Core of the `lesson` table, as the migration will create it:
