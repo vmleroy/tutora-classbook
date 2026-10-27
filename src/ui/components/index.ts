@@ -15,3 +15,7 @@ export { Stepper, type StepperProps } from './Stepper';
 export { Switch, type SwitchProps } from './Switch';
 export { TagDot, type Tag, type TagDotProps } from './TagDot';
 export { TextField, type TextFieldProps } from './TextField';
+export { Badge, type BadgeProps } from './Badge';
+export { EarningsSummary, type EarningsSummaryProps } from './EarningsSummary';
+export { Money, type MoneyProps } from './Money';
+export { ProgressBar, type ProgressBarProps } from './ProgressBar';

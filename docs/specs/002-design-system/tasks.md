@@ -6,7 +6,7 @@
 - [x] 4. `resolvePalette` with custom parts, dark-mode lightening, on-color flipping; `ThemeProvider` with `vars()`. Tests: `src/domain/theme/palette.test.ts`, `src/ui/theme/ThemeProvider.test.tsx`. (AC-002-5 to AC-002-9)
 - [x] 5. Foundations and actions: Icon, Button, IconButton, Fab. (AC-002-10 to AC-002-12)
 - [x] 6. Selection and inputs: SegmentedControl, Chip, Switch, Checkbox, Stepper, TextField, SelectField.
-- [ ] 7. Display: Badge, Avatar, TagDot, Money, ProgressBar, Card, EarningsSummary. Money locale tests. (AC-002-13)
+- [x] 7. Display: Badge, Avatar, TagDot, Money, ProgressBar, Card, EarningsSummary. Money locale tests. (AC-002-13)
 - [ ] 8. Lists and navigation: SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner, ScreenHeader, TabBar, WeekStrip, AgendaBlock.
 - [ ] 9. Feedback: BottomSheet, EmptyState, TimerRing.
 - [ ] 10. Lint rule against raw colors, font sizes and spacing. (AC-002-14)
