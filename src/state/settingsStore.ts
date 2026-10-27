@@ -8,6 +8,8 @@ import { createI18n } from '@/i18n';
 import { startApp } from '@/usecases/startApp';
 import * as settingsUseCases from '@/usecases/updateSettings';
 
+import { queryClient } from './queryClient';
+
 type Failure = { backupPath: string | null; message: string };
 
 type State = {
@@ -96,5 +98,6 @@ export const useSettingsStore = create<State>()((set, get) => ({
 /** Tests only: back to a cold start. */
 export function resetSettingsStore() {
   database = null;
+  queryClient.clear();
   useSettingsStore.setState(initial);
 }

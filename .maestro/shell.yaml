@@ -33,7 +33,7 @@ appId: com.vmleroy.tutora
     visible:
       id: places-screen
     timeout: 300
-- assertVisible: 'Nenhum local ainda|No places yet'
+- assertVisible: 'Nenhum local seu ainda|No places of your own yet'
 
 - tapOn:
     id: tab-earnings
