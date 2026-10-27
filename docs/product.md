@@ -240,20 +240,20 @@ The palette borrows from a classroom: chalkboard green as the main color, pencil
 
 ## Tech approach and open questions
 
-Recommended stack: **React Native with Expo**, one codebase for Android now and iOS later, installed as an APK without any store.
+Stack: **native Android in Kotlin with Jetpack Compose**, installed as an APK without any store; iOS much later through Kotlin Multiplatform. The technical decisions live in [`architecture.md`](architecture.md); this section keeps only what the product depends on. (The first version was built with Expo + React Native and is archived at the `expo-final` tag.)
 
-- **Storage:** expo-sqlite, with a small migrations table so the schema can grow.
-- **Export:** build the JSON backup in the app and the .xlsx with SheetJS (runs fully offline), save them with expo-file-system, and open the system share sheet (expo-sharing) so the teacher picks Google Drive, WhatsApp, email or any cloud app. No Google login is needed in v1.
-- **Live timer:** computed from stored timestamps and re-rendered every second; a persistent notification shows the running amount while the app is in the background.
-- **Reminders:** expo-notifications, scheduled locally. Languages: all text lives in pt-BR and English string files (i18next, with expo-localization picking the phone's language on first run), and money and dates are formatted with Intl for the chosen language, always in reais. Automatic backup: the teacher picks a folder once with Android's folder picker, which can be a Google Drive or OneDrive folder, and expo-background-task writes the JSON there on schedule and keeps the last N files; if Android skipped a run, the app does it the next time it opens. No Google sign-in is needed.
+- **Storage:** SQLite on the phone, with migrations so the schema can grow without losing data.
+- **Export:** the JSON backup and the .xlsx are built in the app, fully offline, then the system share sheet lets the teacher pick Google Drive, WhatsApp, email or any cloud app. No Google login is needed in v1.
+- **Live timer:** computed from stored timestamps and redrawn every second; an ongoing notification keeps counting while the app is in the background.
+- **Reminders and languages:** local notifications, no server. All text exists in Portuguese (pt-BR) and English; the phone's language picks one on first run, and money and dates are written for the chosen language, always in reais.
+- **Automatic backup:** the teacher picks a folder once with Android's folder picker, which can be a Google Drive or OneDrive folder, and the app writes the JSON there on schedule and keeps the last N files; if Android skipped a run, the app does it the next time it opens. No Google sign-in is needed.
 - **Speed:** all screens read from SQLite on device, so lists open instantly; v1 makes no network calls.
-- **Alternative:** Flutter (with sqflite) would work equally well if you prefer Dart.
 
-**Calendar sync without a backend:** expo-calendar writes events into the phone's own calendar store. Android and iOS already sync that store with Google or Outlook accounts, so classes reach the cloud calendar while Tutora itself stays offline. Sync is one-way in v1 (Tutora to calendar); edits made in Google Calendar are not pulled back, and other events are only read to show busy time. Direct Google/Microsoft API sync would need sign-in and is left for a later version.
+**Calendar sync without a backend:** Tutora writes events into the phone's own calendar store. Android already syncs that store with Google or Outlook accounts, so classes reach the cloud calendar while Tutora itself stays offline. Sync is one-way in v1 (Tutora to calendar); edits made in Google Calendar are not pulled back, and other events are only read to show busy time.
 
 **Themes:** colors live in a small token set per theme (main, accent, background, surface, text) loaded from settings at start-up, so switching theme or mode is instant and needs no restart.
 
-**Reports and PDF:** report totals come from one SQL query over lessons and payments filtered by student\_id or place\_id and the date range. The PDF is rendered offline with expo-print from an HTML template that uses the active theme's main color, then shared with expo-sharing; large ranges paginate automatically.
+**Reports and PDF:** report totals come from one SQL query over lessons and payments filtered by student or place and the date range. The PDF is drawn offline with the active theme's main color, then shared; large ranges paginate automatically.
 
 **Decisions from your answers**
 

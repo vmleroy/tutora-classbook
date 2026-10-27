@@ -1,8 +1,0 @@
-node_modules
-android
-ios
-.expo
-coverage
-docs
-package-lock.json
-src/ui/theme/tokens/tokens.json

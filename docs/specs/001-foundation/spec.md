@@ -1,6 +1,6 @@
 # Spec 001: Foundation
 
-Status: done
+Status: ready (Kotlin rebuild: re-plan)
 Depends on: nothing
 
 ## Goal
@@ -9,7 +9,7 @@ An installable Tutora app shell that every later spec builds on: the five tabs f
 
 ## User stories
 
-- **US-1.** As a teacher, I install Tutora from an APK and open it to a home screen with five tabs: Hoje, Agenda, Alunos, Locais, Ganhos.
+- **US-1.** As a teacher, I install Tutora from an APK and open it to a home screen with five tabs: Hoje, Agenda, Cadastro, Ganhos, Ajustes.
 - **US-2.** As a teacher, I see the app in my phone's language (Portuguese or English) on first open.
 - **US-3.** As a teacher, I see the Quadro-negro theme, in light or dark following my phone.
 - **US-4.** As a teacher, when I install a newer version over the old one, my data is kept.
@@ -19,9 +19,9 @@ An installable Tutora app shell that every later spec builds on: the five tabs f
 
 ### App shell
 
-- **AC-001-1.** Given a fresh install, when the app opens, then the Hoje tab is shown with a bottom bar of five tabs in this order: Hoje, Agenda, Alunos, Locais, Ganhos.
+- **AC-001-1.** Given a fresh install, when the app opens, then the Hoje tab is shown with a bottom bar of five tabs in this order: Hoje, Agenda, Cadastro, Ganhos, Ajustes.
 - **AC-001-2.** Given any tab, when the teacher taps another tab, then it opens in under 300 ms on the reference phone and keeps its own navigation stack.
-- **AC-001-3.** Ajustes opens from anywhere. (Changed in 005, AC-005-27: Ajustes is the fifth tab; it was a gear on Hoje with a back button.)
+- **AC-001-3.** Ajustes is the fifth tab, so it opens from anywhere. It shows the Sobre row (AC-001-22) and nothing else yet.
 - **AC-001-4.** Given the app is opening, then the splash screen stays until fonts, settings and migrations are ready, and the first screen never flashes unstyled or in the wrong theme.
 
 ### Language
@@ -34,7 +34,7 @@ An installable Tutora app shell that every later spec builds on: the five tabs f
 
 - **AC-001-8.** Given theme mode "system" (the default), when the phone is in dark mode, then the app uses Quadro-negro dark colors; in light mode, Quadro-negro light, matching the product doc's hex values.
 - **AC-001-9.** Given the phone switches between light and dark while the app is open, then the app follows within one second without restarting.
-- **AC-001-10.** Components use only semantic color classes; a lint rule or test fails on a hex color inside `src/app` or `src/ui/components`.
+- **AC-001-10.** Screens and components use only semantic theme colors; a check fails on a raw color value in screen or design-system code.
 - **AC-001-11.** Text uses Nunito; numbers styled as money use tabular figures.
 
 ### Database
@@ -46,15 +46,15 @@ An installable Tutora app shell that every later spec builds on: the five tabs f
 
 ### Domain core boundaries
 
-- **AC-001-16.** A check fails the build if any file under `src/domain/` imports React, React Native, Expo, Drizzle or SQLite.
-- **AC-001-17.** `domain/money.ts` exists with `Money`, `add`, `multiplyRate`, and half-away-from-zero rounding, proven by property tests (full money rules come in spec 002).
+- **AC-001-16.** The build fails if the domain code depends on Android, the UI toolkit or the database: it is plain Kotlin, ready to share with iOS later.
+- **AC-001-17.** The domain has money as integer cents, exact addition, multiplying by a ratio, and half-away-from-zero rounding, proven by property tests (full money rules come in spec 003).
 
 ### Build and quality
 
-- **AC-001-18.** `npm test` runs domain, data and component tests in Node, with no emulator, in under 60 seconds.
-- **AC-001-19.** `npm run typecheck` and `npm run lint` pass with zero errors.
+- **AC-001-18.** One command runs domain, data and UI tests on the computer, with no emulator, in under 60 seconds.
+- **AC-001-19.** The build, static analysis and formatting checks pass with zero errors.
 - **AC-001-20.** One documented command produces a signed release APK, and installing a second build with a higher `versionCode` over the first keeps the database.
-- **AC-001-21.** A Maestro flow opens the app on an emulator, taps through all five tabs and the gear, and passes.
+- **AC-001-21.** A Maestro flow opens the app on an emulator, taps through all five tabs, and passes.
 - **AC-001-22.** Ajustes shows a Sobre (About) row with app version, build number and schema version.
 
 ## Out of scope
@@ -63,5 +63,6 @@ Students, places, lessons, money screens, custom colors, other themes, first-run
 
 ## Decisions
 
-- Large text scales type in the `Text` component, which multiplies the type tokens by the text scale. NativeWind's rem stays at 16 so spacing never changes (decided 26 Oct 2026, task 6; matches plan 002).
-- NativeWind 4.2.7 with Tailwind CSS 3.4 on Expo SDK 58. NativeWind 5 was still a release candidate (`5.0.0-rc.0`) at repo creation (decided 26 Oct 2026, task 6).
+- Large text scales type styles only; spacing never changes (decided 26 Oct 2026, kept for Kotlin).
+- 27 Oct 2026: rebuilt in Kotlin + Jetpack Compose (constitution amendment). The Expo + React Native version is archived at the `expo-final` tag and the `archive/expo` branch.
+- 27 Oct 2026: tabs are Hoje, Agenda, Cadastro, Ganhos, Ajustes from the start (decided in 005 review; the gear on Hoje is gone).

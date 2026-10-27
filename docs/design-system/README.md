@@ -42,37 +42,14 @@ Tutora is a classroom in a phone: chalkboard green for structure, pencil yellow 
 
 ## Iconography
 
-Line icons on a 24-unit grid with 2px round strokes, as in the mockups; in the app use `lucide-react-native`. Sizes: 22 default, 18 in buttons and rows, 26 on the FAB. Only `play` is filled. No emoji.
+Line icons on a 24-unit grid with 2px round strokes, as in the mockups; in the app use the Lucide icon set as vector drawables. Sizes: 22 default, 18 in buttons and rows, 26 on the FAB. Only `play` is filled. No emoji.
 
 ## Components
 
 Thirty components cover every mockup screen. They are grouped as Foundations (Icon), Actions (Button, IconButton, Fab), Selection (SegmentedControl, Chip, Switch, Checkbox, Stepper), Inputs (TextField, SelectField), Display (Badge, Avatar, TagDot, Money, ProgressBar, Card, EarningsSummary), Lists (SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner), Navigation (ScreenHeader, TabBar, WeekStrip, AgendaBlock) and Feedback (BottomSheet, EmptyState, TimerRing). Each has its rules in its own guidelines.
 
-The design system is the code in `src/ui`; there is no separate reference implementation.
+## In code
 
-- **Theme:** `src/ui/theme/` holds `tokens/` (`tokens.json`, the source, and the generated `tokens.ts`), `ThemeProvider/` (sets the palette as CSS variables; `useTheme()`), `typography.ts` (weights, Large text scale), `sizes.ts` (touch target, control sizes, `touchSlop`), `shadow.ts` and `motion.ts`. Import from `@/ui/theme` or the file itself.
-- **Tokens:** `src/ui/theme/tokens/tokens.json` is the source of every color, type style, spacing, radius, size and opacity. `tailwind.config.js` and the theme code read it; nothing copies values by hand.
-- **Components:** `src/ui/components/<Name>/<Name>.tsx`, one folder per component with an `index.ts`; import them as `@/ui/components` or `@/ui/components/<Name>`. Component tests live in `src/ui/components/__tests__/`. Each takes the props listed in its guideline (`docs/design-system/components/<Name>/README.md`, section Props), styled with NativeWind classes that map to the tokens (see the Tailwind section).
-- **Preview:** the developer screen `/dev/components` (development builds only) shows every component in every variant, with a theme, mode and text-size switcher. The published [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei) is the original visual reference. The web prototype it was built from (`design-system/components/bundle.js`, `bundle.css` and the `preview.html` files) is kept only in git history, at commit `7c3c831`, for exact measurements while porting.
+The design system is the `:core:designsystem` module; there is no separate reference implementation. Tokens come from [`design/tokens.json`](../../design/tokens.json), generated into Kotlin. Spec 002 is re-planned for Compose and defines the module's layout, the `TutoraTheme` API and each component's parameters.
 
-### Styling and className
-
-Every component except Icon takes `className`, merged over its own classes with `cn()` (clsx + tailwind-merge configured with the tokens, in `src/ui/cn.ts`). The later of two conflicting token classes wins, so a screen can add layout (`mt-4`, `flex-1`, `self-stretch`) or override a single token. Variants are written with the same token-aware `tv()` from `@/ui/cn`. Inside components, build class names with `cn(…)`, never template strings.
-
-### Primitives
-
-Two building blocks sit under the 30 components and are not counted among them:
-
-- **Text:** all app text. `variant` is a type style name (`body`, `title-xl`, `money-xl`…), sized from the tokens and multiplied by the Large text scale; money styles and `tabular` get tabular figures.
-- **Screen:** a screen's scrolling body on `background` with the 20px gutter.
-- **Touchable:** every pressable. It adds the `opacity-pressed` state. Use it instead of `Pressable`: NativeWind drops a function `style` when `className` is set, so pressed styles and sizes passed that way would silently disappear.
-
-### Shared types
-
-```ts
-type IconName = 'plus' | 'minus' | 'check' | 'close' | 'chevron-left' | 'chevron-right' | 'home' | 'calendar' | 'users' | 'pin' | 'wallet' | 'clock' | 'alert' | 'file' | 'cloud' | 'gear' | 'calendar-check' | 'no-show' | 'play' | 'star' | 'search' | 'archive';
-type Tag = 'amber' | 'green' | 'blue' | 'violet' | 'orange' | 'red' | 'teal';
-type TokenName = /* every color token name in tokens.json */;
-function formatMoney(cents: number, language?: Language, compact?: boolean): string; // always reais
-function formatDayMonth(date: Date, language?: Language): string;
-```
+The guidelines in `components/<Name>/README.md` keep their rules. Their **Props** blocks still show the TypeScript props of the first (Expo) version: read them as the list of options each component offers until spec 002 rewrites them as Compose parameters.

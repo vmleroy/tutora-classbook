@@ -1,24 +1,31 @@
-node_modules/
-.expo/
+# Gradle and Android Studio
+.gradle/
+build/
+.kotlin/
+local.properties
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Release artifacts and secrets (constitution rule 19)
 dist/
-web-build/
-android/
-ios/
-coverage/
 *.keystore
 *.jks
+*.p12
+*.p8
+*.key
+*.pem
 .env
 .env.*
 !.env.example
+
+# OS and tools
 .DS_Store
 *.log
-expo-env.d.ts
-.kotlin/
-*.orig.*
-*.p8
-*.p12
-*.key
-*.pem
-.metro-health-check*
-*.tsbuildinfo
 .maestro/screenshots/
+
+# Left over from the Expo version (archived at the expo-final tag)
+node_modules/
+.expo/
