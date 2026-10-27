@@ -196,8 +196,9 @@ appId: com.vmleroy.tutora
 - takeScreenshot: .maestro/screenshots/large-light-TimerRing
 - scrollUntilVisible:
     element:
-      id: gallery-sample-body
+      text: 'Escuro|Dark'
     direction: UP
+    visibilityPercentage: 50
 - tapOn: 'Escuro|Dark'
 - scrollUntilVisible:
     element:

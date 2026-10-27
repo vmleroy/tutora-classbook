@@ -1,4 +1,4 @@
-import { Children, useState, type ReactNode } from 'react';
+import { Children, Fragment, isValidElement, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, type LayoutChangeEvent } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
@@ -45,7 +45,12 @@ export function BottomSheet({
   const slide = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
   if (!open) return null;
 
-  const [cancel, confirm] = Children.toArray(actions);
+  // Actions usually arrive as a fragment (<><Cancel /><Confirm /></>): split it.
+  const actionList =
+    isValidElement<{ children?: ReactNode }>(actions) && actions.type === Fragment
+      ? Children.toArray(actions.props.children)
+      : Children.toArray(actions);
+  const [cancel, confirm] = actionList;
   return (
     <View className="absolute inset-0 justify-end">
       <Touchable
@@ -85,8 +90,12 @@ export function BottomSheet({
             <View className="flex-row gap-2.5">
               {confirm ? (
                 <>
-                  <View className="flex-1">{cancel}</View>
-                  <View className="flex-[2]">{confirm}</View>
+                  <View testID="sheet-action-secondary" className="flex-1">
+                    {cancel}
+                  </View>
+                  <View testID="sheet-action-primary" className="flex-[2]">
+                    {confirm}
+                  </View>
                 </>
               ) : (
                 <View className="flex-1">{cancel}</View>

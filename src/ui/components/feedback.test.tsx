@@ -42,6 +42,9 @@ describe.each(testSets)('feedback in %s', (set) => {
     expect(screen.getByTestId('sheet-scrim')).toHaveStyle({
       opacity: set.endsWith('dark') ? 0.6 : 0.5,
     });
+    // Outline + primary side by side, 1 : 2.
+    expect(screen.getByTestId('sheet-action-secondary')).toHaveStyle({ flexGrow: 1 });
+    expect(screen.getByTestId('sheet-action-primary')).toHaveStyle({ flexGrow: 2 });
     await fireEvent.press(screen.getByRole('button', { name: 'Fechar' }));
     expect(onClose).toHaveBeenCalled();
     expect(pressableProblems()).toEqual([]);
