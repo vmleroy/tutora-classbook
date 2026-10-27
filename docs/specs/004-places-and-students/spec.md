@@ -1,6 +1,6 @@
 # Spec 004: Places and students
 
-Status: draft
+Status: ready
 Depends on: 003 Money and language
 Mockups: docs/mockups/Places.dc.html, PlaceDetail.dc.html, PlaceEdit.dc.html, Students.dc.html, StudentDetail.dc.html, StudentEdit.dc.html
 
@@ -33,15 +33,15 @@ The teacher registers once where they teach and whom they teach: their places (t
 ### Students
 
 - **AC-004-10.** A student has a name (required), subject and grade, phone, how they are charged (Por hora or Por aula), a color tag and notes.
-- **AC-004-11.** A student is linked to one or more places; one of them is starred as the default. The first place linked becomes the default, and removing the default moves the star to the next one.
-- **AC-004-12.** At each linked place the student pays by the hour or lesson, either the place's price ("Do local") or their own price ("Personalizado").
+- **AC-004-11.** A student is saved with at least one linked place (saving with none is refused with a message); one of them is starred as the default. The first place linked becomes the default, and removing the default moves the star to the next one.
+- **AC-004-12.** At each linked place the student pays by the hour or lesson, either the place's price ("Do local") or their own price ("Personalizado"). Prices are set with − / + in R$ 5 steps, and tapping the amount lets the teacher type the exact value.
 - **AC-004-13.** At a place that pays the teacher, the student has no price of their own; the card says "Pago pelo local" with the place's rate.
 - **AC-004-14.** Alunos lists active students and groups by name, with search by name and a "Por local" filter. Each row shows the subject and places, or the group's place and size.
 - **AC-004-15.** A student's detail shows their contact, rate and linked places; tapping a place opens that place's detail.
 
 ### Groups
 
-- **AC-004-16.** A group (turma) belongs to one place and has a name, subject, members chosen from the students linked to that place, and a price per lesson. A group at an Escola has no price of its own; it is covered by the salary.
+- **AC-004-16.** A group (turma) belongs to one place and has a name, subject, optional members chosen from the students linked to that place, and a price per lesson. A group at an Escola has no price of its own; it is covered by the salary.
 - **AC-004-17.** A place's detail shows its type, address, who pays and its rate, duration and settlement cycle, then the students linked to it with "+ Ligar aluno", then its groups. Tapping a student opens their detail.
 
 ### Price of a lesson
@@ -66,9 +66,9 @@ The teacher registers once where they teach and whom they teach: their places (t
 
 Balances, payments, "Devendo" filter, Receber da salinha and Registrar pagamento (008); packages and the Pacote option (008); lessons, Próximas / Últimas aulas, Nova aula and the schedule (005, 006); cancellation and no-show rules (006); reports (010); first-run setup of the built-in prices (014). The "Paga em" currency row in the student mockup is gone (reais only, constitution rule 9).
 
-## Open questions
+## Answered questions (Victor, 27 Oct 2026)
 
-- Group members: the mockup shows "Turma ENEM · 3 alunos". Proposal: members are optional and drawn from the place's linked students; a school group can have none (it is just a class name).
-- Can a student exist with no place? Proposal: yes while being created (saving asks for at least one place), and after their only place is archived ("Sem local").
-- Price entry: the mockups use − / + steppers in R$ 5 steps. Proposal: the stepper stays, and tapping the amount opens the money field from 003 for an exact value.
-- Should the Particular type offer "who pays" at all? Proposal: yes, like a Salinha; the usual answer is the student with 0% to the place.
+- Group members are optional and drawn from the students linked to the group's place; a school group can be just a class name.
+- A student needs at least one place to be saved; only archiving their only place leaves them "Sem local".
+- Prices use − / + steppers in R$ 5 steps; tapping the amount opens exact entry.
+- A Particular place asks who pays, like a Salinha.
