@@ -1,6 +1,6 @@
 # Spec 001: Foundation
 
-Status: ready (Kotlin rebuild: re-plan)
+Status: in progress
 Depends on: nothing
 
 ## Goal
@@ -28,7 +28,7 @@ An installable Tutora app shell that every later spec builds on: the five tabs f
 
 - **AC-001-5.** Given the phone language is Portuguese (any region), when the app opens for the first time, then all text is in pt-BR; for any other language it is in English.
 - **AC-001-6.** Given the language setting exists, when the phone language changes later, then the app keeps the saved setting.
-- **AC-001-7.** Every user-facing string in the shell comes from the i18n files, and a key missing from either file fails the type check.
+- **AC-001-7.** Every user-facing string in the shell comes from the string resources, and a string missing from either language fails the build checks.
 
 ### Theme
 
@@ -39,7 +39,7 @@ An installable Tutora app shell that every later spec builds on: the five tabs f
 
 ### Database
 
-- **AC-001-12.** Given a fresh install, when the app opens, then the database is created with WAL mode and foreign keys on, and the `settings` table exists with defaults (language from the phone, currency BRL, theme Quadro-negro, mode system, setup_done false).
+- **AC-001-12.** Given a fresh install, when the app opens, then the database is created with WAL mode and foreign keys on, and the `settings` table exists with defaults (language from the phone, theme Quadro-negro, mode system, setup_done false).
 - **AC-001-13.** Given a database at an older schema version, when a newer app opens, then the database file is first copied to `tutora-pre-v{n}.db`, then pending migrations run in order, and the app opens normally.
 - **AC-001-14.** Given a migration fails, then the app shows an error screen in the current language with the path of the copied database, and does not open the tabs.
 - **AC-001-15.** Each migration has a test that applies it to a database seeded at the previous version.
