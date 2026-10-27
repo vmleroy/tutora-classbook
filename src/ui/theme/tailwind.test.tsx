@@ -69,6 +69,11 @@ describe('tailwind config', () => {
         <View testID="box" className="m-2 gap-3 p-4" />
       </ThemeProvider>,
     );
-    expect(screen.getByTestId('box')).toHaveStyle({ padding: 16, margin: 8, rowGap: 12, columnGap: 12 });
+    expect(screen.getByTestId('box')).toHaveStyle({
+      padding: 16,
+      margin: 8,
+      rowGap: 12,
+      columnGap: 12,
+    });
   });
 });

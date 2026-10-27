@@ -69,7 +69,8 @@
     "test": "jest",
     "format": "prettier --write .",
     "release:android": "bash scripts/release-android.sh",
-    "tokens": "tsx scripts/tokens.ts"
+    "tokens": "tsx scripts/tokens.ts",
+    "check": "bash scripts/check.sh"
   },
   "private": true,
   "allowScripts": {
