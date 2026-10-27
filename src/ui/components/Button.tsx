@@ -55,6 +55,8 @@ const labelClass: Record<Variant, string> = {
   danger: 'text-danger-ink',
 };
 
+const MIN_LABEL_SCALE = 0.85;
+
 const heights = { sm: sizes.controlSm, md: sizes.controlMd, lg: sizes.controlLg } as const;
 
 export function Button({
@@ -89,7 +91,14 @@ export function Button({
         />
       ) : null}
       <View>
-        <Text variant={size === 'lg' ? 'section' : 'button'} className={labelClass[variant]}>
+        {/* A label never wraps: with Large text in a narrow slot it shrinks a little instead. */}
+        <Text
+          variant={size === 'lg' ? 'section' : 'button'}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={MIN_LABEL_SCALE}
+          className={labelClass[variant]}
+        >
           {children}
         </Text>
       </View>

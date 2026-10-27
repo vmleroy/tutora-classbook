@@ -4,6 +4,7 @@ import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { pressableCount, pressableProblems } from '../components';
 import { repoRoot } from '../sourceFiles';
 
 const documented = fs
@@ -26,6 +27,13 @@ describe('developer component screen', () => {
     expect(screen).toHavePathname('/dev/components');
     for (const name of documented)
       expect([name, screen.queryByTestId(`gallery-${name}`)]).toEqual([name, expect.anything()]);
+  });
+
+  it('AC-002-12: every pressable among all 30 components reaches 44 x 44 and has a name', async () => {
+    dev.__DEV__ = true;
+    await renderRouter('./src/app', { initialUrl: '/dev/components' });
+    expect(pressableCount()).toBeGreaterThan(40);
+    expect(pressableProblems()).toEqual([]);
   });
 
   it('AC-002-15: switches theme, mode and text size for everything shown', async () => {

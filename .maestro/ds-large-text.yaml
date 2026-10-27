@@ -194,11 +194,19 @@ appId: com.vmleroy.tutora
     direction: DOWN
     centerElement: true
 - takeScreenshot: .maestro/screenshots/large-light-TimerRing
-- scrollUntilVisible:
-    element:
-      text: 'Escuro|Dark'
-    direction: UP
-    visibilityPercentage: 50
+# Dark pass: start again from the top of the gallery (its switches are not saved).
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: today-screen
+    timeout: 15000
+- openLink: tutora://dev/components
+- extendedWaitUntil:
+    visible:
+      id: gallery-ground
+    timeout: 10000
+- tapOn: 'Grande|Large'
 - tapOn: 'Escuro|Dark'
 - scrollUntilVisible:
     element:

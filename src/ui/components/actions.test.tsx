@@ -113,6 +113,19 @@ describe('custom colors on actions', () => {
   });
 });
 
+describe('labels', () => {
+  it('AC-002-16: a button label stays on one line and may shrink to 85% with Large text', async () => {
+    await renderComponent(<Button variant="outline">Cancelar</Button>, { textSize: 'large' });
+    const label = screen.getByText('Cancelar');
+    expect(label.props).toMatchObject({
+      numberOfLines: 1,
+      adjustsFontSizeToFit: true,
+      minimumFontScale: 0.85,
+    });
+    expect(label).toHaveStyle({ fontSize: 15 * 1.15 });
+  });
+});
+
 describe('pressed state', () => {
   it('AC-002-11: a pressed button dims to opacity-pressed and keeps its class styles', async () => {
     await renderComponent(<Button>Salvar</Button>);
