@@ -1,8 +1,8 @@
 # Spec 002: Design system
 
-Status: ready
+Status: done
 Depends on: 001 Foundation
-Source of truth: the code in `src/ui` (tokens in `src/ui/theme/tokens.json`, the components) and [`docs/design-system/`](../../design-system/) (usage rules, component guidelines and props), also published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei)
+Source of truth: the code in `src/ui` (tokens in `src/ui/theme/tokens/tokens.json`, the components) and [`docs/design-system/`](../../design-system/) (usage rules, component guidelines and props), also published as the [Tutora Design System](https://claude.ai/artifact/VqkNrENr4qcTcuDvqYwPei)
 
 ## Goal
 
@@ -19,7 +19,7 @@ Every screen in Tutora is built from one set of tokens and 30 shared components,
 
 ### Tokens
 
-- **AC-002-1.** `src/ui/theme/tokens.ts` is generated from `src/ui/theme/tokens.json` by a script (`npm run tokens`), never edited by hand; CI fails if the generated file is out of date.
+- **AC-002-1.** `src/ui/theme/tokens/tokens.ts` is generated from `src/ui/theme/tokens/tokens.json` by a script (`npm run tokens`), never edited by hand; CI fails if the generated file is out of date.
 - **AC-002-2.** For each of the 8 token sets (4 themes × light/dark), every text pair named in the token usage notes has contrast ≥ 4.5:1 (≥ 3:1 for large money on primary). A unit test checks all pairs.
 - **AC-002-3.** `tailwind.config.js` exposes every color token as a class name equal to the token name (`bg-surface-sunken`, `text-danger-ink`), plus the spacing, radius and font-size scales from the design system's Tailwind section.
 - **AC-002-4.** NativeWind runs with rem = 16, so `p-4` renders 16 px. A component test asserts the computed padding.
@@ -55,3 +55,5 @@ The screens themselves (each screen's spec composes these components). Icons bey
 
 - Large text scales all type styles by 1.15 (decided 26 Oct 2026; revisit only if the Maestro check finds clipping).
 - In dark mode the hero header and the live lesson screen use the `header` token, a deep shade of the theme's primary, with light text on it. Light mode keeps primary as the header (decided 26 Oct 2026).
+- In dark mode, custom colors for buttons, highlight, earnings, active tab and header are lightened 40% in OKLCH. A custom **background** or **cards** color is not lightened, since that would turn the dark ground light. It keeps its hue at the lightness of the theme's own dark background or surface, with only a light tint of chroma (0.04 at most). Proposed 26 Oct 2026 during task 4; Victor to confirm.
+- On-color text (on primary buttons, accent and header) is whichever of white and ink reads better in light mode, and of light ink and the dark background in dark mode.

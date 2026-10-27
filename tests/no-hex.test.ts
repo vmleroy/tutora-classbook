@@ -3,7 +3,10 @@ import { read, sourceFiles } from './sourceFiles';
 
 describe('semantic colors only', () => {
   it('AC-001-10: no hex color appears in src/app or src/ui/components', () => {
-    const files = [...sourceFiles('src/app'), ...sourceFiles('src/ui/components')];
+    // Test files may use hex values as fixtures; shipped code may not.
+    const files = [...sourceFiles('src/app'), ...sourceFiles('src/ui/components')].filter(
+      (f) => !/\.test\.tsx?$/.test(f),
+    );
     expect(files.length).toBeGreaterThan(0);
     const offenders = files.flatMap((file) =>
       hexColorsIn(read(file)).map((hex) => `${file}: ${hex}`),

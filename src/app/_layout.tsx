@@ -46,7 +46,12 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <I18nextProvider i18n={i18n}>
-        <ThemeProvider theme={settings?.themeId ?? 'quadro'} mode={settings?.themeMode ?? 'system'}>
+        <ThemeProvider
+          theme={settings?.themeId ?? 'quadro'}
+          mode={settings?.themeMode ?? 'system'}
+          customColors={settings?.customColors}
+          textSize={settings?.textSize}
+        >
           {status === 'error' && failure ? (
             <StartupError t={i18n.t} backupPath={failure.backupPath} message={failure.message} />
           ) : (
@@ -54,6 +59,7 @@ export default function RootLayout() {
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="settings" />
+                <Stack.Screen name="dev/components" />
               </Stack>
             </QueryClientProvider>
           )}

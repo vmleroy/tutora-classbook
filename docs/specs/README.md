@@ -9,7 +9,7 @@ Each spec ships on its own APK. Only 001 and 002 are written so far; write the n
 | # | Spec | Status | Mockups |
 | --- | --- | --- | --- |
 | 001 | [Foundation](001-foundation/spec.md): Expo app, 5 empty tabs, theme tokens, i18n, SQLite + migrations, CI | done | NavMap, Settings |
-| 002 | [Design system](002-design-system/spec.md): tokens for 4 themes × light/dark, 30 components, custom colors, Large text | ready | Palette, Themes |
+| 002 | [Design system](002-design-system/spec.md): tokens for 4 themes × light/dark, 30 components, custom colors, Large text | done | Palette, Themes |
 | 003 | Money and FX: `Money`, rounding, conversion, PTAX fetch with fallback and manual mode | not written | Currency |
 | 004 | Places and students: built-in places, CRUD, student–place links, price resolution | not written | Students, StudentDetail, StudentEdit, Places, PlaceDetail, PlaceEdit |
 | 005 | Schedule: recurring rules, 8-week generation, this-only vs this-and-following edits, Agenda and Today | not written | Main, Schedule |

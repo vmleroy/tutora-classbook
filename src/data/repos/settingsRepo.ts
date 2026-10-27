@@ -14,6 +14,8 @@ const keyOf: Record<keyof Settings, string> = {
   themeId: 'theme_id',
   themeMode: 'theme_mode',
   setupDone: 'setup_done',
+  customColors: 'custom_colors',
+  textSize: 'text_scale',
 };
 
 function rows(values: Partial<Settings>, now: string) {

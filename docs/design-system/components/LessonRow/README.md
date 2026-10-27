@@ -20,5 +20,7 @@ interface LessonRowProps {
   status?: { tone: BadgeProps['tone']; label: string };
   trailing?: string;
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

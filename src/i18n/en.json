@@ -43,5 +43,35 @@
     "backupPath": "Copy saved at: {{path}}",
     "noBackup": "The database was not changed.",
     "detail": "Error: {{message}}"
+  },
+  "ui": {
+    "back": "Back",
+    "close": "Close",
+    "mainNav": "Main navigation",
+    "next": "Next",
+    "done": "Done",
+    "weekDays": "Days of the week",
+    "newLesson": "New lesson",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "lessonTime": "Lesson time",
+    "earnedVsExpected": "Earned compared with expected",
+    "loading": "Loading"
+  },
+  "dev": {
+    "title": "Components",
+    "theme": "Theme",
+    "mode": "Mode",
+    "textSize": "Text",
+    "light": "Light",
+    "dark": "Dark",
+    "normal": "Normal",
+    "large": "Large"
+  },
+  "themes": {
+    "quadro": "Quadro-negro",
+    "caderno": "Caderno azul",
+    "biblioteca": "Biblioteca",
+    "giz": "Giz pastel"
   }
 }

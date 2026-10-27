@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 
-import { nodeFiles, tempDatabase } from '../../tests/sqliteNode';
+import { nodeFiles, tempDatabase } from '@tests/sqliteNode';
+
 import { MigrationError, prepareDatabase, schemaVersion } from './db';
 import { migrations, type Migration } from './migrations';
 import { ensureDefaultSettings, loadSettings } from './repos/settingsRepo';
@@ -35,6 +36,8 @@ describe('prepareDatabase', () => {
       themeId: 'quadro',
       themeMode: 'system',
       setupDone: false,
+      customColors: {},
+      textSize: 'normal',
     });
     t.close();
   });

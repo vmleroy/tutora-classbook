@@ -3,8 +3,10 @@ import { create } from 'zustand';
 
 import type { Db } from '@/data/repos/settingsRepo';
 import type { Language, Settings } from '@/domain/settings';
+import type { CustomPart, Scheme } from '@/domain/theme/palette';
 import { createI18n } from '@/i18n';
 import { startApp } from '@/usecases/startApp';
+import * as settingsUseCases from '@/usecases/updateSettings';
 
 type Failure = { backupPath: string | null; message: string };
 
@@ -15,7 +17,17 @@ type State = {
   failure: Failure | null;
   i18n: i18n | null;
   boot: () => Promise<void>;
+  updateSettings: (patch: Partial<Settings>) => void;
+  setCustomColor: (
+    part: CustomPart,
+    hex: string,
+    scheme: Scheme,
+    options?: { confirmed?: boolean },
+  ) => settingsUseCases.CustomColorResult;
+  resetCustomColors: () => void;
 };
+
+const now = () => new Date().toISOString();
 
 let database: Db | null = null;
 
@@ -55,6 +67,23 @@ export const useSettingsStore = create<State>()((set, get) => ({
         i18n,
       });
     }
+  },
+  // Each action writes SQLite first, then updates the store, so the screen follows at once.
+  updateSettings: (patch) => {
+    set({ settings: settingsUseCases.updateSettings(currentDatabase(), patch, now()) });
+  },
+  setCustomColor: (part, hex, scheme, options = {}) => {
+    const theme = get().settings?.themeId ?? 'quadro';
+    const { settings, ...result } = settingsUseCases.setCustomColor(
+      currentDatabase(),
+      { theme, scheme, part, hex, confirmed: options.confirmed ?? false },
+      now(),
+    );
+    if (result.saved) set({ settings });
+    return result;
+  },
+  resetCustomColors: () => {
+    set({ settings: settingsUseCases.resetCustomColors(currentDatabase(), now()) });
   },
 }));
 

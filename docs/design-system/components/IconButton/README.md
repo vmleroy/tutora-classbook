@@ -21,5 +21,7 @@ interface IconButtonProps {
   variant?: 'sunken' | 'plain' | 'onPrimary' | 'accent';
   disabled?: boolean;
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

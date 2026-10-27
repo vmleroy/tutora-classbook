@@ -43,5 +43,35 @@
     "backupPath": "Cópia salva em: {{path}}",
     "noBackup": "O banco de dados não foi alterado.",
     "detail": "Erro: {{message}}"
+  },
+  "ui": {
+    "back": "Voltar",
+    "close": "Fechar",
+    "mainNav": "Navegação principal",
+    "next": "Próxima",
+    "done": "Concluída",
+    "weekDays": "Dias da semana",
+    "newLesson": "Nova aula",
+    "decrease": "Diminuir",
+    "increase": "Aumentar",
+    "lessonTime": "Tempo de aula",
+    "earnedVsExpected": "Ganho em relação ao previsto",
+    "loading": "Carregando"
+  },
+  "dev": {
+    "title": "Componentes",
+    "theme": "Tema",
+    "mode": "Modo",
+    "textSize": "Texto",
+    "light": "Claro",
+    "dark": "Escuro",
+    "normal": "Normal",
+    "large": "Grande"
+  },
+  "themes": {
+    "quadro": "Quadro-negro",
+    "caderno": "Caderno azul",
+    "biblioteca": "Biblioteca",
+    "giz": "Giz pastel"
   }
 }

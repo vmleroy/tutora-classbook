@@ -19,5 +19,7 @@ interface ProgressBarProps {
   track?: 'accent' | 'danger' | 'sunken';
   thin?: boolean;
   label: string;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

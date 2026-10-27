@@ -15,5 +15,7 @@ interface TimerRingProps {
   progress: number;
   caption?: string;
   label?: string;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

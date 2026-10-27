@@ -22,5 +22,7 @@ interface MoneyProps {
   tone?: 'default' | 'earnings' | 'owed' | 'paid' | 'onHeader';
   compact?: boolean;
   showSign?: boolean;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

@@ -35,5 +35,7 @@ interface ButtonProps {
   disabled?: boolean;
   onPress?: () => void;
   children: React.ReactNode;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

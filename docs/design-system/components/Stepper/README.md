@@ -23,5 +23,7 @@ interface StepperProps {
   decrementLabel?: string;
   incrementLabel?: string;
   size?: 'sm' | 'md';
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

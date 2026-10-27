@@ -1,9 +1,9 @@
 import type { TFunction } from 'i18next';
 import { View } from 'react-native';
 
-import { Icon } from './components/Icon';
-import { Screen } from './components/Screen';
-import { Text } from './components/Text';
+import { Icon } from '@/ui/components/Icon';
+import { Screen } from '@/ui/components/Screen';
+import { Text } from '@/ui/components/Text';
 
 type Props = { t: TFunction; backupPath: string | null; message: string };
 

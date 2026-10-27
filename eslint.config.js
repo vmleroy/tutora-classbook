@@ -2,11 +2,28 @@ const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const prettierRecommended = require('eslint-plugin-prettier/recommended');
 
+const tutora = require('./eslint/tutora-plugin');
+
 module.exports = defineConfig([
   expoConfig,
   prettierRecommended,
   {
     ignores: ['node_modules/', '.expo/', 'android/', 'ios/', 'dist/', 'coverage/', 'expo-env.d.ts'],
+  },
+  {
+    // One import order everywhere: packages, then @/ modules, then relative files.
+    rules: {
+      'import/order': [
+        'warn',
+        {
+          groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
+          pathGroups: [{ pattern: '@/**', group: 'internal' }],
+          pathGroupsExcludedImportTypes: ['builtin'],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
+      ],
+    },
   },
   {
     // Constitution rule 7: the domain core is pure. tests/boundaries.test.ts checks the same list.
@@ -30,5 +47,12 @@ module.exports = defineConfig([
         },
       ],
     },
+  },
+  {
+    // AC-002-14: screens and components use tokens only. Test files may use fixtures.
+    files: ['src/app/**/*.{ts,tsx}', 'src/ui/components/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    plugins: { tutora },
+    rules: { 'tutora/no-raw-design-values': 'error', 'tutora/class-names-with-cn': 'error' },
   },
 ]);

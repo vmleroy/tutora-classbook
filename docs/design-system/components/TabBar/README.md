@@ -12,5 +12,9 @@ Bottom navigation with the five tabs: Hoje, Agenda, Alunos, Locais, Ganhos.
 ```ts
 interface TabBarProps {
   active?: 'today' | 'schedule' | 'students' | 'places' | 'earnings';
+  /** Called with the pressed tab; the router navigates. */
+  onSelect?: (tab: 'today' | 'schedule' | 'students' | 'places' | 'earnings') => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

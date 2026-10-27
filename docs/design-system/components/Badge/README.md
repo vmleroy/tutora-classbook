@@ -16,5 +16,7 @@ interface BadgeProps {
   tone?: 'neutral' | 'success' | 'danger' | 'accent' | 'secondary' | 'violet';
   icon?: IconName;
   children: React.ReactNode;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

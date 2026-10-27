@@ -5,4 +5,4 @@ ios
 coverage
 docs
 package-lock.json
-src/ui/theme/tokens.json
+src/ui/theme/tokens/tokens.json

@@ -20,5 +20,7 @@ interface AgendaBlockProps {
   state?: 'default' | 'done' | 'next';
   height?: number;
   onPress?: () => void;
+  /** Extra classes merged over the component's own (layout such as margins). */
+  className?: string;
 }
 ```

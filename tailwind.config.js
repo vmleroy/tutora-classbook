@@ -1,11 +1,14 @@
-// Every class name is a design-system token name; values come from src/ui/theme/tokens.json.
-const tokens = require('./src/ui/theme/tokens.json');
+// Every class name is a design-system token name; values come from src/ui/theme/tokens/tokens.json.
+const tokens = require('./src/ui/theme/tokens/tokens.json');
 
 const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 const px = (value) => value;
 
 const colors = { transparent: 'transparent' };
 for (const { name } of tokens.color.tokens) colors[name] = v(name);
+// Custom-color parts (docs/design-system/Theming.md): default to primary, repainted on their own.
+for (const part of ['btn-primary', 'on-btn-primary', 'tab-active', 'tab-active-soft'])
+  colors[part] = v(part);
 
 const spacing = {};
 for (const { name, value } of tokens.spacing.tokens)

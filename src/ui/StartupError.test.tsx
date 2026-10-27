@@ -1,9 +1,9 @@
 import { render, screen } from 'react-native-css-interop/test';
 
-import { withAppStyles } from '../../tests/nativewind';
-import { createI18n } from '../i18n';
-import { StartupError } from './StartupError';
-import { ThemeProvider } from './theme/ThemeProvider';
+import { createI18n } from '@/i18n';
+import { StartupError } from '@/ui/StartupError';
+import { ThemeProvider } from '@/ui/theme/ThemeProvider';
+import { withAppStyles } from '@tests/nativewind';
 
 withAppStyles();
 
