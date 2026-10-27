@@ -1,4 +1,4 @@
-import { processColor } from 'react-native';
+import { processColor, View } from 'react-native';
 import { fireEvent, screen } from 'react-native-css-interop/test';
 
 import { colorSets } from '@/domain/theme/colorSets';
@@ -42,6 +42,24 @@ describe.each(testSets)('feedback in %s', (set) => {
     await fireEvent.press(screen.getByRole('button', { name: 'Fechar' }));
     expect(onClose).toHaveBeenCalled();
     expect(pressableProblems()).toEqual([]);
+  });
+
+  it('AC-002-11: BottomSheet placed deep in a screen still covers the whole screen', async () => {
+    const onClose = jest.fn();
+    await renderComponent(
+      <View>
+        <View testID="row">
+          <BottomSheet title="Valor exato" onClose={onClose} />
+        </View>
+      </View>,
+      { set },
+    );
+    // A Modal escapes its parent's box; Android back asks it to close.
+    let modal = screen.getByTestId('sheet').parent;
+    while (modal && !('onRequestClose' in modal.props)) modal = modal.parent;
+    expect(modal?.props.transparent).toBe(true);
+    modal?.props.onRequestClose();
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('AC-002-11: BottomSheet closed renders nothing', async () => {
