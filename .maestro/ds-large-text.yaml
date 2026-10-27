@@ -1,5 +1,5 @@
 # AC-002-16: every component with Large text at 360 dp, in light and dark.
-# Needs a build with the gallery: EXPO_PUBLIC_DEV_GALLERY=1 (or a dev build).
+# Needs a build with the component gallery (a debug build). Ids come from Compose testTags exposed as resource ids (spec 001/002 re-plan).
 appId: com.vmleroy.tutora
 ---
 - launchApp:

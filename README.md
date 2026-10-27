@@ -2,11 +2,11 @@
 
 A classroom in a phone: an offline-first app that shows a teacher what they teach today, who owes them, and how much they earned this month.
 
-**Status:** design and architecture settled; implementation starts with [spec 001](docs/specs/001-foundation/spec.md).
+**Status:** being rebuilt in native Kotlin, starting again from [spec 001](docs/specs/001-foundation/spec.md). The first version (Expo + React Native, specs 001–005) is archived at the `expo-final` tag.
 
 ## Stack
 
-Expo (React Native, TypeScript strict, Expo Router) · NativeWind (Tailwind) · expo-sqlite + Drizzle · TanStack Query + Zustand · i18next (pt-BR, en) · Jest, React Native Testing Library, fast-check, Maestro. Android first, sideloaded APK.
+Kotlin · Jetpack Compose (Material 3 under the Tutora theme) · Room · Coroutines and Flow · kotlinx-datetime · string resources (pt-BR, en) · JUnit, kotest-property, Robolectric, Roborazzi, Maestro. Android first, sideloaded APK; iOS much later through Kotlin Multiplatform.
 
 ## What is in this repo
 
@@ -17,8 +17,8 @@ Expo (React Native, TypeScript strict, Expo Router) · NativeWind (Tailwind) · 
 | [`docs/product.md`](docs/product.md)           | Product documentation v1                                                                        |
 | [`docs/architecture.md`](docs/architecture.md) | Architecture and technology v1                                                                  |
 | [`docs/mockups/`](docs/mockups/)               | The 27 screen mockups                                                                           |
-| [`docs/design-system/`](docs/design-system/)   | Design system usage rules, Tailwind and theming notes, and a guideline with props per component |
-| [`src/ui/`](src/ui/)                           | The design system in code: tokens (`theme/tokens/tokens.json`), theme and the shared components        |
+| [`docs/design-system/`](docs/design-system/)   | Design system usage rules, theming notes, and a guideline per component |
+| [`design/tokens.json`](design/tokens.json)     | The design tokens: colors for 4 themes × light/dark, type, spacing, radius |
 | [`.claude/commands/`](.claude/commands/)       | `/spec`, `/plan`, `/implement`, `/verify`                                                       |
 
 ## Working with Claude Code
