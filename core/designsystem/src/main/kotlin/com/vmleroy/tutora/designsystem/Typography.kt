@@ -1,0 +1,69 @@
+package com.vmleroy.tutora.designsystem
+
+import androidx.compose.material3.Typography
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.vmleroy.tutora.designsystem.tokens.TutoraTokens
+import com.vmleroy.tutora.designsystem.tokens.TypeToken
+
+private fun nunito(weight: Int) =
+    Font(
+        R.font.nunito,
+        weight = FontWeight(weight),
+        variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
+    )
+
+/** Nunito 400–800 from the variable font (AC-001-11). */
+val Nunito = FontFamily(nunito(400), nunito(600), nunito(700), nunito(800))
+
+private fun style(
+    t: TypeToken,
+    tabular: Boolean = false,
+) = TextStyle(
+    fontFamily = Nunito,
+    fontWeight = FontWeight(t.weight),
+    fontSize = t.size.sp,
+    lineHeight = t.lineHeight.sp,
+    letterSpacing = t.letterSpacing.sp,
+    // Money uses tabular figures so digits do not jitter (AC-001-11).
+    fontFeatureSettings = if (tabular) "tnum" else null,
+)
+
+/** The type styles of the tokens, by name. */
+object TutoraTypography {
+    val moneyDisplay = style(TutoraTokens.Type.moneyDisplay, tabular = true)
+    val moneyXl = style(TutoraTokens.Type.moneyXl, tabular = true)
+    val moneyLg = style(TutoraTokens.Type.moneyLg, tabular = true)
+    val moneyMd = style(TutoraTokens.Type.moneyMd, tabular = true)
+    val titleXl = style(TutoraTokens.Type.titleXl)
+    val titleLg = style(TutoraTokens.Type.titleLg)
+    val titleMd = style(TutoraTokens.Type.titleMd)
+    val section = style(TutoraTokens.Type.section)
+    val bodyStrong = style(TutoraTokens.Type.bodyStrong)
+    val body = style(TutoraTokens.Type.body)
+    val rowTitle = style(TutoraTokens.Type.rowTitle)
+    val caption = style(TutoraTokens.Type.caption)
+    val meta = style(TutoraTokens.Type.meta)
+    val button = style(TutoraTokens.Type.button)
+    val fieldLabel = style(TutoraTokens.Type.fieldLabel)
+    val badge = style(TutoraTokens.Type.badge)
+    val tab = style(TutoraTokens.Type.tab)
+
+    /** Material components get the same faces. */
+    val material =
+        Typography(
+            headlineSmall = titleXl,
+            titleLarge = titleLg,
+            titleMedium = titleMd,
+            bodyLarge = body,
+            bodyMedium = body,
+            bodySmall = caption,
+            labelLarge = button,
+            labelMedium = tab,
+            labelSmall = meta,
+        )
+}
