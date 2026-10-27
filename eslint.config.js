@@ -6,15 +6,7 @@ module.exports = defineConfig([
   expoConfig,
   prettierRecommended,
   {
-    ignores: [
-      'node_modules/',
-      '.expo/',
-      'android/',
-      'ios/',
-      'dist/',
-      'coverage/',
-      'expo-env.d.ts',
-    ],
+    ignores: ['node_modules/', '.expo/', 'android/', 'ios/', 'dist/', 'coverage/', 'expo-env.d.ts'],
   },
   {
     // Constitution rule 7: the domain core is pure. tests/boundaries.test.ts checks the same list.

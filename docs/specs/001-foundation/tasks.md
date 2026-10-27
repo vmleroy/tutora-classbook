@@ -16,3 +16,9 @@ Each task lists the criteria it proves and where the test lives.
 - [x] 12. Release keystore, `docs/release.md`, build and install-over-update check on a real phone. Manual check recorded in the PR. (AC-001-20)
 
 Screen tests live in `tests/app/`, not beside the routes: Expo Router turns every file under `src/app` into a route.
+
+## Criteria proven outside Jest
+
+- **AC-001-2, AC-001-21 (device):** `.maestro/shell.yaml` taps through the five tabs and the gear on an Android emulator, and requires each tab's screen within 300 ms. It passed on a 360 dp emulator (API 36) with a release build on 26 Oct 2026. Timing on the reference phone is still to check before release (constitution rule 18).
+- **AC-001-19 (CI):** `npm run typecheck` and `npm run lint` run in `.github/workflows/ci.yml` on every PR.
+- **AC-001-20 (manual):** a release APK built with `npm run release:android` installed over the previous build (`adb install -r`, versionCode 1 → 2, same key) and kept the database. Checked on the emulator with a throwaway key on 26 Oct 2026; repeat with the real key on the phone (`docs/release.md`).
