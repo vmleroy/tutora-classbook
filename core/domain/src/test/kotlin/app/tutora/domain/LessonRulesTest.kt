@@ -65,7 +65,7 @@ class LessonRulesTest {
     }
 
     @Test
-    fun `AC-006-16 Previsto counts scheduled and done classes and kept fees, not a cancellation without a fee`() {
+    fun `AC-006-16 Previsto counts scheduled and done classes and charges, not a cancellation without a charge`() {
         val day =
             listOf(
                 lesson(),
@@ -78,51 +78,21 @@ class LessonRulesTest {
     }
 
     @Test
-    fun `AC-006-19 a teacher who never set the rule is never charged a fee, and turning a part on starts at 24h, 50 and 100 percent`() {
-        val rule = Settings(Language.PT_BR).feeRule
-        assertEquals(FeeSuggestion.RuleOff, suggestFee(rule, LessonStatus.CANCELLED, 12_000, start, start))
-        assertEquals(FeeSuggestion.RuleOff, suggestFee(rule, LessonStatus.MISSED, 12_000, start, null))
-        assertEquals(24, rule.windowH)
-        assertEquals(FeeAmount.Percent(5_000), rule.late)
-        assertEquals(FeeAmount.Percent(10_000), rule.miss)
+    fun `AC-006-19 a percentage charge is that share of the value without travel, rounded once, and another amount is itself`() {
+        assertEquals(6_001L, chargeCents(Charge.Percent(5_000), 12_001))
+        assertEquals(6_000L, chargeCents(Charge.Percent(5_000), lesson(home).valueWithoutTravel()))
+        assertEquals(3_000L, chargeCents(Charge.Amount(3_000), 12_000))
     }
 
     @Test
-    fun `AC-006-21 a class follows the student's rule, then the place's, then the default`() {
-        val default = FeeRule(lateOn = true)
-        val own = FeeRule(missOn = true)
-        assertEquals(own, ruleFor(FeeChoice.Own(own), FeeChoice.Never, default))
-        assertNull(ruleFor(FeeChoice.Never, FeeChoice.Own(own), default))
-        assertEquals(own, ruleFor(FeeChoice.Default, FeeChoice.Own(own), default))
-        assertEquals(default, ruleFor(FeeChoice.Default, FeeChoice.Default, default))
-        // A group has no choice of its own.
-        assertNull(ruleFor(null, FeeChoice.Never, default))
+    fun `AC-006-20 a class the teacher cancels is never chargeable`() {
+        assertEquals(listOf(CancelReason.STUDENT, CancelReason.NO_SHOW), CancelReason.entries.filter { it.chargeable })
+        assertEquals(LessonStatus.MISSED, CancelReason.NO_SHOW.status)
     }
 
     @Test
-    fun `AC-006-24 a percentage is taken from the value without travel and rounded once, a fixed fee is the rule's amount`() {
-        val rule = FeeRule(lateOn = true, missOn = true, late = FeeAmount.Percent(5_000), miss = FeeAmount.Fixed(3_000))
-        val notice = "2026-10-26T14:00:00.000Z" // 3h before
-        assertEquals(
-            FeeSuggestion.Charge(6_001, FeeAmount.Percent(5_000), 24),
-            suggestFee(rule, LessonStatus.CANCELLED, 12_001, start, notice),
-        )
-        assertEquals(FeeSuggestion.Charge(3_000, FeeAmount.Fixed(3_000), null), suggestFee(rule, LessonStatus.MISSED, 12_000, start, null))
-        assertEquals(6_000L, lesson(home, status = LessonStatus.SCHEDULED).valueWithoutTravel()?.let { feeCents(rule.late, it) })
-    }
-
-    @Test
-    fun `AC-006-25 enough notice or a rule that does not charge suggests no fee`() {
-        val rule = FeeRule(lateOn = true, windowH = 24)
-        val dayBefore = "2026-10-25T16:00:00.000Z" // 25h before
-        assertEquals(FeeSuggestion.EnoughNotice, suggestFee(rule, LessonStatus.CANCELLED, 12_000, start, dayBefore))
-        assertEquals(FeeSuggestion.RuleOff, suggestFee(rule, LessonStatus.MISSED, 12_000, start, null))
-        assertEquals(FeeSuggestion.RuleOff, suggestFee(null, LessonStatus.CANCELLED, 12_000, start, start))
-    }
-
-    @Test
-    fun `AC-006-26 a class without a price and a percentage rule suggests no fee`() {
-        val rule = FeeRule(missOn = true)
-        assertEquals(FeeSuggestion.NoPrice, suggestFee(rule, LessonStatus.MISSED, null, start, null))
+    fun `AC-006-21 a class without a price has no percentage charge, only another amount`() {
+        assertNull(chargeCents(Charge.Percent(10_000), null))
+        assertEquals(2_500L, chargeCents(Charge.Amount(2_500), null))
     }
 }

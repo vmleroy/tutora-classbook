@@ -30,7 +30,6 @@ import app.tutora.ui.catalog.RegistryScreen
 import app.tutora.ui.catalog.StudentDetailScreen
 import app.tutora.ui.catalog.StudentEditScreen
 import app.tutora.ui.schedule.AgendaScreen
-import app.tutora.ui.schedule.FeeRulesScreen
 import app.tutora.ui.schedule.LessonDetailScreen
 import app.tutora.ui.schedule.LessonEditScreen
 import app.tutora.ui.schedule.LessonNewScreen
@@ -97,8 +96,6 @@ import kotlin.reflect.KClass
     val id: String,
 )
 
-@Serializable data object FeeRules
-
 /** The five tabs, always in this order (AC-001-1, AC-005-27). */
 enum class Tab(
     val key: String,
@@ -158,7 +155,7 @@ fun TutoraNav(
                 composable<EarningsHome> { EarningsScreen() }
             }
             navigation<SettingsGraph>(startDestination = SettingsHome) {
-                composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { nav.navigate(FeeRules) } }
+                composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) }
             }
             composable<PlaceDetail> { PlaceDetailScreen(nav, it.toRoute<PlaceDetail>().id) }
             composable<PlaceEdit> { PlaceEditScreen(nav, it.toRoute<PlaceEdit>().id) }
@@ -172,7 +169,6 @@ fun TutoraNav(
             composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
             composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
             composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
-            composable<FeeRules> { FeeRulesScreen(nav) }
         }
     }
 }

@@ -32,10 +32,11 @@ data class Lesson(
     val status: LessonStatus = LessonStatus.SCHEDULED,
     /** The price frozen when the class was marked done; null while it follows the price. */
     val frozenRate: Price.Set? = null,
-    /** A kept cancellation or no-show fee. */
+    /** What a cancelled or missed class charges. */
     val feeCents: Cents? = null,
-    val feeWaived: Boolean = false,
-    val noticeAt: String? = null,
+    val cancelReason: CancelReason? = null,
+    /** "Motivo", written in the cancel sheet. */
+    val cancelNote: String? = null,
 )
 
 /** The travel fee a class adds: only at Casa do Aluno. */
@@ -110,14 +111,14 @@ fun Lesson.worth(): Worth {
     return Worth.Set(base + travel, if (valueCents != null) PriceSource.HAND else frozenRate?.source ?: PriceSource.HAND)
 }
 
-/** The class's value without travel, which a percentage fee is taken from (AC-006-24). */
+/** The class's value without travel, which a percentage charge is taken from (AC-006-19). */
 fun Lesson.valueWithoutTravel(): Cents? {
     val w = worth() as? Worth.Set ?: return null
     val travel = if (status == LessonStatus.DONE) travelFeeCents ?: 0 else travelFor(place, travelFeeCents)
     return w.cents - travel
 }
 
-/** What Previsto adds for a class: its worth while scheduled or done, a kept fee otherwise (AC-006-16). */
+/** What Previsto adds for a class: its worth while scheduled or done, its charge otherwise (AC-006-16). */
 fun Lesson.counted(): Worth? =
     when (status) {
         LessonStatus.SCHEDULED, LessonStatus.DONE -> worth()

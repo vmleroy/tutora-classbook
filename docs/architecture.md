@@ -103,7 +103,7 @@ The data model and its rules carry over from the first version: the product doc'
 
 Lessons learned in the first version, kept:
 
-- A scheduled `lesson` stores no price. Its value is resolved on every read from the current prices, so price changes reach every class still on the schedule; only a value the teacher typed is kept. Marked done (spec 006), a class freezes the price it had in `rate_cents` / `rate_type`, and its travel, so its value no longer follows price changes but still recomputes when its duration is edited. Its real duration overwrites `planned_min`. A cancelled or missed class stores a kept fee in `fee_cents`, or `fee_waived`, with `notice_at`.
+- A scheduled `lesson` stores no price. Its value is resolved on every read from the current prices, so price changes reach every class still on the schedule; only a value the teacher typed is kept. Marked done (spec 006), a class freezes the price it had in `rate_cents` / `rate_type`, and its travel, so its value no longer follows price changes but still recomputes when its duration is edited. Its real duration overwrites `planned_min`. A cancelled or missed class stores what happened in `cancel_reason` (student, no_show, teacher), the teacher's note in `cancel_note` and its charge in `fee_cents`, worked out once in the cancel sheet.
 - `schedule_rule` keeps local `starts_on` / `ends_on`, `start_time`, `time_zone` and `generated_until`. `rule_skip` remembers dates removed with "Só esta aula". A unique `(rule_id, occurrence_date)` index makes filling idempotent. Filling runs at start-up and when the app returns to the foreground.
 
 Balances stay computed: a `v_balance` view sums earned, travel and kept fees per payer, minus payments.

@@ -82,7 +82,6 @@ import app.tutora.ui.errorText
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateText
-import app.tutora.ui.schedule.FeeChoiceField
 import app.tutora.ui.tag
 import app.tutora.usecases.Kind
 import app.tutora.usecases.Result
@@ -341,7 +340,6 @@ private fun StudentForm(
             FieldError(errorText(CatalogError.PLACE_REQUIRED), key = tries)
         }
         Button(stringResource(R.string.students_linkPlace), { picking = true }, variant = ButtonVariant.OUTLINE)
-        FeeChoiceField(d.feeChoice) { d = d.copy(feeChoice = it) }
         Field(stringResource(R.string.students_color)) { ColorPicker(d.color) { d = d.copy(color = it) } }
         TextField(stringResource(R.string.students_notes), d.notes.orEmpty(), {
             d = d.copy(notes = it.ifEmpty { null })

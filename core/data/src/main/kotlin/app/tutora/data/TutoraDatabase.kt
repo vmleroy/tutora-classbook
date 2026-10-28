@@ -64,7 +64,7 @@ abstract class TutoraDatabase : RoomDatabase() {
     }
 }
 
-/** Spec 006: a done class freezes its price, cancellations keep a fee, and fee rules per student and place. */
+/** Spec 006: a done class freezes its price; a cancelled or missed one keeps what happened, why and its charge. */
 val MIGRATION_1_2 =
     object : Migration(1, 2) {
         override fun migrate(connection: SQLiteConnection) {
@@ -72,10 +72,8 @@ val MIGRATION_1_2 =
                 "ALTER TABLE lesson ADD COLUMN rate_cents INTEGER",
                 "ALTER TABLE lesson ADD COLUMN rate_type TEXT",
                 "ALTER TABLE lesson ADD COLUMN fee_cents INTEGER",
-                "ALTER TABLE lesson ADD COLUMN fee_waived INTEGER NOT NULL DEFAULT 0",
-                "ALTER TABLE lesson ADD COLUMN notice_at TEXT",
-                "ALTER TABLE student ADD COLUMN fee_rule TEXT",
-                "ALTER TABLE place ADD COLUMN fee_rule TEXT",
+                "ALTER TABLE lesson ADD COLUMN cancel_reason TEXT",
+                "ALTER TABLE lesson ADD COLUMN cancel_note TEXT",
             ).forEach { connection.execSQL(it) }
         }
     }

@@ -10,13 +10,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
-import app.tutora.domain.FeeChoice
-import app.tutora.domain.FeeRule
-import app.tutora.domain.Language
+import app.tutora.domain.CancelReason
+import app.tutora.domain.Charge
 import app.tutora.domain.LessonStatus
 import app.tutora.domain.PlaceLink
 import app.tutora.domain.RateType
-import app.tutora.domain.Settings
 import app.tutora.domain.Student
 import app.tutora.domain.TagColor
 import app.tutora.ui.LessonDetail
@@ -24,12 +22,10 @@ import app.tutora.ui.LessonEdit
 import app.tutora.ui.LessonNew
 import app.tutora.ui.SettingsGraph
 import app.tutora.ui.StudentEdit
-import app.tutora.usecases.LessonChange
+import app.tutora.usecases.Cancellation
 import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.Result
 import app.tutora.usecases.ScheduleResult
-import app.tutora.usecases.Scope
-import app.tutora.usecases.StatusChange
 import app.tutora.usecases.WhoId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -77,10 +73,11 @@ class LessonScreensTest {
             (r as ScheduleResult.Ok).lessonId ?: ""
         }
 
-    private fun status(
+    private fun cancel(
         id: String,
-        change: StatusChange,
-    ) = runBlocking { h.t.schedule.editLesson(id, LessonChange(status = change), Scope.ONE) }
+        reason: CancelReason,
+        charge: Charge? = null,
+    ) = runBlocking { h.t.lessons.cancel(id, Cancellation(reason, "viagem", charge)) }
 
     private suspend fun stored(id: String) =
         h.services.scheduleRepo
@@ -137,111 +134,95 @@ class LessonScreensTest {
     }
 
     @Test
-    fun `AC-006-9 Situacao offers the four statuses with a line on what each means`() {
-        val id = lesson(LocalTime(8, 0))
+    fun `AC-006-9 a scheduled class has Cancelar aula, Marcar como dada once started, and the edit form no status`() {
+        val ahead = lesson(LocalTime(14, 0))
+        val started = lesson(LocalTime(8, 0))
         h.show(compose)
-        h.go(compose, LessonEdit(id))
-        listOf("Agendada", "Dada", "Cancelada", "Faltou").forEach { exists(it) }
-        exists("Conta no previsto da semana.")
-        compose.onNodeWithText("Dada").performClick()
-        h.settle(compose)
-        exists("Entra no ganho e no saldo do aluno.")
+        h.go(compose, LessonDetail(ahead))
+        exists("Cancelar aula")
+        compose.onNode(hasPlainText("Marcar como dada"), useUnmergedTree = true).assertDoesNotExist()
+        compose.runOnIdle { h.nav.popBackStack() }
+        h.go(compose, LessonDetail(started))
+        exists("Cancelar aula")
+        exists("Marcar como dada")
+        compose.runOnIdle { h.nav.popBackStack() }
+        h.go(compose, LessonEdit(started))
+        compose.onNode(hasPlainText("Cancelada"), useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
-    fun `AC-006-14 the detail shows the status, a kept fee, and who pays`() {
+    fun `AC-006-14 the detail shows the status with its charge and reason, and who pays`() {
         val ahead = lesson(LocalTime(14, 0))
-        val missed = lesson(LocalTime(8, 0))
-        runBlocking { h.services.saveSettings(missRule()) }
-        status(missed, StatusChange(LessonStatus.MISSED))
+        val cancelled = lesson(LocalTime(8, 0))
+        cancel(cancelled, CancelReason.STUDENT, Charge.Percent(5_000))
         h.show(compose)
         h.go(compose, LessonDetail(ahead))
         exists("Agendada · em 5h")
         exists("Quem paga")
         exists("O aluno")
         compose.runOnIdle { h.nav.popBackStack() }
-        h.go(compose, LessonDetail(missed))
-        exists("Faltou · taxa R$ 120,00")
+        h.go(compose, LessonDetail(cancelled))
+        exists("Cancelada pelo aluno · cobra R$ 60,00")
+        exists("viagem")
+        exists("Desfazer")
     }
 
     @Test
     fun `AC-006-15 Hoje marks a done class and a missed one`() {
         val done = lesson(LocalTime(7, 0))
         val missed = lesson(LocalTime(8, 0))
-        status(done, StatusChange(LessonStatus.DONE))
-        status(missed, StatusChange(LessonStatus.MISSED))
+        runBlocking { h.t.lessons.markDone(done, 60) }
+        cancel(missed, CancelReason.NO_SHOW)
         h.show(compose)
         exists("Dada")
         exists("Faltou")
     }
 
     @Test
-    fun `AC-006-18 Ajustes opens the cancellation rule with its example, and Salvar regra saves it`() {
-        h.show(compose)
-        h.go(compose, SettingsGraph)
-        compose.onNode(hasContentDescription("Cancelamentos e faltas", substring = true)).performClick()
-        h.settle(compose)
-        exists("Cancelou em cima da hora")
-        exists("Faltou sem avisar")
-        exists("Cancelou às 11:00 (3h antes): sem taxa")
-        compose.onNodeWithContentDescription("Cancelou em cima da hora").performClick()
-        h.settle(compose)
-        listOf("2h", "12h", "24h", "48h", "50%", "100%", "Valor fixo").forEach { exists(it) }
-        exists("Cancelou às 11:00 (3h antes): taxa de R$ 60,00")
-        compose.onNodeWithText("Salvar regra").performClick()
-        h.awaitDb(compose) {
-            h.services
-                .currentSettings()
-                .feeRule.lateOn
-        }
-    }
-
-    @Test
-    fun `AC-006-20 a student follows Padrao, has its own rule or is never charged`() {
-        h.show(compose)
-        h.go(compose, StudentEdit(ana))
-        exists("Padrão")
-        exists("Própria")
-        exists("Não cobra cancelamentos nem faltas")
-        compose.onNodeWithText("Não cobrar").performClick()
-        h.settle(compose)
-        exists("Nunca cobra cancelamentos nem faltas")
-        compose.onNodeWithText("Salvar").performClick()
-        h.awaitDb(compose) {
-            h.services.catalogRepo
-                .student(ana)
-                .first()
-                ?.student
-                ?.feeChoice == FeeChoice.Never
-        }
-    }
-
-    @Test
-    fun `AC-006-23 Faltou shows Cobrar a falta with the fee and why, and off it reads Dispensado`() {
-        runBlocking { h.services.saveSettings(missRule()) }
+    fun `AC-006-18 Cancelar aula opens a sheet with what happened, the reason and the charge toggle, and Voltar changes nothing`() {
         val id = lesson(LocalTime(8, 0))
         h.show(compose)
-        h.go(compose, LessonEdit(id))
-        compose.onNodeWithText("Faltou").performClick()
+        h.go(compose, LessonDetail(id))
+        compose.onNodeWithText("Cancelar aula").performClick()
         h.settle(compose)
-        exists("Cobrar a falta")
-        exists("R$ 120,00 · 100%")
-        compose.onNodeWithContentDescription("Cobrar a falta").performClick()
+        listOf(
+            "O que aconteceu?",
+            "Aluno cancelou",
+            "Aluno faltou",
+            "Eu cancelei",
+            "Motivo (opcional)",
+            "Cobrar esta aula?",
+            "Voltar",
+        ).forEach {
+            exists(it)
+        }
+        compose.onNodeWithContentDescription("Cobrar esta aula?").performClick()
         h.settle(compose)
-        exists("Dispensado desta vez: não cobra nada")
+        listOf("50%", "100%", "Outro valor", "Cancelar aula · cobrar R$ 60,00").forEach { exists(it) }
+        compose.onNodeWithText("Eu cancelei").performClick()
+        h.settle(compose)
+        compose.onNode(hasPlainText("Cobrar esta aula?"), useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithText("Voltar").performClick()
+        h.settle(compose)
+        assertEquals(LessonStatus.SCHEDULED, runBlocking { stored(id)?.status })
+    }
+
+    @Test
+    fun `AC-006-23 Ajustes and the student form have no cancellation rule`() {
+        h.show(compose)
+        h.go(compose, SettingsGraph)
+        compose.onNode(hasPlainText("Cancelamentos e faltas"), useUnmergedTree = true).assertDoesNotExist()
+        h.go(compose, StudentEdit(ana))
+        compose.onNode(hasPlainText("Não cobrar"), useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
     @Config(qualifiers = "en-w411dp-h2400dp")
-    fun `AC-006-28 statuses and fees follow the language and keep their amounts`() {
-        runBlocking { h.services.saveSettings(missRule().copy(language = Language.EN)) }
+    fun `AC-006-24 statuses and charges follow the language and keep their amounts`() {
         val id = lesson(LocalTime(8, 0))
-        status(id, StatusChange(LessonStatus.MISSED))
+        cancel(id, CancelReason.NO_SHOW, Charge.Percent(10_000))
         h.show(compose)
         h.go(compose, LessonDetail(id))
-        exists("No-show · fee R$120.00")
+        exists("No-show · charges R$120.00")
     }
-
-    /** Settings whose rule charges no-shows 100%. */
-    private fun missRule() = Settings(Language.PT_BR, feeRule = FeeRule(missOn = true))
 }

@@ -2,11 +2,9 @@ package app.tutora
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.data.ScheduleRepository
-import app.tutora.data.SettingsRepository
 import app.tutora.domain.BuiltinPlace
-import app.tutora.domain.FeeAmount
-import app.tutora.domain.FeeRule
-import app.tutora.domain.Language
+import app.tutora.domain.CancelReason
+import app.tutora.domain.Charge
 import app.tutora.domain.Lesson
 import app.tutora.domain.LessonStatus
 import app.tutora.domain.PlaceKind
@@ -14,20 +12,17 @@ import app.tutora.domain.PlaceLink
 import app.tutora.domain.PriceSource
 import app.tutora.domain.RateType
 import app.tutora.domain.Repeat
-import app.tutora.domain.Settings
 import app.tutora.domain.Student
 import app.tutora.domain.TagColor
 import app.tutora.domain.Worth
 import app.tutora.domain.builtinPlace
 import app.tutora.domain.localOf
 import app.tutora.domain.worth
-import app.tutora.usecases.LessonChange
+import app.tutora.usecases.Cancellation
 import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.Result
 import app.tutora.usecases.ScheduleError
 import app.tutora.usecases.ScheduleResult
-import app.tutora.usecases.Scope
-import app.tutora.usecases.StatusChange
 import app.tutora.usecases.WhoId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -81,14 +76,11 @@ class LessonsTest {
 
     private suspend fun schedule(d: LessonDraft = draft()): String? = (t.schedule.scheduleLesson(d) as ScheduleResult.Ok).lessonId
 
-    private suspend fun setRule(rule: FeeRule) = SettingsRepository(t.db).save(Settings(Language.PT_BR, feeRule = rule), t.now)
-
-    private suspend fun status(
+    private suspend fun cancel(
         id: String?,
-        change: StatusChange,
-        scope: Scope = Scope.ONE,
-        other: LessonChange = LessonChange(),
-    ) = t.schedule.editLesson(id ?: "", other.copy(status = change), scope)
+        reason: CancelReason = CancelReason.STUDENT,
+        charge: Charge? = null,
+    ) = t.lessons.cancel(id ?: "", Cancellation(reason, "viagem", charge))
 
     @Test
     fun `AC-006-4 marking a series class done changes only it, and filling never overwrites it`() =
@@ -129,40 +121,40 @@ class LessonsTest {
         }
 
     @Test
-    fun `AC-006-10 a status change stays on its class even with Esta e as proximas`() =
+    fun `AC-006-10 cancelling a series class changes only it, and filling never brings it back`() =
         runTest {
             val first = schedule(draft(date = "2026-10-27", time = LocalTime(14, 0), repeat = Repeat.WEEKLY))
-            val r =
-                status(
-                    first,
-                    StatusChange(LessonStatus.CANCELLED),
-                    Scope.FOLLOWING,
-                    LessonChange(time = LocalTime(15, 0)),
-                ) as ScheduleResult.Ok
-            val lessons = all()
-            assertEquals(LessonStatus.CANCELLED, one(r.lessonId).status)
-            assertTrue(lessons.filter { it.id != r.lessonId }.all { it.status == LessonStatus.SCHEDULED })
-            assertTrue(lessons.all { localOf(it.startAt, zone).time == LocalTime(15, 0) })
+            cancel(first)
+            t.now = "2026-11-02T12:00:00.000Z"
+            t.schedule.fillSchedule()
+            assertEquals(LessonStatus.CANCELLED, one(first).status)
+            assertTrue(all().filter { it.id != first }.all { it.status == LessonStatus.SCHEDULED })
         }
 
     @Test
-    fun `AC-006-11 Dada and Faltou wait for the start, Cancelada does not`() =
+    fun `AC-006-11 Aluno faltou and Marcar como dada wait for the start, cancelling does not`() =
         runTest {
             val ahead = schedule(draft(time = LocalTime(14, 0)))
-            assertEquals(ScheduleResult.Err(ScheduleError.NOT_STARTED), status(ahead, StatusChange(LessonStatus.DONE)))
-            assertEquals(ScheduleResult.Err(ScheduleError.NOT_STARTED), status(ahead, StatusChange(LessonStatus.MISSED)))
-            assertEquals(ScheduleResult.Ok(ahead), status(ahead, StatusChange(LessonStatus.CANCELLED)))
+            assertEquals(ScheduleResult.Err(ScheduleError.NOT_STARTED), cancel(ahead, CancelReason.NO_SHOW))
+            assertEquals(ScheduleResult.Err(ScheduleError.NOT_STARTED), t.lessons.markDone(ahead ?: "", 60))
+            assertEquals(ScheduleResult.Ok(ahead), cancel(ahead, CancelReason.TEACHER))
         }
 
     @Test
-    fun `AC-006-13 back to Agendada the value follows the current price again`() =
+    fun `AC-006-13 Desfazer puts a class back to Agendada, following the current price, with no reason or charge`() =
         runTest {
-            val id = schedule(draft(place = home))
-            status(id, StatusChange(LessonStatus.DONE))
+            val done = schedule(draft(place = home))
+            val cancelled = schedule(draft(place = home, time = LocalTime(7, 0)))
+            t.lessons.markDone(done ?: "", 60)
+            cancel(cancelled, charge = Charge.Percent(10_000))
             t.catalog.savePlace(builtinPlace(BuiltinPlace.STUDENT_HOME).copy(rateCents = 20_000))
-            assertEquals(10_000L, (one(id).worth() as Worth.Set).cents)
-            status(id, StatusChange(LessonStatus.SCHEDULED))
-            assertEquals(Worth.Set(20_000, PriceSource.PLACE), one(id).worth())
+            assertEquals(10_000L, (one(done).worth() as Worth.Set).cents)
+            t.lessons.undo(done ?: "")
+            t.lessons.undo(cancelled ?: "")
+            assertEquals(Worth.Set(20_000, PriceSource.PLACE), one(done).worth())
+            assertEquals(LessonStatus.SCHEDULED, one(cancelled).status)
+            assertEquals(null, one(cancelled).feeCents)
+            assertEquals(null, one(cancelled).cancelReason)
         }
 
     @Test
@@ -170,44 +162,27 @@ class LessonsTest {
         runTest {
             val a = schedule(draft(time = LocalTime(14, 0)))
             val b = schedule(draft(time = LocalTime(16, 0)))
-            status(a, StatusChange(LessonStatus.CANCELLED))
+            cancel(a)
             assertEquals(b, ScheduleRepository(t.db).firstAfter(t.now).first()?.id)
         }
 
     @Test
-    fun `AC-006-22 a cancellation is late when notice came less than the window before the start`() =
+    fun `AC-006-22 confirming saves the status, the reason and the charge, which stays when the price changes`() =
         runTest {
-            setRule(FeeRule(lateOn = true, windowH = 24, late = FeeAmount.Percent(5_000)))
-            val late = schedule(draft(date = "2026-10-27", time = LocalTime(14, 0)))
-            val early = schedule(draft(date = "2026-10-28", time = LocalTime(14, 0)))
-            status(late, StatusChange(LessonStatus.CANCELLED, noticeAt = "2026-10-27T14:00:00.000Z"))
-            status(early, StatusChange(LessonStatus.CANCELLED, noticeAt = "2026-10-26T12:00:00.000Z"))
-            assertEquals(6_000L, one(late).feeCents)
-            assertEquals(null, one(early).feeCents)
-        }
-
-    @Test
-    fun `AC-006-23 the fee is kept, or turned off and waived`() =
-        runTest {
-            setRule(FeeRule(missOn = true))
-            val kept = schedule()
-            val waived = schedule(draft(time = LocalTime(7, 0)))
-            status(kept, StatusChange(LessonStatus.MISSED))
-            status(waived, StatusChange(LessonStatus.MISSED, keepFee = false))
-            assertEquals(12_000L, one(kept).feeCents)
-            assertEquals(null, one(waived).feeCents)
-            assertTrue(one(waived).feeWaived)
-        }
-
-    @Test
-    fun `AC-006-27 a kept fee stays when the rule or the price changes later`() =
-        runTest {
-            setRule(FeeRule(missOn = true, miss = FeeAmount.Percent(5_000)))
-            val id = schedule()
-            status(id, StatusChange(LessonStatus.MISSED))
-            setRule(FeeRule(missOn = true))
+            val half = schedule()
+            val missed = schedule(draft(time = LocalTime(7, 0)))
+            val mine = schedule(draft(time = LocalTime(6, 0)))
+            cancel(half, charge = Charge.Percent(5_000))
+            cancel(missed, CancelReason.NO_SHOW, Charge.Amount(4_000))
+            cancel(mine, CancelReason.TEACHER, Charge.Percent(10_000))
             t.catalog.saveStudent(ana, listOf(PlaceLink(online, true, 30_000)))
-            t.schedule.editLesson(id ?: "", LessonChange(notes = "avisou depois"), Scope.ONE)
-            assertEquals(6_000L, one(id).feeCents)
+            assertEquals(LessonStatus.CANCELLED, one(half).status)
+            assertEquals(CancelReason.STUDENT, one(half).cancelReason)
+            assertEquals("viagem", one(half).cancelNote)
+            assertEquals(6_000L, one(half).feeCents)
+            assertEquals(LessonStatus.MISSED, one(missed).status)
+            assertEquals(4_000L, one(missed).feeCents)
+            // "Eu cancelei" is never charged (AC-006-20).
+            assertEquals(null, one(mine).feeCents)
         }
 }

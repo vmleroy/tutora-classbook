@@ -28,8 +28,6 @@ data class PlaceRow(
     @ColumnInfo(name = "archived_at") val archivedAt: String?,
     @ColumnInfo(name = "created_at") val createdAt: String,
     @ColumnInfo(name = "updated_at") val updatedAt: String,
-    /** Cancelamentos e faltas: null = Padrão, "never", or the rule as JSON (spec 006). */
-    @ColumnInfo(name = "fee_rule") val feeRule: String? = null,
 )
 
 @Entity(tableName = "student")
@@ -44,7 +42,6 @@ data class StudentRow(
     @ColumnInfo(name = "archived_at") val archivedAt: String?,
     @ColumnInfo(name = "created_at") val createdAt: String,
     @ColumnInfo(name = "updated_at") val updatedAt: String,
-    @ColumnInfo(name = "fee_rule") val feeRule: String? = null,
 )
 
 @Entity(
@@ -134,7 +131,8 @@ data class SkipRow(
 
 /**
  * A class. While scheduled it stores no price: its value follows the current price. Marked done,
- * it freezes the price in `rate_cents` / `rate_type` and its travel (spec 006).
+ * it freezes the price in `rate_cents` / `rate_type` and its travel; cancelled or missed, it keeps
+ * what happened, why and its charge (spec 006).
  */
 @Entity(
     tableName = "lesson",
@@ -172,6 +170,6 @@ data class LessonRow(
     @ColumnInfo(name = "rate_cents") val rateCents: Long? = null,
     @ColumnInfo(name = "rate_type") val rateType: String? = null,
     @ColumnInfo(name = "fee_cents") val feeCents: Long? = null,
-    @ColumnInfo(name = "fee_waived", defaultValue = "0") val feeWaived: Boolean = false,
-    @ColumnInfo(name = "notice_at") val noticeAt: String? = null,
+    @ColumnInfo(name = "cancel_reason") val cancelReason: String? = null,
+    @ColumnInfo(name = "cancel_note") val cancelNote: String? = null,
 )

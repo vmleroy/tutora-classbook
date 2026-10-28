@@ -2,18 +2,17 @@
 
 Status: done
 Depends on: 005 Schedule (and 004 for prices and who pays)
-Mockups: docs/mockups/AddLesson.dc.html (Registrar mode), LessonDetail.dc.html (status line, Quem paga, Marcar como dada), EditLesson.dc.html (Situação and the fee switch), Fees.dc.html
+Mockups: docs/mockups/AddLesson.dc.html (Registrar mode), LessonDetail.dc.html (status line, Quem paga, Marcar como dada). EditLesson's Situação and the Fees rule screen were dropped on 27 Oct 2026 (see Open questions).
 
 ## Goal
 
-A class on the schedule can now end the way it really did: given, cancelled or missed. The teacher marks a class as done with its planned minutes or the real ones, logs a lesson that already happened without ever having scheduled it, and changes a class's status in its edit form. When a student cancels late or doesn't show up, Tutora suggests the fee from the teacher's rule and the teacher keeps it or waives it. A class that is done keeps its value from then on, so price changes no longer touch it. This is what payments (008) and earnings (009) will count.
+A class on the schedule can now end the way it really did: given, cancelled or missed. The teacher marks a class as done with its planned minutes or the real ones, logs a lesson that already happened without ever having scheduled it, and cancels a class from its detail, saying what happened (the student cancelled, didn't show up, or the teacher cancelled), why, and whether it is charged. Cancelling is not removing: the class stays on its day. A class that is done keeps its value from then on, so price changes no longer touch it. This is what payments (008) and earnings (009) will count.
 
 ## User stories
 
 - **US-1.** As a teacher, I finish Ana's class and mark it done in two taps, adjusting the minutes when it ran long.
 - **US-2.** As a teacher, I log yesterday's class with Pedro that I never put on the schedule, with its real duration, and see what it was worth as I type.
-- **US-3.** As a teacher, I mark a class as cancelled or missed, and Tutora tells me whether my rule charges a fee and how much, so I can keep it or let it go.
-- **US-4.** As a teacher, I set my cancellation rule once, and change it for the few students or places that are different.
+- **US-3.** As a teacher, I cancel Ana's class when she tells me she can't come, write down why, and decide on the spot whether to charge half, all or some other amount.
 
 ## Acceptance criteria
 
@@ -33,59 +32,55 @@ A class on the schedule can now end the way it really did: given, cancelled or m
 
 ### Status
 
-- **AC-006-9.** The edit form has Situação: Agendada, Dada, Cancelada and Faltou, with a line under it that says what the choice means (for example "Entra no ganho e no saldo da aluna").
-- **AC-006-10.** A status change always applies to that class only, even when "Esta e as próximas" is chosen for the other changes.
-- **AC-006-11.** Dada and Faltou can only be picked for a class whose start time has passed; Cancelada can be picked at any time.
+- **AC-006-9.** The detail of a scheduled class has Cancelar aula at any time, and Marcar como dada once it has started. The edit form has no status: a class is marked done, cancelled or missed only from its detail. *(Changed 27 Oct 2026 at Victor's request: cancelling is not removing, and it asks why.)*
+- **AC-006-10.** Marking done or cancelling changes only that class; filling its series later never brings it back as scheduled.
+- **AC-006-11.** "Aluno faltou" and Marcar como dada are offered only once the class has started; "Aluno cancelou" and "Eu cancelei" at any time.
 - **AC-006-12.** Changing a done class's duration recomputes its value from the price it had when it was marked done; a value typed by hand stays as typed.
-- **AC-006-13.** Moving a class from Dada back to Agendada lets its value follow the current price again (AC-005-16), unless it was typed by hand.
-- **AC-006-14.** The lesson detail shows the status at the top ("Agendada · em 25 min", "Dada", "Cancelada", "Faltou"), with the fee when one is kept ("Cancelada · taxa R$ 60,00"), and who pays (the student or the place).
+- **AC-006-13.** A done, cancelled or missed class shows Desfazer, which puts it back to Agendada: the reason and the charge are cleared, and its value follows the current price again (AC-005-16) unless it was typed by hand.
+- **AC-006-14.** The lesson detail shows the status at the top ("Agendada · em 25 min", "Dada", "Cancelada pelo aluno", "Cancelada por você", "Faltou"), with the charge when there is one ("Cancelada pelo aluno · cobra R$ 60,00"), the reason when one was written, and who pays (the student or the place).
 
 ### On Hoje and Agenda
 
-- **AC-006-15.** A done class shows as done (a check and "Dada"). A cancelled or missed class stays on its day, muted, labelled Cancelada or Faltou, with its fee when one is kept.
-- **AC-006-16.** The day's "Previsto" counts scheduled and done classes at their value plus kept fees. A cancelled or missed class without a fee counts nothing.
+- **AC-006-15.** A done class shows as done (a check and "Dada"). A cancelled or missed class stays on its day, muted, labelled Cancelada or Faltou, with its charge when there is one.
+- **AC-006-16.** The day's "Previsto" counts scheduled and done classes at their value plus charges for cancelled and missed classes. A cancelled or missed class without a charge counts nothing.
 - **AC-006-17.** "Próxima aula" never shows a class that is cancelled, missed or done.
 
-### Cancellation and no-show rule
+### Cancelling a class
 
-- **AC-006-18.** Ajustes › Aulas e cobrança has Cancelamentos e faltas, which opens the rule: "Cancelou em cima da hora" with on/off, the notice window (2h, 12h, 24h or 48h) and what to charge (50%, 100% or a fixed amount typed by the teacher); "Faltou sem avisar" with on/off and the same three choices; an example worked out live for a R$ 120 class at 14:00; and Salvar regra.
-- **AC-006-19.** For a teacher who has never set it, both parts are off, so no fee is ever suggested. Turning a part on starts at 24h and 50% for late cancellations and at 100% for no-shows.
-- **AC-006-20.** The student and place edit forms have "Cancelamentos e faltas" with Padrão (shows what the default rule does), Própria (the same controls as Ajustes, for this student or place only) and Não cobrar.
-- **AC-006-21.** The rule for a class is the student's own choice; when the student follows Padrão, the place's choice; when the place also follows Padrão, the default in Ajustes. A group's class uses its place's choice, then the default.
-
-### Fees on a class
-
-- **AC-006-22.** Picking Cancelada shows "Avisou em" with a date and time, starting at now. When the notice came less than the window before the start (or after it), the class is a late cancellation.
-- **AC-006-23.** For a late cancellation, or for Faltou, when the rule for the class charges, the form shows a switch "Cobrar cancelamento" or "Cobrar a falta", on, with the fee and why ("R$ 60,00 · 50% · menos de 24h"). Turning it off reads "Dispensado desta vez: não cobra nada".
-- **AC-006-24.** A percentage fee is that share of the class's value without travel, rounded to the centavo once. A fixed fee is the amount in the rule.
-- **AC-006-25.** A cancellation with enough notice, or a rule that doesn't charge, shows no switch, only a line saying why ("Avisou com antecedência: sem taxa", "Não cobra cancelamentos").
-- **AC-006-26.** A class without a price and a percentage rule suggests no fee and says so ("Aula sem preço: sem taxa").
-- **AC-006-27.** Saving keeps the fee or the waiver on the class. A kept fee stays the same if the rule or the price changes later.
+- **AC-006-18.** Cancelar aula opens a sheet: "O que aconteceu?" with Aluno cancelou, Aluno faltou and Eu cancelei; "Motivo" (optional text); the "Cobrar esta aula?" toggle, off at first; and Voltar and Cancelar aula. Nothing changes until it is confirmed.
+- **AC-006-19.** With "Cobrar esta aula?" on, the charge is 50%, 100% or Outro valor. A percentage is that share of the class's value without travel, rounded to the centavo once, and is shown ("R$ 60,00"); Outro valor shows a money field. The confirm button reads "Cancelar aula · cobrar R$ 60,00".
+- **AC-006-20.** "Eu cancelei" hides "Cobrar esta aula?": a class the teacher cancels is never charged.
+- **AC-006-21.** For a class without a price, 50% and 100% are not offered; only Outro valor.
+- **AC-006-22.** Confirming saves the status (Cancelada, or Faltou for "Aluno faltou"), the reason and the charge. A charge stays the same if the price changes later.
+- **AC-006-23.** There is no cancellation rule to set: Ajustes has no Cancelamentos e faltas, and student and place forms have no fee choice. Each charge is decided in the sheet.
 
 ### Language
 
-- **AC-006-28.** Statuses, fee lines, the example in the rule and the sheet follow the app language; switching it never changes a value or a fee.
+- **AC-006-24.** Statuses, reasons, charges and the sheets follow the app language; switching it never changes a value or a charge.
 
 ## Out of scope
 
 - **007:** Iniciar aula and the live timer; the button stays out of the detail and the form until then.
-- **008:** the Pagamento section of Registrar ("Fica a receber" / "Já foi pago" and the method), marking classes paid, the student's balance on the lesson detail, and kept fees reaching the balance.
-- **009:** the earnings card and kept fees counting as earned.
+- **008:** the Pagamento section of Registrar ("Fica a receber" / "Já foi pago" and the method), marking classes paid, the student's balance on the lesson detail, and charges reaching the balance.
+- **009:** the earnings card and charges counting as earned.
 - **014:** a reminder about past classes that were never marked.
-- Editing the amount of a suggested fee: the teacher keeps it or waives it.
+- A default cancellation rule (notice window, automatic suggestion), in Ajustes or per student: dropped by Victor.
 
 ## Open questions
 
 Answered by Victor, 27 Oct 2026:
 
 - The Pagamento section of Registrar waits for 008; in 006 every logged class is owed.
-- Fee rules come with the default in Ajustes and a per-student and per-place choice (Padrão, Própria, Não cobrar).
-- A cancellation asks when the student gave notice, starting at now.
 - Marcar como dada opens a sheet with the duration before confirming.
+
+Changed by Victor later on 27 Oct 2026, after trying the first build:
+
+- Cancelling is a button on the lesson detail that opens a sheet with what happened, the reason and "Cobrar esta aula?" as a toggle. It replaces Situação in the edit form.
+- The charge is 50%, 100% or another amount, chosen in the sheet each time. There is no rule in Ajustes and no fee choice on students or places, so nothing asks when notice was given.
 
 Assumed, for Victor to confirm in review:
 
 - A percentage fee is taken from the class's value without travel, since the teacher didn't travel.
-- A group's class follows its place's rule (AC-006-21). A school class covered by a salary has no value, so a percentage fee is nothing; a fixed fee would still be suggested.
-- Dada and Faltou are refused before the class starts; Cancelada is allowed any time (AC-006-11).
+- The reason is chosen from three chips with an optional note (Victor left this open).
+- Marcar como dada and "Aluno faltou" wait for the start; cancelling is allowed any time (AC-006-11).
 - A past class nobody marked stays Agendada and keeps counting in Previsto until marked.

@@ -4,11 +4,9 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.sqlite.execSQL
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import app.tutora.domain.FeeChoice
 import kotlinx.coroutines.test.runTest
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -60,7 +58,7 @@ class MigrationsTest {
     }
 
     @Test
-    fun `migration 1 to 2 keeps lessons and students, with no fee and the default rule`() =
+    fun `migration 1 to 2 keeps lessons and students, with no charge or reason`() =
         runTest {
             val file = File(tmp.root, "tutora.db")
             val t = "'2026-10-26T12:00:00.000Z'"
@@ -78,15 +76,8 @@ class MigrationsTest {
             val lesson = db.schedule().lesson("l")
             assertEquals("nota", lesson?.notes)
             assertEquals(null, lesson?.feeCents)
-            assertFalse(lesson?.feeWaived ?: true)
-            assertEquals(
-                FeeChoice.Default,
-                db
-                    .students()
-                    .get("s")
-                    ?.toStudent()
-                    ?.feeChoice,
-            )
+            assertEquals(null, lesson?.cancelReason)
+            assertEquals("Ana", db.students().get("s")?.name)
             db.close()
         }
 }

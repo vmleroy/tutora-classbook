@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "561f90fcba1ea26569477ee2b972f640",
+    "identityHash": "4c530a6db15ba78d08369e4797887ecf",
     "entities": [
       {
         "tableName": "settings",
@@ -36,7 +36,7 @@
       },
       {
         "tableName": "place",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `builtin` TEXT, `name` TEXT, `address` TEXT, `kind` TEXT NOT NULL, `payer` TEXT NOT NULL, `rate_type` TEXT NOT NULL, `rate_cents` INTEGER, `commission_bp` INTEGER NOT NULL, `pay_cycle` TEXT NOT NULL, `monthly_salary_cents` INTEGER, `default_duration_min` INTEGER NOT NULL, `travel_mode` TEXT NOT NULL, `travel_fee_cents` INTEGER NOT NULL, `archived_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `fee_rule` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `builtin` TEXT, `name` TEXT, `address` TEXT, `kind` TEXT NOT NULL, `payer` TEXT NOT NULL, `rate_type` TEXT NOT NULL, `rate_cents` INTEGER, `commission_bp` INTEGER NOT NULL, `pay_cycle` TEXT NOT NULL, `monthly_salary_cents` INTEGER, `default_duration_min` INTEGER NOT NULL, `travel_mode` TEXT NOT NULL, `travel_fee_cents` INTEGER NOT NULL, `archived_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -133,11 +133,6 @@
             "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "feeRule",
-            "columnName": "fee_rule",
-            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -160,7 +155,7 @@
       },
       {
         "tableName": "student",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `subject` TEXT, `phone` TEXT, `notes` TEXT, `color` TEXT NOT NULL, `rate_type` TEXT NOT NULL, `archived_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `fee_rule` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `subject` TEXT, `phone` TEXT, `notes` TEXT, `color` TEXT NOT NULL, `rate_type` TEXT NOT NULL, `archived_at` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -217,11 +212,6 @@
             "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "feeRule",
-            "columnName": "fee_rule",
-            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -644,7 +634,7 @@
       },
       {
         "tableName": "lesson",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `rule_id` TEXT, `occurrence_date` TEXT, `student_id` TEXT, `group_id` TEXT, `place_id` TEXT NOT NULL, `start_at` TEXT NOT NULL, `planned_min` INTEGER NOT NULL, `status` TEXT NOT NULL, `value_cents` INTEGER, `travel_fee_cents` INTEGER, `is_detached` INTEGER NOT NULL, `notes` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `rate_cents` INTEGER, `rate_type` TEXT, `fee_cents` INTEGER, `fee_waived` INTEGER NOT NULL DEFAULT 0, `notice_at` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`rule_id`) REFERENCES `schedule_rule`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`student_id`) REFERENCES `student`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`group_id`) REFERENCES `group_class`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`place_id`) REFERENCES `place`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `rule_id` TEXT, `occurrence_date` TEXT, `student_id` TEXT, `group_id` TEXT, `place_id` TEXT NOT NULL, `start_at` TEXT NOT NULL, `planned_min` INTEGER NOT NULL, `status` TEXT NOT NULL, `value_cents` INTEGER, `travel_fee_cents` INTEGER, `is_detached` INTEGER NOT NULL, `notes` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `rate_cents` INTEGER, `rate_type` TEXT, `fee_cents` INTEGER, `cancel_reason` TEXT, `cancel_note` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`rule_id`) REFERENCES `schedule_rule`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL , FOREIGN KEY(`student_id`) REFERENCES `student`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`group_id`) REFERENCES `group_class`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`place_id`) REFERENCES `place`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -745,15 +735,13 @@
             "affinity": "INTEGER"
           },
           {
-            "fieldPath": "feeWaived",
-            "columnName": "fee_waived",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
+            "fieldPath": "cancelReason",
+            "columnName": "cancel_reason",
+            "affinity": "TEXT"
           },
           {
-            "fieldPath": "noticeAt",
-            "columnName": "notice_at",
+            "fieldPath": "cancelNote",
+            "columnName": "cancel_note",
             "affinity": "TEXT"
           }
         ],
@@ -863,7 +851,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '561f90fcba1ea26569477ee2b972f640')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4c530a6db15ba78d08369e4797887ecf')"
     ]
   }
 }

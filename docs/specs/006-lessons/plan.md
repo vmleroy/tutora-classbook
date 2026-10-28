@@ -1,36 +1,41 @@
 # Plan 006: Lessons (Kotlin)
 
-Architecture reference: "Database schema and migrations" (fee rule columns, frozen value), "Money and time". Mockups: AddLesson (Registrar), LessonDetail, EditLesson (Situação, fee switch), Fees.
+Architecture reference: "Database schema and migrations" (frozen value), "Money and time". Mockups: AddLesson (Registrar), LessonDetail.
+
+Revised on 27 Oct 2026, when Victor replaced the fee rules and Situação with a cancel sheet on the lesson detail (spec, Open questions).
 
 ## Approach
 
 - **Domain** (`core/domain`).
-  - `Lesson` gains `status` (`SCHEDULED`, `DONE`, `CANCELLED`, `MISSED`; `LIVE` arrives with 007), the frozen price (`frozenRate`: cents and rate type), and the fee (`feeCents`, `feeWaived`, `noticeAt`).
-  - `lessonWorth` keeps working for scheduled classes. A done class is worth its typed value, or its frozen rate for its duration, plus the travel stored on it; with no frozen rate it is "Sem preço" (or the salary at a school). This is what freezes the value (AC-006-3) and recomputes it when a done class's duration changes (AC-006-12).
-  - `counted(lesson)` is what Previsto adds: the worth of scheduled and done classes, the kept fee of cancelled and missed ones, nothing otherwise (AC-006-16).
-  - `Fees.kt`:
-    - `FeeAmount` (`Percent(bp)` or `Fixed(cents)`), `FeeRule` (late on/off, window in hours, late amount, no-show on/off, no-show amount) and `FeeChoice` (`Default`, `Own(rule)`, `Never`).
-    - `ruleFor(student, place, default)` resolves student → place → default (AC-006-21).
-    - `suggestFee(rule, status, valueWithoutTravel, startAt, noticeAt)` returns `Charge(cents, amount, windowH)`, `EnoughNotice`, `RuleOff` or `NoPrice` (AC-006-22 to 26).
-    - Percentages round once through `multiplyRate`.
-  - `Student` and `Place` gain `feeChoice`, default `FeeChoice.Default`, so existing call sites keep compiling.
-  - `Settings` gains `feeRule`. For a new teacher it is off in both parts, with 24h / 50% / 100% ready for when a part is turned on (AC-006-19).
+  - `Lesson` gains `status` (`SCHEDULED`, `DONE`, `CANCELLED`, `MISSED`; `LIVE` arrives with 007), the frozen price (`frozenRate`), and for a cancelled or missed class its `cancelReason`, `cancelNote` and `feeCents` (the charge).
+  - A done class is worth its typed value, or its frozen rate for its duration, plus the travel stored on it. This freezes the value (AC-006-3) and recomputes it when the duration changes (AC-006-12).
+  - `counted(lesson)` is what Previsto adds: the worth of scheduled and done classes, and the charge of cancelled and missed ones (AC-006-16).
+  - `Fees.kt` holds:
+    - `CancelReason` (`STUDENT` and `TEACHER` mean Cancelada, `NO_SHOW` means Faltou; `TEACHER` is never chargeable).
+    - `Charge` (`Percent(bp)` or `Amount(cents)`).
+    - `chargeCents`, which rounds a percentage once through `multiplyRate` and needs a price (AC-006-19 to 21).
 - **Data** (`core/data`).
-  - Migration 1 → 2, written by hand: `ALTER TABLE ADD COLUMN` for each new column. The `MigrationsTest` helper test seeds version 1 and checks a lesson and a student survive with their defaults.
-  - Fee rules are stored as JSON text in the same shape everywhere: `student.fee_rule`, `place.fee_rule` (null = Padrão, `"never"`, or the rule object) and settings key `fee_rule`. Encoding lives in `Mapping.kt` with `org.json`, as settings already do.
+  - Migration 1 → 2, written by hand, adds `lesson.rate_cents`, `rate_type`, `fee_cents`, `cancel_reason` and `cancel_note`. `MigrationsTest` builds a version 1 database from `1.json`, seeds it and opens it.
   - `observeFirstAfter` only returns scheduled classes (AC-006-17).
-- **Use cases** (`app/usecases/Lessons.kt`, class `Lessons`), each in one transaction:
-  - `markDone(id, minutes)`: refuses a class that hasn't started yet. It sets Dada and the duration, freezes the rate and the travel, and detaches the class from its series (AC-006-1, 2, 4).
-  - `logLesson(draft)`: refuses a future date or a start that hasn't happened yet, and an unlinked place. It inserts a one-off class that is already Dada, with its rate frozen (AC-006-6, 8).
-  - `Schedule.editLesson` takes an optional `StatusChange(status, noticeAt, keepFee)` in `LessonChange`. The status applies to the one class being edited, even when the rest goes to "Esta e as próximas" (AC-006-10). Dada and Faltou are refused before the start (AC-006-11). Moving to Dada freezes; moving back to Agendada clears the frozen rate (AC-006-13). The fee is worked out by `suggestFee` in the same transaction from the class's rule and stored as cents, or recorded as waived (AC-006-27).
-  - The default rule is saved with the other settings (`AppServices.saveSettings`), like the language. `savePlace` and `saveStudent` carry `feeChoice` with the rest.
+- **Use cases** (`app/usecases/Lessons.kt`), each in one transaction:
+  - `markDone(id, minutes)` refuses a class that hasn't started. It sets Dada and the duration, freezes the rate and travel, and detaches the class from its series (AC-006-1, 2, 4, 11).
+  - `logLesson(draft)` refuses a future date, a start still ahead and an unlinked place. It inserts a one-off class that is already Dada (AC-006-6, 8).
+  - `cancel(id, Cancellation(reason, note, charge))` refuses "Aluno faltou" before the start. It stores the status, reason, note and the charge in cents, ignores a charge for "Eu cancelei", and detaches the class from its series (AC-006-10, 11, 20, 22).
+  - `undo(id)` goes back to Agendada and clears the frozen rate, the reason and the charge (AC-006-13).
+  - `Schedule.editLesson` doesn't touch the status.
 - **Screens.**
-  - Lesson detail gets the status line ("Agendada · em 25 min", "Cancelada · taxa R$ 60,00"), Quem paga, and Marcar como dada (only when scheduled and started). Marcar como dada opens a `BottomSheet` with the duration stepper, the value and "Confirmar · R$ …".
-  - Nova aula gets a `SegmentedControl` at the top, Registrar aula dada | Agendar aula, starting on Agendar. Registrar shows "Duração real", hides Repetir, limits the date to today or earlier, shows how the value was worked out, and labels Save "Registrar aula · R$ …".
-  - Editar aula gets Situação as chips with its hint line. Under Cancelada it shows "Avisou em" (date and time fields) and the fee switch or the reason there is none.
-  - Hoje and Agenda: `LessonRow` shows a status badge for done, cancelled and missed classes, as its guideline already says. `AgendaBlock` gets a `MUTED` state for cancelled and missed classes; it is added to its guideline and the gallery.
-  - Ajustes gets "Aulas e cobrança › Cancelamentos e faltas", which opens a new `FeeRule` screen. That screen has two `ListRow` switches, chips for the window and the amount, a `MoneyField` for a fixed amount, the live example and Salvar regra.
-  - Student and place edit forms get "Cancelamentos e faltas" with `SegmentedControl` Padrão | Própria | Não cobrar. Própria shows the same rule editor, shared as a composable.
+  - **Lesson detail:**
+    - The status line ("Agendada · em 25 min", "Cancelada pelo aluno · cobra R$ 60,00"), the note, and Quem paga.
+    - A bottom bar: Cancelar aula (outline), plus Marcar como dada once started. A class that is no longer scheduled shows Desfazer instead.
+    - Marcar como dada opens a `BottomSheet` with the duration stepper and "Confirmar · R$ …".
+    - Cancelar aula opens `CancelSheet` with:
+      - reason chips ("Aluno faltou" only once started);
+      - a `TextField` for the note;
+      - a `ListRow` switch for "Cobrar esta aula?";
+      - 50% / 100% / Outro valor chips (the percentages only for a priced class), with a `MoneyField` for Outro valor;
+      - Voltar and "Cancelar aula · cobrar R$ …".
+  - **Nova aula:** a `SegmentedControl` for Registrar aula dada | Agendar aula, starting on Agendar. Registrar shows "Duração real", hides Repetir, explains the value and labels Save "Registrar aula · R$ …".
+  - **Hoje and Agenda:** `LessonRow` shows a status badge (with a check for Dada). `AgendaBlock` gets a `MUTED` state for cancelled and missed classes, already described in its guideline.
 - All new copy goes in `strings_features.xml`, in both languages.
 
 ## Data
@@ -39,14 +44,11 @@ Architecture reference: "Database schema and migrations" (fee rule columns, froz
 | --- | --- | --- |
 | lesson | `rate_cents` INTEGER | null (frozen only when done) |
 | lesson | `rate_type` TEXT | null |
-| lesson | `fee_cents` INTEGER | null |
-| lesson | `fee_waived` INTEGER NOT NULL | 0 |
-| lesson | `notice_at` TEXT | null |
-| student | `fee_rule` TEXT | null = Padrão |
-| place | `fee_rule` TEXT | null = Padrão |
-| settings | key `fee_rule` | inserted by `ensureDefaults`, both parts off |
+| lesson | `fee_cents` INTEGER | null (the charge) |
+| lesson | `cancel_reason` TEXT | null (`student`, `no_show`, `teacher`) |
+| lesson | `cancel_note` TEXT | null |
 
-`status` already exists, with `scheduled` as its default. A done class's real duration overwrites `planned_min`, so no extra column is needed; 007 adds the timer's own timestamps.
+`status` already exists, defaulting to `scheduled`. A done class's real duration overwrites `planned_min`.
 
 ## Use cases
 
@@ -54,19 +56,17 @@ Architecture reference: "Database schema and migrations" (fee rule columns, froz
 | --- | --- | --- | --- |
 | `Lessons.markDone` | lesson | none | lesson lists (Room) |
 | `Lessons.logLesson` | lesson | none | lesson lists |
-| `Schedule.editLesson` (+ status) | lesson, schedule_rule | none | lesson lists |
-| `AppServices.saveSettings` (fee rule) | settings | none | settings |
-| `Catalog.savePlace` / `saveStudent` (+ fee choice) | place / student | none | catalog |
+| `Lessons.cancel` | lesson | none | lesson lists |
+| `Lessons.undo` | lesson | none | lesson lists |
 
 ## Test strategy
 
-- **Domain:** `LessonRulesTest`: done worth and freezing, recompute on duration change, `counted`, `ruleFor`, `suggestFee` and its rounding (AC-006-2, 3, 12, 16, 19, 21, 24, 25, 26).
-- **Use cases:** `LessonsTest` on a real database with a frozen clock: mark done, log, status changes, fees stored, series untouched, next class (AC-006-4, 6, 8, 10, 11, 13, 17, 22, 23, 27).
-- **Data:** `MigrationsTest` gains the 1 → 2 step (no criterion; rule 12).
-- **Screens:** `LessonScreensTest`: the done sheet, the Registrar mode and button, Situação and its hint, the fee switch, the detail status line, the badges on Hoje, the fee rule screen, the student fee choice, and language (AC-006-1, 5, 7, 9, 14, 15, 18, 20, 28).
+- **Domain:** `LessonRulesTest` (AC-006-2, 3, 12, 16, 19, 20, 21).
+- **Use cases:** `LessonsTest` on a real database with a frozen clock (AC-006-4, 6, 8, 10, 11, 13, 17, 22).
+- **Data:** `MigrationsTest` covers the 1 → 2 step (rule 12).
+- **Screens:** `LessonScreensTest` (AC-006-1, 5, 7, 9, 14, 15, 18, 23, 24).
 
 ## Risks
 
-- **The edit form grows.** Situação, notice and fee add three blocks. They only show for the statuses that need them.
-- **Frozen versus following.** Every read must go through `Lesson.worth()`. Hoje, Agenda, the detail and the form already do, so no screen prices a class by itself.
-- **Time-dependent rules** (started, late) use `ctx.now()`. Tests freeze it.
+- **Frozen versus following.** Every read goes through `Lesson.worth()`, so no screen prices a class by itself.
+- **Time-dependent rules** (started) use `ctx.now()`. Tests freeze it.

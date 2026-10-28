@@ -84,6 +84,7 @@ fun LessonDetailScreen(
     val l = lesson ?: return
     var removing by remember { mutableStateOf(false) }
     var marking by remember { mutableStateOf<Int?>(null) }
+    var cancelling by remember { mutableStateOf(false) }
     val now = services.now()
     // "Esta e as próximas" only from a class still ahead in a running series (AC-005-14, 15).
     val inSeries = l.repeat != null && !l.isDetached && l.startAt > services.now()
@@ -92,13 +93,24 @@ fun LessonDetailScreen(
         scope.launch { services.schedule.removeLesson(l.id, s) }
         removing = false
     }
-    // Marcar como dada once the class has started (AC-006-1); Iniciar aula comes with 007.
-    val markDoneBar: (@Composable () -> Unit)? =
-        if (l.status == LessonStatus.SCHEDULED && l.startAt <= now) {
-            { Button(stringResource(R.string.lesson_markDone), { marking = l.plannedMin }, fullWidth = true) }
-        } else {
-            null
+    val started = l.startAt <= now
+    // Cancelar aula any time, Marcar como dada once started; Desfazer once it is no longer
+    // scheduled (AC-006-9, 11, 13). Iniciar aula comes with 007.
+    val actionsBar: @Composable () -> Unit = {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            if (l.status == LessonStatus.SCHEDULED) {
+                Button(stringResource(R.string.cancel_action), { cancelling = true }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
+                if (started) Button(stringResource(R.string.lesson_markDone), { marking = l.plannedMin }, Modifier.weight(1f))
+            } else {
+                Button(
+                    stringResource(R.string.lesson_undo),
+                    { scope.launch { services.lessons.undo(l.id) } },
+                    Modifier.weight(1f),
+                    variant = ButtonVariant.OUTLINE,
+                )
+            }
         }
+    }
     val local = localOf(l.startAt, services.zone)
     val endMin = local.hour * 60 + local.minute + l.plannedMin
     val end = LocalTime((endMin / 60) % 24, endMin % 60)
@@ -112,10 +124,11 @@ fun LessonDetailScreen(
                 HeaderAction(IconName.TRASH, stringResource(R.string.lesson_remove)) { removing = true },
                 HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) { nav.navigate(LessonEdit(id)) },
             ),
-        bottomBar = markDoneBar,
+        bottomBar = actionsBar,
     ) {
         Card {
             Text(statusLine(l, now, services.zone), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
+            l.cancelNote?.let { Text(it, style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted) }
             Text(
                 "${clockTime(local.time, language)} – ${clockTime(end, language)}",
                 style = TutoraTheme.type.titleLg,
@@ -170,6 +183,7 @@ fun LessonDetailScreen(
             }
         }
     }
+    if (cancelling) CancelSheet(l, started) { cancelling = false }
     marking?.let { minutes ->
         // The real duration, starting at the planned one, and what it is worth (AC-006-1).
         val value = l.copy(plannedMin = minutes).worth()
@@ -246,7 +260,7 @@ private fun statusLine(
         } else {
             stringResource(R.string.home_inHours, "${minutes / 60}h${if (rest > 0) rest.toString().padStart(2, '0') else ""}")
         }
-    return stringResource(R.string.lesson_statusWhen, statusLabel(l.status), until)
+    return stringResource(R.string.lesson_statusWhen, statusLabel(l), until)
 }
 
 /** Who pays: the place when it pays the teacher (or a salary covers it), otherwise the student. */

@@ -1,5 +1,6 @@
 package app.tutora.data
 
+import app.tutora.domain.CancelReason
 import app.tutora.domain.Group
 import app.tutora.domain.Lesson
 import app.tutora.domain.LessonStatus
@@ -115,8 +116,8 @@ class ScheduleRepository(
             status = LessonStatus.fromKey(l.status),
             frozenRate = l.rateCents?.let { Price.Set(it, l.rateType?.let(RateType::valueOf) ?: RateType.HOUR, PriceSource.PLACE) },
             feeCents = l.feeCents,
-            feeWaived = l.feeWaived,
-            noticeAt = l.noticeAt,
+            cancelReason = CancelReason.fromKey(l.cancelReason),
+            cancelNote = l.cancelNote,
         )
     }
 }
