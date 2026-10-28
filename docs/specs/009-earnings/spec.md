@@ -38,7 +38,7 @@ The teacher sees what they earned: today and this week on Hoje, and on the Ganho
 - **AC-009-10.** Under the period, Tudo, Particulares and "Escola e emprego" filter everything on the tab: Escola and Cursinho count as school and formal job, every other place as private classes.
 - **AC-009-11.** The summary card shows "Ganho no período" with its total, then Recebido and A receber, and a bar filled in the share received. When the period had a commission or a bonus, a line under it says so ("comissão dos locais: R$ 30,00 · bônus dado: R$ 50,00").
 - **AC-009-12.** Under the summary, six bars show what was earned in each month ending at the period's last month, the received part filled in, each labelled with its month ("mai" … "out"). They follow the type filter.
-- **AC-009-13.** "De onde veio" lists each student, group, paying place and school that earned something in the period, largest first, with its total, a bar in proportion to the largest, and "deve R$ 240" when it owes now. Tapping a row opens its detail.
+- **AC-009-13.** "De onde veio" lists each student, group, paying place and school that earned something in the period, largest first, each on its own card: its name, its total, "deve R$ 240" when it owes now, and a bar with its share of the period's total ("35% do total"). Tapping a card opens its detail. *(28 Oct 2026: separate cards and the share of the total, at Victor's request.)*
 - **AC-009-14.** A period with nothing earned shows "Nada ganho neste período" instead of the card and the list.
 
 ### Added after trying the build (Victor, 28 Oct 2026)

@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
-import app.tutora.designsystem.components.BadgeTone
+import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.EarningsStat
 import app.tutora.designsystem.components.EarningsSummary
@@ -30,8 +30,7 @@ import app.tutora.designsystem.components.EmptyState
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
-import app.tutora.designsystem.components.ListGroup
-import app.tutora.designsystem.components.ListRow
+import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.MonthBar
 import app.tutora.designsystem.components.MonthBars
@@ -169,31 +168,34 @@ fun EarningsScreen(nav: NavHostController) {
                 Modifier.testTag("earn-trend"),
             )
         }
-        // De onde veio: largest first, with what each owes now, opening its detail (AC-009-13).
+        // De onde veio: largest first, each on its own card with its share of the total, opening
+        // its detail (AC-009-13).
         if (v.sources.isNotEmpty()) {
-            val top =
-                v.sources
-                    .first()
-                    .cents
-                    .coerceAtLeast(1)
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            val total = v.sources.sumOf { it.cents }.coerceAtLeast(1)
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
                 SectionHeader(stringResource(R.string.earn_sources), aside = stringResource(R.string.earn_sourcesHint))
-                ListGroup(
-                    v.sources.map { src ->
-                        {
-                            val owes = (balances[src.payer] ?: 0).takeIf { it > 0 }
-                            Column {
-                                ListRow(
-                                    src.name,
-                                    subtitle = owes?.let { stringResource(R.string.earn_owes, formatMoney(it, language, compact = true)) },
-                                    badge = BadgeTone.SUCCESS to formatMoney(src.cents, language, compact = true),
-                                    onClick = { nav.navigate(payerRoute(src.payer)) },
-                                )
-                                ProgressBar(src.cents.toFloat() / top, src.name, tone = ProgressTone.ACCENT, thin = true)
+                v.sources.forEach { src ->
+                    val owes = (balances[src.payer] ?: 0).takeIf { it > 0 }
+                    val share = src.cents.toFloat() / total
+                    val percent = stringResource(R.string.earn_share, Math.round(share * 100))
+                    Card(Modifier.clickable(role = Role.Button) { nav.navigate(payerRoute(src.payer)) }, label = src.name) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+                            Column(Modifier.weight(1f)) {
+                                Text(src.name, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
+                                owes?.let {
+                                    Text(
+                                        stringResource(R.string.earn_owes, formatMoney(it, language, compact = true)),
+                                        style = TutoraTheme.type.meta,
+                                        color = TutoraTheme.colors.dangerInk,
+                                    )
+                                }
                             }
+                            Money(src.cents, tone = MoneyTone.EARNINGS)
                         }
-                    },
-                )
+                        ProgressBar(share, "${src.name}: $percent", tone = ProgressTone.ACCENT)
+                        Text(percent, style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+                    }
+                }
             }
         }
     }

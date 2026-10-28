@@ -463,4 +463,5 @@
     </plurals>
     <string name="settings_clockDurations">Durações em HH:MM</string>
     <string name="settings_clockDurationsHint">Mostra 01:30 em vez de 90 min em todo o app</string>
+    <string name="earn_share">%1$d%% do total</string>
 </resources>
