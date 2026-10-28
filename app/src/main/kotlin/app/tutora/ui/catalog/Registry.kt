@@ -16,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
-import app.tutora.designsystem.components.BadgeTone
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.EmptyState
 import app.tutora.designsystem.components.HeaderAction
@@ -52,7 +51,6 @@ import app.tutora.ui.minutesText
 import app.tutora.ui.payments.balanceBadge
 import app.tutora.ui.payments.packageUseText
 import app.tutora.ui.payments.paysTeacher
-import app.tutora.ui.payments.placeOwesText
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateMoney
@@ -268,22 +266,25 @@ private fun PlacesPane(nav: NavHostController) {
 
     @Composable
     fun row(p: PlaceItem): @Composable () -> Unit {
+        // Like Alunos and Turmas: what it is in the subtitle, its balance on the right (AC-008-14).
         val summary =
             listOfNotNull(
+                if (p.place.builtin == null) kindName(p.place.kind) else null,
                 placePriceText(p.place),
                 minutesText(p.place.defaultDurationMin),
                 countText(R.string.places_students_zero, R.plurals.places_students, p.studentCount),
                 if (p.place.kind == PlaceKind.STUDENT_HOME) travelText(p.place) else null,
-                // What a place that pays the teacher owes (AC-008-14).
-                balances[
-                    PayerRef(
-                        PayerKind.PLACE,
-                        p.place.id,
-                    ),
-                ]?.takeIf { it > 0 && paysTeacher(p.place) }?.let { placeOwesText(p.place.kind, it) },
             ).joinToString(" · ")
-        val badge = if (p.place.builtin == null) BadgeTone.SECONDARY to kindName(p.place.kind) else null
-        return { ListRow(placeName(p.place), subtitle = summary, badge = badge, onClick = { nav.navigate(PlaceDetail(p.place.id)) }) }
+        val badge = if (paysTeacher(p.place)) balanceBadge(balances[PayerRef(PayerKind.PLACE, p.place.id)] ?: 0) else null
+        return {
+            ListRow(
+                placeName(p.place),
+                subtitle = summary,
+                icon = IconName.PIN,
+                badge = badge,
+                onClick = { nav.navigate(PlaceDetail(p.place.id)) },
+            )
+        }
     }
     Column(Modifier.testTag("places-screen"), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
         Text(stringResource(R.string.places_subtitle), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)

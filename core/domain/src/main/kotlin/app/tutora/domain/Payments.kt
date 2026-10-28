@@ -225,6 +225,8 @@ data class OwedClass(
     val dueCents: Cents,
     /** The student's or group's name, so a place's list says whose class it is. */
     val who: String = "",
+    /** Where it was, so a student's or group's list says so. */
+    val placeId: String = "",
 )
 
 /** A payment as the screens show it, with the classes chosen for it. */

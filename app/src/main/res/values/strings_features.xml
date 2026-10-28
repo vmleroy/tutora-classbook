@@ -348,9 +348,6 @@
     <string name="pay_receiveSalinha">Collect from the tutoring room</string>
     <string name="pay_receiveCourse">Collect from the prep course</string>
     <string name="pay_receivePlace">Collect from the place</string>
-    <string name="pay_toReceiveSalinha">Owed by the tutoring room: %1$s</string>
-    <string name="pay_toReceiveCourse">Owed by the prep course: %1$s</string>
-    <string name="pay_toReceivePlace">Owed by the place: %1$s</string>
     <string name="pay_owingFilter">Owing · %1$d</string>
     <string name="pay_saldoOf">%1$s\'s balance</string>
     <string name="pay_section">Payment</string>

@@ -214,7 +214,7 @@ fun PaymentRow.payerRef(): PayerRef =
 fun PaymentRow.toPayment(chosen: List<String>) =
     PaymentRecord(id, payerRef(), amountCents, PayMethod.fromKey(method) ?: PayMethod.PIX, paidAt, note, packageId, chosen)
 
-fun OwedRow.toOwed() = OwedClass(lesson.id, lesson.startAt, lesson.plannedMin, lesson.dueCents ?: 0, whoName.orEmpty())
+fun OwedRow.toOwed() = OwedClass(lesson.id, lesson.startAt, lesson.plannedMin, lesson.dueCents ?: 0, whoName.orEmpty(), lesson.placeId)
 
 fun OwedRow.payerRef(): PayerRef? =
     when (PayerKind.fromKey(lesson.payer)) {

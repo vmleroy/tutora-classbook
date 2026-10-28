@@ -216,7 +216,7 @@ class PaymentScreensTest {
         }
         h.show(compose)
         h.go(compose, RegistryHome("places"))
-        exists("A receber da salinha: R$ 120", part = true)
+        exists("Deve R$ 120")
         h.go(compose, PlaceDetail(salinha))
         exists("Me deve")
         click("Receber da salinha")
@@ -390,7 +390,8 @@ class PaymentScreensTest {
             }
         openAna()
         exists("paga o local · R$ 120,00 a receber", part = true)
-        exists("60 min · R$ 120,00 · Ventura paga")
+        exists("22/10 · Ventura")
+        exists("60 min · R$ 120,00 · paga o local")
         h.go(compose, StudentDetail(pedro))
         click("Registrar pagamento")
         click("Escolher aulas", scroll = false)
@@ -443,17 +444,17 @@ class PaymentScreensTest {
         pay(12_000)
         openAna()
         exists("Aulas · 4")
-        compose.onAllNodes(matching("15/10"), useUnmergedTree = true).assertCountEquals(0)
+        compose.onAllNodes(matching("15/10 ·", part = true), useUnmergedTree = true).assertCountEquals(0)
         click("Ver todas")
         compose.onNodeWithTag("payer-lessons").assertExists()
-        exists("15/10")
+        exists("15/10 ·", part = true)
         click("Pagas")
-        exists("15/10")
-        compose.onAllNodes(matching("22/10"), useUnmergedTree = true).assertCountEquals(0)
+        exists("15/10 ·", part = true)
+        compose.onAllNodes(matching("22/10 ·", part = true), useUnmergedTree = true).assertCountEquals(0)
     }
 
     @Test
-    fun `AC-008-33 a place's classes say whose they are`() {
+    fun `AC-008-33 a place's classes say whose they are, a student's say where`() {
         val place = salinha()
         runBlocking {
             h.t.lessons.logLesson(
@@ -463,6 +464,9 @@ class PaymentScreensTest {
         h.show(compose)
         h.go(compose, PlaceDetail(place))
         exists("22/10 · Ana Souza")
+        given(19)
+        h.go(compose, StudentDetail(ana.id))
+        exists("19/10 · Online / Remoto")
     }
 
     @Test

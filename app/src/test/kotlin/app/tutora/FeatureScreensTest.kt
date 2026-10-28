@@ -192,7 +192,7 @@ class FeatureScreensTest {
                 hasPlainText("Sem preço · 60 min · nenhum aluno · Deslocamento: varia, você informa em cada aula"),
                 useUnmergedTree = true,
             ).assertExists()
-        compose.onNode(hasPlainText("R$ 60/h pagos pelo local · 60 min · nenhum aluno"), useUnmergedTree = true).assertExists()
+        compose.onNode(hasPlainText("Salinha · R$ 60/h pagos pelo local · 60 min · nenhum aluno"), useUnmergedTree = true).assertExists()
         compose.onAllNodesWithText("Nenhum local seu ainda", useUnmergedTree = true).assertCountEquals(0)
     }
 

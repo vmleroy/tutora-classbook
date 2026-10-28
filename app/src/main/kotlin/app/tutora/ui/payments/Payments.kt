@@ -247,14 +247,16 @@ private fun PayerClassRow(
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
+    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    // "28/10 · Ventura" on a student's or group's page; "28/10 · ENEM" on a place's (AC-008-33).
+    val summary = if (showWho) c.owed.who else places.firstOrNull { it.place.id == c.owed.placeId }?.let { placeName(it.place) }
     ListRow(
-        listOfNotNull(dayMonth(c.owed.localDate(services.zone), language), c.owed.who.takeIf { showWho && it.isNotEmpty() })
-            .joinToString(" · "),
+        listOfNotNull(dayMonth(c.owed.localDate(services.zone), language), summary?.takeIf { it.isNotEmpty() }).joinToString(" · "),
         subtitle =
             listOfNotNull(
                 stringResource(R.string.places_minutes, c.owed.minutes.toString()),
                 formatMoney(c.owed.dueCents, language),
-                c.placePays?.let { stringResource(R.string.pay_placePays, it) },
+                c.placePays?.let { stringResource(R.string.pay_byPlace) },
             ).joinToString(" · "),
         badge = leftBadge(c.left, c.owed.dueCents),
         onClick = { nav.navigate(LessonDetail(c.owed.lessonId)) },
@@ -275,7 +277,7 @@ fun PayerHistory(
     val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
     val classes = payerClasses(payer) ?: return
     val l = ledger ?: return
-    val showWho = payer.kind != PayerKind.STUDENT
+    val showWho = payer.kind == PayerKind.PLACE
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
         SectionHeader(
             "${stringResource(R.string.pay_lessonsAll)} · ${classes.size}",
@@ -342,7 +344,7 @@ fun PayerLessonsScreen(
         if (shown.isEmpty()) {
             Text(stringResource(R.string.pay_noLessons), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
         } else {
-            ListGroup(shown.map { c -> { PayerClassRow(nav, c, payer.kind != PayerKind.STUDENT) } })
+            ListGroup(shown.map { c -> { PayerClassRow(nav, c, payer.kind == PayerKind.PLACE) } })
         }
     }
 }
@@ -763,21 +765,6 @@ fun receiveLabel(kind: PlaceKind): String =
             PlaceKind.COURSE -> R.string.pay_receiveCourse
             else -> R.string.pay_receivePlace
         },
-    )
-
-/** "A receber da salinha: R$ 360" on Locais. */
-@Composable
-fun placeOwesText(
-    kind: PlaceKind,
-    cents: Cents,
-): String =
-    stringResource(
-        when (kind) {
-            PlaceKind.SALINHA -> R.string.pay_toReceiveSalinha
-            PlaceKind.COURSE -> R.string.pay_toReceiveCourse
-            else -> R.string.pay_toReceivePlace
-        },
-        formatMoney(cents, currentLanguage(), compact = true),
     )
 
 /** "Saldo da aluna · 2 aulas a receber · R$ 240,00", opening the payer (AC-008-16). */

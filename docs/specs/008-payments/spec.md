@@ -42,7 +42,7 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 ### Where balances show
 
 - **AC-008-13.** Each row on Alunos and Turmas shows its balance (Deve R$ 240, Em dia or Crédito R$ 40). Alunos has a "Devendo" filter with a count ("Devendo · 3") listing only students who owe.
-- **AC-008-14.** A place that pays the teacher shows "A receber da salinha: R$ 360" (or of the cursinho, etc., after its type) on Locais. Its detail has Receber da salinha, which pays everything it owes by default.
+- **AC-008-14.** On Locais, each place reads like the rows on Alunos and Turmas: its type, price, duration and students in the subtitle and, for a place that pays the teacher, its balance on the right ("Deve R$ 360", "Em dia"). Its detail has Receber da salinha (or do cursinho, do local, after its type), which pays everything it owes by default. *(Changed 28 Oct 2026 at Victor's request: the balance was a line inside the subtitle.)*
 - **AC-008-15.** Hoje shows "3 alunos com pagamento pendente · R$ 560" when any student, group or place owes ("3 com pagamento pendente" when a group or place is among them). Tapping it opens whoever owes: their detail when only one does, Alunos with Devendo on when all are students, and otherwise a list of everyone who owes. With nothing owed it is not shown. *(Changed 28 Oct 2026 after trying the build: a group or place owing led to an empty Devendo list.)*
 - **AC-008-16.** A lesson's detail shows "Pago" or "A receber" by its value, and the payer's balance ("Saldo da aluna · 2 aulas a receber · R$ 240,00"), which opens the payer.
 
@@ -62,7 +62,7 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 ### Added after trying the build (Victor, 28 Oct 2026)
 
 - **AC-008-25.** A lesson's detail with money still owed on it has "Marcar como paga", which opens the payment sheet for whoever owes the class, with this class ticked and its amount filled in.
-- **AC-008-26.** A student's detail shows all their classes, those a place pays for included ("21 min · R$ 35,00 · Ventura paga", with Pago or A receber from what the place owes). The place's row under Locais says it pays and what it still owes for the student ("R$ 100/h · paga o local · R$ 35,00 a receber"). In the payment sheet, "Escolher aulas" says "Nenhuma aula a receber" when there is none to choose.
+- **AC-008-26.** A student's detail shows all their classes, those a place pays for included ("28/10 · Ventura", "21 min · R$ 35,00 · paga o local", with Pago or A receber from what the place owes). The place's row under Locais says it pays and what it still owes for the student ("R$ 100/h · paga o local · R$ 35,00 a receber"). In the payment sheet, "Escolher aulas" says "Nenhuma aula a receber" when there is none to choose.
 - **AC-008-27.** A student's payment sheet also lists, in "Escolher aulas", their classes a place pays for. Ticking one records that part of the money as the place's payment for that class, so the place's balance drops and the class shows Pago; any rest of the amount is the student's.
 
 ### Credits and bonus (Victor, 28 Oct 2026)
@@ -75,7 +75,7 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 ### Layout (Victor, 28 Oct 2026)
 
 - **AC-008-32.** Student, group and place details share one section style: a header with its count and a small + to add (no full-width add button), rows that open the item. Aulas shows the last 3 classes with Pago or A receber and "Ver todas", which opens all the payer's classes with Todas, A receber and Pagas filters. Pagamentos follows the same style. The student's detail has no separate Valor card.
-- **AC-008-33.** On a place's or group's lists, each class says whose it is ("28/10 · ENEM").
+- **AC-008-33.** Each class in these lists says, after its date, where it was ("28/10 · Ventura") on a student's or group's page, and whose it was ("28/10 · ENEM") on a place's page.
 - **AC-008-34.** Nova aula's "Aluno ou turma" list has a search field and Todos, Alunos and Turmas filters.
 
 ### Language

@@ -351,9 +351,6 @@
     <string name="pay_receiveSalinha">Receber da salinha</string>
     <string name="pay_receiveCourse">Receber do cursinho</string>
     <string name="pay_receivePlace">Receber do local</string>
-    <string name="pay_toReceiveSalinha">A receber da salinha: %1$s</string>
-    <string name="pay_toReceiveCourse">A receber do cursinho: %1$s</string>
-    <string name="pay_toReceivePlace">A receber do local: %1$s</string>
     <string name="pay_owingFilter">Devendo · %1$d</string>
     <string name="pay_saldoOf">Saldo de %1$s</string>
     <string name="pay_section">Pagamento</string>
