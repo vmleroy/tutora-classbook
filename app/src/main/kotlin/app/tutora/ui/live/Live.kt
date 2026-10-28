@@ -5,10 +5,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -48,6 +52,7 @@ import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.TimerRing
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
+import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Lesson
 import app.tutora.domain.LessonStatus
@@ -266,10 +271,17 @@ private fun Clock(
     val language = currentLanguage()
     val now by rememberNow(services)
     val ms = elapsedMs(t, now)
+    val c = TutoraTheme.colors
+    // The ring is drawn for the header ground (its guideline): white digits and an accent ring on
+    // the main color, as in the Live mockup, so the clock keeps its contrast in every theme.
     Column(
-        Modifier.fillMaxWidth(),
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.xl))
+            .background(c.header)
+            .padding(vertical = Spacing.s5, horizontal = Spacing.s4),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s2),
     ) {
         TimerRing(
             clockText(ms),
@@ -279,8 +291,8 @@ private fun Clock(
         )
         val price = currentPrice(l.place, l.who)
         if (price != null && price.rateType == RateType.HOUR) {
-            Text(stringResource(R.string.live_earned), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
-            Money(earnedSoFar(price, ms) ?: 0, size = MoneySize.XL, tone = MoneyTone.EARNINGS)
+            Text(stringResource(R.string.live_earned), style = TutoraTheme.type.caption, color = c.onHeaderMuted)
+            Money(earnedSoFar(price, ms) ?: 0, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
             Text(
                 stringResource(
                     R.string.live_rateLine,
@@ -288,16 +300,16 @@ private fun Clock(
                     formatMoney(multiplyRate(price.cents, 1, 60), language),
                 ),
                 style = TutoraTheme.type.meta,
-                color = TutoraTheme.colors.inkMuted,
+                color = c.onHeaderMuted,
             )
         } else {
             // A fixed price, a salary or no price: the value doesn't tick (AC-007-5).
-            Text(stringResource(R.string.lesson_value), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
+            Text(stringResource(R.string.lesson_value), style = TutoraTheme.type.caption, color = c.onHeaderMuted)
             val worth = l.worth()
             if (worth is Worth.Set) {
-                Money(worth.cents, size = MoneySize.XL)
+                Money(worth.cents, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
             } else {
-                Text(worthText(worth), style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
+                Text(worthText(worth), style = TutoraTheme.type.titleLg, color = c.onHeader)
             }
         }
     }

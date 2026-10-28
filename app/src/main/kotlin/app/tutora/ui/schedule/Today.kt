@@ -50,9 +50,6 @@ import app.tutora.ui.minutesText
 import app.tutora.ui.rateText
 import app.tutora.ui.shortDate
 
-/** Iniciar aula shows on Próxima aula from this many minutes before the class (AC-007-1). */
-private const val START_WINDOW_MIN = 60
-
 /** Hoje: the date and a greeting, the next class, and today's classes (AC-005-22 to 25). */
 @Composable
 fun TodayScreen(nav: NavHostController) {
@@ -134,9 +131,8 @@ fun TodayScreen(nav: NavHostController) {
                         Text(durationText(n.plannedMin), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
                     }
                 }
-                // Iniciar aula only once the next class is within the hour, while the timer is on (AC-007-1, 3).
-                val soon = (instantOf(n.startAt) - instantOf(now)).inWholeMinutes <= START_WINDOW_MIN
-                if (soon && settings?.liveTimer != false) {
+                // Iniciar aula when the next class is today, while the timer is on (AC-007-1, 3).
+                if (localOf(n.startAt, zone).date == local.date && settings?.liveTimer != false) {
                     Button(stringResource(R.string.live_start), { startLesson(n.id) }, fullWidth = true, icon = IconName.PLAY)
                 }
             }

@@ -94,21 +94,25 @@ class LiveScreensTest {
     private fun absent(text: String) = compose.onNode(hasPlainText(text), useUnmergedTree = true).assertDoesNotExist()
 
     @Test
-    fun `AC-007-1 Iniciar aula is on the class's detail, and on Proxima aula only within the hour`() {
+    fun `AC-007-1 Iniciar aula is on the class's detail, and on Proxima aula when the class is today`() {
         val id = lesson()
         h.show(compose)
         exists("Próxima aula · em 5h")
-        absent("Iniciar aula")
+        exists("Iniciar aula")
         h.go(compose, LessonDetail(id))
         exists("Iniciar aula")
     }
 
     @Test
-    fun `AC-007-1 Proxima aula offers Iniciar aula when the class starts within the hour`() {
-        lesson(LocalTime(9, 45))
+    fun `AC-007-1 Proxima aula on another day has no Iniciar aula`() {
+        runBlocking {
+            h.t.schedule.scheduleLesson(
+                LessonDraft(WhoId.OfStudent(ana), online, LocalDate(2026, 10, 27), LocalTime(14, 0), 60, null, null, null),
+            )
+        }
         h.show(compose)
-        exists("Próxima aula · em 45 min")
-        exists("Iniciar aula")
+        exists("Próxima aula · Ter, 27 out, 14:00")
+        absent("Iniciar aula")
     }
 
     @Test
