@@ -15,6 +15,7 @@ import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.DurationField
+import app.tutora.designsystem.components.FieldLabel
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -27,12 +28,19 @@ private const val PRICE_STEP = 500L // R$ 5
 @Composable
 fun Field(
     label: String,
+    required: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1_5)) {
-        Text(label, style = TutoraTheme.type.fieldLabel, color = TutoraTheme.colors.inkMuted)
+        FieldLabel(label, required = required)
         content()
     }
+}
+
+/** Said once at the top of a form: what the red asterisk on a label means. */
+@Composable
+fun RequiredLegend() {
+    Text(stringResource(R.string.form_requiredLegend), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
 }
 
 /** A duration stepper in 5-minute steps; tapping the time opens hh:mm entry (AC-004-27). */

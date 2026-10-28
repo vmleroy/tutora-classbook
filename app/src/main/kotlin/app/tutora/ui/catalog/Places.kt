@@ -281,9 +281,21 @@ private fun PlaceForm(
         if (builtin) {
             Text(placeName(d), style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
         } else {
-            TextField(stringResource(R.string.places_name), d.name.orEmpty(), {
-                d = d.copy(name = it)
-            }, placeholder = stringResource(R.string.places_namePlaceholder), error = error?.let { errorText(it) }, errorKey = tries)
+            RequiredLegend()
+            TextField(
+                stringResource(R.string.places_name),
+                d.name.orEmpty(),
+                {
+                    d = d.copy(name = it)
+                },
+                placeholder =
+                    stringResource(
+                        R.string.places_namePlaceholder,
+                    ),
+                error = error?.let { errorText(it) },
+                errorKey = tries,
+                required = true,
+            )
             TextField(stringResource(R.string.places_address), d.address.orEmpty(), { d = d.copy(address = it.ifEmpty { null }) })
             Field(stringResource(R.string.places_type)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {

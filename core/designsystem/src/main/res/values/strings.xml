@@ -14,4 +14,5 @@
     <string name="ds_time_dial">Clock</string>
     <string name="ds_ok">OK</string>
     <string name="ds_cancel">Cancel</string>
+    <string name="ds_required">required</string>
 </resources>

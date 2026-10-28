@@ -211,4 +211,5 @@
         <item quantity="one">%1$s lesson</item>
         <item quantity="other">%1$s lessons</item>
     </plurals>
+    <string name="form_requiredLegend">Fields marked * are required</string>
 </resources>

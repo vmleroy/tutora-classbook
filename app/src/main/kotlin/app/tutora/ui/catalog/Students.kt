@@ -238,6 +238,7 @@ private fun StudentForm(
             }, fullWidth = true)
         },
     ) {
+        RequiredLegend()
         TextField(
             stringResource(R.string.students_name),
             d.name,
@@ -246,6 +247,7 @@ private fun StudentForm(
             capitalization = KeyboardCapitalization.Words,
             error = error?.takeIf { it == CatalogError.NAME_REQUIRED }?.let { errorText(it) },
             errorKey = tries,
+            required = true,
         )
         TextField(stringResource(R.string.students_subject), d.subject.orEmpty(), {
             d = d.copy(subject = it.ifEmpty { null })
@@ -253,7 +255,7 @@ private fun StudentForm(
         TextField(stringResource(R.string.students_phone), d.phone.orEmpty(), {
             d = d.copy(phone = it.ifEmpty { null })
         }, keyboardType = KeyboardType.Phone, capitalization = KeyboardCapitalization.None)
-        SectionHeader(stringResource(R.string.students_wherePays), aside = stringResource(R.string.students_starHint))
+        SectionHeader(stringResource(R.string.students_wherePays), aside = stringResource(R.string.students_starHint), required = true)
         SegmentedControl(
             listOf(
                 RateType.HOUR to stringResource(R.string.students_perHour),
@@ -465,9 +467,21 @@ private fun GroupForm(
         },
     ) {
         place?.let { Text(placeName(it), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted) }
-        TextField(stringResource(R.string.groups_name), d.name, {
-            d = d.copy(name = it)
-        }, placeholder = stringResource(R.string.groups_namePlaceholder), error = error?.let { errorText(it) }, errorKey = tries)
+        RequiredLegend()
+        TextField(
+            stringResource(R.string.groups_name),
+            d.name,
+            {
+                d = d.copy(name = it)
+            },
+            placeholder =
+                stringResource(
+                    R.string.groups_namePlaceholder,
+                ),
+            error = error?.let { errorText(it) },
+            errorKey = tries,
+            required = true,
+        )
         TextField(stringResource(R.string.groups_subject), d.subject.orEmpty(), { d = d.copy(subject = it.ifEmpty { null }) })
         if (school) {
             Text(stringResource(R.string.groups_coveredBySalary), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)

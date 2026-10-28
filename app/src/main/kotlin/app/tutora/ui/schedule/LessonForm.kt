@@ -56,6 +56,7 @@ import app.tutora.state.LocalServices
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.catalog.DurationStepper
 import app.tutora.ui.catalog.Field
+import app.tutora.ui.catalog.RequiredLegend
 import app.tutora.ui.clockTime
 import app.tutora.ui.placeName
 import app.tutora.ui.shortDate
@@ -176,6 +177,7 @@ fun LessonForm(
             }, fullWidth = true)
         }
     }) {
+        if (!editing) RequiredLegend()
         if (series != null) {
             val repeat =
                 stringResource(
@@ -200,9 +202,13 @@ fun LessonForm(
             sub = student?.student?.subject ?: group?.subject,
             avatar = student?.let { initials(it.student.name) to it.student.color.tag() } ?: group?.let { initials(it.name) to Tag.TEAL },
             actionLabel = if (editing) null else stringResource(R.string.lesson_change),
+            // Saving without anyone chosen turns the field red.
+            isError = error != null && v.who == null,
+            required = !editing,
+            errorKey = tries,
         )
         if (choices.isNotEmpty()) {
-            Field(stringResource(if (group != null) R.string.lesson_groupPlace else R.string.lesson_place)) {
+            Field(stringResource(if (group != null) R.string.lesson_groupPlace else R.string.lesson_place), required = !editing) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                     choices.forEach { p ->
                         Chip(placeName(p), v.placeId == p.id, { if (!editing) choosePlace(p, (v.who as? WhoId.OfStudent)?.id) })

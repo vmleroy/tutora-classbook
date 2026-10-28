@@ -20,7 +20,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
@@ -33,11 +36,20 @@ fun SectionHeader(
     modifier: Modifier = Modifier,
     aside: String? = null,
     asidePrimary: Boolean = false,
+    required: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     // The title wraps; the aside keeps its own width on one line, never squeezed into a column.
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.Bottom) {
-        Text(title, style = TutoraTheme.type.section, color = c.ink, modifier = Modifier.weight(1f))
+        Text(
+            buildAnnotatedString {
+                append(title)
+                if (required) withStyle(SpanStyle(color = c.dangerInk)) { append(" *") }
+            },
+            style = TutoraTheme.type.section,
+            color = c.ink,
+            modifier = Modifier.weight(1f),
+        )
         if (aside != null) {
             Text(
                 aside,

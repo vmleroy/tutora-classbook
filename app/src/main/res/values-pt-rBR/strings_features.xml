@@ -214,4 +214,5 @@
         <item quantity="many">%1$s aulas</item>
         <item quantity="other">%1$s aulas</item>
     </plurals>
+    <string name="form_requiredLegend">Campos com * são obrigatórios</string>
 </resources>

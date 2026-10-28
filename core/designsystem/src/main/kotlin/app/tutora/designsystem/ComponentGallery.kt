@@ -205,7 +205,7 @@ fun GallerySections() {
         TextField("Telefone", "(11) 9", {}, error = "Número incompleto")
         MoneyField("Valor da aula", cents, { cents = it })
         DurationField("Duração", 90, {})
-        TextField("Nome", "", {}, error = "Digite o nome")
+        TextField("Nome", "", {}, error = "Digite o nome", required = true)
         FieldError("Escolha um aluno ou turma")
     }
     Section("SelectField") {

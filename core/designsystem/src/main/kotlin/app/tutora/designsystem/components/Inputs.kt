@@ -42,7 +42,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -56,12 +58,15 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import app.tutora.designsystem.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
@@ -76,6 +81,30 @@ import app.tutora.domain.typedCents
 import app.tutora.domain.typedDuration
 import kotlinx.datetime.LocalDate
 
+/**
+ * A field's label. A required one ends in a red asterisk, read out as "required"; optional
+ * fields carry no mark, and each form says once what the asterisk means.
+ */
+@Composable
+fun FieldLabel(
+    label: String,
+    modifier: Modifier = Modifier,
+    required: Boolean = false,
+    onPrimary: Boolean = false,
+) {
+    val c = TutoraTheme.colors
+    val requiredWord = stringResource(R.string.ds_required)
+    Text(
+        buildAnnotatedString {
+            append(label)
+            if (required) withStyle(SpanStyle(color = c.dangerInk)) { append(" *") }
+        },
+        modifier.semantics { if (required) contentDescription = "$label, $requiredWord" },
+        style = TutoraTheme.type.fieldLabel,
+        color = if (onPrimary) c.onPrimaryMuted else c.inkMuted,
+    )
+}
+
 /** The look all fields share: the label above, never only a placeholder. */
 @Composable
 private fun FieldFrame(
@@ -84,22 +113,23 @@ private fun FieldFrame(
     error: String?,
     onPrimary: Boolean,
     errorKey: Any? = null,
+    required: Boolean = false,
     field: @Composable (Modifier) -> Unit,
 ) {
     val c = TutoraTheme.colors
-    val blink by errorBlink(error?.let { it to errorKey })
+    val red by errorBlink(error?.let { it to errorKey })
     val shape = RoundedCornerShape(Radius.lg)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1_5)) {
-        Text(label, style = TutoraTheme.type.fieldLabel, color = if (onPrimary) c.onPrimaryMuted else c.inkMuted)
+        FieldLabel(label, required = required, onPrimary = onPrimary)
         field(
             Modifier
                 .fillMaxWidth()
                 .height(Size.controlMd)
-                .background(if (onPrimary) c.onPrimary.copy(alpha = 0.1f) else c.surface, shape)
+                .background(errorFill(if (onPrimary) c.onPrimary.copy(alpha = 0.1f) else c.surface, error != null, red), shape)
                 .border(
                     if (error != null) Size.borderStrong else Size.border,
                     if (error != null) {
-                        c.danger.copy(alpha = blink)
+                        c.danger
                     } else if (onPrimary) {
                         c.onPrimary.copy(alpha = 0.3f)
                     } else {
@@ -113,7 +143,7 @@ private fun FieldFrame(
                 },
         )
         if (error != null) {
-            Text(error, Modifier.alpha(blink), style = TutoraTheme.type.meta, color = c.dangerInk)
+            Text(error, style = TutoraTheme.type.meta, color = c.dangerInk)
         } else if (helper != null) {
             Text(helper, style = TutoraTheme.type.meta, color = c.inkMuted)
         }
@@ -173,12 +203,13 @@ fun TextField(
     imeAction: ImeAction = ImeAction.Next,
     onPrimary: Boolean = false,
     errorKey: Any? = null,
+    required: Boolean = false,
 ) {
     // The field keeps its own selection, so the cursor can be placed anywhere to fix a typo.
     var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
     if (field.text != value) field = TextFieldValue(value, TextRange(value.length))
     Column(modifier) {
-        FieldFrame(label, helper, error, onPrimary, errorKey) { m ->
+        FieldFrame(label, helper, error, onPrimary, errorKey, required) { m ->
             Input(
                 field,
                 {
@@ -211,10 +242,11 @@ fun MoneyField(
     helper: String? = null,
     error: String? = null,
     errorKey: Any? = null,
+    required: Boolean = false,
 ) {
     val shown = formatMoney(cents, currentLanguage())
     Column(modifier) {
-        FieldFrame(label, helper, error, false, errorKey) { m ->
+        FieldFrame(label, helper, error, false, errorKey, required) { m ->
             Input(
                 TextFieldValue(shown, TextRange(shown.length)),
                 { onCentsChange(typedCents(it.text, cents, maxCents)) },
@@ -278,18 +310,22 @@ fun SelectField(
     avatar: Pair<String, Tag>? = null,
     icon: IconName? = null,
     actionLabel: String? = null,
+    isError: Boolean = false,
+    errorKey: Any? = null,
+    required: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     val shape = RoundedCornerShape(Radius.lg)
+    val red by errorBlink(if (isError) errorKey ?: Unit else null)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.s1_5)) {
-        if (label != null) Text(label, style = TutoraTheme.type.fieldLabel, color = c.inkMuted)
+        if (label != null) FieldLabel(label, required = required)
         Row(
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .sizeIn(minHeight = Size.controlMd)
-                    .background(c.surface, shape)
-                    .border(Size.border, c.line, shape)
+                    .background(errorFill(c.surface, isError, red), shape)
+                    .border(if (isError) Size.borderStrong else Size.border, if (isError) c.danger else c.line, shape)
                     .then(
                         if (onClick != null) {
                             Modifier
@@ -539,24 +575,33 @@ private fun TypingTarget(
 }
 
 /**
- * A new or repeated error blinks red three times, then stays; with reduced motion it just
- * shows. [key] changes with each error (and each failed attempt), null when there is none.
+ * How red an errored input is, 0 to 1: a new or repeated error blinks three times, then stays
+ * red; with reduced motion it is red at once. [key] changes with each error (and each failed
+ * attempt), null when there is none.
  */
 @Composable
 internal fun errorBlink(key: Any?): State<Float> {
-    val alpha = remember { Animatable(1f) }
+    val red = remember { Animatable(1f) }
     val reduce = TutoraTheme.reduceMotion
     LaunchedEffect(key) {
-        alpha.snapTo(1f)
+        red.snapTo(1f)
         if (key != null && !reduce) {
             repeat(3) {
-                alpha.animateTo(0.15f, tween(BLINK_MS))
-                alpha.animateTo(1f, tween(BLINK_MS))
+                red.animateTo(0f, tween(BLINK_MS))
+                red.animateTo(1f, tween(BLINK_MS))
             }
         }
     }
-    return alpha.asState()
+    return red.asState()
 }
+
+/** An input's fill: its own color, or the soft danger red while it has an error. */
+@Composable
+private fun errorFill(
+    base: Color,
+    isError: Boolean,
+    red: Float,
+): Color = if (isError) lerp(base, TutoraTheme.colors.dangerSoft, red) else base
 
 /** A form's own error, outside any field (a missing choice, a clash): red, with the alert icon, blinking as it appears. */
 @Composable
@@ -565,9 +610,9 @@ fun FieldError(
     modifier: Modifier = Modifier,
     key: Any? = null,
 ) {
-    val blink by errorBlink(text to key)
+    val red by errorBlink(text to key)
     Row(
-        modifier.alpha(blink).semantics { liveRegion = LiveRegionMode.Polite },
+        modifier.alpha(0.3f + 0.7f * red).semantics { liveRegion = LiveRegionMode.Polite },
         horizontalArrangement = Arrangement.spacedBy(Spacing.s1_5),
         verticalAlignment = Alignment.CenterVertically,
     ) {
