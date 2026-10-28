@@ -213,5 +213,5 @@
     <string name="lesson_setValue">Set value</string>
     <string name="lesson_fromPrice">From the price</string>
     <string name="lesson_handValueHint">Set by you · clear it to use the price</string>
-    <string name="lesson_totalWithTravel">With travel: %1$s</string>
+    <string name="lesson_total">Total value</string>
 </resources>

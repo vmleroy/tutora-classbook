@@ -52,6 +52,7 @@ import app.tutora.domain.Worth
 import app.tutora.domain.initials
 import app.tutora.domain.lessonWorth
 import app.tutora.domain.localOf
+import app.tutora.domain.travelFor
 import app.tutora.state.LocalServices
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.catalog.DurationStepper
@@ -237,12 +238,8 @@ fun LessonForm(
                     v.copy(plannedMin = it)
             })
         }
-        if (place?.kind == PlaceKind.STUDENT_HOME && place.travelMode == TravelMode.VARIES) {
-            MoneyField(stringResource(R.string.lesson_travel), v.travelFeeCents, { v = v.copy(travelFeeCents = it) })
-        }
-        // One field: empty, it follows the price (shown as its placeholder); typed, it is the
-        // value for this class; erased, it goes back to the price.
-        val travel = v.travelFeeCents ?: 0
+        // Value first, then this lesson's travel, then what the two add up to.
+        val travel = place?.let { travelFor(it, v.travelFeeCents) } ?: 0
         MoneyField(
             stringResource(R.string.lesson_value),
             v.valueCents,
@@ -260,11 +257,17 @@ fun LessonForm(
                     else -> null
                 },
         )
-        if (travel > 0 && worth is Worth.Set) {
-            Text(
-                stringResource(R.string.lesson_totalWithTravel, formatMoney(worth.cents, language)),
-                style = TutoraTheme.type.bodyStrong,
-                color = TutoraTheme.colors.ink,
+        val travelVaries = place?.kind == PlaceKind.STUDENT_HOME && place.travelMode == TravelMode.VARIES
+        if (travelVaries) {
+            MoneyField(stringResource(R.string.lesson_travel), v.travelFeeCents, { v = v.copy(travelFeeCents = it) })
+        }
+        if (travelVaries || travel > 0) {
+            MoneyField(
+                stringResource(R.string.lesson_total),
+                (worth as? Worth.Set)?.cents,
+                {},
+                placeholder = stringResource(R.string.places_noPrice),
+                readOnly = true,
             )
         }
         if (!editing) {

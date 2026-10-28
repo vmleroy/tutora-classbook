@@ -216,5 +216,5 @@
     <string name="lesson_setValue">Definir valor</string>
     <string name="lesson_fromPrice">Pelo preço</string>
     <string name="lesson_handValueHint">Definido por você · apague para usar o preço</string>
-    <string name="lesson_totalWithTravel">Com deslocamento: %1$s</string>
+    <string name="lesson_total">Valor total</string>
 </resources>

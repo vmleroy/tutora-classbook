@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.lerp
@@ -94,7 +92,6 @@ fun FieldLabel(
     modifier: Modifier = Modifier,
     required: Boolean = false,
     onPrimary: Boolean = false,
-    inline: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     val requiredWord = stringResource(R.string.ds_required)
@@ -104,16 +101,8 @@ fun FieldLabel(
             if (required) withStyle(SpanStyle(color = c.dangerInk)) { append(" *") }
         },
         modifier.semantics { if (required) contentDescription = "$label, $requiredWord" },
-        // Inside a receipt-style row the label reads as the line's name, not a caption.
-        style = if (inline) TutoraTheme.type.body else TutoraTheme.type.fieldLabel,
-        color =
-            if (inline) {
-                c.ink
-            } else if (onPrimary) {
-                c.onPrimaryMuted
-            } else {
-                c.inkMuted
-            },
+        style = TutoraTheme.type.fieldLabel,
+        color = if (onPrimary) c.onPrimaryMuted else c.inkMuted,
     )
 }
 
@@ -126,6 +115,7 @@ private fun FieldFrame(
     onPrimary: Boolean,
     errorKey: Any? = null,
     required: Boolean = false,
+    sunken: Boolean = false,
     field: @Composable (Modifier) -> Unit,
 ) {
     val c = TutoraTheme.colors
@@ -137,8 +127,20 @@ private fun FieldFrame(
             Modifier
                 .fillMaxWidth()
                 .height(Size.controlMd)
-                .background(errorFill(if (onPrimary) c.onPrimary.copy(alpha = 0.1f) else c.surface, error != null, red), shape)
-                .border(
+                .background(
+                    errorFill(
+                        if (onPrimary) {
+                            c.onPrimary.copy(alpha = 0.1f)
+                        } else if (sunken) {
+                            c.surfaceSunken
+                        } else {
+                            c.surface
+                        },
+                        error != null,
+                        red,
+                    ),
+                    shape,
+                ).border(
                     if (error != null) Size.borderStrong else Size.border,
                     if (error != null) {
                         c.danger
@@ -241,12 +243,12 @@ fun TextField(
 }
 
 /**
- * A money field, as a receipt line: the label inside on the left, the amount on the right,
- * the whole row one tap target. It shows [cents] in reais for the app language and fills from
- * the right as digits are typed (1, 2, 0, 0, 0 → R$ 120,00); deleting drops the last digit and
- * digits past [maxCents] are refused (AC-003-8 to 10). With no amount (null or zero) it shows
+ * A money field: shows [cents] in reais for the app language and fills from the right as
+ * digits are typed (1, 2, 0, 0, 0 → R$ 120,00); deleting drops the last digit and digits past
+ * [maxCents] are refused (AC-003-8 to 10). With no amount (null or zero) it shows
  * [placeholder] in muted text, "R$ 0,00" unless the caller names the empty state ("Sem
- * preço"); erasing every digit reports null.
+ * preço"); erasing every digit reports null. [readOnly] shows a worked-out amount (a total) on
+ * the sunken fill, not typed into.
  */
 @Composable
 fun MoneyField(
@@ -260,60 +262,36 @@ fun MoneyField(
     error: String? = null,
     errorKey: Any? = null,
     required: Boolean = false,
+    readOnly: Boolean = false,
 ) {
-    val c = TutoraTheme.colors
-    val shape = RoundedCornerShape(Radius.lg)
     val language = currentLanguage()
     val shown = if (cents == null || cents == 0L) "" else formatMoney(cents, language)
-    val red by errorBlink(error?.let { it to errorKey })
-    val focus = remember { FocusRequester() }
-    var focused by remember { mutableStateOf(false) }
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.s1_5)) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = Size.controlMd)
-                .background(errorFill(c.surface, error != null, red), shape)
-                .border(
-                    if (error != null || focused) Size.borderStrong else Size.border,
-                    when {
-                        error != null -> c.danger
-                        focused -> c.primary
-                        else -> c.line
+    val hint = placeholder ?: formatMoney(0, language)
+    Column(modifier) {
+        FieldFrame(label, helper, error, false, errorKey, required, sunken = readOnly) { m ->
+            if (readOnly) {
+                Box(m.semantics(mergeDescendants = true) {}, contentAlignment = Alignment.CenterEnd) {
+                    Text(
+                        shown.ifEmpty { hint },
+                        style = TutoraTheme.type.moneyMd,
+                        color = if (shown.isEmpty()) TutoraTheme.colors.inkMuted else TutoraTheme.colors.ink,
+                    )
+                }
+            } else {
+                Input(
+                    TextFieldValue(shown, TextRange(shown.length)),
+                    {
+                        val next = typedCents(it.text, cents ?: 0, maxCents)
+                        onCentsChange(if (next == 0L) null else next)
                     },
-                    shape,
-                ).clickable(interactionSource = null, indication = null) { runCatching { focus.requestFocus() } }
-                .padding(horizontal = Spacing.s3_5),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            FieldLabel(label, Modifier.weight(1f), required = required, inline = true)
-            Input(
-                TextFieldValue(shown, TextRange(shown.length)),
-                {
-                    val next = typedCents(it.text, cents ?: 0, maxCents)
-                    onCentsChange(if (next == 0L) null else next)
-                },
-                Modifier
-                    .weight(1f)
-                    .height(Size.controlMd)
-                    .focusRequester(focus)
-                    .onFocusChanged { focused = it.isFocused }
-                    .semantics {
-                        contentDescription = label
-                        if (error != null) error(error)
-                    },
-                placeholder ?: formatMoney(0, language),
-                KeyboardType.Number,
-                false,
-                alignEnd = true,
-                textStyle = TutoraTheme.type.moneyMd,
-            )
-        }
-        if (error != null) {
-            Text(error, style = TutoraTheme.type.meta, color = c.dangerInk)
-        } else if (helper != null) {
-            Text(helper, style = TutoraTheme.type.meta, color = c.inkMuted)
+                    m,
+                    hint,
+                    KeyboardType.Number,
+                    false,
+                    alignEnd = true,
+                    textStyle = TutoraTheme.type.moneyMd,
+                )
+            }
         }
     }
 }
