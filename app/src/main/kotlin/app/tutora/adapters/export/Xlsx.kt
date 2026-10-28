@@ -115,7 +115,10 @@ object Xlsx {
                     "<row r=\"${r + 1}\">" + cells.mapIndexed { c, v -> cell("${col(c)}${r + 1}", v) }.joinToString("") + "</row>"
                 }.joinToString("")
         return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
-            "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>$body</sheetData></worksheet>"
+            "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\">" +
+            // Wide enough for "Local ou aluno" and a name; the reader can still resize them.
+            "<cols><col min=\"1\" max=\"${s.header.size.coerceAtLeast(1)}\" width=\"18\" customWidth=\"1\"/></cols>" +
+            "<sheetData>$body</sheetData></worksheet>"
     }
 
     private fun contentTypes(n: Int) =

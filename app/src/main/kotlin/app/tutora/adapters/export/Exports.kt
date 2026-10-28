@@ -171,6 +171,8 @@ private class AndroidPdf(
         textSize = size
         this.color = color
         typeface = Typeface.create(font, if (bold) Typeface.BOLD else Typeface.NORMAL)
+        // The bundled Nunito has no bold face of its own; the PDF thickens it instead.
+        isFakeBoldText = bold
     }
 
     /** Text cut to [width] with an ellipsis, so long names never run into the next column. */
