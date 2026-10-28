@@ -314,7 +314,7 @@ fun MonthBars(
                             .background(c.accentSoft),
                         contentAlignment = Alignment.BottomCenter,
                     ) {
-                        Box(Modifier.fillMaxWidth().height(chart * share * part).background(c.earnings))
+                        Box(Modifier.fillMaxWidth().height(chart * share * part).background(c.success))
                     }
                 }
                 Text(b.label, style = TutoraTheme.type.caption, color = c.inkMuted, maxLines = 1)

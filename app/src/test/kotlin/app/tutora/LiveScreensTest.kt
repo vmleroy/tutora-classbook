@@ -160,8 +160,8 @@ class LiveScreensTest {
         h.go(compose, LessonDetail(id))
         compose.onNode(hasPlainText("Abrir aula ao vivo")).performClick()
         // The live screen reads its class from the database first; give it the time it needs.
-        repeat(20) {
-            if (compose.onAllNodesWithTag("live-screen").fetchSemanticsNodes().isNotEmpty()) return@repeat
+        for (i in 0 until 60) {
+            if (compose.onAllNodesWithTag("live-screen").fetchSemanticsNodes().isNotEmpty()) break
             h.settle(compose)
         }
         compose.onNodeWithTag("live-screen").assertExists()
