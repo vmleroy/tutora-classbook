@@ -4,6 +4,7 @@ import app.tutora.domain.CancelReason
 import app.tutora.domain.Group
 import app.tutora.domain.Lesson
 import app.tutora.domain.LessonStatus
+import app.tutora.domain.LessonTimer
 import app.tutora.domain.Place
 import app.tutora.domain.PlaceLink
 import app.tutora.domain.Price
@@ -75,6 +76,11 @@ class ScheduleRepository(
     fun firstAfter(now: String): Flow<Lesson?> = db.schedule().observeFirstAfter(now).map { it?.let { r -> assemble(r) } }
 
     fun lesson(id: String): Flow<Lesson?> = db.schedule().observeOne(id).map { it?.let { r -> assemble(r) } }
+
+    /** The live class, if any (spec 007). */
+    fun live(): Flow<Lesson?> = db.schedule().observeLive().map { it?.let { r -> assemble(r) } }
+
+    fun timer(lessonId: String): Flow<LessonTimer?> = db.schedule().observeTimer(lessonId).map { it?.toTimer() }
 
     suspend fun lastTravelFee(
         studentId: String,

@@ -39,7 +39,7 @@ interface SettingsDao {
 @Database(
     entities = [
         SettingRow::class, PlaceRow::class, StudentRow::class, LinkRow::class, GroupRow::class, MemberRow::class,
-        RuleRow::class, SkipRow::class, LessonRow::class,
+        RuleRow::class, SkipRow::class, LessonRow::class, TimerRow::class,
     ],
     version = TutoraDatabase.VERSION,
     exportSchema = true,
@@ -57,10 +57,10 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 2
+        const val VERSION = 3
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
     }
 }
 
@@ -75,5 +75,17 @@ val MIGRATION_1_2 =
                 "ALTER TABLE lesson ADD COLUMN cancel_reason TEXT",
                 "ALTER TABLE lesson ADD COLUMN cancel_note TEXT",
             ).forEach { connection.execSQL(it) }
+        }
+    }
+
+/** Spec 007: the clock of a live class. */
+val MIGRATION_2_3 =
+    object : Migration(2, 3) {
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL(
+                "CREATE TABLE IF NOT EXISTS `lesson_timer` (`lesson_id` TEXT NOT NULL, `started_at` TEXT NOT NULL, " +
+                    "`paused_ms` INTEGER NOT NULL, `paused_at` TEXT, `note` TEXT, `notes_before` TEXT, PRIMARY KEY(`lesson_id`), " +
+                    "FOREIGN KEY(`lesson_id`) REFERENCES `lesson`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+            )
         }
     }

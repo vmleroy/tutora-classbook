@@ -80,4 +80,26 @@ class MigrationsTest {
             assertEquals("Ana", db.students().get("s")?.name)
             db.close()
         }
+
+    @Test
+    fun `migration 2 to 3 keeps a cancelled class and adds the live clock`() =
+        runTest {
+            val file = File(tmp.root, "tutora.db")
+            val t = "'2026-10-26T12:00:00.000Z'"
+            createAt(
+                2,
+                file,
+                listOf(
+                    "INSERT INTO place VALUES ('p', 'ONLINE', NULL, NULL, 'online', 'STUDENT', 'HOUR', 12000, 0, 'LESSON', NULL, 60, 'NONE', 0, NULL, $t, $t)",
+                    "INSERT INTO student VALUES ('s', 'Ana', NULL, NULL, NULL, 'AMBER', 'HOUR', NULL, $t, $t)",
+                    "INSERT INTO lesson (id, student_id, place_id, start_at, planned_min, status, is_detached, created_at, updated_at, " +
+                        "fee_cents, cancel_reason) VALUES ('l', 's', 'p', $t, 60, 'cancelled', 0, $t, $t, 6000, 'student')",
+                ),
+            )
+            val (db, _) = openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver())
+            assertEquals(6000L, db.schedule().lesson("l")?.feeCents)
+            db.schedule().upsertTimer(TimerRow("l", "2026-10-26T12:00:00.000Z", 0, null, null, null))
+            assertEquals("2026-10-26T12:00:00.000Z", db.schedule().timer("l")?.startedAt)
+            db.close()
+        }
 }

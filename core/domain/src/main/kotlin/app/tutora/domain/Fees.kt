@@ -1,10 +1,11 @@
 package app.tutora.domain
 
-/** How a class ended up; LIVE arrives with the timer (spec 007). */
+/** How a class ended up; LIVE while its timer runs (spec 007). */
 enum class LessonStatus(
     val key: String,
 ) {
     SCHEDULED("scheduled"),
+    LIVE("live"),
     DONE("done"),
     CANCELLED("cancelled"),
     MISSED("missed"),

@@ -47,6 +47,7 @@ class SettingsRepository(
                 "custom_colors" to JSONObject(s.customColors.mapKeys { it.key.key }).toString(),
                 "text_scale" to quote(s.textScale),
                 "show_default_places" to s.showDefaultPlaces.toString(),
+                "live_timer" to s.liveTimer.toString(),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
         private fun customColors(json: String): Map<CustomPart, String> {
@@ -67,6 +68,7 @@ class SettingsRepository(
                 setupDone = v["setup_done"] == "true",
                 textScale = v["text_scale"]?.let(::unquote) ?: "normal",
                 showDefaultPlaces = v["show_default_places"] != "false",
+                liveTimer = v["live_timer"] != "false",
                 customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
             )
         }

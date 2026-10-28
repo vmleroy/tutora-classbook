@@ -301,4 +301,31 @@ interface ScheduleDao {
 
     @Query("SELECT lesson.*, r.repeat AS repeat FROM lesson LEFT JOIN schedule_rule r ON r.id = lesson.rule_id WHERE lesson.id = :id")
     fun observeOne(id: String): Flow<LessonWithRepeat?>
+
+    // The live class and its clock (spec 007). Only one class is live at a time.
+
+    @Query("SELECT * FROM lesson WHERE status = 'live' LIMIT 1")
+    suspend fun liveLesson(): LessonRow?
+
+    @Query(
+        """SELECT lesson.*, r.repeat AS repeat FROM lesson LEFT JOIN schedule_rule r ON r.id = lesson.rule_id
+           LEFT JOIN lesson_timer t ON t.lesson_id = lesson.id WHERE lesson.status = 'live' LIMIT 1""",
+    )
+    fun observeLive(): Flow<LessonWithRepeat?>
+
+    @Query("SELECT * FROM lesson_timer WHERE lesson_id = :lessonId")
+    suspend fun timer(lessonId: String): TimerRow?
+
+    @Query("SELECT * FROM lesson_timer WHERE lesson_id = :lessonId")
+    fun observeTimer(lessonId: String): Flow<TimerRow?>
+
+    @Upsert
+    suspend fun upsertTimer(row: TimerRow)
+
+    @Query("DELETE FROM lesson_timer WHERE lesson_id = :lessonId")
+    suspend fun deleteTimer(lessonId: String)
+
+    /** Clocks left from classes that ended and weren't undone. */
+    @Query("DELETE FROM lesson_timer WHERE lesson_id NOT IN (SELECT id FROM lesson WHERE status = 'live')")
+    suspend fun deleteStaleTimers()
 }

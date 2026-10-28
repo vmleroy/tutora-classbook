@@ -19,4 +19,6 @@ data class Settings(
     val textScale: String = "normal",
     val showDefaultPlaces: Boolean = true,
     val customColors: Map<CustomPart, String> = emptyMap(),
+    /** Ajustes › Aulas › Aula ao vivo; off hides Iniciar aula (AC-007-3, 17). */
+    val liveTimer: Boolean = true,
 )

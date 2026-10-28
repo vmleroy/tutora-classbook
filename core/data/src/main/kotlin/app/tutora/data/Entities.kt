@@ -173,3 +173,18 @@ data class LessonRow(
     @ColumnInfo(name = "cancel_reason") val cancelReason: String? = null,
     @ColumnInfo(name = "cancel_note") val cancelNote: String? = null,
 )
+
+/** The clock of a live class (spec 007): timestamps only, so nothing is lost if the app closes. */
+@Entity(
+    tableName = "lesson_timer",
+    foreignKeys = [ForeignKey(LessonRow::class, ["id"], ["lesson_id"], onDelete = ForeignKey.CASCADE)],
+)
+data class TimerRow(
+    @PrimaryKey @ColumnInfo(name = "lesson_id") val lessonId: String,
+    @ColumnInfo(name = "started_at") val startedAt: String,
+    @ColumnInfo(name = "paused_ms") val pausedMs: Long,
+    @ColumnInfo(name = "paused_at") val pausedAt: String?,
+    val note: String?,
+    /** The lesson's notes before ending added the quick note, so Desfazer can put them back. */
+    @ColumnInfo(name = "notes_before") val notesBefore: String?,
+)
