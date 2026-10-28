@@ -1,6 +1,6 @@
 # Spec 007: Live timer
 
-Status: in progress
+Status: done
 Depends on: 006 Lessons (Marcar como dada, the done value, Hoje and the lesson detail)
 Mockups: docs/mockups/Live.dc.html (live screen, Aula concluída). The balance line and Registrar pagamento on Aula concluída wait for 008.
 

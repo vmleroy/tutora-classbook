@@ -14,7 +14,7 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 004 | [Places and students](004-places-and-students/spec.md): built-in places, own places, students, groups, student–place links, price resolution, archive | done | Students, StudentDetail, StudentEdit, Places, PlaceDetail, PlaceEdit |
 | 005 | [Schedule](005-schedule/spec.md): recurring and one-off classes, 8 weeks ahead, this-only vs this-and-following edits, Agenda and Hoje | done | Main, Schedule, AddLesson, EditLesson |
 | 006 | [Lessons](006-lessons/spec.md): log a past lesson, mark done, cancel with a reason and a charge | done | AddLesson, LessonDetail |
-| 007 | [Live timer](007-live-timer/spec.md): pause and resume, end with the real duration, discard, ongoing notification, Ajustes switch | in progress | Live |
+| 007 | [Live timer](007-live-timer/spec.md): pause and resume, end with the real duration, discard, ongoing notification, Ajustes switch | done | Live |
 | 008 | Payments and packages: record payment, covered lessons, balances | not written | StudentDetail |
 | 009 | Earnings dashboard: period and type filters, 6-month trend | not written | Earnings |
 | 010 | Reports: per student or place, PDF, XLSX, copy as text | not written | Report, ReportPdf, EarningsPdf |
