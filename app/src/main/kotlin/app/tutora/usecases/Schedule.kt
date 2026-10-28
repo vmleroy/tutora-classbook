@@ -3,6 +3,7 @@ package app.tutora.usecases
 import app.tutora.data.LessonRow
 import app.tutora.data.RuleRow
 import app.tutora.data.SkipRow
+import app.tutora.data.TutoraDatabase
 import app.tutora.data.inTransaction
 import app.tutora.domain.Cents
 import app.tutora.domain.HORIZON_DAYS
@@ -55,7 +56,7 @@ data class LessonChange(
 
 enum class Scope { ONE, FOLLOWING }
 
-enum class ScheduleError { NOT_FOUND, PLACE_NOT_LINKED, STARTED }
+enum class ScheduleError { NOT_FOUND, PLACE_NOT_LINKED, STARTED, NOT_STARTED, FUTURE_DATE, NO_PRICE }
 
 sealed interface ScheduleResult {
     data class Ok(
@@ -66,6 +67,17 @@ sealed interface ScheduleResult {
         val error: ScheduleError,
     ) : ScheduleResult
 }
+
+/** Only the student's linked places, or the group's own place (AC-005-2). */
+internal suspend fun placeAllowed(
+    db: TutoraDatabase,
+    who: WhoId,
+    placeId: String,
+): Boolean =
+    when (who) {
+        is WhoId.OfGroup -> db.groups().get(who.id)?.placeId == placeId
+        is WhoId.OfStudent -> db.students().visibleLinks(who.id).any { it.placeId == placeId }
+    }
 
 /** Scheduling classes (spec 005). Every write runs in one transaction. */
 class Schedule(
@@ -124,11 +136,7 @@ class Schedule(
     private suspend fun placeAllowed(
         who: WhoId,
         placeId: String,
-    ): Boolean =
-        when (who) {
-            is WhoId.OfGroup -> db.groups().get(who.id)?.placeId == placeId
-            is WhoId.OfStudent -> db.students().visibleLinks(who.id).any { it.placeId == placeId }
-        }
+    ) = placeAllowed(db, who, placeId)
 
     private fun newRule(
         d: LessonDraft,

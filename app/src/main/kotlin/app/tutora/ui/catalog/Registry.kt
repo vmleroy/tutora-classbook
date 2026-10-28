@@ -35,7 +35,7 @@ import app.tutora.state.LocalServices
 import app.tutora.state.PlaceItem
 import app.tutora.state.StudentItem
 import app.tutora.ui.Archived
-import app.tutora.ui.GroupEdit
+import app.tutora.ui.GroupDetail
 import app.tutora.ui.PlaceDetail
 import app.tutora.ui.PlaceEdit
 import app.tutora.ui.RegistryHome
@@ -149,7 +149,7 @@ private fun StudentsPane(nav: NavHostController) {
                     countText(R.string.groups_size_zero, R.plurals.groups_size, g.memberIds.size),
                     g.rateCents?.let { stringResource(R.string.places_perLesson, rateMoney(it, language)) },
                 ).joinToString(" · ")
-            return { ListRow(g.name, subtitle = subtitle, icon = IconName.USERS, onClick = { nav.navigate(GroupEdit(id = g.id)) }) }
+            return { ListRow(g.name, subtitle = subtitle, icon = IconName.USERS, onClick = { nav.navigate(GroupDetail(g.id)) }) }
         }
         when {
             shownStudents.isEmpty() && shownGroups.isEmpty() ->
@@ -227,7 +227,7 @@ fun ArchivedScreen(nav: NavHostController) {
                         ListRow(
                             s.student.name,
                             avatar = initials(s.student.name) to s.student.color.tag(),
-                            onClick = { nav.navigate(StudentEdit(s.student.id)) },
+                            onClick = { nav.navigate(StudentDetail(s.student.id)) },
                         )
                     }
                 },
@@ -237,7 +237,7 @@ fun ArchivedScreen(nav: NavHostController) {
         if (groups.isNotEmpty()) {
             ListGroup(
                 groups.map { g ->
-                    { ListRow(g.name, onClick = { nav.navigate(GroupEdit(id = g.id)) }) }
+                    { ListRow(g.name, onClick = { nav.navigate(GroupDetail(g.id)) }) }
                 },
                 title = stringResource(R.string.places_groups),
             )
@@ -245,7 +245,7 @@ fun ArchivedScreen(nav: NavHostController) {
         if (places.isNotEmpty()) {
             ListGroup(
                 places.map { p ->
-                    { ListRow(placeName(p.place), onClick = { nav.navigate(PlaceEdit(p.place.id)) }) }
+                    { ListRow(placeName(p.place), onClick = { nav.navigate(PlaceDetail(p.place.id)) }) }
                 },
                 title = stringResource(R.string.tab_places),
             )

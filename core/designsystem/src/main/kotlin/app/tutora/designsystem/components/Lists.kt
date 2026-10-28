@@ -73,6 +73,7 @@ fun LessonRow(
     status: Pair<BadgeTone, String>? = null,
     trailing: String? = null,
     onClick: (() -> Unit)? = null,
+    statusIcon: IconName? = null,
 ) {
     val c = TutoraTheme.colors
     Row(
@@ -99,7 +100,7 @@ fun LessonRow(
             }
         }
         when {
-            status != null -> Badge(status.second, tone = status.first)
+            status != null -> Badge(status.second, tone = status.first, icon = statusIcon)
             trailing != null ->
                 Text(
                     trailing,

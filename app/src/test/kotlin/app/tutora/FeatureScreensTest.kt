@@ -26,6 +26,7 @@ import app.tutora.domain.Repeat
 import app.tutora.domain.Student
 import app.tutora.domain.TagColor
 import app.tutora.domain.builtinPlace
+import app.tutora.ui.GroupDetail
 import app.tutora.ui.LessonNew
 import app.tutora.ui.PlaceDetail
 import app.tutora.ui.PlaceEdit
@@ -247,6 +248,47 @@ class FeatureScreensTest {
         compose.onNode(hasContentDescription("Casa do Aluno", substring = true)).performClick()
         compose.waitForIdle()
         compose.onNodeWithTag("place-detail").assertExists()
+    }
+
+    @Test
+    fun `AC-004-30 a group opens its detail with place, price and members, and the pencil opens the form`() {
+        val ana = student("Ana Souza", "Matemática", listOf(PlaceLink(online, true, 12_000)))
+        val g =
+            runBlocking {
+                (
+                    h.t.catalog.saveGroup(
+                        Group("", online, "Turma ENEM", "Redação", 18_000, listOf(ana), null),
+                    ) as Result.Ok
+                ).value.id
+            }
+        h.show(compose)
+        h.go(compose, GroupDetail(g))
+        compose.onNodeWithTag("group-detail").assertExists()
+        compose.onNode(hasPlainText("Redação · Online / Remoto"), useUnmergedTree = true).assertExists()
+        compose.onNode(hasPlainText("R$ 180/aula"), useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("Ana Souza", useUnmergedTree = true).assertExists()
+        compose.onNodeWithContentDescription("Editar").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("group-edit").assertExists()
+        compose.onNodeWithText("+ Adicionar aluno", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `AC-004-23 Arquivar is beside the pencil on a detail, and an archived item offers Restaurar and Remover`() {
+        val g =
+            runBlocking { (h.t.catalog.saveGroup(Group("", online, "Turma ENEM", null, null, emptyList(), null)) as Result.Ok).value.id }
+        h.show(compose)
+        h.go(compose, GroupDetail(g))
+        compose.onNodeWithContentDescription("Arquivar").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .groups(archived = true)
+                .first()
+                .isNotEmpty()
+        }
+        h.go(compose, GroupDetail(g))
+        compose.onNodeWithText("Restaurar", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("Remover para sempre", useUnmergedTree = true).assertExists()
     }
 
     @Test

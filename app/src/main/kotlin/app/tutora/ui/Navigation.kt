@@ -23,6 +23,7 @@ import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.TabBar
 import app.tutora.designsystem.components.TabItem
 import app.tutora.ui.catalog.ArchivedScreen
+import app.tutora.ui.catalog.GroupDetailScreen
 import app.tutora.ui.catalog.GroupEditScreen
 import app.tutora.ui.catalog.PlaceDetailScreen
 import app.tutora.ui.catalog.PlaceEditScreen
@@ -80,6 +81,10 @@ import kotlin.reflect.KClass
 @Serializable data class GroupEdit(
     val id: String? = null,
     val placeId: String? = null,
+)
+
+@Serializable data class GroupDetail(
+    val id: String,
 )
 
 @Serializable data object Archived
@@ -165,6 +170,7 @@ fun TutoraNav(
                 val r = it.toRoute<GroupEdit>()
                 GroupEditScreen(nav, r.id, r.placeId)
             }
+            composable<GroupDetail> { GroupDetailScreen(nav, it.toRoute<GroupDetail>().id) }
             composable<Archived> { ArchivedScreen(nav) }
             composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
             composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }

@@ -42,12 +42,15 @@ import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Cents
 import app.tutora.domain.Group
+import app.tutora.domain.LessonStatus
 import app.tutora.domain.Place
 import app.tutora.domain.PlaceKind
+import app.tutora.domain.RateType
 import app.tutora.domain.Repeat
 import app.tutora.domain.TravelMode
 import app.tutora.domain.Who
 import app.tutora.domain.Worth
+import app.tutora.domain.currentPrice
 import app.tutora.domain.initials
 import app.tutora.domain.lessonWorth
 import app.tutora.domain.localOf
@@ -83,6 +86,8 @@ data class LessonValues(
     val travelFeeCents: Cents?,
     val repeat: Repeat?,
     val notes: String?,
+    /** A done class's duration is its real one. */
+    val status: LessonStatus = LessonStatus.SCHEDULED,
 )
 
 /** The series a class belongs to, shown as "Semanal · segunda-feira, 14:00". */
@@ -102,6 +107,9 @@ fun LessonForm(
     series: SeriesInfo?,
     error: String?,
     onSubmit: (LessonValues, Scope) -> Unit,
+    /** Nova aula's mode: true = Registrar aula dada, false = Agendar; null in the edit form. */
+    log: Boolean? = null,
+    onLog: (Boolean) -> Unit = {},
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
@@ -169,12 +177,33 @@ fun LessonForm(
         // The error shows right above Save, where the eye is when it fails.
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             if (error != null) FieldError(error, key = tries)
-            Button(stringResource(if (editing) R.string.lesson_saveEdit else R.string.lesson_save), {
+            val saveLabel =
+                when {
+                    log == true && worth is Worth.Set -> stringResource(R.string.lesson_saveLog, formatMoney(worth.cents, language))
+                    log == true -> stringResource(R.string.lesson_saveLogPlain)
+                    editing -> stringResource(R.string.lesson_saveEdit)
+                    else -> stringResource(R.string.lesson_save)
+                }
+            Button(saveLabel, {
                 tries++
                 onSubmit(v, applyTo)
             }, fullWidth = true)
         }
     }) {
+        if (log != null) {
+            SegmentedControl(
+                listOf(true to stringResource(R.string.lesson_modes_log), false to stringResource(R.string.lesson_modes_schedule)),
+                log,
+                { toLog ->
+                    onLog(toLog)
+                    // A lesson given happened today or earlier, and has already started.
+                    val now = localOf(services.now(), services.zone)
+                    if (toLog && v.date >= now.date) v = v.copy(date = now.date, time = LocalTime((now.hour - 1).coerceAtLeast(0), 0))
+                },
+                stringResource(R.string.lesson_new),
+                size = ControlSize.SM,
+            )
+        }
         if (!editing) RequiredLegend()
         if (series != null) {
             val repeat =
@@ -231,8 +260,11 @@ fun LessonForm(
                 Modifier.weight(1f),
             )
         }
-        Field(stringResource(R.string.lesson_duration)) {
-            DurationStepper(stringResource(R.string.lesson_duration), v.plannedMin, {
+        // A lesson given, or one marked done, has a real duration (AC-006-6).
+        val durationLabel =
+            stringResource(if (log == true || v.status == LessonStatus.DONE) R.string.lesson_realDuration else R.string.lesson_duration)
+        Field(durationLabel) {
+            DurationStepper(durationLabel, v.plannedMin, {
                 v =
                     v.copy(plannedMin = it)
             })
@@ -252,6 +284,14 @@ fun LessonForm(
             helper =
                 when {
                     v.valueCents != null -> stringResource(R.string.lesson_handValueHint)
+                    log == true && fromPrice is Worth.Set ->
+                        howWorked(
+                            place,
+                            student?.let { Who.OfStudent(it.student, it.links.firstOrNull { l -> l.placeId == place?.id }) }
+                                ?: group?.let { Who.OfGroup(it) },
+                            v.plannedMin,
+                            travel,
+                        )
                     fromPrice is Worth.Set -> stringResource(R.string.lesson_fromPrice)
                     else -> null
                 },
@@ -269,7 +309,7 @@ fun LessonForm(
                 readOnly = true,
             )
         }
-        if (!editing) {
+        if (!editing && log != true) {
             Field(stringResource(R.string.lesson_repeat)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                     listOf(
@@ -334,6 +374,25 @@ fun LessonForm(
     }
 }
 
+/** "90 min × R$ 120,00/h", plus travel, for Registrar (AC-006-7). */
+@Composable
+private fun howWorked(
+    place: Place?,
+    who: Who?,
+    minutes: Int,
+    travel: Cents,
+): String? {
+    val price = place?.let { p -> who?.let { currentPrice(p, it) } } ?: return null
+    val language = currentLanguage()
+    val base =
+        if (price.rateType == RateType.HOUR) {
+            stringResource(R.string.lesson_howHour, minutes.toString(), formatMoney(price.cents, language))
+        } else {
+            stringResource(R.string.lesson_howLesson, formatMoney(price.cents, language))
+        }
+    return if (travel > 0) stringResource(R.string.lesson_howTravel, base, formatMoney(travel, language)) else base
+}
+
 @Composable
 private fun scheduleErrorText(e: ScheduleError): String =
     stringResource(
@@ -341,6 +400,9 @@ private fun scheduleErrorText(e: ScheduleError): String =
             ScheduleError.NOT_FOUND -> R.string.lesson_errors_notFound
             ScheduleError.PLACE_NOT_LINKED -> R.string.lesson_errors_placeNotLinked
             ScheduleError.STARTED -> R.string.lesson_errors_started
+            ScheduleError.NOT_STARTED -> R.string.lesson_errors_notStarted
+            ScheduleError.FUTURE_DATE -> R.string.lesson_errors_futureDate
+            ScheduleError.NO_PRICE -> R.string.cancel_noPrice
         },
     )
 
@@ -357,6 +419,7 @@ fun LessonNewScreen(
     val whoRequired = stringResource(R.string.lesson_errors_whoRequired)
     val placeRequired = stringResource(R.string.lesson_errors_placeRequired)
     val errors = ScheduleError.entries.associateWith { scheduleErrorText(it) }
+    var log by rememberSaveable { mutableStateOf(false) }
     val initial =
         remember {
             LessonValues(
@@ -385,28 +448,26 @@ fun LessonNewScreen(
                 placeId == null -> error = placeRequired
                 else ->
                     scope.launch {
-                        when (
-                            val r =
-                                services.schedule.scheduleLesson(
-                                    LessonDraft(
-                                        who,
-                                        placeId,
-                                        v.date,
-                                        v.time,
-                                        v.plannedMin,
-                                        v.valueCents,
-                                        v.travelFeeCents,
-                                        v.repeat,
-                                        v.notes,
-                                    ),
-                                )
-                        ) {
+                        val d =
+                            LessonDraft(
+                                who,
+                                placeId,
+                                v.date,
+                                v.time,
+                                v.plannedMin,
+                                v.valueCents,
+                                v.travelFeeCents,
+                                if (log) null else v.repeat,
+                                v.notes,
+                            )
+                        // Registrar saves a class already given (AC-006-8); Agendar puts it on the schedule.
+                        when (val r = if (log) services.lessons.logLesson(d) else services.schedule.scheduleLesson(d)) {
                             is ScheduleResult.Ok -> nav.popBackStack()
                             is ScheduleResult.Err -> error = errors.getValue(r.error)
                         }
                     }
             }
-        })
+        }, log = log, onLog = { log = it })
     }
 }
 
@@ -440,6 +501,7 @@ fun LessonEditScreen(
                 l.travelFeeCents,
                 l.repeat,
                 l.notes,
+                l.status,
             )
         }
     // A class that already happened changes on its own; the series question is for classes ahead.

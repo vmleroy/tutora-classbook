@@ -1,9 +1,14 @@
 package app.tutora.data
 
+import app.tutora.domain.CancelReason
 import app.tutora.domain.Group
 import app.tutora.domain.Lesson
+import app.tutora.domain.LessonStatus
 import app.tutora.domain.Place
 import app.tutora.domain.PlaceLink
+import app.tutora.domain.Price
+import app.tutora.domain.PriceSource
+import app.tutora.domain.RateType
 import app.tutora.domain.Repeat
 import app.tutora.domain.Student
 import app.tutora.domain.Who
@@ -50,6 +55,11 @@ class CatalogRepository(
             groups.map { it.toGroup(byGroup[it.id].orEmpty()) }
         }
 
+    fun groupFlow(id: String): Flow<Group?> =
+        combine(db.groups().observeOne(id), db.groups().observeMembers()) { g, members ->
+            g?.toGroup(members.filter { it.groupId == id }.map { it.studentId })
+        }
+
     suspend fun group(id: String): Group? = db.groups().get(id)?.let { it.toGroup(db.groups().members(id)) }
 }
 
@@ -70,6 +80,9 @@ class ScheduleRepository(
         studentId: String,
         placeId: String,
     ): Long? = db.schedule().lastTravelFee(studentId, placeId)
+
+    /** A row as a class with who and where, for a use case to price it inside its transaction. */
+    suspend fun load(row: LessonRow): Lesson? = assemble(LessonWithRepeat(row, row.ruleId?.let { db.schedule().rule(it)?.repeat }))
 
     private suspend fun assemble(r: LessonWithRepeat): Lesson? {
         val l = r.lesson
@@ -105,6 +118,11 @@ class ScheduleRepository(
             notes = l.notes,
             who = who,
             place = place,
+            status = LessonStatus.fromKey(l.status),
+            frozenRate = l.rateCents?.let { Price.Set(it, l.rateType?.let(RateType::valueOf) ?: RateType.HOUR, PriceSource.PLACE) },
+            feeCents = l.feeCents,
+            cancelReason = CancelReason.fromKey(l.cancelReason),
+            cancelNote = l.cancelNote,
         )
     }
 }

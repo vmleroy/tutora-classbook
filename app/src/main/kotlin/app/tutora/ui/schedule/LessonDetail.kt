@@ -31,16 +31,24 @@ import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.currentLanguage
+import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
+import app.tutora.domain.Lesson
+import app.tutora.domain.LessonStatus
+import app.tutora.domain.Payer
+import app.tutora.domain.PlaceKind
 import app.tutora.domain.Repeat
 import app.tutora.domain.Who
 import app.tutora.domain.Worth
 import app.tutora.domain.initials
+import app.tutora.domain.instantOf
 import app.tutora.domain.localOf
 import app.tutora.domain.worth
 import app.tutora.state.LocalServices
 import app.tutora.ui.LessonEdit
 import app.tutora.ui.ScreenScaffold
+import app.tutora.ui.catalog.DurationStepper
+import app.tutora.ui.catalog.Field
 import app.tutora.ui.clockTime
 import app.tutora.ui.durationText
 import app.tutora.ui.longDate
@@ -75,12 +83,33 @@ fun LessonDetailScreen(
     }
     val l = lesson ?: return
     var removing by remember { mutableStateOf(false) }
+    var marking by remember { mutableStateOf<Int?>(null) }
+    var cancelling by remember { mutableStateOf(false) }
+    val now = services.now()
     // "Esta e as próximas" only from a class still ahead in a running series (AC-005-14, 15).
     val inSeries = l.repeat != null && !l.isDetached && l.startAt > services.now()
 
     fun remove(s: Scope) {
         scope.launch { services.schedule.removeLesson(l.id, s) }
         removing = false
+    }
+    val started = l.startAt <= now
+    // Cancelar aula any time, Marcar como dada once started; Desfazer once it is no longer
+    // scheduled (AC-006-9, 11, 13). Iniciar aula comes with 007.
+    val actionsBar: @Composable () -> Unit = {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            if (l.status == LessonStatus.SCHEDULED) {
+                Button(stringResource(R.string.cancel_action), { cancelling = true }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
+                if (started) Button(stringResource(R.string.lesson_markDone), { marking = l.plannedMin }, Modifier.weight(1f))
+            } else {
+                Button(
+                    stringResource(R.string.lesson_undo),
+                    { scope.launch { services.lessons.undo(l.id) } },
+                    Modifier.weight(1f),
+                    variant = ButtonVariant.OUTLINE,
+                )
+            }
+        }
     }
     val local = localOf(l.startAt, services.zone)
     val endMin = local.hour * 60 + local.minute + l.plannedMin
@@ -95,8 +124,11 @@ fun LessonDetailScreen(
                 HeaderAction(IconName.TRASH, stringResource(R.string.lesson_remove)) { removing = true },
                 HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) { nav.navigate(LessonEdit(id)) },
             ),
+        bottomBar = actionsBar,
     ) {
         Card {
+            Text(statusLine(l, now, services.zone), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
+            l.cancelNote?.let { Text(it, style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted) }
             Text(
                 "${clockTime(local.time, language)} – ${clockTime(end, language)}",
                 style = TutoraTheme.type.titleLg,
@@ -124,6 +156,7 @@ fun LessonDetailScreen(
                 worthText(worth),
                 muted = worth == Worth.Unset,
             )
+            Fact(stringResource(R.string.lesson_whoPays), payerText(l))
         }
         val (name, sub, avatar) =
             when (val w = l.who) {
@@ -148,6 +181,35 @@ fun LessonDetailScreen(
                 Text(stringResource(R.string.lesson_notes), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
                 Text(notes, style = TutoraTheme.type.body, color = TutoraTheme.colors.ink)
             }
+        }
+    }
+    if (cancelling) CancelSheet(l, started) { cancelling = false }
+    marking?.let { minutes ->
+        // The real duration, starting at the planned one, and what it is worth (AC-006-1).
+        val value = l.copy(plannedMin = minutes).worth()
+        BottomSheet(
+            stringResource(R.string.lesson_markDone),
+            { marking = null },
+            actions =
+                listOf { m ->
+                    Button(
+                        if (value is Worth.Set) {
+                            stringResource(R.string.lesson_confirmValue, formatMoney(value.cents, language))
+                        } else {
+                            stringResource(R.string.lesson_confirm)
+                        },
+                        {
+                            scope.launch { services.lessons.markDone(l.id, minutes) }
+                            marking = null
+                        },
+                        m,
+                    )
+                },
+        ) {
+            Field(stringResource(R.string.lesson_realDuration)) {
+                DurationStepper(stringResource(R.string.lesson_realDuration), minutes, { marking = it })
+            }
+            Fact(stringResource(R.string.lesson_value), worthText(value), muted = value == Worth.Unset)
         }
     }
     if (removing) {
@@ -180,6 +242,37 @@ fun LessonDetailScreen(
         )
     }
 }
+
+/** "Agendada · em 25 min" while it is ahead today; otherwise the status, with a kept fee (AC-006-14). */
+@Composable
+private fun statusLine(
+    l: Lesson,
+    now: String,
+    zone: String,
+): String {
+    val minutes = (instantOf(l.startAt) - instantOf(now)).inWholeMinutes.toInt()
+    val today = localOf(l.startAt, zone).date == localOf(now, zone).date
+    if (l.status != LessonStatus.SCHEDULED || minutes <= 0 || !today) return statusWithFee(l)
+    val rest = minutes % 60
+    val until =
+        if (minutes < 60) {
+            stringResource(R.string.home_inMinutes, minutes.toString())
+        } else {
+            stringResource(R.string.home_inHours, "${minutes / 60}h${if (rest > 0) rest.toString().padStart(2, '0') else ""}")
+        }
+    return stringResource(R.string.lesson_statusWhen, statusLabel(l), until)
+}
+
+/** Who pays: the place when it pays the teacher (or a salary covers it), otherwise the student. */
+@Composable
+private fun payerText(l: Lesson): String =
+    if (l.place.payer == Payer.PLACE ||
+        l.place.kind == PlaceKind.SCHOOL
+    ) {
+        placeName(l.place)
+    } else {
+        stringResource(R.string.lesson_payerStudent)
+    }
 
 /** One labelled fact on a line: the label on the left, the value on the right. */
 @Composable

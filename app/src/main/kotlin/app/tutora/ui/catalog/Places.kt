@@ -56,6 +56,7 @@ import app.tutora.domain.initials
 import app.tutora.domain.payMode
 import app.tutora.domain.previewLesson
 import app.tutora.state.LocalServices
+import app.tutora.ui.GroupDetail
 import app.tutora.ui.GroupEdit
 import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
@@ -94,8 +95,16 @@ fun PlaceDetailScreen(
         "place-detail",
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
+        // Arquivar sits beside the pencil; built-in places can't be archived (AC-004-2, 23).
         actions =
-            listOf(
+            listOfNotNull(
+                if (p.builtin == null && p.archivedAt == null) {
+                    HeaderAction(IconName.ARCHIVE, stringResource(R.string.catalog_archive)) {
+                        scope.launch { services.catalog.archive(Kind.PLACE, p.id).also { nav.popBackStack() } }
+                    }
+                } else {
+                    null
+                },
                 HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) {
                     nav.navigate(
                         app.tutora.ui
@@ -104,6 +113,21 @@ fun PlaceDetailScreen(
                 },
             ),
     ) {
+        if (p.archivedAt != null) {
+            ArchiveActions(
+                placeName(p),
+                archived = true,
+                onArchive = {},
+                onRestore = { scope.launch { services.catalog.restore(Kind.PLACE, p.id) } },
+                onRemove = {
+                    scope.launch {
+                        services.catalog.removePermanently(Kind.PLACE, p.id)
+                        nav.navigate(RegistryHome("places")) { popUpTo<RegistryHome> { inclusive = true } }
+                    }
+                },
+                removeBody = stringResource(R.string.catalog_removePlaceBody),
+            )
+        }
         Card {
             Text(placeName(p), style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
             Text(
@@ -169,7 +193,7 @@ fun PlaceDetailScreen(
                         ListRow(
                             g.name,
                             subtitle = subtitle,
-                            onClick = { nav.navigate(GroupEdit(id = g.id)) },
+                            onClick = { nav.navigate(GroupDetail(g.id)) },
                         )
                     }
                     row
@@ -436,20 +460,5 @@ private fun PlaceForm(
             Text(text, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink, modifier = Modifier.testTag("place-preview"))
         }
         if (error != null && builtin) FieldError(errorText(error!!), key = tries)
-        if (id != null && !builtin) {
-            ArchiveActions(
-                placeName(d),
-                d.archivedAt != null,
-                onArchive = { scope.launch { services.catalog.archive(Kind.PLACE, id).also { nav.popBackStack() } } },
-                onRestore = { scope.launch { services.catalog.restore(Kind.PLACE, id).also { nav.popBackStack() } } },
-                onRemove = {
-                    scope.launch {
-                        services.catalog.removePermanently(Kind.PLACE, id)
-                        nav.navigate(RegistryHome("places")) { popUpTo<RegistryHome> { inclusive = true } }
-                    }
-                },
-                removeBody = stringResource(R.string.catalog_removePlaceBody),
-            )
-        }
     }
 }

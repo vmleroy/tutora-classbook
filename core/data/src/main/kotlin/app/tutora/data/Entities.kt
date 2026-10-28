@@ -129,7 +129,11 @@ data class SkipRow(
     @ColumnInfo(name = "occurrence_date") val occurrenceDate: String,
 )
 
-/** A class. While scheduled it stores no price: its value follows the current price. */
+/**
+ * A class. While scheduled it stores no price: its value follows the current price. Marked done,
+ * it freezes the price in `rate_cents` / `rate_type` and its travel; cancelled or missed, it keeps
+ * what happened, why and its charge (spec 006).
+ */
 @Entity(
     tableName = "lesson",
     foreignKeys = [
@@ -163,4 +167,9 @@ data class LessonRow(
     val notes: String?,
     @ColumnInfo(name = "created_at") val createdAt: String,
     @ColumnInfo(name = "updated_at") val updatedAt: String,
+    @ColumnInfo(name = "rate_cents") val rateCents: Long? = null,
+    @ColumnInfo(name = "rate_type") val rateType: String? = null,
+    @ColumnInfo(name = "fee_cents") val feeCents: Long? = null,
+    @ColumnInfo(name = "cancel_reason") val cancelReason: String? = null,
+    @ColumnInfo(name = "cancel_note") val cancelNote: String? = null,
 )

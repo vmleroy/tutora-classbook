@@ -34,12 +34,13 @@ import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
+import app.tutora.domain.LessonStatus
+import app.tutora.domain.counted
 import app.tutora.domain.dayRange
 import app.tutora.domain.expected
 import app.tutora.domain.localOf
 import app.tutora.domain.nextLesson
 import app.tutora.domain.weekStart
-import app.tutora.domain.worth
 import app.tutora.state.LocalServices
 import app.tutora.ui.LessonDetail
 import app.tutora.ui.LessonNew
@@ -65,8 +66,8 @@ fun AgendaScreen(nav: NavHostController) {
     val lessons by remember(range) { services.scheduleRepo.between(range.first, range.second) }.collectAsState(initial = emptyList())
     val byDay = byLocalDay(lessons, zone)
     val dayLessons = byDay[selected].orEmpty()
-    val next = nextLesson(lessons, now) { it.startAt }
-    val previsto = expected(dayLessons.map { it.worth() })
+    val next = nextLesson(lessons.filter { it.status == LessonStatus.SCHEDULED }, now) { it.startAt }
+    val previsto = expected(dayLessons.mapNotNull { it.counted() })
     val first = (if (week) lessons else dayLessons).firstOrNull()
     val startHour = first?.let { localOf(it.startAt, zone).hour } ?: localOf(now, zone).hour
     val scroll = rememberScrollState()

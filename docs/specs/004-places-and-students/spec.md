@@ -43,7 +43,8 @@ The teacher registers once where they teach and whom they teach: their places (t
 
 ### Groups
 
-- **AC-004-16.** A group (turma) belongs to one place and has a name, subject, optional members chosen from the students linked to that place, and a price per lesson. A group at an Escola has no price of its own; it is covered by the salary.
+- **AC-004-16.** A group (turma) belongs to one place and has a name, subject, optional members and a price per lesson. A group at an Escola has no price of its own; it is covered by the salary. "+ Adicionar aluno" offers every active student; adding one who isn't linked to the group's place links them to it with the place's price. *(Changed 28 Oct 2026 at Victor's request: members were limited to students already linked, so a new place's group could not have any.)*
+- **AC-004-30.** Tapping a group opens its detail first: name, subject, place, price (or covered by the salary) and its members, each opening the student. The pencil in the header opens the edit form. *(Added 28 Oct 2026 at Victor's request.)*
 - **AC-004-17.** A place's detail shows its type, address, who pays and its rate, duration and settlement cycle, then the students linked to it with "+ Ligar aluno", then its groups. Tapping a student opens their detail.
 
 ### Price of a lesson
@@ -56,7 +57,7 @@ The teacher registers once where they teach and whom they teach: their places (t
 
 ### Archive and remove
 
-- **AC-004-23.** Arquivar hides a student, group or own place from lists, filters and pickers, and keeps everything about it. Arquivados opens from an archive icon in the Alunos and Locais headers (not a row at the end of the list) and shows archived items to restore them.
+- **AC-004-23.** Arquivar hides a student, group or own place from lists, filters and pickers, and keeps everything about it. It is an icon in the item's detail header, beside the pencil (28 Oct 2026: it was a button at the end of the edit form); an archived item's detail shows Restaurar and Remover instead. Arquivados opens from an archive icon in the Alunos and Locais headers (not a row at the end of the list) and shows archived items to restore them.
 - **AC-004-24.** Only an archived item can be removed permanently, after a confirmation that names it and says it cannot be undone. Removing a place removes its links and groups, never the students.
 - **AC-004-25.** Archiving a place keeps its students; their links to it are hidden until it is restored. A student whose only place is archived shows "Sem local" in the list.
 
@@ -74,7 +75,7 @@ Balances, payments, "Devendo" filter, Receber da salinha and Registrar pagamento
 
 ## Answered questions (Victor, 27 Oct 2026)
 
-- Group members are optional and drawn from the students linked to the group's place; a school group can be just a class name.
+- Group members are optional; a school group can be just a class name. (28 Oct 2026: any active student can be added, and adding one links them to the group's place.)
 - A student needs at least one place to be saved; only archiving their only place leaves them "Sem local".
 - Prices use − / + steppers in R$ 5 steps; tapping the amount opens exact entry.
 - A Particular place asks who pays, like a Salinha.

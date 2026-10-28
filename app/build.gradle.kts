@@ -19,7 +19,7 @@ android {
         // Must grow on every release build installed over the previous one.
         versionCode = env("TUTORA_VERSION_CODE")?.toInt() ?: 1
         // Follows the last spec shipped: 1.5.0 = specs 001 to 005.
-        versionName = "1.5.0"
+        versionName = "1.6.0"
     }
 
     signingConfigs {
@@ -55,6 +55,8 @@ android {
     lint {
         warningsAsErrors = true
         error += listOf("MissingTranslation", "ExtraTranslation")
+        // A release elsewhere must not fail the build: upgrades are a deliberate step (spec 001).
+        disable += listOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
     }
 }
 
