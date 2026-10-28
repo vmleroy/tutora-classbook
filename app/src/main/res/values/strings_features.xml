@@ -140,7 +140,6 @@
     <string name="catalog_removeTitle">Remove %1$s?</string>
     <string name="catalog_removeBody">This cannot be undone.</string>
     <string name="catalog_removePlaceBody">This cannot be undone. This place\'s groups and student links go too; the students stay.</string>
-    <string name="catalog_exactAmount">Exact amount</string>
     <string name="catalog_done">Done</string>
     <string name="catalog_errors_nameRequired">Give it a name to save.</string>
     <string name="catalog_errors_placeRequired">Link the student to at least one place.</string>

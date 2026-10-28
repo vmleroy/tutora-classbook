@@ -12,7 +12,6 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.vmleroy.tutora.app.ui.LessonNew
@@ -399,7 +398,7 @@ class FeatureScreensTest {
         compose.waitForIdle()
         compose.onNode(hasContentDescription("Ana Souza", substring = true)).performClick()
         compose.waitForIdle()
-        compose.onNodeWithText("Agendar").performScrollTo().performClick()
+        compose.onNodeWithText("Agendar").performClick()
         h.awaitDb(compose) {
             h.services.scheduleRepo
                 .between("2026-01-01T00:00:00.000Z", "2027-12-31T00:00:00.000Z")

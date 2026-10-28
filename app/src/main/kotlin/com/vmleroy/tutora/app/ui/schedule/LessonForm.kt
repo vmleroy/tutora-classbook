@@ -14,13 +14,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.navigation.NavHostController
 import com.vmleroy.tutora.app.R
 import com.vmleroy.tutora.app.state.LocalServices
 import com.vmleroy.tutora.app.ui.ScreenScaffold
 import com.vmleroy.tutora.app.ui.catalog.DurationStepper
 import com.vmleroy.tutora.app.ui.catalog.Field
-import com.vmleroy.tutora.app.ui.catalog.PriceStepper
 import com.vmleroy.tutora.app.ui.clockTime
 import com.vmleroy.tutora.app.ui.placeName
 import com.vmleroy.tutora.app.ui.shortDate
@@ -39,16 +39,18 @@ import com.vmleroy.tutora.designsystem.components.ButtonVariant
 import com.vmleroy.tutora.designsystem.components.Card
 import com.vmleroy.tutora.designsystem.components.Chip
 import com.vmleroy.tutora.designsystem.components.ControlSize
-import com.vmleroy.tutora.designsystem.components.DurationField
+import com.vmleroy.tutora.designsystem.components.DateField
 import com.vmleroy.tutora.designsystem.components.HeaderVariant
 import com.vmleroy.tutora.designsystem.components.IconName
 import com.vmleroy.tutora.designsystem.components.ListGroup
 import com.vmleroy.tutora.designsystem.components.ListRow
+import com.vmleroy.tutora.designsystem.components.MoneyField
 import com.vmleroy.tutora.designsystem.components.RowTrailing
 import com.vmleroy.tutora.designsystem.components.SegmentedControl
 import com.vmleroy.tutora.designsystem.components.SelectField
 import com.vmleroy.tutora.designsystem.components.Tag
 import com.vmleroy.tutora.designsystem.components.TextField
+import com.vmleroy.tutora.designsystem.components.TimeField
 import com.vmleroy.tutora.designsystem.components.currentLanguage
 import com.vmleroy.tutora.designsystem.tokens.TutoraTokens.Spacing
 import com.vmleroy.tutora.domain.Cents
@@ -88,8 +90,10 @@ data class SeriesInfo(
 
 @Composable
 fun LessonForm(
+    title: String,
+    tag: String,
+    onBack: () -> Unit,
     initial: LessonValues,
-    today: LocalDate,
     editing: Boolean,
     series: SeriesInfo?,
     error: String?,
@@ -105,7 +109,6 @@ fun LessonForm(
     var v by remember(initial) { mutableStateOf(initial) }
     var applyTo by rememberSaveable { mutableStateOf(Scope.ONE) }
     var sheet by rememberSaveable { mutableStateOf<String?>(null) }
-    var timeValid by remember { mutableStateOf(true) }
     val byId = places.associate { it.place.id to it.place }
     val student = (v.who as? WhoId.OfStudent)?.let { w -> students.firstOrNull { it.student.id == w.id } }
     val group = (v.who as? WhoId.OfGroup)?.let { w -> groups.firstOrNull { it.id == w.id } }
@@ -158,138 +161,133 @@ fun LessonForm(
             }
         }
 
-    if (series != null) {
-        val repeat =
-            stringResource(
-                if (series.repeat ==
-                    Repeat.WEEKLY
-                ) {
-                    R.string.lesson_repeats_weekly
-                } else {
-                    R.string.lesson_repeats_biweekly
-                },
+    ScreenScaffold(title, tag, variant = HeaderVariant.PUSH, onBack = onBack, bottomBar = {
+        Button(stringResource(if (editing) R.string.lesson_saveEdit else R.string.lesson_save), { onSubmit(v, applyTo) }, fullWidth = true)
+    }) {
+        if (series != null) {
+            val repeat =
+                stringResource(
+                    if (series.repeat ==
+                        Repeat.WEEKLY
+                    ) {
+                        R.string.lesson_repeats_weekly
+                    } else {
+                        R.string.lesson_repeats_biweekly
+                    },
+                )
+            Text(
+                stringResource(R.string.lesson_series, repeat, weekdayLong(series.date, language), clockTime(series.time, language)),
+                style = TutoraTheme.type.meta,
+                color = TutoraTheme.colors.inkMuted,
             )
-        Text(
-            stringResource(R.string.lesson_series, repeat, weekdayLong(series.date, language), clockTime(series.time, language)),
-            style = TutoraTheme.type.meta,
-            color = TutoraTheme.colors.inkMuted,
+        }
+        SelectField(
+            student?.student?.name ?: group?.name ?: stringResource(R.string.lesson_pickWho),
+            if (editing) null else ({ sheet = "who" }),
+            label = stringResource(R.string.lesson_who),
+            sub = student?.student?.subject ?: group?.subject,
+            avatar = student?.let { initials(it.student.name) to it.student.color.tag() } ?: group?.let { initials(it.name) to Tag.TEAL },
+            actionLabel = if (editing) null else stringResource(R.string.lesson_change),
         )
-    }
-    SelectField(
-        student?.student?.name ?: group?.name ?: stringResource(R.string.lesson_pickWho),
-        if (editing) null else ({ sheet = "who" }),
-        label = stringResource(R.string.lesson_who),
-        sub = student?.student?.subject ?: group?.subject,
-        avatar = student?.let { initials(it.student.name) to it.student.color.tag() } ?: group?.let { initials(it.name) to Tag.TEAL },
-        actionLabel = if (editing) null else stringResource(R.string.lesson_change),
-    )
-    if (choices.isNotEmpty()) {
-        Field(stringResource(if (group != null) R.string.lesson_groupPlace else R.string.lesson_place)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                choices.forEach { p ->
-                    Chip(placeName(p), v.placeId == p.id, { if (!editing) choosePlace(p, (v.who as? WhoId.OfStudent)?.id) })
+        if (choices.isNotEmpty()) {
+            Field(stringResource(if (group != null) R.string.lesson_groupPlace else R.string.lesson_place)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    choices.forEach { p ->
+                        Chip(placeName(p), v.placeId == p.id, { if (!editing) choosePlace(p, (v.who as? WhoId.OfStudent)?.id) })
+                    }
                 }
             }
         }
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-        SelectField(shortDate(v.date, language), {
-            sheet = "date"
-        }, Modifier.weight(1f), label = stringResource(R.string.lesson_date), icon = IconName.CALENDAR)
-        DurationField(
-            stringResource(R.string.lesson_start),
-            v.time.hour * 60 + v.time.minute,
-            { m ->
-                timeValid = m != null
-                if (m != null) v = v.copy(time = LocalTime(m / 60, m % 60))
-            },
-            Modifier.weight(1f),
-            maxMinutes = 23 * 60 + 59,
-        )
-    }
-    Field(stringResource(R.string.lesson_duration)) {
-        DurationStepper(stringResource(R.string.lesson_duration), v.plannedMin, {
-            v =
-                v.copy(plannedMin = it)
-        })
-    }
-    if (place?.kind == PlaceKind.STUDENT_HOME && place.travelMode == TravelMode.VARIES) {
-        Field(stringResource(R.string.lesson_travel)) {
-            PriceStepper(stringResource(R.string.lesson_travel), v.travelFeeCents ?: 0, {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            DateField(
+                stringResource(R.string.lesson_date),
+                shortDate(v.date, language),
+                v.date,
+                { v = v.copy(date = it) },
+                Modifier.weight(1f),
+                title = stringResource(R.string.lesson_pickDate),
+            )
+            TimeField(
+                stringResource(R.string.lesson_start),
+                v.time.hour,
+                v.time.minute,
+                { h, m -> v = v.copy(time = LocalTime(h, m)) },
+                Modifier.weight(1f),
+            )
+        }
+        Field(stringResource(R.string.lesson_duration)) {
+            DurationStepper(stringResource(R.string.lesson_duration), v.plannedMin, {
                 v =
-                    v.copy(travelFeeCents = it)
+                    v.copy(plannedMin = it)
             })
         }
-    }
-    Card(label = stringResource(R.string.lesson_value)) {
-        Text(
-            stringResource(
-                if (v.valueCents !=
+        if (place?.kind == PlaceKind.STUDENT_HOME && place.travelMode == TravelMode.VARIES) {
+            MoneyField(stringResource(R.string.lesson_travel), v.travelFeeCents ?: 0, { v = v.copy(travelFeeCents = it) })
+        }
+        Card(label = stringResource(R.string.lesson_value)) {
+            if (v.valueCents != null) {
+                // A value typed by hand is the field itself; the total shows only when travel adds to it.
+                MoneyField(stringResource(R.string.lesson_handValue), v.valueCents ?: 0, { v = v.copy(valueCents = it) })
+                if ((v.travelFeeCents ?: 0) > 0) {
+                    Text(worth?.let { worthText(it) } ?: "—", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
+                }
+                Button(
+                    stringResource(R.string.lesson_usePrice),
+                    { v = v.copy(valueCents = null) },
+                    variant = ButtonVariant.GHOST,
+                    size = ControlSize.SM,
+                )
+            } else {
+                Text(stringResource(R.string.lesson_value), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
+                Text(worth?.let { worthText(it) } ?: "—", style = TutoraTheme.type.moneyLg, color = TutoraTheme.colors.ink)
+                Button(stringResource(R.string.lesson_setValue), {
+                    v = v.copy(valueCents = (worth as? Worth.Set)?.cents?.minus(v.travelFeeCents ?: 0) ?: 0)
+                }, variant = ButtonVariant.GHOST, size = ControlSize.SM)
+            }
+        }
+        if (!editing) {
+            Field(stringResource(R.string.lesson_repeat)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    listOf(
+                        null to R.string.lesson_repeats_none,
+                        Repeat.WEEKLY to R.string.lesson_repeats_weekly,
+                        Repeat.BIWEEKLY to R.string.lesson_repeats_biweekly,
+                    ).forEach { (r, label) -> Chip(stringResource(label), v.repeat == r, { v = v.copy(repeat = r) }) }
+                }
+            }
+        }
+        if (series != null) {
+            Field(stringResource(R.string.lesson_scope)) {
+                SegmentedControl(
+                    listOf(
+                        Scope.ONE to stringResource(R.string.lesson_scopes_one),
+                        Scope.FOLLOWING to stringResource(R.string.lesson_scopes_following),
+                    ),
+                    applyTo,
+                    { applyTo = it },
+                    stringResource(R.string.lesson_scope),
+                    size = ControlSize.SM,
+                )
+            }
+        }
+        TextField(
+            stringResource(R.string.lesson_notes),
+            v.notes.orEmpty(),
+            { v = v.copy(notes = it.ifEmpty { null }) },
+            imeAction = ImeAction.Done,
+        )
+        if (error != null) Text(error, style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
+        if (onRemove != null) {
+            Button(stringResource(R.string.lesson_remove), {
+                if (series !=
                     null
                 ) {
-                    R.string.lesson_handValue
+                    sheet = "remove"
                 } else {
-                    R.string.lesson_value
-                },
-            ),
-            style = TutoraTheme.type.caption,
-            color = TutoraTheme.colors.inkMuted,
-        )
-        Text(worth?.let { worthText(it) } ?: "—", style = TutoraTheme.type.moneyLg, color = TutoraTheme.colors.ink)
-        if (v.valueCents != null) {
-            PriceStepper(stringResource(R.string.lesson_value), v.valueCents ?: 0, { v = v.copy(valueCents = it) })
-            Button(
-                stringResource(R.string.lesson_usePrice),
-                { v = v.copy(valueCents = null) },
-                variant = ButtonVariant.GHOST,
-                size = ControlSize.SM,
-            )
-        } else {
-            Button(stringResource(R.string.lesson_setValue), {
-                v = v.copy(valueCents = (worth as? Worth.Set)?.cents?.minus(v.travelFeeCents ?: 0) ?: 0)
-            }, variant = ButtonVariant.GHOST, size = ControlSize.SM)
+                    onRemove(Scope.ONE)
+                }
+            }, variant = ButtonVariant.GHOST)
         }
-    }
-    if (!editing) {
-        Field(stringResource(R.string.lesson_repeat)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                listOf(
-                    null to R.string.lesson_repeats_none,
-                    Repeat.WEEKLY to R.string.lesson_repeats_weekly,
-                    Repeat.BIWEEKLY to R.string.lesson_repeats_biweekly,
-                ).forEach { (r, label) -> Chip(stringResource(label), v.repeat == r, { v = v.copy(repeat = r) }) }
-            }
-        }
-    }
-    if (series != null) {
-        Field(stringResource(R.string.lesson_scope)) {
-            SegmentedControl(
-                listOf(
-                    Scope.ONE to stringResource(R.string.lesson_scopes_one),
-                    Scope.FOLLOWING to stringResource(R.string.lesson_scopes_following),
-                ),
-                applyTo,
-                { applyTo = it },
-                stringResource(R.string.lesson_scope),
-                size = ControlSize.SM,
-            )
-        }
-    }
-    TextField(stringResource(R.string.lesson_notes), v.notes.orEmpty(), { v = v.copy(notes = it.ifEmpty { null }) })
-    if (error != null) Text(error, style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
-    Button(stringResource(if (editing) R.string.lesson_saveEdit else R.string.lesson_save), {
-        onSubmit(v, applyTo)
-    }, fullWidth = true, enabled = timeValid)
-    if (onRemove != null) {
-        Button(stringResource(R.string.lesson_remove), {
-            if (series !=
-                null
-            ) {
-                sheet = "remove"
-            } else {
-                onRemove(Scope.ONE)
-            }
-        }, variant = ButtonVariant.GHOST)
     }
 
     when (sheet) {
@@ -321,7 +319,6 @@ fun LessonForm(
                     }
                 ListGroup(studentRows + groupRows)
             }
-        "date" -> DateSheet(stringResource(R.string.lesson_pickDate), v.date, today, { v = v.copy(date = it) }, { sheet = null })
         "remove" ->
             if (onRemove != null) {
                 BottomSheet(
@@ -389,8 +386,13 @@ fun LessonNewScreen(
                 null,
             )
         }
-    ScreenScaffold(stringResource(R.string.lesson_new), "lesson-new", variant = HeaderVariant.PUSH, onBack = { nav.popBackStack() }) {
-        LessonForm(initial, now.date, editing = false, series = null, error = error, onSubmit = { v, _ ->
+    run {
+        LessonForm(stringResource(R.string.lesson_new), "lesson-new", {
+            nav.popBackStack()
+        }, initial, editing = false, series = null, error = error, onSubmit = {
+            v,
+            _,
+            ->
             val who = v.who
             val placeId = v.placeId
             when {
@@ -472,8 +474,13 @@ fun LessonEditScreen(
             is ScheduleResult.Err -> error = errors.getValue(r.error)
         }
     }
-    ScreenScaffold(stringResource(R.string.lesson_edit), "lesson-edit", variant = HeaderVariant.PUSH, onBack = { nav.popBackStack() }) {
-        LessonForm(initial, today, editing = true, series = series, error = error, onSubmit = { v, applyTo ->
+    run {
+        LessonForm(stringResource(R.string.lesson_edit), "lesson-edit", {
+            nav.popBackStack()
+        }, initial, editing = true, series = series, error = error, onSubmit = {
+            v,
+            applyTo,
+            ->
             scope.launch {
                 done(
                     services.schedule.editLesson(

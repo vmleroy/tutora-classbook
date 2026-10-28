@@ -44,6 +44,7 @@ import com.vmleroy.tutora.designsystem.components.HeaderVariant
 import com.vmleroy.tutora.designsystem.components.IconName
 import com.vmleroy.tutora.designsystem.components.ListGroup
 import com.vmleroy.tutora.designsystem.components.ListRow
+import com.vmleroy.tutora.designsystem.components.MoneyField
 import com.vmleroy.tutora.designsystem.components.RowTrailing
 import com.vmleroy.tutora.designsystem.components.SectionHeader
 import com.vmleroy.tutora.designsystem.components.SegmentedControl
@@ -261,6 +262,16 @@ private fun PlaceForm(
         "place-edit",
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
+        bottomBar = {
+            Button(stringResource(R.string.places_save), {
+                scope.launch {
+                    when (val r = services.catalog.savePlace(d)) {
+                        is Result.Ok -> nav.popBackStack()
+                        is Result.Err -> error = r.error
+                    }
+                }
+            }, fullWidth = true)
+        },
     ) {
         if (builtin) {
             Text(placeName(d), style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
@@ -294,13 +305,7 @@ private fun PlaceForm(
             }
         }
         if (mode == PayMode.SALARY) {
-            Field(stringResource(R.string.places_salaryLabel)) {
-                PriceStepper(
-                    stringResource(R.string.places_salaryLabel),
-                    d.monthlySalaryCents ?: 0,
-                    { d = d.copy(monthlySalaryCents = it) },
-                )
-            }
+            MoneyField(stringResource(R.string.places_salaryLabel), d.monthlySalaryCents ?: 0, { d = d.copy(monthlySalaryCents = it) })
         } else {
             if (mode == PayMode.CHOOSE) {
                 Field(stringResource(R.string.places_whoPays)) {
@@ -328,18 +333,19 @@ private fun PlaceForm(
                 )
             }
             val rateLabel = stringResource(if (d.payer == Payer.PLACE) R.string.places_placePays else R.string.places_studentPays)
-            val noPrice = stringResource(R.string.places_noPrice)
-            Field(rateLabel) {
-                PriceStepper(rateLabel, d.rateCents ?: 0, { d = d.copy(rateCents = it) }, format = {
-                    if (d.rateCents ==
-                        null
-                    ) {
-                        noPrice
-                    } else {
-                        rateMoney(it, language)
-                    }
-                })
-            }
+            MoneyField(
+                rateLabel,
+                d.rateCents ?: 0,
+                { d = d.copy(rateCents = it) },
+                helper =
+                    stringResource(
+                        when {
+                            d.rateCents == null -> R.string.places_noPrice
+                            d.rateType == RateType.HOUR -> R.string.places_perHourOption
+                            else -> R.string.places_perLessonOption
+                        },
+                    ),
+            )
             if (d.payer == Payer.STUDENT && mode == PayMode.CHOOSE) {
                 Field(stringResource(R.string.places_commission)) {
                     Stepper(d.commissionBp.toLong(), {
@@ -381,10 +387,7 @@ private fun PlaceForm(
                 if (d.travelMode ==
                     TravelMode.FIXED
                 ) {
-                    PriceStepper(stringResource(R.string.places_travelFee), d.travelFeeCents, {
-                        d =
-                            d.copy(travelFeeCents = it)
-                    })
+                    MoneyField(stringResource(R.string.places_travelFee), d.travelFeeCents, { d = d.copy(travelFeeCents = it) })
                 }
             }
         }
@@ -413,14 +416,6 @@ private fun PlaceForm(
             Text(text, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink, modifier = Modifier.testTag("place-preview"))
         }
         if (error != null && builtin) Text(errorText(error!!), style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
-        Button(stringResource(R.string.places_save), {
-            scope.launch {
-                when (val r = services.catalog.savePlace(d)) {
-                    is Result.Ok -> nav.popBackStack()
-                    is Result.Err -> error = r.error
-                }
-            }
-        }, fullWidth = true)
         if (id != null && !builtin) {
             ArchiveActions(
                 placeName(d),

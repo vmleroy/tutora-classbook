@@ -2,9 +2,11 @@ package com.vmleroy.tutora.app.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
@@ -23,7 +25,10 @@ import com.vmleroy.tutora.designsystem.components.IconName
 import com.vmleroy.tutora.designsystem.components.ScreenHeader
 import com.vmleroy.tutora.designsystem.tokens.TutoraTokens.Spacing
 
-/** A screen: its header, then a scrolling body on the background with the 20 dp gutter. */
+/**
+ * A screen: its header, then a scrolling body on the background with the 20 dp gutter, and
+ * an optional [bottomBar] fixed under it.
+ */
 @Composable
 fun ScreenScaffold(
     title: String,
@@ -34,6 +39,7 @@ fun ScreenScaffold(
     actions: List<HeaderAction> = emptyList(),
     onBack: (() -> Unit)? = null,
     scroll: Boolean = true,
+    bottomBar: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
@@ -46,11 +52,21 @@ fun ScreenScaffold(
         ScreenHeader(title, variant = variant, eyebrow = eyebrow, actions = actions, onBack = onBack)
         Column(
             Modifier
+                .then(if (bottomBar != null) Modifier.weight(1f) else Modifier)
                 .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                 .padding(horizontal = Spacing.s5, vertical = Spacing.s2),
             verticalArrangement = Arrangement.spacedBy(Spacing.s4),
             content = content,
         )
+        // A form's main action stays in reach, above the keyboard, however long the form is.
+        if (bottomBar != null) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .background(TutoraTheme.colors.surface)
+                    .padding(horizontal = Spacing.s5, vertical = Spacing.s3),
+            ) { bottomBar() }
+        }
     }
 }
 

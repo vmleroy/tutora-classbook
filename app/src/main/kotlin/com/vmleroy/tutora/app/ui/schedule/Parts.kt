@@ -17,8 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +33,6 @@ import com.vmleroy.tutora.app.ui.weekdayShort
 import com.vmleroy.tutora.designsystem.TutoraTheme
 import com.vmleroy.tutora.designsystem.components.AgendaBlock
 import com.vmleroy.tutora.designsystem.components.BlockState
-import com.vmleroy.tutora.designsystem.components.BottomSheet
 import com.vmleroy.tutora.designsystem.components.IconButton
 import com.vmleroy.tutora.designsystem.components.IconButtonVariant
 import com.vmleroy.tutora.designsystem.components.IconName
@@ -119,29 +116,6 @@ fun WeekPicker(
             onSelect = { onSelect(days[it]) },
             today = days.indexOf(today).takeIf { it >= 0 },
         )
-    }
-}
-
-/** The form's date sheet: the week picker; moving weeks keeps it open, a day picks it. */
-@Composable
-fun DateSheet(
-    title: String,
-    value: LocalDate,
-    today: LocalDate,
-    onPick: (LocalDate) -> Unit,
-    onClose: () -> Unit,
-) {
-    var shown by rememberSaveable { mutableStateOf(value.toString()) }
-    val current = LocalDate.parse(shown)
-    BottomSheet(title, onClose) {
-        WeekPicker(current, today, { d ->
-            if (weekStart(d) == weekStart(current) && d != current) {
-                onPick(d)
-                onClose()
-            } else {
-                shown = d.toString()
-            }
-        })
     }
 }
 

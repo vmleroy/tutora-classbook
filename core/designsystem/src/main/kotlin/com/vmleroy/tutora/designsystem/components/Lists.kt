@@ -35,9 +35,18 @@ fun SectionHeader(
     asidePrimary: Boolean = false,
 ) {
     val c = TutoraTheme.colors
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-        Text(title, style = TutoraTheme.type.section, color = c.ink)
-        if (aside != null) Text(aside, style = TutoraTheme.type.caption, color = if (asidePrimary) c.btnPrimary else c.inkMuted)
+    // The title wraps; the aside keeps its own width on one line, never squeezed into a column.
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.Bottom) {
+        Text(title, style = TutoraTheme.type.section, color = c.ink, modifier = Modifier.weight(1f))
+        if (aside != null) {
+            Text(
+                aside,
+                style = TutoraTheme.type.caption,
+                color = if (asidePrimary) c.btnPrimary else c.inkMuted,
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
     }
 }
 

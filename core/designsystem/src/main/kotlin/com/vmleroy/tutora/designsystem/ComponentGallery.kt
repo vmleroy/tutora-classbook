@@ -36,6 +36,7 @@ import com.vmleroy.tutora.designsystem.components.CardElevation
 import com.vmleroy.tutora.designsystem.components.Checkbox
 import com.vmleroy.tutora.designsystem.components.Chip
 import com.vmleroy.tutora.designsystem.components.ControlSize
+import com.vmleroy.tutora.designsystem.components.DateField
 import com.vmleroy.tutora.designsystem.components.DurationField
 import com.vmleroy.tutora.designsystem.components.EarningsStat
 import com.vmleroy.tutora.designsystem.components.EarningsSummary
@@ -68,6 +69,7 @@ import com.vmleroy.tutora.designsystem.components.Tag
 import com.vmleroy.tutora.designsystem.components.TagDot
 import com.vmleroy.tutora.designsystem.components.TextField
 import com.vmleroy.tutora.designsystem.components.TileTone
+import com.vmleroy.tutora.designsystem.components.TimeField
 import com.vmleroy.tutora.designsystem.components.TimerRing
 import com.vmleroy.tutora.designsystem.components.WeekDay
 import com.vmleroy.tutora.designsystem.components.WeekStrip
@@ -75,6 +77,7 @@ import com.vmleroy.tutora.designsystem.tokens.TutoraTokens.Size
 import com.vmleroy.tutora.designsystem.tokens.TutoraTokens.Spacing
 import com.vmleroy.tutora.domain.ThemeMode
 import com.vmleroy.tutora.domain.theme.themeIds
+import kotlinx.datetime.LocalDate
 
 /** The 30 components, in a section each. */
 val galleryComponents =
@@ -205,6 +208,8 @@ fun GallerySections() {
     Section("SelectField") {
         SelectField("Ana Souza", {}, label = "Aluno", sub = "Matemática", avatar = "AS" to Tag.AMBER, actionLabel = "Trocar")
         SelectField("Seg, 26 out", {}, label = "Data", icon = IconName.CALENDAR)
+        DateField("Data", "Seg, 26 out", LocalDate(2026, 10, 26), {})
+        TimeField("Início", 14, 0, { _, _ -> })
     }
     Section("Badge") {
         FlowRow(

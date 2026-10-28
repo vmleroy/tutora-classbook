@@ -10,4 +10,8 @@
     <string name="ds_new_lesson">Nova aula</string>
     <string name="ds_loading">Carregando</string>
     <string name="ds_duration_invalid">Use hh:mm, até %1$s</string>
+    <string name="ds_time_type">Digitar</string>
+    <string name="ds_time_dial">Relógio</string>
+    <string name="ds_ok">OK</string>
+    <string name="ds_cancel">Cancelar</string>
 </resources>

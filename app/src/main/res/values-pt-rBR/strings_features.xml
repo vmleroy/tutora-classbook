@@ -140,7 +140,6 @@
     <string name="catalog_removeTitle">Remover %1$s?</string>
     <string name="catalog_removeBody">Isso não pode ser desfeito.</string>
     <string name="catalog_removePlaceBody">Isso não pode ser desfeito. As turmas e os vínculos com alunos deste local também saem; os alunos ficam.</string>
-    <string name="catalog_exactAmount">Valor exato</string>
     <string name="catalog_done">Pronto</string>
     <string name="catalog_errors_nameRequired">Dê um nome para salvar.</string>
     <string name="catalog_errors_placeRequired">Ligue o aluno a pelo menos um local.</string>

@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,10 +15,20 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -28,6 +40,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +57,7 @@ import com.vmleroy.tutora.domain.durationDigits
 import com.vmleroy.tutora.domain.hhmm
 import com.vmleroy.tutora.domain.typedCents
 import com.vmleroy.tutora.domain.typedDuration
+import kotlinx.datetime.LocalDate
 
 /** The look all fields share: the label above, never only a placeholder. */
 @Composable
@@ -94,6 +109,8 @@ private fun Input(
     keyboardType: KeyboardType,
     onPrimary: Boolean,
     alignEnd: Boolean = false,
+    imeAction: ImeAction = ImeAction.Next,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
 ) {
     val c = TutoraTheme.colors
     val ink = if (onPrimary) c.onPrimary else c.ink
@@ -102,12 +119,15 @@ private fun Input(
         onValueChange = onValueChange,
         singleLine = true,
         textStyle = TutoraTheme.type.body.copy(color = ink, textAlign = if (alignEnd) TextAlign.End else TextAlign.Start),
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        // Next moves to the following field and Done closes the keyboard (Compose's defaults).
+        keyboardOptions = KeyboardOptions(capitalization = capitalization, keyboardType = keyboardType, imeAction = imeAction),
         cursorBrush = SolidColor(ink),
         modifier = modifier,
         decorationBox = { inner ->
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
+            // Fill the field's height so the text sits in its vertical middle.
+            Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+                // The hint and the input overlap, so both sit in the field's middle.
+                Box(Modifier.weight(1f), contentAlignment = if (alignEnd) Alignment.CenterEnd else Alignment.CenterStart) {
                     if (value.text.isEmpty() && placeholder != null) {
                         Text(placeholder, style = TutoraTheme.type.body, color = if (onPrimary) c.onPrimaryMuted else c.inkMuted)
                     }
@@ -129,11 +149,28 @@ fun TextField(
     helper: String? = null,
     error: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.Sentences,
+    imeAction: ImeAction = ImeAction.Next,
     onPrimary: Boolean = false,
 ) {
+    // The field keeps its own selection, so the cursor can be placed anywhere to fix a typo.
+    var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    if (field.text != value) field = TextFieldValue(value, TextRange(value.length))
     Column(modifier) {
         FieldFrame(label, helper, error, onPrimary) { m ->
-            Input(TextFieldValue(value, TextRange(value.length)), { onValueChange(it.text) }, m, placeholder, keyboardType, onPrimary)
+            Input(
+                field,
+                {
+                    field = it
+                    if (it.text != value) onValueChange(it.text)
+                },
+                m,
+                placeholder,
+                keyboardType,
+                onPrimary,
+                imeAction = imeAction,
+                capitalization = capitalization,
+            )
         }
     }
 }
@@ -253,3 +290,135 @@ fun SelectField(
         }
     }
 }
+
+/**
+ * A time of day: shows the time and opens the clock picker (dial, or typed with the keyboard
+ * toggle), 24-hour or 12-hour as the app language writes times.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimeField(
+    label: String,
+    hour: Int,
+    minute: Int,
+    onChange: (hour: Int, minute: Int) -> Unit,
+    modifier: Modifier = Modifier,
+    is24Hour: Boolean = currentLanguage() == com.vmleroy.tutora.domain.Language.PT_BR,
+) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    val shown =
+        if (is24Hour) {
+            "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+        } else {
+            val h12 = if (hour % 12 == 0) 12 else hour % 12
+            "$h12:${minute.toString().padStart(2, '0')} ${if (hour < 12) "AM" else "PM"}"
+        }
+    SelectField(shown, { open = true }, modifier, label = label, icon = IconName.CLOCK)
+    if (open) {
+        val state = rememberTimePickerState(initialHour = hour, initialMinute = minute, is24Hour = is24Hour)
+        var typing by rememberSaveable { mutableStateOf(false) }
+        val c = TutoraTheme.colors
+        val colors =
+            TimePickerDefaults.colors(
+                clockDialColor = c.surfaceSunken,
+                selectorColor = c.btnPrimary,
+                timeSelectorSelectedContainerColor = c.primarySoft,
+                timeSelectorSelectedContentColor = c.primary,
+                timeSelectorUnselectedContainerColor = c.surfaceSunken,
+                timeSelectorUnselectedContentColor = c.ink,
+                periodSelectorSelectedContainerColor = c.primarySoft,
+                periodSelectorSelectedContentColor = c.primary,
+            )
+        BottomSheet(
+            label,
+            { open = false },
+            actions =
+                listOf(
+                    { m ->
+                        Button(
+                            stringResource(if (typing) R.string.ds_time_dial else R.string.ds_time_type),
+                            { typing = !typing },
+                            m,
+                            variant = ButtonVariant.OUTLINE,
+                            icon = if (typing) IconName.CLOCK else null,
+                        )
+                    },
+                    { m ->
+                        Button(stringResource(R.string.ds_ok), {
+                            onChange(state.hour, state.minute)
+                            open = false
+                        }, m)
+                    },
+                ),
+        ) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                if (typing) TimeInput(state, colors = colors) else TimePicker(state, colors = colors)
+            }
+        }
+    }
+}
+
+/**
+ * A calendar date: shows [text] (the date as the screen writes it) and opens the month
+ * calendar, which can also be typed; [title] heads the calendar.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DateField(
+    label: String,
+    text: String,
+    date: LocalDate,
+    onPick: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    SelectField(text, { open = true }, modifier, label = label, icon = IconName.CALENDAR)
+    if (open) {
+        // The calendar counts in UTC milliseconds at midnight.
+        val state = rememberDatePickerState(initialSelectedDateMillis = date.toEpochDays() * DAY_MILLIS)
+        val c = TutoraTheme.colors
+        val colors =
+            DatePickerDefaults.colors(
+                containerColor = c.surface,
+                titleContentColor = c.inkMuted,
+                headlineContentColor = c.ink,
+                weekdayContentColor = c.inkMuted,
+                dayContentColor = c.ink,
+                selectedDayContainerColor = c.btnPrimary,
+                selectedDayContentColor = c.onBtnPrimary,
+                todayContentColor = c.primary,
+                todayDateBorderColor = c.primary,
+                selectedYearContainerColor = c.btnPrimary,
+                selectedYearContentColor = c.onBtnPrimary,
+            )
+        DatePickerDialog(
+            onDismissRequest = { open = false },
+            confirmButton = {
+                Button(stringResource(R.string.ds_ok), {
+                    state.selectedDateMillis?.let { onPick(LocalDate.fromEpochDays(it / DAY_MILLIS)) }
+                    open = false
+                }, variant = ButtonVariant.GHOST, enabled = state.selectedDateMillis != null)
+            },
+            dismissButton = { Button(stringResource(R.string.ds_cancel), { open = false }, variant = ButtonVariant.GHOST) },
+            colors = colors,
+        ) {
+            DatePicker(
+                state,
+                title =
+                    title?.let {
+                        {
+                            Text(
+                                it,
+                                Modifier.padding(start = Spacing.s6, top = Spacing.s4),
+                                style = TutoraTheme.type.caption,
+                            )
+                        }
+                    },
+                colors = colors,
+            )
+        }
+    }
+}
+
+private const val DAY_MILLIS = 86_400_000L

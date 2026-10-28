@@ -27,6 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.navigation.NavHostController
 import com.vmleroy.tutora.app.R
@@ -58,6 +60,7 @@ import com.vmleroy.tutora.designsystem.components.IconButtonVariant
 import com.vmleroy.tutora.designsystem.components.IconName
 import com.vmleroy.tutora.designsystem.components.ListGroup
 import com.vmleroy.tutora.designsystem.components.ListRow
+import com.vmleroy.tutora.designsystem.components.MoneyField
 import com.vmleroy.tutora.designsystem.components.RowTrailing
 import com.vmleroy.tutora.designsystem.components.SectionHeader
 import com.vmleroy.tutora.designsystem.components.SegmentedControl
@@ -219,12 +222,23 @@ private fun StudentForm(
         "student-edit",
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
+        bottomBar = {
+            Button(stringResource(R.string.catalog_save), {
+                scope.launch {
+                    when (val r = services.catalog.saveStudent(d, links)) {
+                        is Result.Ok -> nav.popBackStack()
+                        is Result.Err -> error = r.error
+                    }
+                }
+            }, fullWidth = true)
+        },
     ) {
         TextField(
             stringResource(R.string.students_name),
             d.name,
             { d = d.copy(name = it) },
             placeholder = stringResource(R.string.students_namePlaceholder),
+            capitalization = KeyboardCapitalization.Words,
             error = error?.takeIf { it == CatalogError.NAME_REQUIRED }?.let { errorText(it) },
         )
         TextField(stringResource(R.string.students_subject), d.subject.orEmpty(), {
@@ -232,7 +246,7 @@ private fun StudentForm(
         }, placeholder = stringResource(R.string.students_subjectPlaceholder))
         TextField(stringResource(R.string.students_phone), d.phone.orEmpty(), {
             d = d.copy(phone = it.ifEmpty { null })
-        }, keyboardType = KeyboardType.Phone)
+        }, keyboardType = KeyboardType.Phone, capitalization = KeyboardCapitalization.None)
         SectionHeader(stringResource(R.string.students_wherePays), aside = stringResource(R.string.students_starHint))
         SegmentedControl(
             listOf(
@@ -293,11 +307,20 @@ private fun StudentForm(
                         size = ControlSize.SM,
                     )
                     if (custom) {
-                        PriceStepper(
+                        MoneyField(
                             stringResource(R.string.students_custom),
                             link.rateCents ?: 0,
                             { v -> links = links.map { if (it.placeId == link.placeId) it.copy(rateCents = v) else it } },
-                            format = { rateText(it, d.rateType) },
+                            helper =
+                                stringResource(
+                                    if (d.rateType ==
+                                        RateType.HOUR
+                                    ) {
+                                        R.string.places_perHourOption
+                                    } else {
+                                        R.string.places_perLessonOption
+                                    },
+                                ),
                         )
                     }
                 }
@@ -310,15 +333,9 @@ private fun StudentForm(
         }
         Button(stringResource(R.string.students_linkPlace), { picking = true }, variant = ButtonVariant.OUTLINE)
         Field(stringResource(R.string.students_color)) { ColorPicker(d.color) { d = d.copy(color = it) } }
-        TextField(stringResource(R.string.students_notes), d.notes.orEmpty(), { d = d.copy(notes = it.ifEmpty { null }) })
-        Button(stringResource(R.string.catalog_save), {
-            scope.launch {
-                when (val r = services.catalog.saveStudent(d, links)) {
-                    is Result.Ok -> nav.popBackStack()
-                    is Result.Err -> error = r.error
-                }
-            }
-        }, fullWidth = true)
+        TextField(stringResource(R.string.students_notes), d.notes.orEmpty(), {
+            d = d.copy(notes = it.ifEmpty { null })
+        }, imeAction = ImeAction.Done)
         if (id != null) {
             ArchiveActions(
                 d.name,
@@ -427,6 +444,16 @@ private fun GroupForm(
         "group-edit",
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
+        bottomBar = {
+            Button(stringResource(R.string.catalog_save), {
+                scope.launch {
+                    when (val r = services.catalog.saveGroup(d)) {
+                        is Result.Ok -> nav.popBackStack()
+                        is Result.Err -> error = r.error
+                    }
+                }
+            }, fullWidth = true)
+        },
     ) {
         place?.let { Text(placeName(it), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted) }
         TextField(stringResource(R.string.groups_name), d.name, {
@@ -436,18 +463,12 @@ private fun GroupForm(
         if (school) {
             Text(stringResource(R.string.groups_coveredBySalary), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
         } else {
-            val noPrice = stringResource(R.string.places_noPrice)
-            Field(stringResource(R.string.groups_price)) {
-                PriceStepper(stringResource(R.string.groups_price), d.rateCents ?: 0, { d = d.copy(rateCents = it) }, format = {
-                    if (d.rateCents ==
-                        null
-                    ) {
-                        noPrice
-                    } else {
-                        rateText(it, RateType.LESSON)
-                    }
-                })
-            }
+            MoneyField(
+                stringResource(R.string.groups_price),
+                d.rateCents ?: 0,
+                { d = d.copy(rateCents = it) },
+                helper = stringResource(if (d.rateCents == null) R.string.places_noPrice else R.string.places_perLessonOption),
+            )
         }
         Field(stringResource(R.string.groups_members)) {
             Text(stringResource(R.string.groups_membersHint), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
@@ -455,14 +476,6 @@ private fun GroupForm(
                 Checkbox(s.name, s.id in d.memberIds, { on -> d = d.copy(memberIds = if (on) d.memberIds + s.id else d.memberIds - s.id) })
             }
         }
-        Button(stringResource(R.string.catalog_save), {
-            scope.launch {
-                when (val r = services.catalog.saveGroup(d)) {
-                    is Result.Ok -> nav.popBackStack()
-                    is Result.Err -> error = r.error
-                }
-            }
-        }, fullWidth = true)
         if (id != null) {
             ArchiveActions(
                 d.name,
