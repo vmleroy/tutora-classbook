@@ -1,7 +1,7 @@
 # AC-001-1, AC-001-2, AC-001-3, AC-001-21, AC-005-27: open the app and tap through the five tabs.
 # Language-neutral: elements are found by Compose testTags exposed as resource ids, texts by a pt-BR|en pattern.
 # Each tab must show its screen within 300 ms of the tap (AC-001-2).
-appId: com.vmleroy.tutora.app
+appId: app.tutora.app
 ---
 - launchApp:
     clearState: true

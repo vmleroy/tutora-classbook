@@ -29,3 +29,6 @@ dist/
 # Left over from the Expo version (archived at the expo-final tag)
 node_modules/
 .expo/
+
+# IDE build output
+bin/

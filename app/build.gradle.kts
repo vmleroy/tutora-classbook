@@ -8,12 +8,12 @@ plugins {
 fun env(name: String): String? = System.getenv(name)?.takeIf { it.isNotBlank() }
 
 android {
-    namespace = "com.vmleroy.tutora.app"
+    namespace = "app.tutora.app"
     compileSdk = 37
 
     defaultConfig {
         // A new id, so the Kotlin app can sit next to the archived Expo app on the phone.
-        applicationId = "com.vmleroy.tutora.app"
+        applicationId = "app.tutora.app"
         minSdk = 26
         targetSdk = 37
         // Must grow on every release build installed over the previous one.

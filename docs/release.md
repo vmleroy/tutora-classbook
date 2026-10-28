@@ -44,7 +44,7 @@ TUTORA_VERSION_CODE=2 ./gradlew check assembleRelease
 
 **Versioning.** `versionCode` must be higher than the APK on the phone, every build. `versionName` in `app/build.gradle.kts` follows the last spec shipped (`1.1.0` = spec 001).
 
-**Application id.** The Kotlin app is `com.vmleroy.tutora.app`. The archived Expo app was `com.vmleroy.tutora`, so both can be installed side by side; the Expo app's data is not carried over.
+**Application id.** The Kotlin app is `app.tutora.app`. The archived Expo app was `app.tutora`, so both can be installed side by side; the Expo app's data is not carried over.
 
 ## Install on the phone
 
@@ -58,6 +58,6 @@ Before installing a new APK, check the date of the last automatic backup (spec 0
 1. Install build N. Open it and let it create its database. From spec 004 on, add a student.
 2. Build N+1 with `TUTORA_VERSION_CODE` one higher and install it with `adb install -r`. Don't uninstall in between.
 3. Open the app. It starts normally and the data from step 1 is still there.
-4. To confirm on the device itself: `adb shell run-as com.vmleroy.tutora.app ls databases` lists `tutora.db`, plus a `tutora-pre-v{n}.db` copy when the update included a migration.
+4. To confirm on the device itself: `adb shell run-as app.tutora.app ls databases` lists `tutora.db`, plus a `tutora-pre-v{n}.db` copy when the update included a migration.
 
 **Android developer verification.** From September 2026, certified Android phones in Brazil may require apps from registered developers, sideloading included. `adb install` is exempt. Check the current rule before the first release (see `docs/architecture.md`, "Build and sideload").

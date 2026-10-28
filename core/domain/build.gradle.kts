@@ -35,7 +35,7 @@ abstract class GenerateColorSets : DefaultTask() {
         val out = StringBuilder()
         out.appendLine("// GENERATED from design/tokens.json by :core:domain:generateColorSets. Do not edit.")
         out.appendLine("@file:Suppress(\"ktlint\")\n")
-        out.appendLine("package com.vmleroy.tutora.domain.theme\n")
+        out.appendLine("package app.tutora.domain.theme\n")
         out.appendLine("/** Every color token name, in the order of tokens.json. */")
         out.appendLine("val colorTokens: List<String> = listOf(${tokens.joinToString { "\"${it["name"]}\"" }})\n")
         out.appendLine("/** The eight token sets, keyed `theme-scheme`, each token as `#rrggbb` or `#rrggbbaa`. */")
@@ -50,7 +50,7 @@ abstract class GenerateColorSets : DefaultTask() {
             out.appendLine("    ),")
         }
         out.appendLine(")")
-        val file = outputDir.get().file("com/vmleroy/tutora/domain/theme/ColorSets.kt").asFile
+        val file = outputDir.get().file("app/tutora/domain/theme/ColorSets.kt").asFile
         file.parentFile.mkdirs()
         file.writeText(out.toString())
     }

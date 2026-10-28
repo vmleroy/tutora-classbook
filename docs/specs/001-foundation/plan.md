@@ -28,7 +28,7 @@ Architecture reference: [`docs/architecture.md`](../../architecture.md), all sec
     - A `generateTutoraTokens` Gradle task turns `design/tokens.json` into `TutoraTokens.kt` under `build/generated`. It runs on every build and is never committed, so it cannot go stale.
     - `TutoraTheme` provides the Quadro-negro light and dark palettes through a `CompositionLocal`; the other themes and custom colors come in 002. Material 3's `ColorScheme` is filled from the same palette.
     - Typography is Nunito, from the variable font in `res/font`, with a `money` style that has tabular figures (`"tnum"`).
-  - `:app` (`com.vmleroy.tutora.app`, a new id so it can sit next to the Expo app):
+  - `:app` (`app.tutora.app`, a new id so it can sit next to the Expo app):
     - `TutoraApplication` with an `AppContainer`, and `MainActivity` (AppCompat, for the per-app language).
     - The splash screen stays up until `StartApp` finishes.
     - `TutoraNavHost` has five tab destinations, each its own nested graph, so each keeps its back stack (`saveState` / `restoreState`).

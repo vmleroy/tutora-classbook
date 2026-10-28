@@ -52,7 +52,7 @@ Read these when the spec points to them, not all up front:
 
 - Gradle 9.8.2, Android Gradle Plugin 9.4.1 (built-in Kotlin, so no `kotlin-android` plugin), Kotlin 2.4.21, KSP 2.3.12. Versions live in `gradle/libs.versions.toml`.
 - JDK 21 toolchain for compiling and testing, downloaded by the Foojay resolver; any JDK 17+ can run Gradle itself.
-- compileSdk and targetSdk 37, minSdk 26. Application id `com.vmleroy.tutora.app`.
+- compileSdk and targetSdk 37, minSdk 26. Application id `app.tutora.app`.
 - Compose BOM 2026.09.00 with Material 3 under `TutoraTheme`, Navigation Compose 2.10.2 (type-safe routes), Lifecycle 2.11.0, AppCompat 1.8.0 (per-app language), Core SplashScreen 1.2.0.
 - Room 2.8.5 with the bundled SQLite driver in the app; kotlinx-datetime 0.8.0, kotlinx.serialization 1.12.0, coroutines 1.11.0.
 - Tests: JUnit 4, kotest-property 6.2.6, Robolectric 4.17, Compose UI test (`junit4.v2.createComposeRule`), Espresso 3.7.0, navigation-testing.

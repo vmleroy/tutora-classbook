@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.vmleroy.tutora.data"
+    namespace = "app.tutora.data"
     compileSdk = 37
     defaultConfig { minSdk = 26 }
     testOptions.unitTests.isIncludeAndroidResources = true

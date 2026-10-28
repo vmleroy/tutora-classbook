@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.vmleroy.tutora.designsystem"
+    namespace = "app.tutora.designsystem"
     compileSdk = 37
     defaultConfig { minSdk = 26 }
     buildFeatures { compose = true }
@@ -64,7 +64,7 @@ abstract class GenerateTutoraTokens : DefaultTask() {
         val out = StringBuilder()
         out.appendLine("// GENERATED from design/tokens.json by :core:designsystem:generateTutoraTokens. Do not edit.")
         out.appendLine("@file:Suppress(\"ktlint\")\n")
-        out.appendLine("package com.vmleroy.tutora.designsystem.tokens\n")
+        out.appendLine("package app.tutora.designsystem.tokens\n")
         out.appendLine("import androidx.compose.ui.graphics.Color")
         out.appendLine("import androidx.compose.ui.unit.dp")
         out.appendLine("import androidx.compose.ui.unit.sp\n")
@@ -125,7 +125,7 @@ abstract class GenerateTutoraTokens : DefaultTask() {
         }
         out.appendLine("    }")
         out.appendLine("}")
-        val file = outputDir.get().file("com/vmleroy/tutora/designsystem/tokens/TutoraTokens.kt").asFile
+        val file = outputDir.get().file("app/tutora/designsystem/tokens/TutoraTokens.kt").asFile
         file.parentFile.mkdirs()
         file.writeText(out.toString())
     }
