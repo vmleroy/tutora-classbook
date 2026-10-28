@@ -401,4 +401,6 @@
     <string name="pay_noneToChoose">Nenhuma aula a receber</string>
     <string name="pay_paidByPlace">Aulas em %1$s: quem paga é o local</string>
     <string name="pay_placeLeft">%1$s a receber de %2$s</string>
+    <string name="pay_placePays">%1$s paga</string>
+    <string name="pay_asCredit">como crédito</string>
 </resources>

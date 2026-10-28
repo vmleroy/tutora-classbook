@@ -56,6 +56,7 @@ import app.tutora.domain.Language
 import app.tutora.domain.Ledger
 import app.tutora.domain.Lesson
 import app.tutora.domain.OwedClass
+import app.tutora.domain.OwedElsewhere
 import app.tutora.domain.PackageState
 import app.tutora.domain.Paid
 import app.tutora.domain.PayMethod
@@ -132,15 +133,18 @@ fun balanceBadge(cents: Cents): Pair<BadgeTone, String> {
 fun paidBadge(
     ledger: Ledger,
     lesson: OwedClass,
-): Pair<BadgeTone, String> {
-    val left = ledger.allocation.left[lesson.lessonId] ?: 0
-    return when {
+): Pair<BadgeTone, String> = leftBadge(ledger.allocation.left[lesson.lessonId] ?: 0, lesson.dueCents)
+
+@Composable
+fun leftBadge(
+    left: Cents,
+    due: Cents,
+): Pair<BadgeTone, String> =
+    when {
         left == 0L -> BadgeTone.SUCCESS to stringResource(R.string.pay_paid)
-        left < lesson.dueCents ->
-            BadgeTone.DANGER to stringResource(R.string.pay_leftPart, formatMoney(left, currentLanguage()))
+        left < due -> BadgeTone.DANGER to stringResource(R.string.pay_leftPart, formatMoney(left, currentLanguage()))
         else -> BadgeTone.DANGER to stringResource(R.string.pay_toReceive)
     }
-}
 
 private fun OwedClass.localDate(zone: String) = localOf(startAt, zone).date
 
@@ -177,7 +181,19 @@ fun PayerBalance(
         }
         Button(payLabel, { paying = true }, icon = IconName.WALLET, fullWidth = true)
     }
-    if (paying) PaymentSheet(payer, l, onDismiss = { paying = false })
+    if (paying) {
+        val elsewhere = studentElsewhere(payer)
+        PaymentSheet(payer, l, onDismiss = { paying = false }, elsewhere = elsewhere)
+    }
+}
+
+/** A student's classes their places owe instead of them; empty for any other payer (AC-008-26). */
+@Composable
+private fun studentElsewhere(payer: PayerRef): List<OwedElsewhere> {
+    if (payer.kind != PayerKind.STUDENT) return emptyList()
+    val services = LocalServices.current
+    val elsewhere by remember(payer) { services.paymentRepo.elsewhere(payer.id) }.collectAsState(initial = emptyList())
+    return elsewhere
 }
 
 /** At the end of a payer's detail: its classes with Pago or A receber, and Pagamentos (AC-008-9, 11). */
@@ -189,18 +205,29 @@ fun PayerHistory(
     val services = LocalServices.current
     val language = currentLanguage()
     val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
+    val elsewhere = studentElsewhere(payer)
+    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val placeNames = places.associate { it.place.id to placeName(it.place) }
     val l = ledger ?: return
-    val owed = l.owed.sortedByDescending { it.startAt }
+    // A student's own classes and those a place pays for them, newest first (AC-008-9, 26).
+    val owed =
+        (
+            l.owed.map { Triple(it, l.allocation.left[it.lessonId] ?: 0, null as String?) } +
+                elsewhere.map { Triple(it.owed, it.left, placeNames[it.payer.id]) }
+        ).sortedByDescending { it.first.startAt }
     if (owed.isNotEmpty()) {
         ListGroup(
-            owed.take(RECENT).map { lesson ->
+            owed.take(RECENT).map { (lesson, left, place) ->
                 {
                     ListRow(
                         dayMonth(lesson.localDate(services.zone), language),
                         subtitle =
-                            stringResource(R.string.places_minutes, lesson.minutes.toString()) + " · " +
+                            listOfNotNull(
+                                stringResource(R.string.places_minutes, lesson.minutes.toString()),
                                 formatMoney(lesson.dueCents, language),
-                        badge = paidBadge(l, lesson),
+                                place?.let { stringResource(R.string.pay_placePays, it) },
+                            ).joinToString(" · "),
+                        badge = leftBadge(left, lesson.dueCents),
                         onClick = { nav.navigate(LessonDetail(lesson.lessonId)) },
                     )
                 }
@@ -244,6 +271,8 @@ fun paymentLine(
     val what =
         if (p.packageId != null) {
             stringResource(R.string.pay_packageBought)
+        } else if (count == 0) {
+            stringResource(R.string.pay_asCredit)
         } else {
             pluralStringResource(R.plurals.pay_lessonsCount, count, count)
         }
@@ -262,17 +291,22 @@ fun PaymentSheet(
     onDismiss: () -> Unit,
     editing: PaymentRecord? = null,
     preChosen: List<String> = emptyList(),
+    /** On a student's sheet: their classes a place owes, which this payment can pay too (AC-008-27). */
+    elsewhere: List<OwedElsewhere> = emptyList(),
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val language = currentLanguage()
     val zone = services.zone
+    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val placeNames = places.associate { it.place.id to placeName(it.place) }
+    val outside = elsewhere.associateBy { it.owed.lessonId }
     val today = localOf(services.now(), zone).date
     // Without the payment being edited, what each class still owes.
     val others = remember(ledger, editing) { ledger.with(null, without = editing?.id) }
     val owedNow = others.left.values.sum() - others.credit
 
-    fun leftOn(ids: List<String>) = ids.sumOf { others.left[it] ?: 0 }
+    fun leftOn(ids: List<String>) = ids.sumOf { others.left[it] ?: outside[it]?.left ?: 0 }
     var cents by rememberSaveable {
         mutableStateOf<Cents?>(editing?.cents ?: if (preChosen.isNotEmpty()) leftOn(preChosen) else owedNow.coerceAtLeast(0))
     }
@@ -288,11 +322,15 @@ fun PaymentSheet(
     val picked = LocalDate.parse(date)
     // Which classes this payment would pay, as the teacher types (AC-008-6).
     val preview =
-        remember(amount, chosen, date, others) {
-            val draft = Paid("draft", if (picked == today) services.now() else "${picked}T15:00:00.000Z", amount, chosen)
-            ledger.with(draft, without = editing?.id).paidBy["draft"].orEmpty()
+        remember(amount, chosen, date, others, elsewhere) {
+            // Classes a place owes are paid first, as the place's payment; the rest goes to this payer.
+            val there = chosen.filter { (outside[it]?.left ?: 0) > 0 }
+            val toPlaces = minOf(amount, there.sumOf { outside[it]?.left ?: 0 })
+            val draft =
+                Paid("draft", if (picked == today) services.now() else "${picked}T15:00:00.000Z", amount - toPlaces, chosen - there.toSet())
+            there + ledger.with(draft, without = editing?.id).paidBy["draft"].orEmpty()
         }
-    val byId = ledger.owed.associateBy { it.lessonId }
+    val byId = ledger.owed.associateBy { it.lessonId } + elsewhere.associate { it.owed.lessonId to it.owed }
     val previewDates = preview.mapNotNull { byId[it]?.let { l -> dayMonth(localOf(l.startAt, zone).date, language) } }
     BottomSheet(
         stringResource(if (editing == null) R.string.pay_record else R.string.pay_edit),
@@ -336,25 +374,30 @@ fun PaymentSheet(
                 variant = ButtonVariant.GHOST,
                 icon = IconName.CHECK,
             )
-            val choosable = ledger.owed.filter { (others.left[it.lessonId] ?: 0) > 0 || it.lessonId in chosen }
+            // Newest first, with what is still owed on each (AC-008-7); a place's classes say so.
+            val choosable =
+                (
+                    ledger.owed.map { Triple(it, others.left[it.lessonId] ?: 0, null as String?) } +
+                        elsewhere.map { Triple(it.owed, it.left, placeNames[it.payer.id]) }
+                ).filter { (c, left, _) -> left > 0 || c.lessonId in chosen }
+                    .sortedByDescending { it.first.startAt }
             if (choosing && choosable.isEmpty()) {
                 Text(stringResource(R.string.pay_noneToChoose), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
             }
             if (choosing) {
-                // Newest first, with what is still owed on each (AC-008-7).
-                ledger.owed
-                    .sortedByDescending { it.startAt }
-                    .filter { (others.left[it.lessonId] ?: 0) > 0 || it.lessonId in chosen }
-                    .forEach { lesson ->
-                        val label =
-                            dayMonth(localOf(lesson.startAt, zone).date, language) + " · " +
-                                stringResource(R.string.places_minutes, lesson.minutes.toString()) + " · " +
-                                stringResource(R.string.pay_leftOn, formatMoney(others.left[lesson.lessonId] ?: 0, language))
-                        Checkbox(label, lesson.lessonId in chosen, { on ->
-                            chosen = if (on) chosen + lesson.lessonId else chosen - lesson.lessonId
-                            cents = leftOn(chosen)
-                        })
-                    }
+                choosable.forEach { (lesson, left, place) ->
+                    val label =
+                        listOfNotNull(
+                            dayMonth(localOf(lesson.startAt, zone).date, language),
+                            stringResource(R.string.places_minutes, lesson.minutes.toString()),
+                            place?.let { stringResource(R.string.pay_placePays, it) },
+                            stringResource(R.string.pay_leftOn, formatMoney(left, language)),
+                        ).joinToString(" · ")
+                    Checkbox(label, lesson.lessonId in chosen, { on ->
+                        chosen = if (on) chosen + lesson.lessonId else chosen - lesson.lessonId
+                        cents = leftOn(chosen)
+                    })
+                }
             }
         }
     }

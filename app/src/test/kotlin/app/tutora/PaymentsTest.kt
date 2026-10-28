@@ -153,4 +153,34 @@ class PaymentsTest {
             assertEquals(PayMethod.CASH, ledger.payments.single().method)
             assertEquals(listOf(lesson), ledger.allocation.paidBy[ledger.payments.single().id])
         }
+
+    @Test
+    fun `AC-008-27 a student's payment for a class the place owes goes to the place, and the rest stays with the student`() =
+        runTest {
+            val salinha =
+                (
+                    t.catalog.savePlace(
+                        app.tutora.domain.builtinPlace(BuiltinPlace.ONLINE).copy(
+                            id = "",
+                            builtin = null,
+                            name = "Ventura",
+                            kind = app.tutora.domain.PlaceKind.SALINHA,
+                            payer = app.tutora.domain.Payer.PLACE,
+                            rateCents = 12_000,
+                        ),
+                    ) as Result.Ok
+                ).value.id
+            t.catalog.linkStudents(listOf(ana.id to salinha))
+            val lesson =
+                (
+                    t.lessons.logLesson(
+                        LessonDraft(WhoId.OfStudent(ana.id), salinha, LocalDate(2026, 10, 22), LocalTime(8, 0), 60, null, null, null),
+                    ) as ScheduleResult.Ok
+                ).lessonId ?: error("no class")
+            val place = PayerRef(PayerKind.PLACE, salinha)
+            payments.record(PaymentDraft(anaRef, 15_000, PayMethod.PIX, today, chosen = listOf(lesson)))
+            assertEquals(0L, repo.balances().first()[place])
+            assertTrue(repo.ledgerNow(place).allocation.isPaid(lesson))
+            assertEquals(-3_000L, balance())
+        }
 }

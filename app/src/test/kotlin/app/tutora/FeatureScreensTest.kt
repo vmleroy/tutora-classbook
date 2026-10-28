@@ -320,6 +320,8 @@ class FeatureScreensTest {
                 .first()
                 .size == 2
         }
+        // The picker sheet animates away before the list behind it takes taps again.
+        h.settle(compose)
         compose.onNodeWithContentDescription("Remover Bia Costa").performClick()
         h.settle(compose)
         compose.onNodeWithText("Tirar Bia Costa de Salinha Aprender+?", useUnmergedTree = true).assertExists()

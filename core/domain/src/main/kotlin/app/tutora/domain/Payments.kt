@@ -240,3 +240,10 @@ fun ledgerOf(
     val ledger = Ledger(owed, payments.sortedByDescending { it.paidAt }, Allocation(emptyMap(), emptyMap(), 0))
     return ledger.copy(allocation = ledger.with(null))
 }
+
+/** A student's class that a place owes instead of the student, with what is still owed on it (AC-008-26). */
+data class OwedElsewhere(
+    val owed: OwedClass,
+    val left: Cents,
+    val payer: PayerRef,
+)

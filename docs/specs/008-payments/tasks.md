@@ -17,6 +17,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 13. Copy in `strings_features.xml` in both languages, with plurals; a test switching the language on a student with payments. Version 1.8.0. Test: `PaymentScreensTest.kt`. (AC-008-24)
 - [x] 14. Update `docs/architecture.md` (frozen `payer` and `due_cents`, allocation in the domain) and `docs/product.md` (the package's lessons used is derived), run `./gradlew check` once, mark the spec done.
 - [x] 15. Screens, after trying the build: Marcar como paga on the lesson detail; the places that pay for a student's classes on the student's detail; "Nenhuma aula a receber" in the sheet; the sheet's body scrolls (design system `BottomSheet`). Test: `PaymentScreensTest.kt`. (AC-008-25, 26)
+- [x] 16. A student sees and pays their classes a place owes: `PaymentRepository.elsewhere`, `Payments.record` splits the money to the place, the student's list and sheet show them. Test: `PaymentsTest.kt`, `PaymentScreensTest.kt`. (AC-008-26, 27)
 
 ## Pending on a device
 

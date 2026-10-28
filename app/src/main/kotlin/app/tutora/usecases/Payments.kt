@@ -3,6 +3,7 @@ package app.tutora.usecases
 import app.tutora.data.LessonRow
 import app.tutora.data.PackageRow
 import app.tutora.data.PaymentLessonRow
+import app.tutora.data.PaymentRepository
 import app.tutora.data.PaymentRow
 import app.tutora.data.ScheduleRepository
 import app.tutora.data.inTransaction
@@ -121,11 +122,34 @@ class Payments(
     /** Registrar pagamento / Receber da salinha (AC-008-5 to 8, 10). */
     suspend fun record(draft: PaymentDraft): PaymentResult =
         db.inTransaction {
-            (check(draft) ?: checkChosen(draft))?.let { return@inTransaction PaymentResult.Err(it) }
-            val id = ctx.newId()
-            dao.upsertPayment(draft.payer.row(id, draft, null, ctx.now()))
-            choose(id, draft)
-            PaymentResult.Ok(id)
+            check(draft)?.let { return@inTransaction PaymentResult.Err(it) }
+            // A student's payment can also pay their classes a place owes: that part is
+            // recorded as the place's payment, so the place's balance drops (AC-008-27).
+            val elsewhere =
+                if (draft.payer.kind == PayerKind.STUDENT) PaymentRepository(db).elsewhereNow(draft.payer.id) else emptyList()
+            val foreign = elsewhere.filter { it.owed.lessonId in draft.chosen && it.left > 0 }
+            val own = draft.copy(chosen = draft.chosen - elsewhere.map { it.owed.lessonId }.toSet())
+            checkChosen(own)?.let { return@inTransaction PaymentResult.Err(it) }
+            var remaining = draft.cents
+            var first: String? = null
+            for ((payer, classes) in foreign.groupBy { it.payer }) {
+                val cents = minOf(remaining, classes.sumOf { it.left })
+                if (cents <= 0) continue
+                val id = ctx.newId()
+                val part = PaymentDraft(payer, cents, draft.method, draft.date, draft.note, classes.map { it.owed.lessonId })
+                dao.upsertPayment(payer.row(id, part, null, ctx.now()))
+                choose(id, part)
+                remaining -= cents
+                first = first ?: id
+            }
+            if (remaining > 0) {
+                val id = ctx.newId()
+                val rest = own.copy(cents = remaining)
+                dao.upsertPayment(rest.payer.row(id, rest, null, ctx.now()))
+                choose(id, rest)
+                first = first ?: id
+            }
+            PaymentResult.Ok(first ?: "")
         }
 
     /** Editar: the balance follows the new amount, date or classes (AC-008-12). */

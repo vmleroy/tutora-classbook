@@ -392,4 +392,6 @@
     <string name="pay_noneToChoose">No lessons to receive</string>
     <string name="pay_paidByPlace">Lessons at %1$s: the place pays</string>
     <string name="pay_placeLeft">%1$s to receive from %2$s</string>
+    <string name="pay_placePays">%1$s pays</string>
+    <string name="pay_asCredit">as credit</string>
 </resources>

@@ -62,7 +62,8 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 ### Added after trying the build (Victor, 28 Oct 2026)
 
 - **AC-008-25.** A lesson's detail with money still owed on it has "Marcar como paga", which opens the payment sheet for whoever owes the class, with this class ticked and its amount filled in.
-- **AC-008-26.** A student's detail lists the places that owe for the student's classes instead of the student ("Aulas em Ventura: quem paga é o local · R$ 35,00 a receber de Ventura"), each opening the place. In the payment sheet, "Escolher aulas" says "Nenhuma aula a receber" when there is none to choose.
+- **AC-008-26.** A student's detail shows all their classes, those a place pays for included ("22/10 · 60 min · R$ 120,00 · Ventura paga", with Pago or A receber from what the place owes), and lists those places ("Aulas em Ventura: quem paga é o local · R$ 120,00 a receber de Ventura"), each opening the place. In the payment sheet, "Escolher aulas" says "Nenhuma aula a receber" when there is none to choose.
+- **AC-008-27.** A student's payment sheet also lists, in "Escolher aulas", their classes a place pays for. Ticking one records that part of the money as the place's payment for that class, so the place's balance drops and the class shows Pago; any rest of the amount is the student's.
 
 ### Language
 

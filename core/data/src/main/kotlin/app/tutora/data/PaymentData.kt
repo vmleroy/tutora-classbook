@@ -9,6 +9,7 @@ import androidx.room.Upsert
 import app.tutora.domain.Cents
 import app.tutora.domain.Ledger
 import app.tutora.domain.OwedClass
+import app.tutora.domain.OwedElsewhere
 import app.tutora.domain.PackageState
 import app.tutora.domain.PayMethod
 import app.tutora.domain.PayerKind
@@ -99,6 +100,9 @@ interface PaymentDao {
 
     @Query("SELECT id, place_id FROM lesson WHERE student_id = :studentId AND payer = 'place' AND due_cents > 0")
     fun observePaidByPlace(studentId: String): Flow<List<PlacePaidRow>>
+
+    @Query("SELECT id, place_id FROM lesson WHERE student_id = :studentId AND payer = 'place' AND due_cents > 0")
+    suspend fun paidByPlace(studentId: String): List<PlacePaidRow>
 
     @Query("SELECT * FROM payment WHERE id = :id")
     suspend fun payment(id: String): PaymentRow?
@@ -200,6 +204,19 @@ class PaymentRepository(
     /** A student's classes that their places owe instead of them, by place id. */
     fun paidByPlace(studentId: String): Flow<Map<String, List<String>>> =
         dao.observePaidByPlace(studentId).map { rows -> rows.groupBy({ it.placeId }, { it.id }) }
+
+    /**
+     * A student's classes that their places owe, with what each place still owes on them. The
+     * balances read the lesson and payment tables, so this is read again after any change.
+     */
+    fun elsewhere(studentId: String): Flow<List<OwedElsewhere>> = dao.observeBalances().map { elsewhereNow(studentId) }
+
+    suspend fun elsewhereNow(studentId: String): List<OwedElsewhere> =
+        dao.paidByPlace(studentId).groupBy({ it.placeId }, { it.id }).flatMap { (placeId, ids) ->
+            val payer = PayerRef(PayerKind.PLACE, placeId)
+            val ledger = ledgerNow(payer)
+            ledger.owed.filter { it.lessonId in ids }.map { OwedElsewhere(it, ledger.allocation.left[it.lessonId] ?: 0, payer) }
+        }
 
     suspend fun lastMethod(payer: PayerRef): PayMethod? = dao.lastMethod(payer.kind.key, payer.id)?.let(PayMethod::fromKey)
 }

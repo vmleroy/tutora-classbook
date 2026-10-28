@@ -369,7 +369,34 @@ class PaymentScreensTest {
     }
 
     @Test
-    fun `AC-008-26 a student's detail shows the place that pays for their classes, and Escolher aulas says when there is none`() {
+    fun `AC-008-26 a student's detail shows their classes a place pays for, and Escolher aulas says when there is none`() {
+        val place = salinha()
+        runBlocking {
+            h.t.lessons.logLesson(
+                LessonDraft(WhoId.OfStudent(ana.id), place, LocalDate(2026, 10, 22), LocalTime(8, 0), 60, null, null, null),
+            )
+        }
+        val pedro =
+            runBlocking {
+                (
+                    h.t.catalog.saveStudent(
+                        Student("", "Pedro Lima", null, null, null, TagColor.BLUE, RateType.HOUR, null),
+                        listOf(PlaceLink(online, true, 12_000)),
+                    ) as Result.Ok
+                ).value.id
+            }
+        openAna()
+        exists("Aulas em Ventura: quem paga é o local")
+        exists("R$ 120,00 a receber de Ventura")
+        exists("60 min · R$ 120,00 · Ventura paga")
+        h.go(compose, StudentDetail(pedro))
+        click("Registrar pagamento")
+        click("Escolher aulas", scroll = false)
+        exists("Nenhuma aula a receber")
+    }
+
+    @Test
+    fun `AC-008-27 a student's sheet lists their classes a place pays for and ticking one sets the amount`() {
         val place = salinha()
         runBlocking {
             h.t.lessons.logLesson(
@@ -377,10 +404,11 @@ class PaymentScreensTest {
             )
         }
         openAna()
-        exists("Aulas em Ventura: quem paga é o local")
-        exists("R$ 120,00 a receber de Ventura")
         click("Registrar pagamento")
         click("Escolher aulas", scroll = false)
-        exists("Nenhuma aula a receber")
+        compose.onAllNodes(matching("22/10 · 60 min · Ventura paga · falta R$ 120,00"), useUnmergedTree = true).onFirst().performClick()
+        h.settle(compose)
+        exists("Registrar · R$ 120,00")
+        exists("Paga 1 aula: 22/10")
     }
 }
