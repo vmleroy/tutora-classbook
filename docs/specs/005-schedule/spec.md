@@ -35,7 +35,7 @@ The teacher puts their week into Tutora once: recurring classes (weekly or every
 ### Editing and removing
 
 - **AC-005-28.** Tapping a class opens its detail first: time and end, date, series, duration, value ("Sem preço" when there is none), who, place and notes. The pencil (Editar) in the header opens the edit form. Mark as done, Start lesson and the balance come with spec 006. *(Added 27 Oct 2026 at Victor's request.)*
-- **AC-005-10.** The edit form opens with date, start time, duration, value and notes. The form shows the series ("Repete toda segunda") for a recurring class.
+- **AC-005-10.** The edit form opens with the place (any of the student's linked places can be picked; a group's class stays at the group's place), and with date, start time, duration, value and notes. The form shows the series ("Repete toda segunda") for a recurring class.
 - **AC-005-11.** For a recurring class, "Aplicar mudanças em" offers "Só esta aula" and "Esta e as próximas".
 - **AC-005-12.** "Só esta aula" changes only that class. The class then stands on its own: filling the series later never overwrites it.
 - **AC-005-13.** "Esta e as próximas" applies the change to that class and every later class of the series, and the series continues from there with the new day, time, duration or value. Earlier classes do not change, and a later class that was changed on its own keeps its changes.

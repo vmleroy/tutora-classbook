@@ -137,6 +137,19 @@ class ScheduleTest {
         }
 
     @Test
+    fun `AC-005-10 a class moves to another of the student's places, never to an unlinked one`() =
+        runTest {
+            val first = series().first()
+            val home = BuiltinPlace.STUDENT_HOME.id
+            assertTrue(t.schedule.editLesson(first.id, LessonChange(placeId = home), Scope.ONE) is ScheduleResult.Ok)
+            assertEquals(home, all().first { it.id == first.id }.place.id)
+            assertEquals(
+                ScheduleResult.Err(ScheduleError.PLACE_NOT_LINKED),
+                t.schedule.editLesson(first.id, LessonChange(placeId = "not-linked"), Scope.ONE),
+            )
+        }
+
+    @Test
     fun `AC-005-11 a recurring class can change only itself or itself and the following`() =
         runTest {
             val ls = series()

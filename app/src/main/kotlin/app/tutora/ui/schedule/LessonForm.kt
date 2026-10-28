@@ -127,7 +127,8 @@ fun LessonForm(
         p: Place,
         studentId: String?,
     ) {
-        v = v.copy(placeId = p.id, plannedMin = p.defaultDurationMin, travelFeeCents = null)
+        // A new class takes the place's usual duration; an existing one keeps its own.
+        v = v.copy(placeId = p.id, plannedMin = if (editing) v.plannedMin else p.defaultDurationMin, travelFeeCents = null)
         // At Casa do Aluno with travel "varies", suggest the last fee for that student (AC-005-5).
         if (p.kind == PlaceKind.STUDENT_HOME && p.travelMode == TravelMode.VARIES && studentId != null) {
             scope.launch { v = v.copy(travelFeeCents = services.schedule.suggestedTravel(studentId, p.id) ?: 0) }
@@ -207,10 +208,10 @@ fun LessonForm(
             errorKey = tries,
         )
         if (choices.isNotEmpty()) {
-            Field(stringResource(if (group != null) R.string.lesson_groupPlace else R.string.lesson_place), required = !editing) {
+            Field(stringResource(if (group != null) R.string.lesson_groupPlace else R.string.lesson_placeLabel), required = !editing) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                     choices.forEach { p ->
-                        Chip(placeName(p), v.placeId == p.id, { if (!editing) choosePlace(p, (v.who as? WhoId.OfStudent)?.id) })
+                        Chip(placeName(p), v.placeId == p.id, { choosePlace(p, (v.who as? WhoId.OfStudent)?.id) })
                     }
                 }
             }
@@ -517,6 +518,7 @@ fun LessonEditScreen(
                             clearValue = v.valueCents == null,
                             travelFeeCents = v.travelFeeCents,
                             notes = v.notes,
+                            placeId = v.placeId,
                         ),
                         applyTo,
                     ),

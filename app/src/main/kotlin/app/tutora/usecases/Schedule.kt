@@ -49,6 +49,8 @@ data class LessonChange(
     val clearValue: Boolean = false,
     val travelFeeCents: Cents? = null,
     val notes: String? = null,
+    /** Another of the student's linked places; a group's class stays at the group's place. */
+    val placeId: String? = null,
 )
 
 enum class Scope { ONE, FOLLOWING }
@@ -216,12 +218,24 @@ class Schedule(
             val time = change.time ?: local.time
             val planned = change.plannedMin ?: row.plannedMin
             val value = if (change.clearValue) null else change.valueCents ?: row.valueCents
-            val travel = change.travelFeeCents ?: row.travelFeeCents
+            val placeId = change.placeId ?: row.placeId
+            val who =
+                row.studentId?.let { WhoId.OfStudent(it) }
+                    ?: row.groupId?.let { WhoId.OfGroup(it) }
+                    ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
+            if (placeId != row.placeId &&
+                !placeAllowed(who, placeId)
+            ) {
+                return@inTransaction ScheduleResult.Err(ScheduleError.PLACE_NOT_LINKED)
+            }
+            // A new place starts with only the travel given now; the old place's fee does not follow.
+            val travel = if (placeId != row.placeId) change.travelFeeCents else change.travelFeeCents ?: row.travelFeeCents
             val notes = change.notes ?: row.notes
             val occurrenceText = row.occurrenceDate
             if (scope == Scope.ONE || rule == null || occurrenceText == null) {
                 dao.upsertLesson(
                     row.copy(
+                        placeId = placeId,
                         startAt = localToInstant(date, time, zone).isoText(),
                         plannedMin = planned,
                         valueCents = value,
@@ -237,13 +251,9 @@ class Schedule(
             dao.endRule(rule.id, occurrence.minus(DatePeriod(days = 1)).toString())
             dao.deleteSeriesFrom(rule.id, occurrence.toString(), ctx.now(), detachedToo = false)
             dao.deleteLesson(id)
-            val who =
-                rule.studentId?.let { WhoId.OfStudent(it) }
-                    ?: rule.groupId?.let { WhoId.OfGroup(it) }
-                    ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
             val fresh =
                 newRule(
-                    LessonDraft(who, rule.placeId, date, time, planned, value, travel, Repeat.valueOf(rule.repeat)),
+                    LessonDraft(who, placeId, date, time, planned, value, travel, Repeat.valueOf(rule.repeat)),
                     Repeat.valueOf(rule.repeat),
                     zone,
                 )

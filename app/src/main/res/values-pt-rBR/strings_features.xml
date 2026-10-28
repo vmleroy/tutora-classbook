@@ -168,7 +168,6 @@
     <string name="lesson_who">Aluno ou turma</string>
     <string name="lesson_pickWho">Escolher aluno ou turma</string>
     <string name="lesson_change">Trocar</string>
-    <string name="lesson_place">Local · só os ligados ao aluno</string>
     <string name="lesson_groupPlace">Local da turma</string>
     <string name="lesson_date">Data</string>
     <string name="lesson_pickDate">Escolher data</string>
