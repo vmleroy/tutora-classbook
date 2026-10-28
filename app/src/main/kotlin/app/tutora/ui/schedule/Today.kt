@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.Avatar
+import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.EmptyState
 import app.tutora.designsystem.components.HeaderAction
@@ -43,10 +44,14 @@ import app.tutora.ui.clockTime
 import app.tutora.ui.countText
 import app.tutora.ui.durationText
 import app.tutora.ui.live.LiveBanner
+import app.tutora.ui.live.rememberStartLesson
 import app.tutora.ui.longDate
 import app.tutora.ui.minutesText
 import app.tutora.ui.rateText
 import app.tutora.ui.shortDate
+
+/** Iniciar aula shows on Próxima aula from this many minutes before the class (AC-007-1). */
+private const val START_WINDOW_MIN = 60
 
 /** Hoje: the date and a greeting, the next class, and today's classes (AC-005-22 to 25). */
 @Composable
@@ -59,6 +64,8 @@ fun TodayScreen(nav: NavHostController) {
     val range = remember { dayRange(local.date, local.date, zone) }
     val lessons by remember { services.scheduleRepo.between(range.first, range.second) }.collectAsState(initial = emptyList())
     val next by remember { services.scheduleRepo.firstAfter(now) }.collectAsState(initial = null)
+    val settings by services.settings.collectAsState(initial = null)
+    val startLesson = rememberStartLesson(nav)
 
     @Composable
     fun whenText(l: Lesson): String {
@@ -126,6 +133,11 @@ fun TodayScreen(nav: NavHostController) {
                         )
                         Text(durationText(n.plannedMin), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
                     }
+                }
+                // Iniciar aula only once the next class is within the hour, while the timer is on (AC-007-1, 3).
+                val soon = (instantOf(n.startAt) - instantOf(now)).inWholeMinutes <= START_WINDOW_MIN
+                if (soon && settings?.liveTimer != false) {
+                    Button(stringResource(R.string.live_start), { startLesson(n.id) }, fullWidth = true, icon = IconName.PLAY)
                 }
             }
         }
