@@ -19,7 +19,6 @@ import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.Button
-import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
@@ -171,7 +170,7 @@ fun PlaceDetailScreen(
             { nav.navigate(StudentDetail(it.id)) },
             { c -> scope.launch { services.catalog.unlinkStudentFromPlace(c.id, p.id) } },
         ) { c -> unlinkConfirm(c.title, placeName(p), here.filter { c.id in it.memberIds }.map { it.name }) }
-        // A group always has a place: here it is moved in or created, never just taken out.
+        // A group always has a place: × here archives it; adding moves one in or creates one.
         ConnectionSection(
             stringResource(R.string.places_groups),
             here.map { g ->
@@ -181,18 +180,18 @@ fun PlaceDetailScreen(
                         countText(R.string.groups_size_zero, R.plurals.groups_size, g.memberIds.size),
                         g.rateCents?.let { stringResource(R.string.places_perLesson, rateMoney(it, language)) },
                     ).joinToString(" · ")
-                Connection(g.id, g.name, subtitle, icon = IconName.USERS, removable = false)
+                Connection(g.id, g.name, subtitle, icon = IconName.USERS)
             },
             stringResource(R.string.connections_noGroups),
             if (archived) null else stringResource(R.string.connections_addGroup),
             { picking = "groups" },
             { nav.navigate(GroupDetail(it.id)) },
-            {},
-        ) { RemoveConfirm(it.title) }
-        if (!archived) {
-            Button(stringResource(R.string.places_newGroup), {
-                nav.navigate(GroupEdit(placeId = p.id))
-            }, variant = ButtonVariant.OUTLINE)
+            { c -> scope.launch { services.catalog.archive(Kind.GROUP, c.id) } },
+        ) { c ->
+            RemoveConfirm(
+                stringResource(R.string.connections_archiveGroupTitle, c.title),
+                stringResource(R.string.connections_archiveGroupBody),
+            )
         }
     }
     when (picking) {
@@ -226,6 +225,11 @@ fun PlaceDetailScreen(
                 { ids ->
                     moving = ids
                     picking = null
+                },
+                createLabel = stringResource(R.string.groups_new),
+                onCreate = {
+                    picking = null
+                    nav.navigate(GroupEdit(placeId = p.id))
                 },
             )
         }

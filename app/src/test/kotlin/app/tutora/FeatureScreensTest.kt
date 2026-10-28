@@ -342,15 +342,16 @@ class FeatureScreensTest {
     }
 
     @Test
-    fun `AC-004-34 adding a group from another place moves it here after a confirmation`() {
+    fun `AC-004-34 one + Adicionar turma offers Nova turma and groups elsewhere, moving one here, and x archives a group`() {
         val p = salinha()
         val g =
             runBlocking { (h.t.catalog.saveGroup(Group("", online, "Turma ENEM", null, null, emptyList(), null)) as Result.Ok).value.id }
         h.show(compose)
         h.go(compose, PlaceDetail(p))
-        compose.onNodeWithText("+ Nova turma", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("+ Nova turma", useUnmergedTree = true).assertDoesNotExist()
         compose.onNodeWithText("+ Adicionar turma").performClick()
         h.settle(compose)
+        compose.onNodeWithText("Nova turma", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Turma ENEM · Hoje em Online / Remoto", useUnmergedTree = true).performClick()
         compose.onNodeWithText("Adicionar 1").performClick()
         h.settle(compose)
@@ -361,12 +362,22 @@ class FeatureScreensTest {
                 .group(g)
                 ?.placeId == p
         }
+        h.settle(compose)
+        compose.onNodeWithContentDescription("Remover Turma ENEM").performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Arquivar a turma Turma ENEM?", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("Tirar").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .group(g)
+                ?.archivedAt != null
+        }
         assertEquals(
-            p,
+            true,
             runBlocking {
                 h.services.catalogRepo
                     .group(g)
-                    ?.placeId
+                    ?.archivedAt != null
             },
         )
     }

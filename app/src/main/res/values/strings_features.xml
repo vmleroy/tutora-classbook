@@ -75,7 +75,6 @@
     <string name="places_whoStudent">the student</string>
     <string name="places_studentsHere">Students here</string>
     <string name="places_groups">Groups</string>
-    <string name="places_newGroup">+ New group</string>
     <string name="places_empty">No places of your own yet</string>
     <string name="places_emptyBody">Tap + to add a school, tutoring room or prep course.</string>
     <string name="students_new">New student</string>
@@ -274,4 +273,6 @@
     <string name="groups_search">Search groups</string>
     <string name="groups_empty">No groups</string>
     <string name="groups_emptyBody">Create a group with + or from the place where it meets.</string>
+    <string name="connections_archiveGroupTitle">Archive the group %1$s?</string>
+    <string name="connections_archiveGroupBody">A group always has a place, so it leaves here and the list of groups. It stays in Archived to restore.</string>
 </resources>

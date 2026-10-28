@@ -107,7 +107,7 @@ private fun fold(s: String) = Normalizer.normalize(s, Normalizer.Form.NFD).repla
 
 /**
  * The "+ Adicionar" list: search, then tick several and add them at once; with [single], a tap
- * picks one (a group's place).
+ * picks one (a group's place). [onCreate] puts a row on top that creates a new one instead.
  */
 @Composable
 fun PickerSheet(
@@ -116,6 +116,8 @@ fun PickerSheet(
     onDismiss: () -> Unit,
     onConfirm: (List<String>) -> Unit,
     single: Boolean = false,
+    createLabel: String? = null,
+    onCreate: () -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var picked by remember { mutableStateOf(emptySet<String>()) }
@@ -141,8 +143,13 @@ fun PickerSheet(
                 }
             },
     ) {
+        if (createLabel != null) {
+            ListGroup(listOf { ListRow(createLabel, icon = IconName.PLUS, trailing = RowTrailing.NONE, onClick = onCreate) })
+        }
         if (options.isEmpty()) {
-            Text(stringResource(R.string.connections_nothingToAdd), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
+            if (createLabel == null) {
+                Text(stringResource(R.string.connections_nothingToAdd), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
+            }
             return@BottomSheet
         }
         if (options.size > SEARCH_FROM) TextField(stringResource(R.string.connections_search), query, { query = it })

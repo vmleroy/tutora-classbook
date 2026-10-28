@@ -75,7 +75,6 @@
     <string name="places_whoStudent">o aluno</string>
     <string name="places_studentsHere">Alunos daqui</string>
     <string name="places_groups">Turmas</string>
-    <string name="places_newGroup">+ Nova turma</string>
     <string name="places_empty">Nenhum local seu ainda</string>
     <string name="places_emptyBody">Toque em + para cadastrar uma escola, salinha ou cursinho.</string>
     <string name="students_new">Novo aluno</string>
@@ -277,4 +276,6 @@
     <string name="groups_search">Buscar turma</string>
     <string name="groups_empty">Nenhuma turma</string>
     <string name="groups_emptyBody">Crie uma turma com + ou pelo local onde ela acontece.</string>
+    <string name="connections_archiveGroupTitle">Arquivar a turma %1$s?</string>
+    <string name="connections_archiveGroupBody">Uma turma sempre tem um local, então ela sai daqui e da lista de turmas. Fica guardada em Arquivados para restaurar.</string>
 </resources>
