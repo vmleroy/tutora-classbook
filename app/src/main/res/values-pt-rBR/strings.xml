@@ -14,8 +14,6 @@
     <string name="empty_schedule_body">Suas aulas da semana aparecem aqui, dia a dia.</string>
     <string name="empty_registry_title">Nenhum aluno ainda</string>
     <string name="empty_registry_body">Seus alunos, os locais onde cada um estuda e quem está devendo aparecem aqui.</string>
-    <string name="empty_earnings_title">Nada ganho ainda</string>
-    <string name="empty_earnings_body">Quanto você ganhou e quanto ainda vai receber aparecem aqui.</string>
 
     <string name="settings_about">Sobre</string>
     <string name="settings_about_value">Versão %1$s · build %2$s · banco v%3$d</string>

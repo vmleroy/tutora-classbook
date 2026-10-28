@@ -43,6 +43,7 @@ import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.clockTime
 import app.tutora.ui.countText
 import app.tutora.ui.durationText
+import app.tutora.ui.earnings.TodayEarnings
 import app.tutora.ui.live.LiveBanner
 import app.tutora.ui.live.rememberStartLesson
 import app.tutora.ui.longDate
@@ -104,6 +105,7 @@ fun TodayScreen(nav: NavHostController) {
             Text(stringResource(g), style = TutoraTheme.type.titleXl, color = TutoraTheme.colors.ink)
         }
         LiveBanner(nav)
+        TodayEarnings(nav, lessons, local.date)
         next?.let { n ->
             Card(label = stringResource(R.string.home_next)) {
                 Text(

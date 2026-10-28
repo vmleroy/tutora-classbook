@@ -31,6 +31,7 @@ import app.tutora.ui.catalog.PlaceEditScreen
 import app.tutora.ui.catalog.RegistryScreen
 import app.tutora.ui.catalog.StudentDetailScreen
 import app.tutora.ui.catalog.StudentEditScreen
+import app.tutora.ui.earnings.EarningsScreen
 import app.tutora.ui.live.LiveScreen
 import app.tutora.ui.payments.PayerLessonsScreen
 import app.tutora.ui.payments.PaymentDetailScreen
@@ -195,7 +196,7 @@ fun TutoraNav(
                 }
             }
             navigation<EarningsGraph>(startDestination = EarningsHome) {
-                composable<EarningsHome> { EarningsScreen() }
+                composable<EarningsHome> { EarningsScreen(nav) }
             }
             navigation<SettingsGraph>(startDestination = SettingsHome) {
                 composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) }

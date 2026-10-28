@@ -8,7 +8,7 @@ The money card at the top of Hoje: earned today, progress to expected, and week 
 ## Rules
 - Three stats at most, compact money (no cents).
 - Owed uses `tone: 'owed'`; tapping it opens the pending-payments list.
-- Ganhos uses the same card with "Recebido / A receber" and the success-on-danger bar.
+- Ganhos uses the same card with "Recebido / A receber" as stats, `receivedShare` for the success-on-danger bar, and `footnote` for the commission and bonus line.
 
 ## Props
 

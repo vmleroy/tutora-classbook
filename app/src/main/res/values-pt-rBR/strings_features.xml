@@ -418,4 +418,27 @@
     <string name="pay_leftShort">%1$s a receber</string>
     <string name="places_search">Buscar local</string>
     <string name="pay_toReceiveAmount">A receber %1$s</string>
+    <string name="earn_month">Mês</string>
+    <string name="earn_quarter">Trimestre</string>
+    <string name="earn_year">Ano</string>
+    <string name="earn_period">Período</string>
+    <string name="earn_previous">Período anterior</string>
+    <string name="earn_next">Próximo período</string>
+    <string name="earn_all">Tudo</string>
+    <string name="earn_private">Particulares</string>
+    <string name="earn_job">Escola e emprego</string>
+    <string name="earn_empty">Nada ganho neste período</string>
+    <string name="earn_earned">Ganho no período</string>
+    <string name="earn_received">Recebido</string>
+    <string name="earn_commission">comissão dos locais: %1$s</string>
+    <string name="earn_bonus">bônus dado: %1$s</string>
+    <string name="earn_trend">Últimos 6 meses</string>
+    <string name="earn_trendMonth">%1$s: %2$s ganhos, %3$s recebidos</string>
+    <string name="earn_sources">De onde veio</string>
+    <string name="earn_sourcesHint">toque para ver detalhes</string>
+    <string name="earn_owes">deve %1$s</string>
+    <string name="earn_today">Ganho hoje</string>
+    <string name="earn_expected">de %1$s previstos</string>
+    <string name="earn_week">Semana</string>
+    <string name="earn_studentsOwe">Alunos devem</string>
 </resources>

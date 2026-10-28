@@ -46,7 +46,7 @@ Line icons on a 24-unit grid with 2px round strokes, as in the mockups; in the a
 
 ## Components
 
-Thirty components cover every mockup screen. They are grouped as Foundations (Icon), Actions (Button, IconButton, Fab), Selection (SegmentedControl, Chip, Switch, Checkbox, Stepper), Inputs (TextField, SelectField), Display (Badge, Avatar, TagDot, Money, ProgressBar, Card, EarningsSummary), Lists (SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner), Navigation (ScreenHeader, TabBar, WeekStrip, AgendaBlock) and Feedback (BottomSheet, EmptyState, TimerRing). Each has its rules in its own guidelines.
+Thirty-one components cover every mockup screen (MonthBars joined in spec 009). They are grouped as Foundations (Icon), Actions (Button, IconButton, Fab), Selection (SegmentedControl, Chip, Switch, Checkbox, Stepper), Inputs (TextField, SelectField), Display (Badge, Avatar, TagDot, Money, ProgressBar, Card, EarningsSummary, MonthBars), Lists (SectionHeader, LessonRow, ListGroup, ListRow, AlertBanner), Navigation (ScreenHeader, TabBar, WeekStrip, AgendaBlock) and Feedback (BottomSheet, EmptyState, TimerRing). Each has its rules in its own guidelines.
 
 ## In code
 

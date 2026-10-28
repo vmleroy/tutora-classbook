@@ -409,4 +409,27 @@
     <string name="pay_leftShort">%1$s to receive</string>
     <string name="places_search">Search a place</string>
     <string name="pay_toReceiveAmount">To receive %1$s</string>
+    <string name="earn_month">Month</string>
+    <string name="earn_quarter">Quarter</string>
+    <string name="earn_year">Year</string>
+    <string name="earn_period">Period</string>
+    <string name="earn_previous">Previous period</string>
+    <string name="earn_next">Next period</string>
+    <string name="earn_all">All</string>
+    <string name="earn_private">Private</string>
+    <string name="earn_job">School and job</string>
+    <string name="earn_empty">Nothing earned in this period</string>
+    <string name="earn_earned">Earned in the period</string>
+    <string name="earn_received">Received</string>
+    <string name="earn_commission">places\' commission: %1$s</string>
+    <string name="earn_bonus">bonus given: %1$s</string>
+    <string name="earn_trend">Last 6 months</string>
+    <string name="earn_trendMonth">%1$s: %2$s earned, %3$s received</string>
+    <string name="earn_sources">Where it came from</string>
+    <string name="earn_sourcesHint">tap for details</string>
+    <string name="earn_owes">owes %1$s</string>
+    <string name="earn_today">Earned today</string>
+    <string name="earn_expected">of %1$s expected</string>
+    <string name="earn_week">Week</string>
+    <string name="earn_studentsOwe">Students owe</string>
 </resources>
