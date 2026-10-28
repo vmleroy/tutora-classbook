@@ -46,6 +46,7 @@ enum class IconName(
     SEARCH(R.drawable.ic_search),
     ARCHIVE(R.drawable.ic_archive),
     PENCIL(R.drawable.ic_pencil),
+    TRASH(R.drawable.ic_trash),
 }
 
 /** A line icon tinted with a token color; decorative unless it has a [label]. */

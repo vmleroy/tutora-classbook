@@ -22,7 +22,6 @@ import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
-import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
@@ -103,7 +102,6 @@ fun LessonForm(
     series: SeriesInfo?,
     error: String?,
     onSubmit: (LessonValues, Scope) -> Unit,
-    onRemove: ((Scope) -> Unit)?,
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
@@ -302,17 +300,6 @@ fun LessonForm(
             { v = v.copy(notes = it.ifEmpty { null }) },
             imeAction = ImeAction.Done,
         )
-        if (onRemove != null) {
-            Button(stringResource(R.string.lesson_remove), {
-                if (series !=
-                    null
-                ) {
-                    sheet = "remove"
-                } else {
-                    onRemove(Scope.ONE)
-                }
-            }, variant = ButtonVariant.GHOST)
-        }
     }
 
     when (sheet) {
@@ -343,33 +330,6 @@ fun LessonForm(
                         }
                     }
                 ListGroup(studentRows + groupRows)
-            }
-        "remove" ->
-            if (onRemove != null) {
-                BottomSheet(
-                    stringResource(R.string.lesson_removeTitle),
-                    { sheet = null },
-                    subtitle = stringResource(R.string.lesson_removeSeries),
-                    actions =
-                        listOf(
-                            { m ->
-                                Button(
-                                    stringResource(R.string.lesson_scopes_one),
-                                    { onRemove(Scope.ONE) },
-                                    m,
-                                    variant = ButtonVariant.OUTLINE,
-                                )
-                            },
-                            { m ->
-                                Button(
-                                    stringResource(R.string.lesson_scopes_following),
-                                    { onRemove(Scope.FOLLOWING) },
-                                    m,
-                                    variant = ButtonVariant.DANGER,
-                                )
-                            },
-                        ),
-                )
             }
     }
 }
@@ -446,7 +406,7 @@ fun LessonNewScreen(
                         }
                     }
             }
-        }, onRemove = null)
+        })
     }
 }
 
@@ -524,6 +484,6 @@ fun LessonEditScreen(
                     ),
                 )
             }
-        }, onRemove = { s -> scope.launch { done(services.schedule.removeLesson(l.id, s)) } })
+        })
     }
 }

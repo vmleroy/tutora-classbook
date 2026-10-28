@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +19,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.components.BottomSheet
+import app.tutora.designsystem.components.Button
+import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
@@ -43,6 +47,8 @@ import app.tutora.ui.longDate
 import app.tutora.ui.placeName
 import app.tutora.ui.tag
 import app.tutora.ui.weekdayLong
+import app.tutora.usecases.Scope
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 
 /**
@@ -55,6 +61,7 @@ fun LessonDetailScreen(
     id: String,
 ) {
     val services = LocalServices.current
+    val scope = rememberCoroutineScope()
     val language = currentLanguage()
     val lesson by remember(id) { services.scheduleRepo.lesson(id) }.collectAsState(initial = null)
     var seen by remember { mutableStateOf(false) }
@@ -67,6 +74,14 @@ fun LessonDetailScreen(
         }
     }
     val l = lesson ?: return
+    var removing by remember { mutableStateOf(false) }
+    // "Esta e as próximas" only from a class still ahead in a running series (AC-005-14, 15).
+    val inSeries = l.repeat != null && !l.isDetached && l.startAt > services.now()
+
+    fun remove(s: Scope) {
+        scope.launch { services.schedule.removeLesson(l.id, s) }
+        removing = false
+    }
     val local = localOf(l.startAt, services.zone)
     val endMin = local.hour * 60 + local.minute + l.plannedMin
     val end = LocalTime((endMin / 60) % 24, endMin % 60)
@@ -75,7 +90,11 @@ fun LessonDetailScreen(
         "lesson-detail",
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
-        actions = listOf(HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) { nav.navigate(LessonEdit(id)) }),
+        actions =
+            listOf(
+                HeaderAction(IconName.TRASH, stringResource(R.string.lesson_remove)) { removing = true },
+                HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) { nav.navigate(LessonEdit(id)) },
+            ),
     ) {
         Card {
             Text(
@@ -130,6 +149,35 @@ fun LessonDetailScreen(
                 Text(notes, style = TutoraTheme.type.body, color = TutoraTheme.colors.ink)
             }
         }
+    }
+    if (removing) {
+        // Removing always asks first (constitution rule 3); a series asks which classes.
+        BottomSheet(
+            stringResource(R.string.lesson_removeTitle),
+            { removing = false },
+            subtitle = if (inSeries) stringResource(R.string.lesson_removeSeries) else null,
+            actions =
+                if (inSeries) {
+                    listOf(
+                        { m ->
+                            Button(stringResource(R.string.lesson_scopes_one), { remove(Scope.ONE) }, m, variant = ButtonVariant.OUTLINE)
+                        },
+                        { m ->
+                            Button(
+                                stringResource(R.string.lesson_scopes_following),
+                                { remove(Scope.FOLLOWING) },
+                                m,
+                                variant = ButtonVariant.DANGER,
+                            )
+                        },
+                    )
+                } else {
+                    listOf(
+                        { m -> Button(stringResource(R.string.catalog_cancel), { removing = false }, m, variant = ButtonVariant.OUTLINE) },
+                        { m -> Button(stringResource(R.string.lesson_remove), { remove(Scope.ONE) }, m, variant = ButtonVariant.DANGER) },
+                    )
+                },
+        )
     }
 }
 
