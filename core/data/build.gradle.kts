@@ -9,7 +9,11 @@ android {
     compileSdk = 37
     defaultConfig { minSdk = 26 }
     testOptions.unitTests.isIncludeAndroidResources = true
-    lint { warningsAsErrors = true }
+    lint {
+        warningsAsErrors = true
+        // A release elsewhere must not fail the build: upgrades are a deliberate step (spec 001).
+        disable += listOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
+    }
 }
 
 kotlin {
