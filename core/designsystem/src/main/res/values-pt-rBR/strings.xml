@@ -16,4 +16,5 @@
     <string name="ds_cancel">Cancelar</string>
     <string name="ds_required">obrigatório</string>
     <string name="ds_remove">Remover %1$s</string>
+    <string name="ds_live">Ao vivo</string>
 </resources>

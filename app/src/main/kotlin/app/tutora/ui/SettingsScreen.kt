@@ -45,7 +45,7 @@ private fun stringIn(
     return context.createConfigurationContext(config).resources.getString(id, *args)
 }
 
-/** Ajustes: Geral (language, default places) and Sobre (AC-001-22, AC-003-11, AC-004-29). */
+/** Ajustes: Geral (language, default places), Aulas (live timer) and Sobre (AC-001-22, AC-003-11, AC-004-29, AC-007-17). */
 @Composable
 fun SettingsScreen(
     appInfo: AppInfo,
@@ -75,6 +75,21 @@ fun SettingsScreen(
                         )
                     },
                 ),
+        )
+        ListGroup(
+            title = stringResource(R.string.settings_lessons),
+            rows =
+                listOf {
+                    // Off hides Iniciar aula everywhere (AC-007-3, 17).
+                    ListRow(
+                        stringResource(R.string.settings_liveTimer),
+                        subtitle = stringResource(R.string.settings_liveTimerHint),
+                        icon = IconName.PLAY,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.liveTimer,
+                        onSwitchChange = { save(s.copy(liveTimer = it)) },
+                    )
+                },
         )
         Card(label = stringResource(R.string.settings_about)) {
             Text(stringResource(R.string.settings_about), style = TutoraTheme.type.rowTitle, color = TutoraTheme.colors.ink)

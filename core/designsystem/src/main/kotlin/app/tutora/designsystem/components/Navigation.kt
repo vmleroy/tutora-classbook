@@ -209,8 +209,11 @@ fun WeekStrip(
     }
 }
 
-/** MUTED is a cancelled or missed class: neutral fill and the title struck through. */
-enum class BlockState { DEFAULT, DONE, NEXT, MUTED }
+/**
+ * MUTED is a cancelled or missed class: neutral fill and the title struck through. LIVE is the
+ * class running now: accent outline and "Ao vivo", like NEXT with its own word.
+ */
+enum class BlockState { DEFAULT, DONE, NEXT, MUTED, LIVE }
 
 /** A lesson on the Agenda grid, sized by its duration; the screen places it. */
 @Composable
@@ -226,7 +229,12 @@ fun AgendaBlock(
     val t = tag.colors()
     val c = TutoraTheme.colors
     val shape = RoundedCornerShape(Radius.md)
-    val next = stringResource(R.string.ds_next)
+    val badge =
+        when (state) {
+            BlockState.NEXT -> stringResource(R.string.ds_next)
+            BlockState.LIVE -> stringResource(R.string.ds_live)
+            else -> null
+        }
     val muted = state == BlockState.MUTED
     val ink = if (muted) c.inkMuted else t.ink
     Column(
@@ -236,12 +244,12 @@ fun AgendaBlock(
                 .height(maxOf(height, Size.agendaMin))
                 .clip(shape)
                 .background(if (muted) c.surfaceSunken else t.soft)
-                .then(if (state == BlockState.NEXT) Modifier.border(Size.borderStrong, c.accent, shape) else Modifier)
+                .then(if (badge != null) Modifier.border(Size.borderStrong, c.accent, shape) else Modifier)
                 .then(
                     if (onClick != null) {
                         Modifier.clickable(role = Role.Button, onClick = onClick).semantics {
                             contentDescription =
-                                listOfNotNull(title, subtitle, if (state == BlockState.NEXT) next else null).joinToString(", ")
+                                listOfNotNull(title, subtitle, badge).joinToString(", ")
                         }
                     } else {
                         Modifier
@@ -258,7 +266,7 @@ fun AgendaBlock(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )
-            if (state == BlockState.NEXT) Badge(next, tone = BadgeTone.ACCENT)
+            if (badge != null) Badge(badge, tone = BadgeTone.ACCENT)
         }
         if (subtitle != null) Text(subtitle, style = TutoraTheme.type.meta, color = ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }

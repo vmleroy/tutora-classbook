@@ -20,6 +20,7 @@ fun statusLabel(l: Lesson): String =
     stringResource(
         when (l.status) {
             LessonStatus.SCHEDULED -> R.string.status_scheduled
+            LessonStatus.LIVE -> R.string.status_live
             LessonStatus.DONE -> R.string.status_done
             LessonStatus.MISSED -> R.string.status_missed
             LessonStatus.CANCELLED ->
@@ -44,6 +45,7 @@ fun statusBadge(l: Lesson): Triple<BadgeTone, String, IconName?>? {
     fun short(label: Int) = fee?.let { stringResource(R.string.lesson_statusFee, stringResource(label), it) } ?: stringResource(label)
     return when (l.status) {
         LessonStatus.SCHEDULED -> null
+        LessonStatus.LIVE -> Triple(BadgeTone.ACCENT, stringResource(R.string.status_live), null)
         LessonStatus.DONE -> Triple(BadgeTone.SUCCESS, stringResource(R.string.status_done), IconName.CHECK)
         LessonStatus.CANCELLED -> Triple(BadgeTone.NEUTRAL, short(R.string.status_cancelled), null)
         LessonStatus.MISSED -> Triple(BadgeTone.DANGER, short(R.string.status_missed), null)
@@ -55,6 +57,7 @@ fun blockState(
     nextId: String?,
 ): BlockState =
     when {
+        l.status == LessonStatus.LIVE -> BlockState.LIVE
         l.id == nextId -> BlockState.NEXT
         l.status == LessonStatus.DONE -> BlockState.DONE
         l.status == LessonStatus.CANCELLED || l.status == LessonStatus.MISSED -> BlockState.MUTED

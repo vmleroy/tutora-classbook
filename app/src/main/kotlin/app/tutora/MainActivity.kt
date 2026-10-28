@@ -1,5 +1,6 @@
 package app.tutora
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,7 +15,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.tutora.domain.Language
+import app.tutora.live.AndroidLiveNotifier
+import app.tutora.ui.LiveRequest
 import app.tutora.ui.TutoraApp
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class MainActivity : AppCompatActivity() {
     private val container get() = (application as TutoraApplication).container
@@ -23,7 +27,21 @@ class MainActivity : AppCompatActivity() {
         viewModelFactory { initializer { AppViewModel(container.startApp) } }
     }
 
+    /** A tap on the live notification, waiting for the tabs to open it (AC-007-15). */
+    private val liveRequest = MutableStateFlow<LiveRequest?>(null)
+
+    private fun takeLiveRequest(intent: Intent?) {
+        val id = intent?.getStringExtra(AndroidLiveNotifier.EXTRA_LESSON) ?: return
+        liveRequest.value = LiveRequest(id, intent.getBooleanExtra(AndroidLiveNotifier.EXTRA_END, false))
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        takeLiveRequest(intent)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) takeLiveRequest(intent)
         // The splash covers everything until settings and migrations are ready (AC-001-4).
         installSplashScreen().setKeepOnScreenCondition { app.state.value == AppState.Loading }
         super.onCreate(savedInstanceState)
@@ -42,7 +60,8 @@ class MainActivity : AppCompatActivity() {
                 is AppState.Failed -> applyLanguage(s.result.language)
                 AppState.Loading -> Unit
             }
-            TutoraApp(state, container.appInfo, app.services)
+            val request by liveRequest.collectAsStateWithLifecycle()
+            TutoraApp(state, container.appInfo, app.services, request) { liveRequest.value = null }
         }
     }
 

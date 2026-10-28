@@ -15,6 +15,7 @@ import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.Avatar
+import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.EmptyState
 import app.tutora.designsystem.components.HeaderAction
@@ -42,6 +43,8 @@ import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.clockTime
 import app.tutora.ui.countText
 import app.tutora.ui.durationText
+import app.tutora.ui.live.LiveBanner
+import app.tutora.ui.live.rememberStartLesson
 import app.tutora.ui.longDate
 import app.tutora.ui.minutesText
 import app.tutora.ui.rateText
@@ -58,6 +61,8 @@ fun TodayScreen(nav: NavHostController) {
     val range = remember { dayRange(local.date, local.date, zone) }
     val lessons by remember { services.scheduleRepo.between(range.first, range.second) }.collectAsState(initial = emptyList())
     val next by remember { services.scheduleRepo.firstAfter(now) }.collectAsState(initial = null)
+    val settings by services.settings.collectAsState(initial = null)
+    val startLesson = rememberStartLesson(nav)
 
     @Composable
     fun whenText(l: Lesson): String {
@@ -97,6 +102,7 @@ fun TodayScreen(nav: NavHostController) {
                 }
             Text(stringResource(g), style = TutoraTheme.type.titleXl, color = TutoraTheme.colors.ink)
         }
+        LiveBanner(nav)
         next?.let { n ->
             Card(label = stringResource(R.string.home_next)) {
                 Text(
@@ -124,6 +130,10 @@ fun TodayScreen(nav: NavHostController) {
                         )
                         Text(durationText(n.plannedMin), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
                     }
+                }
+                // Iniciar aula on the next class, while the timer is on (AC-007-1, 3).
+                if (settings?.liveTimer != false) {
+                    Button(stringResource(R.string.live_start), { startLesson(n.id) }, fullWidth = true, icon = IconName.PLAY)
                 }
             }
         }

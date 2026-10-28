@@ -1,6 +1,7 @@
 package app.tutora.ui.schedule
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -46,11 +47,13 @@ import app.tutora.domain.localOf
 import app.tutora.domain.worth
 import app.tutora.state.LocalServices
 import app.tutora.ui.LessonEdit
+import app.tutora.ui.LiveLesson
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.catalog.DurationStepper
 import app.tutora.ui.catalog.Field
 import app.tutora.ui.clockTime
 import app.tutora.ui.durationText
+import app.tutora.ui.live.rememberStartLesson
 import app.tutora.ui.longDate
 import app.tutora.ui.placeName
 import app.tutora.ui.tag
@@ -94,20 +97,42 @@ fun LessonDetailScreen(
         removing = false
     }
     val started = l.startAt <= now
-    // Cancelar aula any time, Marcar como dada once started; Desfazer once it is no longer
-    // scheduled (AC-006-9, 11, 13). Iniciar aula comes with 007.
+    val settings by services.settings.collectAsState(initial = null)
+    val startLesson = rememberStartLesson(nav)
+    // Iniciar aula when the timer is on, Cancelar aula any time, Marcar como dada once started;
+    // a live class opens its screen; Desfazer once it is no longer scheduled (AC-006-9, 11, 13, AC-007-1, 3, 13).
     val actionsBar: @Composable () -> Unit = {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            if (l.status == LessonStatus.SCHEDULED) {
-                Button(stringResource(R.string.cancel_action), { cancelling = true }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
-                if (started) Button(stringResource(R.string.lesson_markDone), { marking = l.plannedMin }, Modifier.weight(1f))
-            } else {
-                Button(
-                    stringResource(R.string.lesson_undo),
-                    { scope.launch { services.lessons.undo(l.id) } },
-                    Modifier.weight(1f),
-                    variant = ButtonVariant.OUTLINE,
-                )
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            when (l.status) {
+                LessonStatus.LIVE -> Button(stringResource(R.string.live_open), { nav.navigate(LiveLesson(l.id)) }, fullWidth = true)
+                LessonStatus.SCHEDULED -> {
+                    if (settings?.liveTimer != false) {
+                        Button(stringResource(R.string.live_start), { startLesson(l.id) }, fullWidth = true, icon = IconName.PLAY)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+                        Button(
+                            stringResource(R.string.cancel_action),
+                            { cancelling = true },
+                            Modifier.weight(1f),
+                            variant = ButtonVariant.OUTLINE,
+                        )
+                        if (started) {
+                            Button(
+                                stringResource(R.string.lesson_markDone),
+                                { marking = l.plannedMin },
+                                Modifier.weight(1f),
+                                variant = ButtonVariant.OUTLINE,
+                            )
+                        }
+                    }
+                }
+                else ->
+                    Button(
+                        stringResource(R.string.lesson_undo),
+                        { scope.launch { services.lessons.undo(l.id) } },
+                        variant = ButtonVariant.OUTLINE,
+                        fullWidth = true,
+                    )
             }
         }
     }
@@ -184,32 +209,10 @@ fun LessonDetailScreen(
         }
     }
     if (cancelling) CancelSheet(l, started) { cancelling = false }
-    marking?.let { minutes ->
-        // The real duration, starting at the planned one, and what it is worth (AC-006-1).
-        val value = l.copy(plannedMin = minutes).worth()
-        BottomSheet(
-            stringResource(R.string.lesson_markDone),
-            { marking = null },
-            actions =
-                listOf { m ->
-                    Button(
-                        if (value is Worth.Set) {
-                            stringResource(R.string.lesson_confirmValue, formatMoney(value.cents, language))
-                        } else {
-                            stringResource(R.string.lesson_confirm)
-                        },
-                        {
-                            scope.launch { services.lessons.markDone(l.id, minutes) }
-                            marking = null
-                        },
-                        m,
-                    )
-                },
-        ) {
-            Field(stringResource(R.string.lesson_realDuration)) {
-                DurationStepper(stringResource(R.string.lesson_realDuration), minutes, { marking = it })
-            }
-            Fact(stringResource(R.string.lesson_value), worthText(value), muted = value == Worth.Unset)
+    marking?.let { start ->
+        DoneSheet(l, start, stringResource(R.string.lesson_markDone), { marking = null }) { minutes ->
+            scope.launch { services.lessons.markDone(l.id, minutes) }
+            marking = null
         }
     }
     if (removing) {
@@ -274,9 +277,53 @@ private fun payerText(l: Lesson): String =
         stringResource(R.string.lesson_payerStudent)
     }
 
+/**
+ * The real duration, starting at [start], changed with − / +, the value as it changes, and
+ * Confirmar with it. Marcar como dada and Encerrar aula share it (AC-006-1, AC-007-9).
+ */
+@Composable
+fun DoneSheet(
+    l: Lesson,
+    start: Int,
+    title: String,
+    onDismiss: () -> Unit,
+    dismissLabel: String? = null,
+    onConfirm: (Int) -> Unit,
+) {
+    val language = currentLanguage()
+    var minutes by remember(l.id, start) { mutableStateOf(start) }
+    val value = l.copy(plannedMin = minutes).worth()
+    val confirm: @Composable (Modifier) -> Unit = { m ->
+        Button(
+            if (value is Worth.Set) {
+                stringResource(R.string.lesson_confirmValue, formatMoney(value.cents, language))
+            } else {
+                stringResource(R.string.lesson_confirm)
+            },
+            { onConfirm(minutes) },
+            m,
+        )
+    }
+    BottomSheet(
+        title,
+        onDismiss,
+        actions =
+            if (dismissLabel != null) {
+                listOf({ m -> Button(dismissLabel, onDismiss, m, variant = ButtonVariant.OUTLINE) }, confirm)
+            } else {
+                listOf(confirm)
+            },
+    ) {
+        Field(stringResource(R.string.lesson_realDuration)) {
+            DurationStepper(stringResource(R.string.lesson_realDuration), minutes, { minutes = it })
+        }
+        Fact(stringResource(R.string.lesson_value), worthText(value), muted = value == Worth.Unset)
+    }
+}
+
 /** One labelled fact on a line: the label on the left, the value on the right. */
 @Composable
-private fun Fact(
+fun Fact(
     label: String,
     value: String,
     muted: Boolean = false,

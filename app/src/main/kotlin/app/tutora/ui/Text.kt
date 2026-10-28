@@ -202,3 +202,9 @@ fun errorText(error: app.tutora.domain.CatalogError): String =
             app.tutora.domain.CatalogError.NOT_FOUND -> R.string.catalog_errors_notFound
         },
     )
+
+/** hh:mm:ss for the live clock, the same in both languages. */
+fun clockText(ms: Long): String {
+    val s = ms.coerceAtLeast(0) / 1000
+    return "%02d:%02d:%02d".format(s / 3600, s / 60 % 60, s % 60)
+}

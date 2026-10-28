@@ -84,7 +84,7 @@ Rules the specs assume:
 1. **Aggregates in SQL.** Balances, earned vs expected and the 6-month trend come from SQL views and `GROUP BY` queries.
 2. **Writes are use cases in one transaction** (`database.withTransaction`). A failure rolls everything back.
 3. **Screens observe, never fetch.** A ViewModel combines repository Flows into one UI state; the Composable renders it and sends events back.
-4. **Live timer = timestamps.** `{lessonId, startedAt, pausedMs, lastResumeAt}` lives in `lesson_timer`; the screen recomputes elapsed time and money each second from the clock. Killing the app loses nothing.
+4. **Live timer = timestamps.** `{lessonId, startedAt, pausedMs, pausedAt}` lives in `lesson_timer` (`pausedMs` is the time in pauses that are over, `pausedAt` a pause in progress); the screen recomputes elapsed time and money each second from the clock. Killing the app loses nothing.
 5. **Background work calls use cases directly.** WorkManager workers and notification actions use the same `AppContainer`, never ViewModels.
 
 ## Database schema and migrations
@@ -139,7 +139,7 @@ Every v1 feature maps to a platform API or a maintained library that works offli
 | Feature | API or library | Approach | Watch out for |
 | --- | --- | --- | --- |
 | Live timer, in app | Compose + a 1 s ticker Flow | One composable recomposes per second from timestamps | Keep the counter in its own composable |
-| Live timer, background | Foreground service (`specialUse` or `shortService` type) with an ongoing notification using `setUsesChronometer` | Elapsed time ticks in the notification with no app code running; Pause and Stop as notification actions | `POST_NOTIFICATIONS` permission and the foreground-service type rules of the target SDK |
+| Live timer, background | An ongoing notification (no foreground service, spec 007) using `setUsesChronometer` from the start minus pauses, with Pausar / Retomar through a `BroadcastReceiver` and Encerrar opening the app | The system ticks the chronometer with no app code running; elapsed time comes from timestamps, so nothing needs to stay alive. Re-posted on start-up after a reboot | On Android 14+ the user can swipe it away; the class stays live in the app |
 | Reminders | `AlarmManager` (inexact) or WorkManager, `NotificationManager` | Next 8 weeks of lessons, rescheduled whenever lessons change; weekly "who owes you" | Inexact alarms can be minutes late; fine for reminders |
 | PDF reports | `android.graphics.pdf.PdfDocument` drawn with Canvas, or an HTML template printed through `WebView` | Themed tables and the 6-month trend | Pagination for long ranges; test a 12-month report |
 | XLSX export (**spike**) | `fastexcel` (dhatim) or a minimal hand-written XLSX writer | Sheets for lessons, payments, students, places, monthly summary; numbers as numbers | Check the library runs on Android (it targets plain Java) before spec 010 |
