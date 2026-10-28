@@ -309,4 +309,11 @@
     <string name="notif_channelDesc">Mostra o tempo da aula em andamento</string>
     <string name="notif_paused">Pausada · %1$s</string>
     <string name="lesson_errors_notScheduled">Esta aula não está agendada.</string>
+    <string name="settings_autoStart">Início automático</string>
+    <string name="settings_autoStartSwitch">Iniciar aulas automaticamente</string>
+    <string name="settings_autoStartHint">No horário da aula, o cronômetro começa sozinho, contando do horário marcado</string>
+    <string name="settings_autoStartOpen">Só com o app aberto</string>
+    <string name="settings_autoStartAlways">Também com o app fechado</string>
+    <string name="settings_autoStartOpenHint">Começa enquanto o Tutora estiver aberto, ou assim que você abrir.</string>
+    <string name="settings_autoStartAlwaysHint">Começa no horário mesmo com o app fechado e mostra a notificação. Pode atrasar alguns minutos, mas o tempo conta do horário marcado.</string>
 </resources>

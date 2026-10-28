@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performClick
 import androidx.core.app.NotificationCompat
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import app.tutora.domain.AutoStart
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.PlaceLink
 import app.tutora.domain.RateType
@@ -191,6 +192,21 @@ class LiveScreensTest {
         compose.onNodeWithContentDescription("Aula ao vivo").performClick()
         h.awaitDb(compose) { !h.services.currentSettings().liveTimer }
         assertEquals(false, runBlocking { h.services.currentSettings().liveTimer })
+    }
+
+    @Test
+    fun `AC-007-19 Ajustes has Inicio automatico, off by default, with its two choices once on`() {
+        h.show(compose)
+        h.go(compose, SettingsGraph)
+        exists("Início automático")
+        absent("Também com o app fechado")
+        compose.onNodeWithContentDescription("Iniciar aulas automaticamente").performClick()
+        h.settle(compose)
+        exists("Só com o app aberto")
+        exists("Começa enquanto o Tutora estiver aberto, ou assim que você abrir.")
+        compose.onNode(hasPlainText("Também com o app fechado")).performClick()
+        h.awaitDb(compose) { h.services.currentSettings().autoStart == AutoStart.ALWAYS }
+        assertEquals(AutoStart.ALWAYS, runBlocking { h.services.currentSettings().autoStart })
     }
 
     @Test

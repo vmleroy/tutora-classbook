@@ -306,4 +306,11 @@
     <string name="notif_channelDesc">Shows the time of the lesson in progress</string>
     <string name="notif_paused">Paused · %1$s</string>
     <string name="lesson_errors_notScheduled">This lesson isn\'t scheduled.</string>
+    <string name="settings_autoStart">Automatic start</string>
+    <string name="settings_autoStartSwitch">Start lessons automatically</string>
+    <string name="settings_autoStartHint">At the lesson\'s time, the timer starts by itself, counting from the planned time</string>
+    <string name="settings_autoStartOpen">Only with the app open</string>
+    <string name="settings_autoStartAlways">Also with the app closed</string>
+    <string name="settings_autoStartOpenHint">Starts while Tutora is open, or as soon as you open it.</string>
+    <string name="settings_autoStartAlwaysHint">Starts on time even with the app closed and shows the notification. It may be a few minutes late, but the time counts from the planned start.</string>
 </resources>

@@ -40,6 +40,12 @@ Architecture reference: "Live timer = timestamps" (state), "Native APIs" (live t
   - Hoje: a live card at the top with the ticking clock; Iniciar aula on "Próxima aula" when it is today (AC-007-1, 13). The clock sits on a panel in the header color, the ground `TimerRing` is drawn for.
   - Agenda and the day list: `AgendaBlock` gets a `LIVE` state (accent outline and an "Ao vivo" badge), and `LessonRow` an "Ao vivo" badge (AC-007-14). The design system's guideline and gallery are updated.
   - Ajustes: an "Aulas" group with the "Aula ao vivo" switch (AC-007-3, 17).
+- **Início automático** (AC-007-19 to 22, added 28 Oct 2026):
+  - `Settings.autoStart` is `OFF` (default), `APP_OPEN` or `ALWAYS`, with keys `auto_start` and `auto_start_skipped`. A discarded class joins the skip list, which keeps the last 50.
+  - `dueToStart` picks the scheduled class whose start has come and whose planned end hasn't passed.
+  - `Live.autoStart()` starts it from its planned start if nothing is live, then sets the one alarm for the next class's start when the mode is `ALWAYS`, or clears it. It is safe to run any number of times.
+  - It runs on start-up, every 30 s while the app is on screen, after a change in Ajustes, and from `AutoStartReceiver`, which handles both the alarm and `BOOT_COMPLETED`.
+  - `AndroidAutoStartAlarm` uses `setAndAllowWhileIdle`, which needs no exact-alarm permission and may arrive a few minutes late.
 - All copy goes in `strings_features.xml`, in both languages (AC-007-18).
 
 ## Data

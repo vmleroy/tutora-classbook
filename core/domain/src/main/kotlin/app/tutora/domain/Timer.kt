@@ -1,5 +1,7 @@
 package app.tutora.domain
 
+import kotlin.time.Duration.Companion.minutes
+
 // The live timer stores timestamps, never a running counter, so closing the app or restarting
 // the phone neither loses nor adds time (architecture, "Live timer = timestamps").
 
@@ -58,3 +60,35 @@ fun earnedSoFar(
     price: Price.Set,
     ms: Long,
 ): Cents? = if (price.rateType == RateType.HOUR) multiplyRate(price.cents, ms.coerceAtLeast(0), HOUR_MS) else null
+
+/** Ajustes › Início automático (AC-007-19): off, while the app is open, or also with it closed. */
+enum class AutoStart(
+    val key: String,
+) {
+    OFF("off"),
+    APP_OPEN("app_open"),
+    ALWAYS("always"),
+    ;
+
+    companion object {
+        fun fromKey(key: String?) = entries.firstOrNull { it.key == key } ?: OFF
+    }
+}
+
+/**
+ * The class that should start by itself now: scheduled, begun, its planned end not passed, and
+ * not discarded after starting by itself; the earliest if several overlap (AC-007-20).
+ */
+fun dueToStart(
+    lessons: List<Lesson>,
+    now: String,
+    skipped: Set<String>,
+): Lesson? {
+    val at = instantOf(now)
+    return lessons
+        .filter { it.status == LessonStatus.SCHEDULED && it.id !in skipped }
+        .filter { l ->
+            val start = instantOf(l.startAt)
+            start <= at && at < start + l.plannedMin.minutes
+        }.minByOrNull { it.startAt }
+}

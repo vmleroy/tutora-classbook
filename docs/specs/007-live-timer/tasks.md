@@ -8,9 +8,11 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 4. Notification: channel, ongoing notification with chronometer and actions, receiver, re-post on start-up, permission request. Test: `app/src/test/kotlin/app/tutora/LiveScreensTest.kt`. (AC-007-15)
 - [x] 5. Design system: `BlockState.LIVE` and its guideline and gallery entry. Test: `core/designsystem/src/test/kotlin/app/tutora/designsystem/DesignSystemTest.kt` (gallery lists it).
 - [x] 6. Screens: live screen and Aula concluída, shared `DoneSheet`, Iniciar aula on the detail and on Hoje for today's class, live card on Hoje, Ao vivo on Agenda and lists, Ajustes › Aulas; strings in both languages. Test: `app/src/test/kotlin/app/tutora/LiveScreensTest.kt`. (AC-007-3, AC-007-4, AC-007-13, AC-007-17, AC-007-18)
+- [x] 7. Início automático: setting, `dueToStart`, `Live.autoStart`, alarm and boot receiver, in-app check every 30 s, Ajustes section. Tests: `app/src/test/kotlin/app/tutora/LiveTest.kt` (AC-007-20, AC-007-21, AC-007-22), `app/src/test/kotlin/app/tutora/LiveScreensTest.kt` (AC-007-19).
 
 ## Pending on a device
 
 - The notification ticking with the app in the background, its Pausar / Retomar and Encerrar actions, and its return after a reboot.
 - The permission prompt on Android 13+ and the timer when notifications are denied.
 - The live screen at Large text, and the battery cost of a 1-hour class on screen.
+- Início automático with the app closed: how late Android delivers the alarm in battery saving, and the alarm coming back after a restart.

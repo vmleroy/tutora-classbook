@@ -5,6 +5,7 @@ import androidx.core.app.LocaleManagerCompat
 import app.tutora.data.openTutoraDatabase
 import app.tutora.domain.isoText
 import app.tutora.domain.uuidv7
+import app.tutora.live.AndroidAutoStartAlarm
 import app.tutora.live.AndroidLiveNotifier
 import app.tutora.usecases.Ctx
 import app.tutora.usecases.Live
@@ -31,11 +32,14 @@ class AppContainer(
     /** The live notification, shared by the screens and the notification's own buttons. */
     val notifier = AndroidLiveNotifier(context)
 
+    /** The alarm that starts a class with the app closed (AC-007-22). */
+    val alarm = AndroidAutoStartAlarm(context)
+
     // Opened once per process, so the notification's buttons use the same database as the screens.
     private val database by lazy { openTutoraDatabase(context) }
 
     /** The live timer for the notification's buttons, which run without the screens. */
-    val live by lazy { Live(Ctx(database.first, ::now, ::newId, live = notifier)) }
+    val live by lazy { Live(Ctx(database.first, ::now, ::newId, live = notifier, alarm = alarm)) }
 
     val startApp =
         StartApp(
@@ -50,6 +54,7 @@ class AppContainer(
             now = ::now,
             newId = ::newId,
             notifier = notifier,
+            alarm = alarm,
         )
 }
 

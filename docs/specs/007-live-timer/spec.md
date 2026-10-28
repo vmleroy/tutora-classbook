@@ -6,7 +6,7 @@ Mockups: docs/mockups/Live.dc.html (live screen, Aula concluída). The balance l
 
 ## Goal
 
-The teacher starts a class when it begins, and Tutora counts it: elapsed time and, for a class paid by the hour, the money earned, going up second by second. They can pause and resume, jot a quick note, and end it, confirming the real duration before it is saved as Dada. The count survives closing the app or restarting the phone, and an ongoing notification keeps showing it while the teacher uses other apps. Teachers who only manage the schedule can turn the timer off in Ajustes.
+The teacher starts a class when it begins, and Tutora counts it: elapsed time and, for a class paid by the hour, the money earned, going up second by second. They can pause and resume, jot a quick note, and end it, confirming the real duration before it is saved as Dada. The count survives closing the app or restarting the phone, and an ongoing notification keeps showing it while the teacher uses other apps. Teachers who only manage the schedule can turn the timer off in Ajustes, and those who want it can have classes start by themselves at their time.
 
 ## User stories
 
@@ -52,6 +52,13 @@ The teacher starts a class when it begins, and Tutora counts it: elapsed time an
 ### Ajustes
 
 - **AC-007-17.** Ajustes has an "Aulas" group with "Aula ao vivo" (on by default) and a line on what it does.
+
+### Starting by itself (added 28 Oct 2026 at Victor's request)
+
+- **AC-007-19.** Ajustes has an "Início automático" section, shown while Aula ao vivo is on. It has "Iniciar aulas automaticamente", off by default, and, when on, a choice between "Só com o app aberto" and "Também com o app fechado", each with a line on what it does.
+- **AC-007-20.** With it on, when a scheduled class's start time comes and no other class is live, the class goes Ao vivo by itself, counting from its planned start. A class whose planned end has passed, one that isn't scheduled, or one that was discarded never starts on its own.
+- **AC-007-21.** "Só com o app aberto" starts the class while Tutora is open, or as soon as it is opened; nothing is set to wake the phone.
+- **AC-007-22.** "Também com o app fechado" also starts it at its time with Tutora closed, and the live notification appears. Android may deliver this a few minutes late, but the count still starts from the planned time. After the phone restarts, it is set up again.
 
 ### Language
 

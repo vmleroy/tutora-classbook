@@ -1,7 +1,12 @@
 package app.tutora
 
+import android.app.AlarmManager
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.data.ScheduleRepository
+import app.tutora.data.SettingsRepository
+import app.tutora.domain.AutoStart
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.Expected
 import app.tutora.domain.Lesson
@@ -16,6 +21,8 @@ import app.tutora.domain.counted
 import app.tutora.domain.elapsedMs
 import app.tutora.domain.expected
 import app.tutora.domain.worth
+import app.tutora.live.AndroidAutoStartAlarm
+import app.tutora.usecases.AutoStartAlarm
 import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.LiveNote
 import app.tutora.usecases.LiveNotifier
@@ -36,6 +43,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
+import org.robolectric.Shadows
+import kotlin.time.Instant
 
 /** Remembers what the notification was asked to show. */
 private class FakeNotifier : LiveNotifier {
@@ -50,19 +59,29 @@ private class FakeNotifier : LiveNotifier {
     }
 }
 
+/** Remembers the alarm the use cases set. */
+private class FakeAlarm : AutoStartAlarm {
+    var at: String? = "unset"
+
+    override fun set(at: String?) {
+        this.at = at
+    }
+}
+
 // Now is Monday 26 Oct 2026, 09:00 in São Paulo.
 @RunWith(AndroidJUnit4::class)
 class LiveTest {
     @get:Rule val tmp = TemporaryFolder()
     private lateinit var t: TestDb
     private val notifier = FakeNotifier()
+    private val alarm = FakeAlarm()
     private lateinit var ana: String
     private val online = BuiltinPlace.ONLINE.id
 
     @Before
     fun setUp() =
         runTest {
-            t = TestDb(tmp.root, notifier = notifier)
+            t = TestDb(tmp.root, notifier = notifier, alarm = alarm)
             t.catalog.ensureBuiltinPlaces()
             ana =
                 (
@@ -190,5 +209,52 @@ class LiveTest {
             assertTrue(notifier.shown != null)
             t.schedule.removeLesson(b, Scope.ONE)
             assertNull(notifier.shown)
+        }
+
+    private suspend fun autoStart(mode: AutoStart) {
+        val repo = SettingsRepository(t.db)
+        repo.save(repo.load().copy(autoStart = mode), t.now)
+    }
+
+    @Test
+    fun `AC-007-20 a class whose time has come starts by itself from its planned start, unless it ended, was discarded or it is off`() =
+        runTest {
+            val over = lesson(time = LocalTime(7, 0))
+            val due = lesson(time = LocalTime(8, 30))
+            t.live.autoStart()
+            assertEquals(LessonStatus.SCHEDULED, one(due)?.status)
+            autoStart(AutoStart.APP_OPEN)
+            t.live.autoStart()
+            assertEquals(LessonStatus.LIVE, one(due)?.status)
+            assertEquals("2026-10-26T11:30:00.000Z", timer(due)?.startedAt)
+            assertEquals(LessonStatus.SCHEDULED, one(over)?.status)
+            t.live.discard(due)
+            t.live.autoStart()
+            assertEquals(LessonStatus.SCHEDULED, one(due)?.status)
+        }
+
+    @Test
+    fun `AC-007-21 only with the app open sets no alarm`() =
+        runTest {
+            lesson(time = LocalTime(14, 0))
+            autoStart(AutoStart.APP_OPEN)
+            t.live.autoStart()
+            assertNull(alarm.at)
+        }
+
+    @Test
+    fun `AC-007-22 also with the app closed sets the alarm at the next class's start, and the phone alarm is set`() =
+        runTest {
+            lesson(time = LocalTime(14, 0))
+            autoStart(AutoStart.ALWAYS)
+            t.live.autoStart()
+            assertEquals("2026-10-26T17:00:00.000Z", alarm.at)
+            val context = ApplicationProvider.getApplicationContext<Application>()
+            AndroidAutoStartAlarm(context).set(alarm.at)
+            val manager = context.getSystemService(AlarmManager::class.java)
+            assertEquals(
+                Instant.parse("2026-10-26T17:00:00.000Z").toEpochMilliseconds(),
+                Shadows.shadowOf(manager).peekNextScheduledAlarm()?.triggerAtMs,
+            )
         }
 }

@@ -21,4 +21,8 @@ data class Settings(
     val customColors: Map<CustomPart, String> = emptyMap(),
     /** Ajustes › Aulas › Aula ao vivo; off hides Iniciar aula (AC-007-3, 17). */
     val liveTimer: Boolean = true,
+    /** Ajustes › Início automático, off by default (AC-007-19). */
+    val autoStart: AutoStart = AutoStart.OFF,
+    /** Classes discarded after starting by themselves, so they don't start again (AC-007-20). */
+    val autoStartSkipped: Set<String> = emptySet(),
 )
