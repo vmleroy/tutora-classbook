@@ -434,4 +434,12 @@
     <string name="earn_studentsOwe">Students owe</string>
     <string name="settings_earlyDone">Mark as given before its time</string>
     <string name="settings_earlyDoneHint">Lets you complete a class that hasn\'t started yet</string>
+    <string name="pay_noCredit">No credit or bonus</string>
+    <string name="pay_bonusRow">Bonus · %1$s</string>
+    <string name="pay_useRow">Used on the %1$s lesson</string>
+    <string name="pay_giveBackTitle">Give this credit back?</string>
+    <string name="pay_giveBackBody">The lesson is owed that amount again, and the credit goes back to the balance.</string>
+    <string name="pay_giveBack">Give back</string>
+    <string name="pay_editBonus">Edit bonus</string>
+    <string name="pay_removeBonus">Remove bonus</string>
 </resources>

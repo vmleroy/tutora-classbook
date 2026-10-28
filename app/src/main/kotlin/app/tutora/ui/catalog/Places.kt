@@ -82,11 +82,11 @@ fun PlaceDetailScreen(
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
-    val place by services.catalogRepo.place(id).collectAsState(initial = null)
-    val students by services.catalogRepo.studentsAt(id).collectAsState(initial = emptyList())
-    val allStudents by services.catalogRepo.students().collectAsState(initial = emptyList())
-    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
-    val allPlaces by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val place by remember(id) { services.catalogRepo.place(id) }.collectAsState(initial = null)
+    val students by remember(id) { services.catalogRepo.studentsAt(id) }.collectAsState(initial = emptyList())
+    val allStudents by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
+    val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
+    val allPlaces by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     var picking by rememberSaveable { mutableStateOf<String?>(null) }
     var moving by remember { mutableStateOf(emptyList<String>()) }
     val p = place ?: return

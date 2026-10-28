@@ -443,4 +443,12 @@
     <string name="earn_studentsOwe">Alunos devem</string>
     <string name="settings_earlyDone">Marcar como dada antes do horário</string>
     <string name="settings_earlyDoneHint">Permite concluir uma aula que ainda não começou</string>
+    <string name="pay_noCredit">Sem crédito nem bônus</string>
+    <string name="pay_bonusRow">Bônus · %1$s</string>
+    <string name="pay_useRow">Usado na aula de %1$s</string>
+    <string name="pay_giveBackTitle">Devolver este crédito?</string>
+    <string name="pay_giveBackBody">A aula volta a ficar a receber nesse valor, e o crédito volta para o saldo.</string>
+    <string name="pay_giveBack">Devolver</string>
+    <string name="pay_editBonus">Editar bônus</string>
+    <string name="pay_removeBonus">Remover bônus</string>
 </resources>

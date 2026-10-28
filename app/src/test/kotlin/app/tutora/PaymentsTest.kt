@@ -226,4 +226,17 @@ class PaymentsTest {
             assertEquals(2_000L, ledger.creditCents)
             assertEquals(0L, ledger.paidCents)
         }
+
+    @Test
+    fun `AC-008-37 removing a bonus that paid for a class takes that use back, so credit never goes below zero`() =
+        runTest {
+            creditsOn()
+            val bonus = (payments.giveBonus(anaRef, 5_000, 0) as PaymentResult.Ok).paymentId
+            val lesson = given(22)
+            payments.useCredit(anaRef, listOf(lesson), minutes = false)
+            assertEquals(7_000L, balance())
+            payments.removeCredit(bonus)
+            assertEquals(12_000L, balance())
+            assertEquals(0L, repo.ledgerNow(anaRef).creditCents)
+        }
 }

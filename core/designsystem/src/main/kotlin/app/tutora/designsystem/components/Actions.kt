@@ -51,7 +51,7 @@ fun Button(
     enabled: Boolean = true,
 ) {
     val c = TutoraTheme.colors
-    val (bg, fg, line) =
+    val (base, fgBase, line) =
         when (variant) {
             ButtonVariant.PRIMARY -> Triple(c.btnPrimary, c.onBtnPrimary, Color.Transparent)
             ButtonVariant.ACCENT -> Triple(c.accent, c.onAccent, Color.Transparent)
@@ -59,6 +59,11 @@ fun Button(
             ButtonVariant.GHOST -> Triple(Color.Transparent, c.btnPrimary, Color.Transparent)
             ButtonVariant.DANGER -> Triple(c.danger, c.surface, Color.Transparent)
         }
+    // Disabled dims the colors themselves, not a layer: a layer switched back to full opacity
+    // inside a bottom sheet was left undrawn on a device.
+    val dim = if (enabled) 1f else Opacity.disabled
+    val bg = base.copy(alpha = base.alpha * dim)
+    val fg = fgBase.copy(alpha = fgBase.alpha * dim)
     val height =
         when (size) {
             ControlSize.SM -> Size.controlSm
@@ -74,8 +79,7 @@ fun Button(
                 .height(height)
                 .clip(shape)
                 .background(bg, shape)
-                .then(if (line == Color.Transparent) Modifier else Modifier.border(Size.border, line, shape))
-                .alpha(if (enabled) 1f else Opacity.disabled)
+                .then(if (line == Color.Transparent) Modifier else Modifier.border(Size.border, line.copy(alpha = line.alpha * dim), shape))
                 .clickable(enabled = enabled && !loading, role = Role.Button, onClick = onClick)
                 .padding(horizontal = Spacing.s4),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s2, Alignment.CenterHorizontally),

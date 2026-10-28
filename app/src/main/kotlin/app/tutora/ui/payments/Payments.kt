@@ -54,6 +54,7 @@ import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Balance
 import app.tutora.domain.Cents
+import app.tutora.domain.CreditRecord
 import app.tutora.domain.Language
 import app.tutora.domain.Ledger
 import app.tutora.domain.Lesson
@@ -172,7 +173,7 @@ fun PayerBalance(
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
-    val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
+    val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val settings by services.settings.collectAsState(initial = null)
     var sheet by rememberSaveable { mutableStateOf<String?>(null) }
     val l = ledger ?: return
@@ -190,31 +191,109 @@ fun PayerBalance(
             color = TutoraTheme.colors.inkMuted,
         )
         Money(owes, size = MoneySize.LG, tone = if (owes > 0) MoneyTone.OWED else MoneyTone.PAID)
-        if (credits && (l.creditCents > 0 || l.creditMinutes > 0)) {
-            Text(
-                listOfNotNull(
-                    l.creditCents.takeIf { it > 0 }?.let { stringResource(R.string.pay_creditLine, formatMoney(it, language)) },
-                    l.creditMinutes.takeIf { it > 0 }?.let { stringResource(R.string.pay_minutesLine, it) },
-                ).joinToString(" · "),
-                Modifier.testTag("credit-line"),
-                style = TutoraTheme.type.bodyStrong,
-                color = TutoraTheme.colors.successInk,
+        Button(payLabel, { sheet = "pay" }, icon = IconName.WALLET, fullWidth = true)
+    }
+    if (sheet == "pay") PaymentSheet(payer, l, onDismiss = { sheet = null }, elsewhere = studentElsewhere(payer))
+}
+
+/**
+ * Créditos e bônus, its own section apart from what is owed (AC-008-37): what credit and minutes
+ * are left, Usar crédito, a small + to give a bonus, each bonus (tap to edit or remove it) and each
+ * time credit went on a class (tap to give it back). Only with the Ajustes switch on.
+ */
+@Composable
+fun CreditsSection(payer: PayerRef) {
+    val services = LocalServices.current
+    val language = currentLanguage()
+    val settings by services.settings.collectAsState(initial = null)
+    val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
+    val records by remember(payer) { services.paymentRepo.creditRecords(payer) }.collectAsState(initial = emptyList())
+    var sheet by rememberSaveable { mutableStateOf<String?>(null) }
+    var editing by rememberSaveable { mutableStateOf<String?>(null) }
+    if (settings?.credits != true) return
+    val l = ledger ?: return
+    Column(Modifier.testTag("credits-section"), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        SectionHeader(
+            stringResource(R.string.settings_credits),
+            action = IconName.PLUS,
+            actionLabel = stringResource(R.string.pay_giveBonus),
+            onAction = { sheet = "bonus" },
+        )
+        val left =
+            listOfNotNull(
+                l.creditCents.takeIf { it > 0 }?.let { stringResource(R.string.pay_creditLine, formatMoney(it, language)) },
+                l.creditMinutes.takeIf { it > 0 }?.let { stringResource(R.string.pay_minutesLine, it) },
+            ).joinToString(" · ")
+        Text(
+            left.ifEmpty { stringResource(R.string.pay_noCredit) },
+            Modifier.testTag("credit-line"),
+            style = TutoraTheme.type.bodyStrong,
+            color = if (left.isEmpty()) TutoraTheme.colors.inkMuted else TutoraTheme.colors.successInk,
+        )
+        if (l.owedCents > 0 && (l.creditCents > 0 || l.creditMinutes > 0)) {
+            Button(stringResource(R.string.pay_useCredit), { sheet = "use" }, variant = ButtonVariant.OUTLINE, fullWidth = true)
+        }
+        if (records.isNotEmpty()) {
+            ListGroup(
+                records.map { r ->
+                    {
+                        val amount =
+                            listOfNotNull(
+                                r.cents.takeIf { it > 0 }?.let { formatMoney(it, language) },
+                                r.minutes.takeIf { it > 0 }?.let { stringResource(R.string.places_minutes, it.toString()) },
+                            ).joinToString(" · ")
+                        ListRow(
+                            if (r.isBonus) {
+                                stringResource(R.string.pay_bonusRow, amount)
+                            } else {
+                                stringResource(R.string.pay_useRow, dayMonth(localOf(r.lessonStart ?: r.at, services.zone).date, language))
+                            },
+                            subtitle =
+                                if (r.isBonus) {
+                                    listOfNotNull(dayMonth(localOf(r.at, services.zone).date, language), r.note).joinToString(" · ")
+                                } else {
+                                    amount
+                                },
+                            icon = if (r.isBonus) IconName.STAR else IconName.CALENDAR_CHECK,
+                            onClick = {
+                                editing = r.id
+                                sheet = if (r.isBonus) "bonus" else "giveBack"
+                            },
+                        )
+                    }
+                },
             )
         }
-        Button(payLabel, { sheet = "pay" }, icon = IconName.WALLET, fullWidth = true)
-        if (credits && !isPlace) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                if (owes > 0 && (l.creditCents > 0 || l.creditMinutes > 0)) {
-                    Button(stringResource(R.string.pay_useCredit), { sheet = "use" }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
-                }
-                Button(stringResource(R.string.pay_giveBonus), { sheet = "bonus" }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
-            }
-        }
     }
+    val scope = rememberCoroutineScope()
     when (sheet) {
-        "pay" -> PaymentSheet(payer, l, onDismiss = { sheet = null }, elsewhere = studentElsewhere(payer))
         "use" -> UseCreditSheet(payer, l) { sheet = null }
-        "bonus" -> BonusSheet(payer) { sheet = null }
+        "bonus" ->
+            BonusSheet(payer, records.firstOrNull { it.id == editing && it.isBonus }) {
+                sheet = null
+                editing = null
+            }
+        "giveBack" ->
+            BottomSheet(
+                stringResource(R.string.pay_giveBackTitle),
+                {
+                    sheet = null
+                    editing = null
+                },
+                subtitle = stringResource(R.string.pay_giveBackBody),
+                actions =
+                    listOf(
+                        { m -> Button(stringResource(R.string.catalog_cancel), { sheet = null }, m, variant = ButtonVariant.OUTLINE) },
+                        { m ->
+                            Button(stringResource(R.string.pay_giveBack), {
+                                val id = editing
+                                scope.launch { id?.let { services.payments.removeCredit(it) } }
+                                sheet = null
+                                editing = null
+                            }, m, variant = ButtonVariant.DANGER)
+                        },
+                    ),
+            )
     }
 }
 
@@ -239,7 +318,7 @@ private fun payerClasses(payer: PayerRef): List<PayerClass>? {
     val services = LocalServices.current
     val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val elsewhere = studentElsewhere(payer)
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val placeNames = places.associate { it.place.id to placeName(it.place) }
     val l = ledger ?: return null
     return (
@@ -256,7 +335,7 @@ private fun PayerClassRow(
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     // "28/10 · Ventura" on a student's or group's page; "28/10 · ENEM" on a place's (AC-008-33).
     val summary = if (showWho) c.owed.who else places.firstOrNull { it.place.id == c.owed.placeId }?.let { placeName(it.place) }
     ListRow(
@@ -283,7 +362,7 @@ fun PayerHistory(
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
-    val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
+    val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val classes = payerClasses(payer) ?: return
     val l = ledger ?: return
     val showWho = payer.kind == PayerKind.PLACE
@@ -414,31 +493,44 @@ private fun UseCreditSheet(
     }
 }
 
-/** Dar bônus: free money, free minutes, or both (AC-008-31). */
+/** Dar bônus, or edit or remove one (AC-008-31, 37): free money, free minutes, or both. */
 @Composable
 private fun BonusSheet(
     payer: PayerRef,
+    editing: CreditRecord?,
     onDismiss: () -> Unit,
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
-    var cents by rememberSaveable { mutableStateOf<Cents?>(null) }
-    var minutes by rememberSaveable { mutableStateOf(0L) }
-    var note by rememberSaveable { mutableStateOf("") }
+    var cents by rememberSaveable { mutableStateOf(editing?.cents?.takeIf { it > 0 }) }
+    var minutes by rememberSaveable { mutableStateOf((editing?.minutes ?: 0).toLong()) }
+    var note by rememberSaveable { mutableStateOf(editing?.note.orEmpty()) }
     // "%1$s min", filled in by the stepper.
     val minutesTemplate = stringResource(R.string.places_minutes)
+    val save: @Composable (Modifier) -> Unit = { m ->
+        Button(stringResource(if (editing == null) R.string.pay_bonusSave else R.string.catalog_save), {
+            scope.launch {
+                if (editing == null) {
+                    services.payments.giveBonus(payer, cents ?: 0, minutes.toInt(), note)
+                } else {
+                    services.payments.editBonus(editing.id, cents ?: 0, minutes.toInt(), note)
+                }
+                onDismiss()
+            }
+        }, m, enabled = (cents ?: 0) > 0 || minutes > 0)
+    }
+    val remove: @Composable (Modifier) -> Unit = { m ->
+        Button(stringResource(R.string.pay_removeBonus), {
+            scope.launch {
+                editing?.let { services.payments.removeCredit(it.id) }
+                onDismiss()
+            }
+        }, m, variant = ButtonVariant.DANGER)
+    }
     BottomSheet(
-        stringResource(R.string.pay_giveBonus),
+        stringResource(if (editing == null) R.string.pay_giveBonus else R.string.pay_editBonus),
         onDismiss,
-        actions =
-            listOf { m ->
-                Button(stringResource(R.string.pay_bonusSave), {
-                    scope.launch {
-                        services.payments.giveBonus(payer, cents ?: 0, minutes.toInt(), note)
-                        onDismiss()
-                    }
-                }, m, enabled = (cents ?: 0) > 0 || minutes > 0)
-            },
+        actions = if (editing == null) listOf(save) else listOf(remove, save),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
             MoneyField(stringResource(R.string.pay_bonusMoney), cents, { cents = it })
@@ -499,7 +591,7 @@ fun PaymentSheet(
     val scope = rememberCoroutineScope()
     val language = currentLanguage()
     val zone = services.zone
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val placeNames = places.associate { it.place.id to placeName(it.place) }
     val outside = elsewhere.associateBy { it.owed.lessonId }
     val today = localOf(services.now(), zone).date
@@ -628,9 +720,9 @@ fun PaymentDetailScreen(
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val language = currentLanguage()
-    val payment by services.paymentRepo.payment(id).collectAsState(initial = null)
+    val payment by remember(id) { services.paymentRepo.payment(id) }.collectAsState(initial = null)
     val p = payment ?: return
-    val ledger by services.paymentRepo.ledger(p.payer).collectAsState(initial = null)
+    val ledger by remember(p.payer) { services.paymentRepo.ledger(p.payer) }.collectAsState(initial = null)
     val l = ledger ?: return
     var editing by rememberSaveable { mutableStateOf(false) }
     var deleting by rememberSaveable { mutableStateOf(false) }
@@ -708,7 +800,7 @@ fun PackageCard(
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val language = currentLanguage()
-    val pkg by services.paymentRepo.lastPackage(studentId).collectAsState(initial = null)
+    val pkg by remember(studentId) { services.paymentRepo.lastPackage(studentId) }.collectAsState(initial = null)
     var buying by rememberSaveable { mutableStateOf(false) }
     Card(Modifier.testTag("package"), label = stringResource(R.string.pay_package)) {
         Text(stringResource(R.string.pay_package), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
@@ -784,7 +876,7 @@ fun SaldoRow(
     onOpen: () -> Unit,
 ) {
     val services = LocalServices.current
-    val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
+    val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val l = ledger ?: return
     val count = l.owed.count { !l.allocation.isPaid(it.lessonId) }
     val (tone, text) = balanceBadge(l.dueCents - l.paidCents)
@@ -824,7 +916,7 @@ fun LessonMoney(
 ) {
     val services = LocalServices.current
     val (payer, name) = payerOfLesson(lesson) ?: return
-    val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
+    val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val l = ledger ?: return
     var paying by rememberSaveable { mutableStateOf(false) }
     val mine = l.owed.firstOrNull { it.lessonId == lesson.id }
@@ -863,10 +955,10 @@ fun payerRoute(payer: PayerRef): Any =
 fun PendingAlert(nav: NavHostController) {
     val services = LocalServices.current
     val language = currentLanguage()
-    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
-    val students by services.catalogRepo.students().collectAsState(initial = emptyList())
-    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
+    val students by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
+    val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     var listing by rememberSaveable { mutableStateOf(false) }
     val owing = balances.filterValues { it > 0 }
     if (owing.isEmpty()) return
@@ -930,7 +1022,7 @@ fun DoneMoney(lesson: Lesson) {
     val services = LocalServices.current
     val language = currentLanguage()
     val (payer, name) = payerOfLesson(lesson) ?: return
-    val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
+    val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val student = (lesson.who as? Who.OfStudent)?.student
     val pkg =
         student?.let { services.paymentRepo.lastPackage(it.id) }?.collectAsState(initial = null)?.value

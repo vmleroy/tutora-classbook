@@ -8,6 +8,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -437,7 +438,7 @@ class PaymentScreensTest {
         openAna()
         exists("Crédito: R$ 50,00")
         exists("Usar crédito")
-        exists("Dar bônus")
+        compose.onNodeWithContentDescription("Dar bônus").assertExists()
     }
 
     @Test
@@ -527,5 +528,46 @@ class PaymentScreensTest {
         pay(12_000)
         h.settle(compose)
         exists("Em dia")
+    }
+
+    @Test
+    fun `AC-008-31 Dar bonus from the student's page saves the money and the minutes`() {
+        creditsOn()
+        openAna()
+        compose.onNodeWithContentDescription("Dar bônus").performScrollTo().performClick()
+        h.settle(compose)
+        compose.onAllNodes(hasSetTextAction(), useUnmergedTree = true).onFirst().performTextReplacement("R$ 50,00")
+        h.settle(compose)
+        repeat(2) { compose.onNodeWithContentDescription("Aumentar").performClick() }
+        h.settle(compose)
+        compose.onAllNodes(matching("Dar bônus"), useUnmergedTree = true).onLast().performClick()
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .ledgerNow(anaRef)
+                .creditMinutes == 30
+        }
+        val ledger = runBlocking { h.services.paymentRepo.ledgerNow(anaRef) }
+        org.junit.Assert.assertEquals(5_000L, ledger.creditCents)
+        org.junit.Assert.assertEquals(30, ledger.creditMinutes)
+        h.settle(compose)
+        exists("Crédito: R$ 50,00 · Bônus: 30 min")
+    }
+
+    @Test
+    fun `AC-008-37 Creditos e bonus is its own section, and a bonus there can be removed`() {
+        creditsOn()
+        runBlocking { h.services.payments.giveBonus(anaRef, 5_000, 0, "aniversário") }
+        openAna()
+        compose.onNodeWithTag("credits-section").assertExists()
+        exists("Bônus · R$ 50,00")
+        click("Bônus · R$ 50,00")
+        click("Remover bônus", scroll = false)
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .ledgerNow(anaRef)
+                .creditCents == 0L
+        }
+        h.settle(compose)
+        exists("Sem crédito nem bônus")
     }
 }

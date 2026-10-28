@@ -120,9 +120,9 @@ fun LessonForm(
     val language = currentLanguage()
     // Each Save that fails counts, so the same error blinks again.
     var tries by remember { mutableIntStateOf(0) }
-    val students by services.catalogRepo.students().collectAsState(initial = emptyList())
-    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val students by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
+    val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     var v by remember(initial) { mutableStateOf(initial) }
     var applyTo by rememberSaveable { mutableStateOf(Scope.ONE) }
     var sheet by rememberSaveable { mutableStateOf<String?>(null) }

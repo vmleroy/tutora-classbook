@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Upsert
 import app.tutora.domain.Bonus
 import app.tutora.domain.Cents
+import app.tutora.domain.CreditRecord
 import app.tutora.domain.CreditUse
 import app.tutora.domain.Ledger
 import app.tutora.domain.OwedClass
@@ -175,6 +176,9 @@ interface PaymentDao {
 
     @Upsert
     suspend fun upsertCredit(row: CreditRow)
+
+    @Query("SELECT * FROM credit WHERE id = :id")
+    suspend fun credit(id: String): CreditRow?
 
     @Query("DELETE FROM credit WHERE id = :id")
     suspend fun deleteCredit(id: String)
@@ -353,6 +357,16 @@ class PaymentRepository(
             val payer = PayerRef(PayerKind.PLACE, placeId)
             val ledger = ledgerNow(payer)
             ledger.owed.filter { it.lessonId in ids }.map { OwedElsewhere(it, ledger.allocation.left[it.lessonId] ?: 0, payer) }
+        }
+
+    /** A payer's bonuses and the credit put on classes, newest first (AC-008-37). */
+    fun creditRecords(payer: PayerRef): Flow<List<CreditRecord>> =
+        combine(dao.observeCredits(payer.kind.key, payer.id), dao.observeOwed(payer.kind.key, payer.id)) { rows, owed ->
+            val starts = owed.associate { it.lesson.id to it.lesson.startAt }
+            rows
+                .filter { it.kind == "bonus" || (it.lessonId != null && it.lessonId in starts) }
+                .sortedByDescending { it.createdAt }
+                .map { CreditRecord(it.id, it.kind == "bonus", it.cents, it.minutes, it.note, it.createdAt, it.lessonId?.let(starts::get)) }
         }
 
     suspend fun lastMethod(payer: PayerRef): PayMethod? = dao.lastMethod(payer.kind.key, payer.id)?.let(PayMethod::fromKey)

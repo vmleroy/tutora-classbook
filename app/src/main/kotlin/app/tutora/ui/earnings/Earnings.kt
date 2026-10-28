@@ -97,7 +97,7 @@ fun EarningsScreen(nav: NavHostController) {
     var filter by rememberSaveable { mutableStateOf(TypeFilter.ALL) }
     val period = Period(kind, LocalDate.parse(anchor))
     val view by remember(period, filter) { services.earningsRepo.view(period, filter, today, zone) }.collectAsState(initial = null)
-    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
+    val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
     ScreenScaffold(stringResource(R.string.tab_earnings), "earnings-screen") {
         SegmentedControl(
             listOf(
@@ -235,7 +235,7 @@ fun TodayEarnings(
     val month by remember(today) {
         services.earningsRepo.view(Period(PeriodKind.MONTH, today), TypeFilter.ALL, today, zone)
     }.collectAsState(initial = null)
-    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
+    val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
     val expected = lessons.mapNotNull { it.keptValue() }.sum()
     EarningsSummary(
         stringResource(R.string.earn_today),

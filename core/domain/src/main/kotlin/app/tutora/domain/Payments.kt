@@ -325,3 +325,14 @@ data class OwedElsewhere(
     val left: Cents,
     val payer: PayerRef,
 )
+
+/** A bonus, or credit put on a class (with that class's start), as the Créditos e bônus section lists it (AC-008-37). */
+data class CreditRecord(
+    val id: String,
+    val isBonus: Boolean,
+    val cents: Cents,
+    val minutes: Int,
+    val note: String?,
+    val at: String,
+    val lessonStart: String?,
+)

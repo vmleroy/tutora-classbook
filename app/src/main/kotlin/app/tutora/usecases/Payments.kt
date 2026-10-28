@@ -9,6 +9,7 @@ import app.tutora.data.PaymentRow
 import app.tutora.data.ScheduleRepository
 import app.tutora.data.SettingsRepository
 import app.tutora.data.inTransaction
+import app.tutora.data.payerRef
 import app.tutora.data.toStudent
 import app.tutora.domain.Cents
 import app.tutora.domain.LessonStatus
@@ -231,6 +232,51 @@ class Payments(
             dao.upsertCredit(creditRow(id, payer, "bonus", cents, minutes, null, note))
             PaymentResult.Ok(id)
         }
+
+    /** Editar bônus: its money, minutes and note (AC-008-37). */
+    suspend fun editBonus(
+        id: String,
+        cents: Cents,
+        minutes: Int,
+        note: String?,
+    ): PaymentResult =
+        db.inTransaction {
+            val row = dao.credit(id)?.takeIf { it.kind == "bonus" } ?: return@inTransaction PaymentResult.Err(PaymentError.NOT_FOUND)
+            if (cents < 0 || minutes < 0 || cents + minutes == 0L) return@inTransaction PaymentResult.Err(PaymentError.AMOUNT)
+            dao.upsertCredit(row.copy(cents = cents, minutes = minutes, note = note?.trim()?.ifEmpty { null }, updatedAt = ctx.now()))
+            settleCredit(row.payerRef())
+            PaymentResult.Ok(id)
+        }
+
+    /**
+     * Removes a bonus, or credit put on a class (which gives it back). Credit never goes below
+     * zero: if a bonus already paid for classes, the newest of those uses go too (AC-008-37).
+     */
+    suspend fun removeCredit(id: String): PaymentResult =
+        db.inTransaction {
+            val row = dao.credit(id) ?: return@inTransaction PaymentResult.Err(PaymentError.NOT_FOUND)
+            dao.deleteCredit(id)
+            settleCredit(row.payerRef())
+            PaymentResult.Ok(id)
+        }
+
+    /** Inside a transaction: drops the newest uses while more credit or minutes are used than there are. */
+    private suspend fun settleCredit(payer: PayerRef) {
+        val repo = PaymentRepository(db)
+        var ledger = repo.ledgerNow(payer)
+        val uses =
+            dao
+                .credits(payer.kind.key, payer.id)
+                .filter { it.kind == "use" }
+                .sortedByDescending { it.createdAt }
+                .toMutableList()
+        while (ledger.creditCents < 0 || ledger.creditMinutes < 0) {
+            val drop = uses.firstOrNull { if (ledger.creditMinutes < 0) it.minutes > 0 else it.minutes == 0 } ?: break
+            dao.deleteCredit(drop.id)
+            uses.remove(drop)
+            ledger = repo.ledgerNow(payer)
+        }
+    }
 
     /**
      * Usar crédito: puts the payer's money credit, or its bonus minutes, on the chosen classes,

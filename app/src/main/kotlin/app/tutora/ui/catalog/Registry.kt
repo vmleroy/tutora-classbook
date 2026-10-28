@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -128,12 +129,12 @@ private fun StudentsPane(
     owingFirst: Boolean,
 ) {
     val services = LocalServices.current
-    val students by services.catalogRepo.students().collectAsState(initial = emptyList())
-    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
+    val students by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
+    val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
     var owingOnly by rememberSaveable { mutableStateOf(owingFirst) }
 
     fun owes(id: String) = (balances[PayerRef(PayerKind.STUDENT, id)] ?: 0) > 0
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     var query by rememberSaveable { mutableStateOf("") }
     var byPlace by rememberSaveable { mutableStateOf(false) }
     val names = places.associate { it.place.id to placeName(it.place) }
@@ -214,9 +215,9 @@ private fun StudentsPane(
 @Composable
 private fun GroupsPane(nav: NavHostController) {
     val services = LocalServices.current
-    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
-    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
+    val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
+    val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableStateOf("all") }
     val names = places.associate { it.place.id to placeName(it.place) }
@@ -277,9 +278,9 @@ private fun GroupsPane(nav: NavHostController) {
 @Composable
 private fun PlacesPane(nav: NavHostController) {
     val services = LocalServices.current
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
-    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
-    val owedAt by services.paymentRepo.owedAtPlaces().collectAsState(initial = emptyMap())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
+    val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
+    val owedAt by remember { services.paymentRepo.owedAtPlaces() }.collectAsState(initial = emptyMap())
     val settings by services.settings.collectAsState(initial = null)
     val showDefaults = settings?.showDefaultPlaces ?: true
     var query by rememberSaveable { mutableStateOf("") }
@@ -348,9 +349,9 @@ private fun PlacesPane(nav: NavHostController) {
 @Composable
 fun ArchivedScreen(nav: NavHostController) {
     val services = LocalServices.current
-    val places by services.catalogRepo.places(archived = true).collectAsState(initial = emptyList())
-    val students by services.catalogRepo.students(archived = true).collectAsState(initial = emptyList())
-    val groups by services.catalogRepo.groups(archived = true).collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places(archived = true) }.collectAsState(initial = emptyList())
+    val students by remember { services.catalogRepo.students(archived = true) }.collectAsState(initial = emptyList())
+    val groups by remember { services.catalogRepo.groups(archived = true) }.collectAsState(initial = emptyList())
     ScreenScaffold(stringResource(R.string.catalog_archived), "archived", onBack = { nav.popBackStack() }) {
         if (places.isEmpty() && students.isEmpty() && groups.isEmpty()) {
             Text(stringResource(R.string.catalog_noArchived), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
