@@ -508,8 +508,8 @@
     <string name="rep_earningsSubtitle">%1$s · usa os filtros da tela</string>
     <string name="rep_makePdf">Gerar PDF</string>
     <string name="rep_makeExcel">Gerar Excel</string>
-    <string name="rep_pdfChoice">PDF · para enviar ou imprimir</string>
-    <string name="rep_excelChoice">Excel · para analisar</string>
+    <string name="rep_pdf">PDF</string>
+    <string name="rep_excel">Excel</string>
     <string name="rep_partSources">Ganhos por aluno e por local</string>
     <string name="rep_partClasses">Lista de aulas</string>
     <string name="rep_partPayments">Pagamentos recebidos</string>

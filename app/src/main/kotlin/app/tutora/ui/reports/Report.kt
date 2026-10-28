@@ -324,10 +324,10 @@ fun ReportScreen(
         val name = subject.second
         val plan = { subjectPlan(r, words, teacher, subjectLabel, name, subject.third, kind == SubjectKind.PLACE, stamp) }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            Button("PDF", {
+            Button(stringResource(R.string.rep_pdf), {
                 exports.share(fileName(name, from, to, language) + ".pdf", MIME_PDF, exports.pdf(plan(), colors))
             }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE, icon = IconName.FILE)
-            Button("Excel", {
+            Button(stringResource(R.string.rep_excel), {
                 exports.share(fileName(name, from, to, language) + ".xlsx", MIME_XLSX, Xlsx.write(subjectSheets(r, words)))
             }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE, icon = IconName.FILE)
         }
@@ -431,8 +431,8 @@ fun EarningsReportSheet(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                Chip(stringResource(R.string.rep_pdfChoice), pdf, { pdf = true })
-                Chip(stringResource(R.string.rep_excelChoice), !pdf, { pdf = false })
+                Chip(stringResource(R.string.rep_pdf), pdf, { pdf = true })
+                Chip(stringResource(R.string.rep_excel), !pdf, { pdf = false })
             }
             Checkbox(stringResource(R.string.rep_partSources), parts.bySource, { parts = parts.copy(bySource = it) })
             Checkbox(stringResource(R.string.rep_partClasses), parts.classes, { parts = parts.copy(classes = it) })

@@ -498,8 +498,8 @@
     <string name="rep_earningsSubtitle">%1$s · uses the filters on screen</string>
     <string name="rep_makePdf">Make PDF</string>
     <string name="rep_makeExcel">Make Excel</string>
-    <string name="rep_pdfChoice">PDF · to send or print</string>
-    <string name="rep_excelChoice">Excel · to analyse</string>
+    <string name="rep_pdf">PDF</string>
+    <string name="rep_excel">Excel</string>
     <string name="rep_partSources">Earnings by student and place</string>
     <string name="rep_partClasses">List of lessons</string>
     <string name="rep_partPayments">Payments received</string>
