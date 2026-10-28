@@ -8,6 +8,7 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -196,7 +197,7 @@ class FeatureScreensTest {
     }
 
     @Test
-    fun `AC-004-17 a place shows who pays, its students with + Ligar aluno, and its groups`() {
+    fun `AC-004-17 a place shows who pays, its students with + Adicionar aluno, and its groups`() {
         val p = salinha()
         val pedro = student("Pedro Lima", "Física", listOf(PlaceLink(p, true, null)))
         runBlocking { h.t.catalog.saveGroup(Group("", p, "Turma ENEM", "Redação", 18_000, listOf(pedro), null)) }
@@ -206,9 +207,9 @@ class FeatureScreensTest {
         compose.onNodeWithText("Quem paga: o local", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Mensal", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Alunos daqui · 1", useUnmergedTree = true).assertExists()
-        compose.onNodeWithText("+ Ligar aluno", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("+ Adicionar aluno", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Turma ENEM", useUnmergedTree = true).assertExists()
-        compose.onNode(hasContentDescription("Pedro Lima", substring = true)).performClick()
+        compose.onAllNodes(hasContentDescription("Pedro Lima", substring = true)).onFirst().performClick()
         compose.waitForIdle()
         compose.onNodeWithTag("student-detail").assertExists()
     }
@@ -223,15 +224,15 @@ class FeatureScreensTest {
     }
 
     @Test
-    fun `AC-004-14 Alunos lists students and groups with search and Por local`() {
+    fun `AC-004-14 Alunos lists students with search and Por local`() {
         student("Ana Souza", "Matemática", listOf(PlaceLink(online, true, 12_000), PlaceLink(home, false, null)))
         student("Lucas Mendes", "Química", listOf(PlaceLink(home, true, null)))
         runBlocking { h.t.catalog.saveGroup(Group("", online, "Turma ENEM", "Redação", 18_000, emptyList(), null)) }
         h.show(compose)
         h.go(compose, RegistryHome())
         compose.onNodeWithText("Matemática · Online / Remoto, Casa do Aluno", useUnmergedTree = true).assertExists()
-        compose.onNode(hasPlainText("Redação · Online / Remoto · nenhum aluno · R$ 180/aula")).assertExists()
-        compose.onNodeWithText("Todos · 3", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("Turma ENEM", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithText("Todos · 2", useUnmergedTree = true).assertExists()
         compose.onNodeWithContentDescription("Buscar aluno").performTextInput("lucas")
         compose.waitForIdle()
         compose.onAllNodesWithText("Ana Souza", useUnmergedTree = true).assertCountEquals(0)
@@ -245,7 +246,7 @@ class FeatureScreensTest {
         h.go(compose, StudentDetail(ana))
         compose.onNodeWithText("Por hora", useUnmergedTree = true).assertExists()
         compose.onNode(hasPlainText("R$ 120/h"), useUnmergedTree = true).assertExists()
-        compose.onNode(hasContentDescription("Casa do Aluno", substring = true)).performClick()
+        compose.onAllNodes(hasContentDescription("Casa do Aluno", substring = true)).onFirst().performClick()
         compose.waitForIdle()
         compose.onNodeWithTag("place-detail").assertExists()
     }
@@ -270,7 +271,6 @@ class FeatureScreensTest {
         compose.onNodeWithContentDescription("Editar").performClick()
         h.settle(compose)
         compose.onNodeWithTag("group-edit").assertExists()
-        compose.onNodeWithText("+ Adicionar aluno", useUnmergedTree = true).assertExists()
     }
 
     @Test
@@ -289,6 +289,86 @@ class FeatureScreensTest {
         h.go(compose, GroupDetail(g))
         compose.onNodeWithText("Restaurar", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Remover para sempre", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `AC-004-31 Cadastro has Alunos, Turmas and Locais, and Turmas lists groups with their place and size`() {
+        runBlocking { h.t.catalog.saveGroup(Group("", online, "Turma ENEM", "Redação", 18_000, emptyList(), null)) }
+        h.show(compose)
+        h.go(compose, RegistryHome())
+        compose.onNodeWithText("Turmas").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("groups-screen").assertExists()
+        compose.onNode(hasPlainText("Redação · Online / Remoto · nenhum aluno · R$ 180/aula"), useUnmergedTree = true).assertExists()
+        compose.onNodeWithContentDescription("Nova turma").assertExists()
+    }
+
+    @Test
+    fun `AC-004-32 a connection is added from a searchable list and removed with x after a confirmation`() {
+        val p = salinha()
+        student("Pedro Lima", "Física", listOf(PlaceLink(p, true, null)))
+        val bia = student("Bia Costa", "Química", listOf(PlaceLink(online, true, null)))
+        h.show(compose)
+        h.go(compose, PlaceDetail(p))
+        compose.onNodeWithText("+ Adicionar aluno").performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Bia Costa · Química", useUnmergedTree = true).performClick()
+        compose.onNodeWithText("Adicionar 1").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .studentsAt(p)
+                .first()
+                .size == 2
+        }
+        compose.onNodeWithContentDescription("Remover Bia Costa").performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Tirar Bia Costa de Salinha Aprender+?", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("Tirar").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .studentsAt(p)
+                .first()
+                .none { it.id == bia }
+        }
+        assertEquals(
+            1,
+            runBlocking {
+                h.services.catalogRepo
+                    .studentsAt(p)
+                    .first()
+                    .size
+            },
+        )
+    }
+
+    @Test
+    fun `AC-004-34 adding a group from another place moves it here after a confirmation`() {
+        val p = salinha()
+        val g =
+            runBlocking { (h.t.catalog.saveGroup(Group("", online, "Turma ENEM", null, null, emptyList(), null)) as Result.Ok).value.id }
+        h.show(compose)
+        h.go(compose, PlaceDetail(p))
+        compose.onNodeWithText("+ Nova turma", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("+ Adicionar turma").performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Turma ENEM · Hoje em Online / Remoto", useUnmergedTree = true).performClick()
+        compose.onNodeWithText("Adicionar 1").performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Mudar para Salinha Aprender+?", useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("Mudar").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .group(g)
+                ?.placeId == p
+        }
+        assertEquals(
+            p,
+            runBlocking {
+                h.services.catalogRepo
+                    .group(g)
+                    ?.placeId
+            },
+        )
     }
 
     @Test

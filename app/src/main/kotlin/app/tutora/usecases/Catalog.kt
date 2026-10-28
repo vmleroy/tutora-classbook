@@ -108,52 +108,99 @@ class Catalog(
             Result.Ok(next)
         }
 
-    /** "+ Ligar aluno" on a place: links with the place's price; a first place gets the star. */
-    suspend fun linkStudentToPlace(
+    /** Links with the place's price; a student's first place gets the star. Inside a transaction. */
+    private suspend fun link(
         studentId: String,
         placeId: String,
-    ) = db.inTransaction {
+    ) {
         val current = db.students().visibleLinks(studentId)
+        if (current.any { it.placeId == placeId }) return
         db.students().insertLinks(listOf(LinkRow(studentId, placeId, current.isEmpty(), null, ctx.now())))
     }
 
+    /** "+ Ligar aluno" on a place, for one student. */
+    suspend fun linkStudentToPlace(
+        studentId: String,
+        placeId: String,
+    ) = db.inTransaction { link(studentId, placeId) }
+
+    /** "+ Adicionar" on a place's students or a student's places, several at once (AC-004-33, 34). */
+    suspend fun linkStudents(links: List<Pair<String, String>>) =
+        db.inTransaction {
+            for ((studentId, placeId) in links) link(studentId, placeId)
+        }
+
     /**
-     * Saves a group; a member not yet linked to the group's place is linked to it with the
-     * place's price. At a school the salary covers the price (AC-004-16).
+     * × on a student at a place: the student also leaves that place's groups, and a starred place
+     * passes its star to the next one (AC-004-36).
+     */
+    suspend fun unlinkStudentFromPlace(
+        studentId: String,
+        placeId: String,
+    ) = db.inTransaction {
+        val wasDefault = db.students().visibleLinks(studentId).any { it.placeId == placeId && it.isDefault }
+        db.students().deleteLink(studentId, placeId)
+        db.groups().leaveGroupsAt(studentId, placeId)
+        val next = db.students().visibleLinks(studentId).firstOrNull()
+        if (wasDefault && next != null) db.students().setDefault(studentId, next.placeId)
+    }
+
+    /** Adds members to a group; a student not at its place is linked to it (AC-004-16, 33). */
+    suspend fun addMembers(
+        groupId: String,
+        studentIds: List<String>,
+    ) = db.inTransaction {
+        val group = db.groups().get(groupId) ?: return@inTransaction
+        for (s in studentIds) link(s, group.placeId)
+        db.groups().insertMembers(studentIds.map { MemberRow(groupId, it) })
+    }
+
+    suspend fun removeMember(
+        groupId: String,
+        studentId: String,
+    ) = db.inTransaction { db.groups().deleteMember(groupId, studentId) }
+
+    /**
+     * Moves a group to another place: its members are linked there, and its series and classes
+     * still ahead move too; classes already given keep their place (AC-004-34, 35).
+     */
+    suspend fun moveGroup(
+        groupId: String,
+        placeId: String,
+    ) = db.inTransaction {
+        val group = db.groups().get(groupId) ?: return@inTransaction
+        if (group.placeId == placeId) return@inTransaction
+        db.groups().setPlace(groupId, placeId, ctx.now())
+        for (s in db.groups().members(groupId)) link(s, placeId)
+        db.schedule().moveGroupRules(groupId, placeId)
+        db.schedule().moveGroupLessons(groupId, placeId, ctx.now())
+    }
+
+    /**
+     * Saves a group's own fields. A new group needs its place and starts with [Group.memberIds]
+     * (linked to that place); an existing one keeps its place and members, which change from its
+     * detail. At a school the salary covers the price (AC-004-16, 37).
      */
     suspend fun saveGroup(draft: Group): Result<Group> =
         db.inTransaction {
             if (draft.name.isBlank()) return@inTransaction Result.Err(CatalogError.NAME_REQUIRED)
             val beforeRow = db.groups().get(draft.id)
-            val atPlace =
-                db
-                    .students()
-                    .atPlace(draft.placeId)
-                    .map { it.id }
-                    .toSet()
-            val members = draft.memberIds.distinct().filter { id -> db.students().get(id)?.let { it.archivedAt == null } == true }
-            for (m in members.filter { it !in atPlace }) {
-                // A student with no place yet gets this one as their default.
-                val first = db.students().visibleLinks(m).isEmpty()
-                db.students().insertLinks(listOf(LinkRow(m, draft.placeId, first, null, ctx.now())))
-            }
-            val school =
-                db
-                    .places()
-                    .get(draft.placeId)
-                    ?.toPlace()
-                    ?.kind == PlaceKind.SCHOOL
+            val placeId = beforeRow?.placeId ?: draft.placeId
+            val place = db.places().get(placeId)?.toPlace() ?: return@inTransaction Result.Err(CatalogError.PLACE_REQUIRED)
             val next =
                 draft.copy(
                     name = draft.name.trim(),
                     id = beforeRow?.id ?: draft.id.ifEmpty { ctx.newId() },
-                    rateCents = if (school) null else draft.rateCents,
-                    memberIds = members,
+                    placeId = placeId,
+                    rateCents = if (place.kind == PlaceKind.SCHOOL) null else draft.rateCents,
+                    memberIds = if (beforeRow != null) db.groups().members(beforeRow.id) else draft.memberIds.distinct(),
                     archivedAt = beforeRow?.archivedAt,
                 )
             db.groups().upsert(next.toRow(beforeRow?.createdAt ?: ctx.now(), ctx.now()))
-            db.groups().deleteMembers(next.id)
-            db.groups().insertMembers(next.memberIds.map { MemberRow(next.id, it) })
+            if (beforeRow == null) {
+                for (m in next.memberIds) link(m, placeId)
+                db.groups().insertMembers(next.memberIds.map { MemberRow(next.id, it) })
+            }
             Result.Ok(next)
         }
 
