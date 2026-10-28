@@ -19,11 +19,11 @@ The idea: **when a class becomes owed, freeze who owes it and how much**, the sa
   - Pricing: `RateType` gains `PACKAGE`, valid on a student only. `resolvePrice` gives a package student, at a place where the student pays, `Price.Set(packageUnit, LESSON, PriceSource.PACKAGE)`. The student's own price at that place is ignored ("Usa o pacote" in the mockup). `Student` gains `packageLessons` and `packagePriceCents`.
 - **Data** (`core/data`).
   - Tables `payment`, `payment_lesson` and `package`. On `lesson`: `payer`, `due_cents` and `package_id`. On `student`: the two package terms. Migration 3 → 4, written by hand (see Data).
-  - View `v_balance`: per payer, Σ `due_cents` of its classes minus Σ `amount_cents` of its payments that aren't package purchases.
+  - A balance query (`PaymentDao.observeBalances`), not a view: per payer, Σ `due_cents` of its classes minus Σ `amount_cents` of its payments that aren't package purchases. A query is one less schema object to migrate and Room re-emits it the same way.
   - `PaymentRepository`:
     - `balances(): Flow<Map<PayerRef, Cents>>` for the lists and Hoje.
-    - `ledger(payer): Flow<Ledger>`: the payer's owed classes, its payments with their chosen classes, and the `Allocation`. The detail screens, lesson detail and the payment sheet read it.
-    - `openPackage(studentId)` and `payment(id)`.
+    - `ledger(payer): Flow<Ledger>`: the payer's owed classes, its payments with their chosen classes, and the `Allocation`. The detail screens, lesson detail and the payment sheet read it. `Ledger`, `OwedClass` and `PaymentRecord` live in the domain, so screens never import the data layer.
+    - `lastPackage(studentId)` and `payment(id)`.
 - **Freezing who owes** (`app/usecases/Lessons.kt`).
   - `freezeDone` and `cancel` call one new helper, `withDue(ctx, row, lesson)`. It sets `payer`, `due_cents` and `package_id` from `dueOf`, with the student's open package when it has a class left.
   - `undo` and `Live.discard` clear the three columns (AC-008-3, 22).
@@ -64,7 +64,7 @@ The idea: **when a class becomes owed, freeze who owes it and how much**, the sa
 | Table | Column | Default / backfill |
 | --- | --- | --- |
 | payment (new) | `id` TEXT PK | UUIDv7 |
-| | `student_id` / `group_id` / `place_id` TEXT, FK | CHECK exactly one is set (architecture doc) |
+| | `student_id` / `group_id` / `place_id` TEXT, FK | exactly one is set, written only by `Payments`; Room can't declare a CHECK, and the existing tables have none either |
 | | `amount_cents` INTEGER | CHECK > 0 |
 | | `method` TEXT | `pix` / `cash` / `transfer` / `card` |
 | | `paid_at` TEXT | UTC instant |
@@ -78,9 +78,9 @@ The idea: **when a class becomes owed, freeze who owes it and how much**, the sa
 | | `package_id` TEXT FK → package, set null | null |
 | student | `package_lessons` INTEGER, `package_price_cents` INTEGER | null; `rate_type` may now be `package` |
 
-Indexes: `payment(student_id)`, `payment(group_id)`, `payment(place_id)`, `lesson(payer)`, `lesson(package_id)`. View `v_balance(payer, payer_id, due_cents, paid_cents)`.
+Indexes: `payment(student_id)`, `payment(group_id)`, `payment(place_id)`, `payment(package_id)`, `package(student_id, bought_at)`, `lesson(payer)`, `lesson(package_id)`.
 
-The migration 3 → 4 is written by hand: SQLite can't add a CHECK to existing columns through Room's auto-migration, and the view is created there.
+The migration 3 → 4 is written by hand from the exported schema 4: it creates the three tables and adds the columns, the lesson's `package_id` with its foreign key.
 
 ## Use cases
 
@@ -99,7 +99,7 @@ The migration 3 → 4 is written by hand: SQLite can't add a CHECK to existing c
 
 - **Domain:** `PaymentRulesTest`: `payerOf`, `dueOf` for done, charged, scheduled, no price, salary and package, `allocate` (oldest first, chosen first, partial, credit), `Balance`, `packageUnit` rounding (AC-008-1, 2, 4, 8, 23).
 - **Use cases:** `PaymentsTest` on a real database with a frozen clock (AC-008-3, 10, 12, 17, 20, 22).
-- **Data:** `MigrationsTest` covers the 3 → 4 step from a database seeded at version 3, including the payer CHECK (rule 12).
+- **Data:** `MigrationsTest` covers the 3 → 4 step from a database seeded at version 3 (rule 12).
 - **Screens:** `PaymentScreensTest` under Robolectric (AC-008-5, 6, 7, 9, 11, 13, 14, 15, 16, 18, 19, 21, 24).
 - The source check that screens never touch `:core:data` already covers the new package.
 - Pending on a device: a Maestro "record a payment" flow and the tab-switch budget with a year of payments.

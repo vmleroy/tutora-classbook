@@ -1,6 +1,6 @@
 # Spec 008: Payments and packages
 
-Status: in progress
+Status: done
 Depends on: 006 Lessons (the done value, cancellation charges), 004 Places and students (who pays, groups), 007 Live timer (Aula concluída)
 Mockups: docs/mockups/StudentDetail.dc.html (Deve, Registrar pagamento, Últimas aulas with A receber / Pago, Pagamentos), PlaceDetail.dc.html (Me deve, Receber da salinha, Pagamentos da salinha), Students.dc.html (balance per row, Devendo filter, package row), Places.dc.html (A receber da salinha), Main.dc.html (pending-payments alert), LessonDetail.dc.html (Saldo da aluna), Live.dc.html (balance line on Aula concluída), AddLesson.dc.html (Pagamento in Registrar), StudentEdit.dc.html (Pacote). There is no mockup for the payment sheet itself.
 
