@@ -131,6 +131,15 @@ fun balanceBadge(cents: Cents): Pair<BadgeTone, String> {
     }
 }
 
+/** "A receber R$ 120" or "Em dia", for a place whose students pay: the place itself owes nothing (AC-008-36). */
+@Composable
+fun toReceiveBadge(cents: Cents): Pair<BadgeTone, String> =
+    if (cents > 0) {
+        BadgeTone.DANGER to stringResource(R.string.pay_toReceiveAmount, formatMoney(cents, currentLanguage(), compact = true))
+    } else {
+        BadgeTone.SUCCESS to stringResource(R.string.pay_settled)
+    }
+
 /** Pago, or A receber with what is left when paid in part (AC-008-9). */
 @Composable
 fun paidBadge(

@@ -408,4 +408,5 @@
     <string name="pay_byPlace">the place pays</string>
     <string name="pay_leftShort">%1$s to receive</string>
     <string name="places_search">Search a place</string>
+    <string name="pay_toReceiveAmount">To receive %1$s</string>
 </resources>

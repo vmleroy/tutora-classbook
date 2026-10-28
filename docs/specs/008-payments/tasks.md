@@ -21,6 +21,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 17. Credits and bonus: `credit` table and migration 4 → 5, `credits` setting, held credit, credit uses and bonus minutes in `allocate`, `Payments.giveBonus` / `useCredit`, overpaying refused when off; Ajustes switch, credit line, Usar crédito and Dar bônus sheets. Test: `PaymentRulesTest.kt`, `PaymentsTest.kt`, `PaymentScreensTest.kt`, `MigrationsTest.kt`. (AC-008-28 to 31)
 - [x] 18. Layout: `SectionHeader` action and tappable aside (design system), small + on connection sections, Aulas and Pagamentos sections with Ver todas page, names on class rows, no Valor card, place note in Locais, search in Nova aula's picker. Test: `PaymentScreensTest.kt`. (AC-008-32 to 34)
 - [x] 19. Filters on Turmas (Todos, Devendo, Por local) and search with Todos / Devendo on Locais. Test: `PaymentScreensTest.kt`. (AC-008-35)
+- [x] 20. Locais: the places where students pay show what is owed for their classes (`PaymentRepository.owedAtPlaces`). Test: `PaymentScreensTest.kt`. (AC-008-36)
 
 ## Pending on a device
 

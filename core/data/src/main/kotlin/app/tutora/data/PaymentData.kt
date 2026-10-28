@@ -257,12 +257,8 @@ class PaymentRepository(
     private val dao get() = db.payments()
     private val settings = SettingsRepository(db)
 
-    /**
-     * What each payer owes (positive) or has as credit (negative, only with Créditos e bônus on).
-     * Worked out per payer in the domain, since held credit and credit put on classes can't be
-     * summed in SQL.
-     */
-    fun balances(): Flow<Map<PayerRef, Cents>> =
+    /** Every payer's ledger with the lessons' places, read again after any write. */
+    private fun allLedgers(): Flow<Pair<Map<PayerRef, Ledger>, Map<String, String>>> =
         combine(
             dao.observeAllOwed(),
             dao.observeAllPayments(),
@@ -273,9 +269,9 @@ class PaymentRepository(
             val owedBy = owed.groupBy { it.payerRef() }
             val paidBy = payments.filter { it.packageId == null }.groupBy { it.payerRef() }
             val creditsBy = credits.groupBy { it.payerRef() }
-            (owedBy.keys.filterNotNull() + paidBy.keys + creditsBy.keys).toSet().associateWith { p ->
-                val ids = paidBy[p].orEmpty().map { it.id }.toSet()
-                val l =
+            val ledgers =
+                (owedBy.keys.filterNotNull() + paidBy.keys + creditsBy.keys).toSet().associateWith { p ->
+                    val ids = paidBy[p].orEmpty().map { it.id }.toSet()
                     ledgerOf(
                         owedBy[p].orEmpty(),
                         paidBy[p].orEmpty(),
@@ -283,12 +279,33 @@ class PaymentRepository(
                         creditsBy[p].orEmpty(),
                         s.credits,
                     )
+                }
+            ledgers to owed.associate { it.lesson.id to it.lesson.placeId }
+        }
+
+    /**
+     * What each payer owes (positive) or has as credit (negative, only with Créditos e bônus on).
+     * Worked out per payer in the domain, since held credit and credit put on classes can't be
+     * summed in SQL.
+     */
+    fun balances(): Flow<Map<PayerRef, Cents>> =
+        combine(allLedgers(), settings.observe()) { (ledgers, _), s ->
+            ledgers.mapValues { (_, l) ->
                 when {
                     l.owedCents > 0 -> l.owedCents
                     s.credits -> -l.creditCents
                     else -> 0L
                 }
             }
+        }
+
+    /** What is still owed for the classes given at each place, whoever owes them (AC-008-36). */
+    fun owedAtPlaces(): Flow<Map<String, Cents>> =
+        allLedgers().map { (ledgers, placeOf) ->
+            ledgers.values
+                .flatMap { it.allocation.left.entries }
+                .groupBy({ placeOf[it.key].orEmpty() }, { it.value })
+                .mapValues { (_, v) -> v.sum() }
         }
 
     fun ledger(payer: PayerRef): Flow<Ledger> =

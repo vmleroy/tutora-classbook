@@ -517,4 +517,15 @@ class PaymentScreensTest {
         exists("Ventura")
         compose.onAllNodes(matching("Online / Remoto"), useUnmergedTree = true).assertCountEquals(0)
     }
+
+    @Test
+    fun `AC-008-36 a place where students pay shows what is owed for its classes`() {
+        given(22)
+        h.show(compose)
+        h.go(compose, RegistryHome("places"))
+        exists("A receber R$ 120")
+        pay(12_000)
+        h.settle(compose)
+        exists("Em dia")
+    }
 }

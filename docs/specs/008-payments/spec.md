@@ -78,6 +78,7 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 - **AC-008-33.** Each class in these lists says, after its date, where it was ("28/10 · Ventura") on a student's or group's page, and whose it was ("28/10 · ENEM") on a place's page.
 - **AC-008-34.** Nova aula's "Aluno ou turma" list has a search field and Todos, Alunos and Turmas filters.
 - **AC-008-35.** Turmas has Todos, Devendo and Por local filters beside its search, and Locais has a search field with Todos and Devendo, as on Alunos. *(Victor, 28 Oct 2026.)*
+- **AC-008-36.** On Locais, a place where the students pay, the built-in ones included, shows what is still owed for the classes given there ("A receber R$ 120") or "Em dia"; Devendo lists it while anything is owed there. *(Victor, 28 Oct 2026.)*
 
 ### Language
 

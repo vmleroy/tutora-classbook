@@ -27,6 +27,7 @@ import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
+import app.tutora.domain.Cents
 import app.tutora.domain.Group
 import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
@@ -51,6 +52,7 @@ import app.tutora.ui.minutesText
 import app.tutora.ui.payments.balanceBadge
 import app.tutora.ui.payments.packageUseText
 import app.tutora.ui.payments.paysTeacher
+import app.tutora.ui.payments.toReceiveBadge
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateMoney
@@ -277,12 +279,17 @@ private fun PlacesPane(nav: NavHostController) {
     val services = LocalServices.current
     val places by services.catalogRepo.places().collectAsState(initial = emptyList())
     val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
+    val owedAt by services.paymentRepo.owedAtPlaces().collectAsState(initial = emptyMap())
     val settings by services.settings.collectAsState(initial = null)
     val showDefaults = settings?.showDefaultPlaces ?: true
     var query by rememberSaveable { mutableStateOf("") }
     var owingOnly by rememberSaveable { mutableStateOf(false) }
 
-    fun owes(p: PlaceItem) = (balances[PayerRef(PayerKind.PLACE, p.place.id)] ?: 0) > 0
+    // A place that pays you owes its balance; elsewhere students owe for the classes given there (AC-008-36).
+    fun owed(p: PlaceItem): Cents =
+        if (paysTeacher(p.place)) balances[PayerRef(PayerKind.PLACE, p.place.id)] ?: 0 else owedAt[p.place.id] ?: 0
+
+    fun owes(p: PlaceItem) = owed(p) > 0
     val q = fold(query.trim())
     val nameOf = places.associate { it.place.id to placeName(it.place) }
     // Search by name, and Devendo for the places that owe you (as on Alunos).
@@ -301,7 +308,7 @@ private fun PlacesPane(nav: NavHostController) {
                 countText(R.string.places_students_zero, R.plurals.places_students, p.studentCount),
                 if (p.place.kind == PlaceKind.STUDENT_HOME) travelText(p.place) else null,
             ).joinToString(" · ")
-        val badge = if (paysTeacher(p.place)) balanceBadge(balances[PayerRef(PayerKind.PLACE, p.place.id)] ?: 0) else null
+        val badge = if (paysTeacher(p.place)) balanceBadge(owed(p)) else toReceiveBadge(owed(p))
         return {
             ListRow(
                 placeName(p.place),

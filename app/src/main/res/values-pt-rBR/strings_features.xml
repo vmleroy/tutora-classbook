@@ -417,4 +417,5 @@
     <string name="pay_byPlace">paga o local</string>
     <string name="pay_leftShort">%1$s a receber</string>
     <string name="places_search">Buscar local</string>
+    <string name="pay_toReceiveAmount">A receber %1$s</string>
 </resources>
