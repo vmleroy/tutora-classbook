@@ -1,9 +1,11 @@
 package app.tutora.ui.reports
 
 import app.tutora.adapters.export.Cell
+import app.tutora.adapters.export.PdfBar
 import app.tutora.adapters.export.PdfPlan
 import app.tutora.adapters.export.PdfRow
 import app.tutora.adapters.export.PdfSection
+import app.tutora.adapters.export.PdfStat
 import app.tutora.adapters.export.PdfTone
 import app.tutora.adapters.export.Sheet
 import app.tutora.domain.Cents
@@ -66,6 +68,10 @@ data class ReportWords(
     val trend: String,
     val classList: String,
     val month: (LocalDate) -> String,
+    /** "Out" / "Oct", under the trend's bars. */
+    val shortMonth: (LocalDate) -> String,
+    /** "R$ 5.020", whole reais over the trend's bars. */
+    val compact: (Cents) -> String,
     /** Sheet names: "Aulas", "Pagamentos", "Resumo", "Por aluno e local". */
     val sheetClasses: String,
     val sheetPayments: String,
@@ -144,13 +150,14 @@ fun subjectPlan(
         subjectLine = subjectLine,
         stats =
             listOf(
-                w.classes to "${r.count} · ${w.hours(r.minutes)}",
-                w.total to w.money(r.total),
-                w.paid to w.money(r.paid),
-                w.toReceive to w.money(r.left),
+                PdfStat(w.classes, "${r.count} · ${w.hours(r.minutes)}"),
+                PdfStat(w.total, w.money(r.total)),
+                PdfStat(w.paid, w.money(r.paid), PdfTone.PAID),
+                PdfStat(w.toReceive, w.money(r.left), PdfTone.OWED),
             ),
         tableTitle = if (salary) w.tableDays else w.tableClasses,
         columns = columns,
+        rightAligned = if (salary) setOf(1) else setOf(columns.size - 2, columns.size - 1),
         rows = rows,
         totalRow = if (salary) null else listOfNotNull(w.total, w.hours(r.minutes), "".takeIf { showWho }, w.money(r.total), ""),
         sections =
@@ -165,13 +172,8 @@ fun subjectPlan(
                     )
                 },
             ),
-        notes =
-            listOfNotNull(
-                r.left.takeIf { it > 0 }?.let {
-                    w.pending.format(w.money(it)) + if (owedDays.isEmpty()) "" else " · " + owedDays.joinToString(", ")
-                },
-                t.pix.takeIf { it.isNotBlank() }?.let { w.pix.format(it) },
-            ),
+        pending = r.left.takeIf { it > 0 }?.let { w.pending.format(w.money(it)) to owedDays.joinToString(", ") },
+        pix = t.pix.takeIf { it.isNotBlank() }?.let { w.pix.format(it) },
         footer = w.generated.format(generatedAt) + " · " + w.page,
     )
 }
@@ -274,13 +276,14 @@ fun earningsPlan(
         subjectLine = null,
         stats =
             listOf(
-                w.classes to "${v.classes.size} · ${w.hours(minutes)}",
-                w.earned to w.money(v.summary.earned),
-                w.received to w.money(v.summary.received),
-                w.toReceive to w.money(v.summary.toReceive),
+                PdfStat(w.classes, "${v.classes.size} · ${w.hours(minutes)}"),
+                PdfStat(w.earned, w.money(v.summary.earned)),
+                PdfStat(w.received, w.money(v.summary.received), PdfTone.PAID),
+                PdfStat(w.toReceive, w.money(v.summary.toReceive), PdfTone.OWED),
             ),
         tableTitle = w.bySource,
         columns = listOf(w.origin, w.classes, w.duration, w.earned, w.toReceive),
+        rightAligned = setOf(1, 2, 3, 4),
         rows =
             rows.map {
                 PdfRow(
@@ -306,9 +309,10 @@ fun earningsPlan(
             } else {
                 listOf(w.total, v.classes.size.toString(), w.hours(minutes), w.money(v.summary.earned), w.money(v.summary.toReceive))
             },
+        trendTitle = w.trend,
+        trend = v.trend.map { PdfBar(w.shortMonth(it.month), it.earned, w.compact(it.earned)) },
         sections =
             listOfNotNull(
-                PdfSection(w.trend, v.trend.map { w.month(it.month) to w.money(it.earned) }),
                 if (parts.classes) {
                     PdfSection(
                         w.classList,
@@ -331,7 +335,6 @@ fun earningsPlan(
                     null
                 },
             ),
-        notes = emptyList(),
         footer = w.generated.format(generatedAt) + " · " + w.page,
     )
 }

@@ -42,8 +42,8 @@ class PdfLayoutTest {
         val plan = subjectPlan(r, w, teacher, "Aluna", "Ana Souza", "Matemática · R$ 120,00/h", false, "26/10/2026, 18:45")
         assertEquals("Prof. Victor · 01/10/2026 a 26/10/2026", plan.subtitle)
         assertTrue(plan.sections.single().title == "Pagamentos recebidos")
-        assertTrue(plan.notes.first().startsWith("Valor pendente: R$ 240,00"))
-        assertEquals("Pix: victor@pix.com", plan.notes.last())
+        assertEquals("Valor pendente: R$ 240,00", plan.pending?.first)
+        assertEquals("Pix: victor@pix.com", plan.pix)
         val pages = pdfPages(plan)
         assertEquals(2, pages.size)
         assertEquals("Gerado pela Tutora em 26/10/2026, 18:45 · página 2 de 2", pages.last().footer)
@@ -61,8 +61,15 @@ class PdfLayoutTest {
                 listOf(EarnedClass("l", LocalDate(2026, 10, 22), EarningsType.PRIVATE, ana, "Ana Souza", 12_000, 0, 0, 90)),
             )
         val plan = earningsPlan(v, w, teacher, "10/2026 · Tudo", EarningsParts(), { 4_000 }, "26/10/2026, 18:45")
-        assertEquals(listOf("Aulas" to "1 · 1h30", "Ganho" to "R$ 120,00", "Recebido" to "R$ 80,00", "A receber" to "R$ 40,00"), plan.stats)
+        assertEquals(
+            listOf("Aulas" to "1 · 1h30", "Ganho" to "R$ 120,00", "Recebido" to "R$ 80,00", "A receber" to "R$ 40,00"),
+            plan.stats.map {
+                it.label to
+                    it.value
+            },
+        )
         assertEquals(listOf("Ana Souza", "1", "1h30", "R$ 120,00", "R$ 40,00"), plan.rows.single().cells)
-        assertEquals("Últimos 6 meses", plan.sections.first().title)
+        assertEquals("Últimos 6 meses", plan.trendTitle)
+        assertEquals(listOf("M10"), plan.trend.map { it.label })
     }
 }

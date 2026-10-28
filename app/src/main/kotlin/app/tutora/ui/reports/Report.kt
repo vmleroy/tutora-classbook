@@ -131,6 +131,8 @@ fun rememberReportWords(): ReportWords {
         trend = stringResource(R.string.earn_trend),
         classList = stringResource(R.string.rep_classList),
         month = { pattern("LLLL yyyy", language, it).replaceFirstChar { c -> c.uppercase() } },
+        shortMonth = { pattern("LLL", language, it).removeSuffix(".").replaceFirstChar { c -> c.uppercase() } },
+        compact = { formatMoney(it, language, compact = true) },
         sheetClasses = stringResource(R.string.rep_sheetClasses),
         sheetPayments = stringResource(R.string.pay_payments),
         sheetSummary = stringResource(R.string.rep_sheetSummary),
@@ -145,13 +147,17 @@ fun rememberReportWords(): ReportWords {
 fun pdfColors(): PdfColors {
     val c = TutoraTheme.colors
     return PdfColors(
-        c.primary.toArgb(),
-        c.onPrimary.toArgb(),
-        c.ink.toArgb(),
-        c.inkMuted.toArgb(),
-        c.success.toArgb(),
-        c.danger.toArgb(),
-        c.line.toArgb(),
+        primary = c.primary.toArgb(),
+        onPrimary = c.onPrimary.toArgb(),
+        ink = c.ink.toArgb(),
+        muted = c.inkMuted.toArgb(),
+        paid = c.successInk.toArgb(),
+        owed = c.dangerInk.toArgb(),
+        line = c.line.toArgb(),
+        ground = c.background.toArgb(),
+        paidSoft = c.successSoft.toArgb(),
+        owedSoft = c.dangerSoft.toArgb(),
+        primarySoft = c.primarySoft.toArgb(),
     )
 }
 
