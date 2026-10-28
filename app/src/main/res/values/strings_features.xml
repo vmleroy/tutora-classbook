@@ -313,4 +313,79 @@
     <string name="settings_autoStartAlways">Also with the app closed</string>
     <string name="settings_autoStartOpenHint">Starts while Tutora is open, or as soon as you open it.</string>
     <string name="settings_autoStartAlwaysHint">Starts on time even with the app closed and shows the notification. It may be a few minutes late, but the time counts from the planned start.</string>
+    <string name="pay_pix">Pix</string>
+    <string name="pay_cash">Cash</string>
+    <string name="pay_transfer">Transfer</string>
+    <string name="pay_card">Card</string>
+    <string name="pay_owes">Owes %1$s</string>
+    <string name="pay_credit">Credit %1$s</string>
+    <string name="pay_settled">Up to date</string>
+    <string name="pay_paid">Paid</string>
+    <string name="pay_toReceive">To receive</string>
+    <string name="pay_leftPart">To receive · %1$s left</string>
+    <string name="pay_owesLabel">Owes</string>
+    <string name="pay_placeOwesLabel">Owes you</string>
+    <string name="pay_creditLabel">Credit</string>
+    <string name="pay_lessons">Recent lessons</string>
+    <string name="pay_payments">Payments</string>
+    <string name="pay_none">No payments yet</string>
+    <string name="pay_packageBought">package</string>
+    <string name="pay_record">Record payment</string>
+    <string name="pay_edit">Edit payment</string>
+    <string name="pay_save">Record · %1$s</string>
+    <string name="pay_amount">Amount</string>
+    <string name="pay_previewCredit">Kept as credit</string>
+    <string name="pay_note">Note</string>
+    <string name="pay_choose">Choose lessons</string>
+    <string name="pay_leftOn">%1$s left</string>
+    <string name="pay_and">" and "</string>
+    <string name="pay_detail">Payment</string>
+    <string name="pay_delete">Delete</string>
+    <string name="pay_paidLessons">Lessons this payment paid</string>
+    <string name="pay_deleteTitle">Delete the %1$s payment of %2$s?</string>
+    <string name="pay_deleteBody">The lessons it paid go back to being owed.</string>
+    <string name="pay_package">Package</string>
+    <string name="pay_packageLastOne">1 lesson left in the package</string>
+    <string name="pay_packageNone">No package bought yet</string>
+    <string name="pay_packageNew">New package</string>
+    <string name="pay_receiveSalinha">Collect from the tutoring room</string>
+    <string name="pay_receiveCourse">Collect from the prep course</string>
+    <string name="pay_receivePlace">Collect from the place</string>
+    <string name="pay_toReceiveSalinha">Owed by the tutoring room: %1$s</string>
+    <string name="pay_toReceiveCourse">Owed by the prep course: %1$s</string>
+    <string name="pay_toReceivePlace">Owed by the place: %1$s</string>
+    <string name="pay_owingFilter">Owing · %1$d</string>
+    <string name="pay_saldoOf">%1$s\'s balance</string>
+    <string name="pay_section">Payment</string>
+    <string name="pay_owedLater">To receive later</string>
+    <string name="pay_alreadyPaid">Already paid</string>
+    <string name="pay_addedToBalance">Added to %1$s\'s balance. Pending now: %2$s</string>
+    <string name="pay_packageLessons">Lessons in the package</string>
+    <string name="pay_packagePrice">Package price</string>
+    <string name="pay_packageHint">Valid at any place where the student pays</string>
+    <string name="students_package">Package</string>
+    <plurals name="pay_lessonsCount">
+        <item quantity="one">%1$d lesson</item>
+        <item quantity="other">%1$d lessons</item>
+    </plurals>
+    <plurals name="pay_preview">
+        <item quantity="one">Pays %1$d lesson: %2$s</item>
+        <item quantity="other">Pays %1$d lessons: %2$s</item>
+    </plurals>
+    <plurals name="pay_toReceiveCount">
+        <item quantity="one">%1$d lesson to receive</item>
+        <item quantity="other">%1$d lessons to receive</item>
+    </plurals>
+    <plurals name="pay_pendingAlert">
+        <item quantity="one">%1$d with a pending payment</item>
+        <item quantity="other">%1$d with pending payments</item>
+    </plurals>
+    <plurals name="pay_pendingStudents">
+        <item quantity="one">%1$d student with a pending payment</item>
+        <item quantity="other">%1$d students with pending payments</item>
+    </plurals>
+    <plurals name="pay_packageUse">
+        <item quantity="one">%1$d of %2$d used</item>
+        <item quantity="other">%1$d of %2$d used</item>
+    </plurals>
 </resources>

@@ -6,15 +6,15 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
-import app.tutora.domain.Allocation
 import app.tutora.domain.Cents
-import app.tutora.domain.Owed
+import app.tutora.domain.Ledger
+import app.tutora.domain.OwedClass
 import app.tutora.domain.PackageState
-import app.tutora.domain.Paid
 import app.tutora.domain.PayMethod
 import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
-import app.tutora.domain.allocate
+import app.tutora.domain.PaymentRecord
+import app.tutora.domain.ledgerOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -138,28 +138,6 @@ interface PaymentDao {
     suspend fun unsettled(): List<LessonRow>
 }
 
-/** A payment as the screens show it. */
-data class Payment(
-    val id: String,
-    val payer: PayerRef,
-    val cents: Cents,
-    val method: PayMethod,
-    val paidAt: String,
-    val note: String?,
-    val packageId: String?,
-    val chosen: List<String>,
-)
-
-/** A payer's owed classes, payments and which classes those payments paid (AC-008-6 to 9, 11). */
-data class Ledger(
-    val owed: List<LessonRow>,
-    val payments: List<Payment>,
-    val allocation: Allocation,
-) {
-    val dueCents: Cents get() = owed.sumOf { it.dueCents ?: 0 }
-    val paidCents: Cents get() = payments.filter { it.packageId == null }.sumOf { it.cents }
-}
-
 fun PaymentRow.payerRef(): PayerRef =
     when {
         studentId != null -> PayerRef(PayerKind.STUDENT, studentId)
@@ -168,20 +146,17 @@ fun PaymentRow.payerRef(): PayerRef =
     }
 
 fun PaymentRow.toPayment(chosen: List<String>) =
-    Payment(id, payerRef(), amountCents, PayMethod.fromKey(method) ?: PayMethod.PIX, paidAt, note, packageId, chosen)
+    PaymentRecord(id, payerRef(), amountCents, PayMethod.fromKey(method) ?: PayMethod.PIX, paidAt, note, packageId, chosen)
 
-fun LessonRow.toOwed() = Owed(id, startAt, dueCents ?: 0)
+fun LessonRow.toOwed() = OwedClass(id, startAt, plannedMin, dueCents ?: 0)
 
-/** The classes a payment list pays, worked out from scratch on every read. */
 fun ledgerOf(
     owed: List<LessonRow>,
     payments: List<PaymentRow>,
     chosen: List<PaymentLessonRow>,
 ): Ledger {
     val byPayment = chosen.groupBy({ it.paymentId }, { it.lessonId })
-    val list = payments.map { it.toPayment(byPayment[it.id].orEmpty()) }
-    val paid = list.filter { it.packageId == null }.map { Paid(it.id, it.paidAt, it.cents, it.chosen) }
-    return Ledger(owed, list.sortedByDescending { it.paidAt }, allocate(owed.map { it.toOwed() }, paid))
+    return ledgerOf(owed.map { it.toOwed() }, payments.map { it.toPayment(byPayment[it.id].orEmpty()) })
 }
 
 /** Balances, ledgers and packages as Flows; Room re-emits after any write (AC-008-10). */
@@ -205,7 +180,7 @@ class PaymentRepository(
     suspend fun ledgerNow(payer: PayerRef): Ledger =
         ledgerOf(dao.owed(payer.kind.key, payer.id), dao.payments(payer.kind.key, payer.id), dao.chosen(payer.kind.key, payer.id))
 
-    fun payment(id: String): Flow<Payment?> = dao.observePayment(id).map { it?.toPayment(emptyList()) }
+    fun payment(id: String): Flow<PaymentRecord?> = dao.observePayment(id).map { it?.toPayment(emptyList()) }
 
     /** The student's latest package and how many classes have used it. */
     fun lastPackage(studentId: String): Flow<PackageState?> =

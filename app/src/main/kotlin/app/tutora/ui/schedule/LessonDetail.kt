@@ -55,6 +55,7 @@ import app.tutora.ui.clockTime
 import app.tutora.ui.durationText
 import app.tutora.ui.live.rememberStartLesson
 import app.tutora.ui.longDate
+import app.tutora.ui.payments.LessonMoney
 import app.tutora.ui.placeName
 import app.tutora.ui.tag
 import app.tutora.ui.weekdayLong
@@ -183,6 +184,7 @@ fun LessonDetailScreen(
             )
             Fact(stringResource(R.string.lesson_whoPays), payerText(l))
         }
+        LessonMoney(nav, l)
         val (name, sub, avatar) =
             when (val w = l.who) {
                 is Who.OfStudent -> Triple(w.student.name, w.student.subject, initials(w.student.name) to w.student.color.tag())

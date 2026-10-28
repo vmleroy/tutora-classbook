@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -55,6 +56,7 @@ import app.tutora.designsystem.components.MoneyField
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
+import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.TagDot
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
@@ -63,6 +65,8 @@ import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.CatalogError
 import app.tutora.domain.Group
 import app.tutora.domain.Payer
+import app.tutora.domain.PayerKind
+import app.tutora.domain.PayerRef
 import app.tutora.domain.PlaceKind
 import app.tutora.domain.PlaceLink
 import app.tutora.domain.Price
@@ -82,6 +86,8 @@ import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
 import app.tutora.ui.errorText
+import app.tutora.ui.payments.PackageCard
+import app.tutora.ui.payments.PayerMoney
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateMoney
@@ -163,12 +169,21 @@ fun StudentDetailScreen(
         Card(label = stringResource(R.string.students_rate)) {
             Text(stringResource(R.string.students_rate), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
             Text(
-                stringResource(if (s.student.rateType == RateType.HOUR) R.string.students_perHour else R.string.students_perLesson),
+                stringResource(
+                    when (s.student.rateType) {
+                        RateType.HOUR -> R.string.students_perHour
+                        RateType.LESSON -> R.string.students_perLesson
+                        RateType.PACKAGE -> R.string.students_package
+                    },
+                ),
                 style = TutoraTheme.type.bodyStrong,
                 color = TutoraTheme.colors.ink,
             )
             s.student.notes?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted) }
         }
+        // What the student owes, their package and payments (spec 008).
+        PayerMoney(nav, PayerRef(PayerKind.STUDENT, id), stringResource(R.string.pay_record))
+        if (s.student.rateType == RateType.PACKAGE) PackageCard(id, s.student.packagePriceCents ?: 0)
         val salary = stringResource(R.string.groups_coveredBySalary)
         val unset = stringResource(R.string.places_noPrice)
         val name = s.student.name
@@ -245,6 +260,9 @@ fun unlinkConfirm(
         stringResource(R.string.connections_unlinkTitle, student, place),
         if (groupsThere.isEmpty()) null else stringResource(R.string.connections_alsoLeaves, groupsThere.joinToString(", ")),
     )
+
+/** A new package starts at 10 classes (AC-008-19). */
+private const val PACKAGE_LESSONS = 10
 
 private val blank = Student("", "", null, null, null, TagColor.AMBER, RateType.HOUR, null)
 
@@ -338,12 +356,38 @@ private fun StudentForm(
             listOf(
                 RateType.HOUR to stringResource(R.string.students_perHour),
                 RateType.LESSON to stringResource(R.string.students_perLesson),
+                RateType.PACKAGE to stringResource(R.string.students_package),
             ),
             d.rateType,
-            { d = d.copy(rateType = it) },
+            {
+                d =
+                    if (it ==
+                        RateType.PACKAGE
+                    ) {
+                        d.copy(rateType = it, packageLessons = d.packageLessons ?: PACKAGE_LESSONS)
+                    } else {
+                        d.copy(rateType = it)
+                    }
+            },
             stringResource(R.string.students_charging),
             size = ControlSize.SM,
         )
+        // Pacote: how many classes and the price for all of them (AC-008-19).
+        if (d.rateType == RateType.PACKAGE) {
+            Card(Modifier.testTag("package-terms")) {
+                Text(stringResource(R.string.pay_packageLessons), style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
+                Text(stringResource(R.string.pay_packageHint), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+                Stepper(
+                    (d.packageLessons ?: PACKAGE_LESSONS).toLong(),
+                    { d = d.copy(packageLessons = it.toInt()) },
+                    step = 1,
+                    min = 1,
+                    max = 100,
+                    valueLabel = stringResource(R.string.pay_packageLessons),
+                )
+                MoneyField(stringResource(R.string.pay_packagePrice), d.packagePriceCents, { d = d.copy(packagePriceCents = it) })
+            }
+        }
         links.forEach { link ->
             val place = byId[link.placeId]?.place ?: return@forEach
             val name = placeName(place)
@@ -537,6 +581,10 @@ fun GroupDetailScreen(
                 style = TutoraTheme.type.bodyStrong,
                 color = TutoraTheme.colors.ink,
             )
+        }
+        // A group owes as one, unless its place pays the teacher or a salary covers it (AC-008-1).
+        if (place?.let { it.payer == Payer.PLACE || it.kind == PlaceKind.SCHOOL } == false) {
+            PayerMoney(nav, PayerRef(PayerKind.GROUP, id), stringResource(R.string.pay_record))
         }
         // Local: one place, moved with Trocar local; Alunos: the members (AC-004-35).
         ConnectionSection(

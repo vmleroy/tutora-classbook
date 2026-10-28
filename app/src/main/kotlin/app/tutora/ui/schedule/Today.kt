@@ -47,6 +47,7 @@ import app.tutora.ui.live.LiveBanner
 import app.tutora.ui.live.rememberStartLesson
 import app.tutora.ui.longDate
 import app.tutora.ui.minutesText
+import app.tutora.ui.payments.PendingAlert
 import app.tutora.ui.rateText
 import app.tutora.ui.shortDate
 
@@ -137,6 +138,7 @@ fun TodayScreen(nav: NavHostController) {
                 }
             }
         }
+        PendingAlert(nav)
         if (lessons.isEmpty()) {
             EmptyState(
                 stringResource(R.string.empty_today_title),

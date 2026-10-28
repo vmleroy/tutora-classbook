@@ -186,3 +186,57 @@ fun balanceOf(
         else -> Balance.Settled
     }
 }
+
+/** A class with money on it, as a payer's detail lists it. */
+data class OwedClass(
+    val lessonId: String,
+    val startAt: String,
+    val minutes: Int,
+    val dueCents: Cents,
+)
+
+/** A payment as the screens show it, with the classes chosen for it. */
+data class PaymentRecord(
+    val id: String,
+    val payer: PayerRef,
+    val cents: Cents,
+    val method: PayMethod,
+    val paidAt: String,
+    val note: String?,
+    val packageId: String?,
+    val chosen: List<String>,
+)
+
+/** A payer's owed classes, payments and which classes those payments paid (AC-008-6 to 9, 11). */
+data class Ledger(
+    val owed: List<OwedClass>,
+    val payments: List<PaymentRecord>,
+    val allocation: Allocation,
+) {
+    val dueCents: Cents get() = sum(owed.map { it.dueCents })
+
+    /** A package's purchase pays no class, so it is left out. */
+    val paidCents: Cents get() = sum(payments.filter { it.packageId == null }.map { it.cents })
+
+    val balance: Balance get() = balanceOf(dueCents, paidCents)
+
+    /** Allocation as it would be with [draft] added and [without] left out, for the payment sheet. */
+    fun with(
+        draft: Paid?,
+        without: String? = null,
+    ): Allocation =
+        allocate(
+            owed.map { Owed(it.lessonId, it.startAt, it.dueCents) },
+            payments.filter { it.packageId == null && it.id != without }.map { Paid(it.id, it.paidAt, it.cents, it.chosen) } +
+                listOfNotNull(draft),
+        )
+}
+
+/** The classes the payments pay, worked out from scratch on every read. */
+fun ledgerOf(
+    owed: List<OwedClass>,
+    payments: List<PaymentRecord>,
+): Ledger {
+    val ledger = Ledger(owed, payments.sortedByDescending { it.paidAt }, Allocation(emptyMap(), emptyMap(), 0))
+    return ledger.copy(allocation = ledger.with(null))
+}

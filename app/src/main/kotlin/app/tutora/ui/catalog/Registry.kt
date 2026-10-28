@@ -29,7 +29,10 @@ import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Group
+import app.tutora.domain.PayerKind
+import app.tutora.domain.PayerRef
 import app.tutora.domain.PlaceKind
+import app.tutora.domain.RateType
 import app.tutora.domain.initials
 import app.tutora.state.LocalServices
 import app.tutora.state.PlaceItem
@@ -46,6 +49,10 @@ import app.tutora.ui.StudentEdit
 import app.tutora.ui.countText
 import app.tutora.ui.kindName
 import app.tutora.ui.minutesText
+import app.tutora.ui.payments.balanceBadge
+import app.tutora.ui.payments.packageUseText
+import app.tutora.ui.payments.paysTeacher
+import app.tutora.ui.payments.placeOwesText
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateMoney
@@ -64,6 +71,7 @@ private fun fold(s: String) = Normalizer.normalize(s, Normalizer.Form.NFD).repla
 fun RegistryScreen(
     nav: NavHostController,
     view: String,
+    owing: Boolean = false,
 ) {
     ScreenScaffold(
         stringResource(R.string.tab_registry),
@@ -109,15 +117,22 @@ fun RegistryScreen(
         when (view) {
             "places" -> PlacesPane(nav)
             "groups" -> GroupsPane(nav)
-            else -> StudentsPane(nav)
+            else -> StudentsPane(nav, owing)
         }
     }
 }
 
 @Composable
-private fun StudentsPane(nav: NavHostController) {
+private fun StudentsPane(
+    nav: NavHostController,
+    owingFirst: Boolean,
+) {
     val services = LocalServices.current
     val students by services.catalogRepo.students().collectAsState(initial = emptyList())
+    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
+    var owingOnly by rememberSaveable { mutableStateOf(owingFirst) }
+
+    fun owes(id: String) = (balances[PayerRef(PayerKind.STUDENT, id)] ?: 0) > 0
     val places by services.catalogRepo.places().collectAsState(initial = emptyList())
     var query by rememberSaveable { mutableStateOf("") }
     var byPlace by rememberSaveable { mutableStateOf(false) }
@@ -133,11 +148,22 @@ private fun StudentsPane(nav: NavHostController) {
         }
         TextField(stringResource(R.string.students_search), query, { query = it })
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            Chip(stringResource(R.string.students_all, students.size.toString()), !byPlace, { byPlace = false })
-            Chip(stringResource(R.string.students_byPlace), byPlace, { byPlace = true })
+            Chip(stringResource(R.string.students_all, students.size.toString()), !byPlace && !owingOnly, {
+                byPlace = false
+                owingOnly = false
+            })
+            // Devendo: only students who owe, with how many (AC-008-13).
+            Chip(stringResource(R.string.pay_owingFilter, students.count { owes(it.student.id) }), owingOnly, {
+                owingOnly = !owingOnly
+                if (owingOnly) byPlace = false
+            })
+            Chip(stringResource(R.string.students_byPlace), byPlace, {
+                byPlace = true
+                owingOnly = false
+            })
         }
         val q = fold(query.trim())
-        val shownStudents = students.filter { fold(it.student.name).contains(q) }
+        val shownStudents = students.filter { fold(it.student.name).contains(q) && (!owingOnly || owes(it.student.id)) }
         val noPlace = stringResource(R.string.students_noPlace)
 
         @Composable
@@ -148,10 +174,21 @@ private fun StudentsPane(nav: NavHostController) {
                     if (s.links.isEmpty()) noPlace else s.links.mapNotNull { names[it.placeId] }.joinToString(", "),
                 ).joinToString(" · ")
             return {
+                // A package student shows its use; everyone shows their balance (AC-008-13, 21).
+                val pkg =
+                    if (s.student.rateType == RateType.PACKAGE) {
+                        services.paymentRepo
+                            .lastPackage(s.student.id)
+                            .collectAsState(initial = null)
+                            .value
+                    } else {
+                        null
+                    }
                 ListRow(
                     s.student.name,
-                    subtitle = subtitle,
+                    subtitle = listOfNotNull(subtitle, pkg?.let { packageUseText(it) }).joinToString(" · "),
                     avatar = initials(s.student.name) to s.student.color.tag(),
+                    badge = balanceBadge(balances[PayerRef(PayerKind.STUDENT, s.student.id)] ?: 0),
                     onClick = { nav.navigate(StudentDetail(s.student.id)) },
                 )
             }
@@ -179,6 +216,7 @@ private fun GroupsPane(nav: NavHostController) {
     val services = LocalServices.current
     val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
     val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
     var query by rememberSaveable { mutableStateOf("") }
     val names = places.associate { it.place.id to placeName(it.place) }
     val language = currentLanguage()
@@ -204,7 +242,13 @@ private fun GroupsPane(nav: NavHostController) {
                         g.rateCents?.let { stringResource(R.string.places_perLesson, rateMoney(it, language)) },
                     ).joinToString(" · ")
                 val row: @Composable () -> Unit = {
-                    ListRow(g.name, subtitle = subtitle, icon = IconName.USERS, onClick = { nav.navigate(GroupDetail(g.id)) })
+                    ListRow(
+                        g.name,
+                        subtitle = subtitle,
+                        icon = IconName.USERS,
+                        badge = balanceBadge(balances[PayerRef(PayerKind.GROUP, g.id)] ?: 0),
+                        onClick = { nav.navigate(GroupDetail(g.id)) },
+                    )
                 }
                 row
             },
@@ -216,6 +260,7 @@ private fun GroupsPane(nav: NavHostController) {
 private fun PlacesPane(nav: NavHostController) {
     val services = LocalServices.current
     val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
     val settings by services.settings.collectAsState(initial = null)
     val showDefaults = settings?.showDefaultPlaces ?: true
     val builtins = if (showDefaults) places.filter { it.place.builtin != null } else emptyList()
@@ -229,6 +274,13 @@ private fun PlacesPane(nav: NavHostController) {
                 minutesText(p.place.defaultDurationMin),
                 countText(R.string.places_students_zero, R.plurals.places_students, p.studentCount),
                 if (p.place.kind == PlaceKind.STUDENT_HOME) travelText(p.place) else null,
+                // What a place that pays the teacher owes (AC-008-14).
+                balances[
+                    PayerRef(
+                        PayerKind.PLACE,
+                        p.place.id,
+                    ),
+                ]?.takeIf { it > 0 && paysTeacher(p.place) }?.let { placeOwesText(p.place.kind, it) },
             ).joinToString(" · ")
         val badge = if (p.place.builtin == null) BadgeTone.SECONDARY to kindName(p.place.kind) else null
         return { ListRow(placeName(p.place), subtitle = summary, badge = badge, onClick = { nav.navigate(PlaceDetail(p.place.id)) }) }

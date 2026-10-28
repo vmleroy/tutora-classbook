@@ -39,6 +39,8 @@ import app.tutora.domain.MAX_COMMISSION_BP
 import app.tutora.domain.PayCycle
 import app.tutora.domain.PayMode
 import app.tutora.domain.Payer
+import app.tutora.domain.PayerKind
+import app.tutora.domain.PayerRef
 import app.tutora.domain.Place
 import app.tutora.domain.PlaceKind
 import app.tutora.domain.Preview
@@ -59,6 +61,9 @@ import app.tutora.ui.countText
 import app.tutora.ui.errorText
 import app.tutora.ui.kindName
 import app.tutora.ui.minutesText
+import app.tutora.ui.payments.PayerMoney
+import app.tutora.ui.payments.paysTeacher
+import app.tutora.ui.payments.receiveLabel
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateMoney
@@ -193,6 +198,8 @@ fun PlaceDetailScreen(
                 stringResource(R.string.connections_archiveGroupBody),
             )
         }
+        // A place that pays the teacher has a balance and Receber da salinha (AC-008-14).
+        if (paysTeacher(p)) PayerMoney(nav, PayerRef(PayerKind.PLACE, p.id), receiveLabel(p.kind), isPlace = true)
     }
     when (picking) {
         "students" -> {

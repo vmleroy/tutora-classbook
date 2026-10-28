@@ -32,6 +32,7 @@ import app.tutora.ui.catalog.RegistryScreen
 import app.tutora.ui.catalog.StudentDetailScreen
 import app.tutora.ui.catalog.StudentEditScreen
 import app.tutora.ui.live.LiveScreen
+import app.tutora.ui.payments.PaymentDetailScreen
 import app.tutora.ui.schedule.AgendaScreen
 import app.tutora.ui.schedule.LessonDetailScreen
 import app.tutora.ui.schedule.LessonEditScreen
@@ -53,6 +54,8 @@ import kotlin.reflect.KClass
 
 @Serializable data class RegistryHome(
     val view: String = "students",
+    /** Open Alunos with Devendo on, from Hoje's alert (AC-008-15). */
+    val owing: Boolean = false,
 )
 
 @Serializable data object EarningsGraph
@@ -108,6 +111,10 @@ data class LiveRequest(
 )
 
 @Serializable data class LessonDetail(
+    val id: String,
+)
+
+@Serializable data class PaymentDetail(
     val id: String,
 )
 
@@ -176,7 +183,10 @@ fun TutoraNav(
                 composable<ScheduleHome> { AgendaScreen(nav) }
             }
             navigation<RegistryGraph>(startDestination = RegistryHome()) {
-                composable<RegistryHome> { RegistryScreen(nav, it.toRoute<RegistryHome>().view) }
+                composable<RegistryHome> {
+                    val r = it.toRoute<RegistryHome>()
+                    RegistryScreen(nav, r.view, r.owing)
+                }
             }
             navigation<EarningsGraph>(startDestination = EarningsHome) {
                 composable<EarningsHome> { EarningsScreen() }
@@ -201,6 +211,7 @@ fun TutoraNav(
             composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
             composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
             composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
+            composable<PaymentDetail> { PaymentDetailScreen(nav, it.toRoute<PaymentDetail>().id) }
         }
     }
 }
