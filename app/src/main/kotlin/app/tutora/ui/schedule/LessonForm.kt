@@ -41,16 +41,26 @@ import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Cents
+import app.tutora.domain.FeeChoice
+import app.tutora.domain.FeeRule
+import app.tutora.domain.FeeSuggestion
 import app.tutora.domain.Group
+import app.tutora.domain.LessonStatus
 import app.tutora.domain.Place
 import app.tutora.domain.PlaceKind
+import app.tutora.domain.RateType
 import app.tutora.domain.Repeat
 import app.tutora.domain.TravelMode
 import app.tutora.domain.Who
 import app.tutora.domain.Worth
+import app.tutora.domain.currentPrice
 import app.tutora.domain.initials
+import app.tutora.domain.isoText
 import app.tutora.domain.lessonWorth
 import app.tutora.domain.localOf
+import app.tutora.domain.localToInstant
+import app.tutora.domain.ruleFor
+import app.tutora.domain.suggestFee
 import app.tutora.domain.travelFor
 import app.tutora.state.LocalServices
 import app.tutora.ui.ScreenScaffold
@@ -67,6 +77,7 @@ import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.ScheduleError
 import app.tutora.usecases.ScheduleResult
 import app.tutora.usecases.Scope
+import app.tutora.usecases.StatusChange
 import app.tutora.usecases.WhoId
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -83,6 +94,12 @@ data class LessonValues(
     val travelFeeCents: Cents?,
     val repeat: Repeat?,
     val notes: String?,
+    val status: LessonStatus = LessonStatus.SCHEDULED,
+    /** When the student gave notice of a cancellation (AC-006-22). */
+    val noticeDate: LocalDate? = null,
+    val noticeTime: LocalTime? = null,
+    /** The fee switch: on keeps the suggested fee (AC-006-23). */
+    val keepFee: Boolean = true,
 )
 
 /** The series a class belongs to, shown as "Semanal · segunda-feira, 14:00". */
@@ -102,6 +119,11 @@ fun LessonForm(
     series: SeriesInfo?,
     error: String?,
     onSubmit: (LessonValues, Scope) -> Unit,
+    /** Nova aula's mode: true = Registrar aula dada, false = Agendar; null in the edit form. */
+    log: Boolean? = null,
+    onLog: (Boolean) -> Unit = {},
+    /** The class has started, so Dada and Faltou can be picked (AC-006-11). */
+    started: Boolean = false,
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
@@ -111,6 +133,7 @@ fun LessonForm(
     val students by services.catalogRepo.students().collectAsState(initial = emptyList())
     val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
     val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val settings by services.settings.collectAsState(initial = null)
     var v by remember(initial) { mutableStateOf(initial) }
     var applyTo by rememberSaveable { mutableStateOf(Scope.ONE) }
     var sheet by rememberSaveable { mutableStateOf<String?>(null) }
@@ -169,12 +192,33 @@ fun LessonForm(
         // The error shows right above Save, where the eye is when it fails.
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             if (error != null) FieldError(error, key = tries)
-            Button(stringResource(if (editing) R.string.lesson_saveEdit else R.string.lesson_save), {
+            val saveLabel =
+                when {
+                    log == true && worth is Worth.Set -> stringResource(R.string.lesson_saveLog, formatMoney(worth.cents, language))
+                    log == true -> stringResource(R.string.lesson_saveLogPlain)
+                    editing -> stringResource(R.string.lesson_saveEdit)
+                    else -> stringResource(R.string.lesson_save)
+                }
+            Button(saveLabel, {
                 tries++
                 onSubmit(v, applyTo)
             }, fullWidth = true)
         }
     }) {
+        if (log != null) {
+            SegmentedControl(
+                listOf(true to stringResource(R.string.lesson_modes_log), false to stringResource(R.string.lesson_modes_schedule)),
+                log,
+                { toLog ->
+                    onLog(toLog)
+                    // A lesson given happened today or earlier, and has already started.
+                    val now = localOf(services.now(), services.zone)
+                    if (toLog && v.date >= now.date) v = v.copy(date = now.date, time = LocalTime((now.hour - 1).coerceAtLeast(0), 0))
+                },
+                stringResource(R.string.lesson_new),
+                size = ControlSize.SM,
+            )
+        }
         if (!editing) RequiredLegend()
         if (series != null) {
             val repeat =
@@ -231,8 +275,11 @@ fun LessonForm(
                 Modifier.weight(1f),
             )
         }
-        Field(stringResource(R.string.lesson_duration)) {
-            DurationStepper(stringResource(R.string.lesson_duration), v.plannedMin, {
+        // A lesson given, or one marked done, has a real duration (AC-006-6).
+        val durationLabel =
+            stringResource(if (log == true || v.status == LessonStatus.DONE) R.string.lesson_realDuration else R.string.lesson_duration)
+        Field(durationLabel) {
+            DurationStepper(durationLabel, v.plannedMin, {
                 v =
                     v.copy(plannedMin = it)
             })
@@ -252,6 +299,14 @@ fun LessonForm(
             helper =
                 when {
                     v.valueCents != null -> stringResource(R.string.lesson_handValueHint)
+                    log == true && fromPrice is Worth.Set ->
+                        howWorked(
+                            place,
+                            student?.let { Who.OfStudent(it.student, it.links.firstOrNull { l -> l.placeId == place?.id }) }
+                                ?: group?.let { Who.OfGroup(it) },
+                            v.plannedMin,
+                            travel,
+                        )
                     fromPrice is Worth.Set -> stringResource(R.string.lesson_fromPrice)
                     else -> null
                 },
@@ -269,7 +324,7 @@ fun LessonForm(
                 readOnly = true,
             )
         }
-        if (!editing) {
+        if (!editing && log != true) {
             Field(stringResource(R.string.lesson_repeat)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                     listOf(
@@ -279,6 +334,9 @@ fun LessonForm(
                     ).forEach { (r, label) -> Chip(stringResource(label), v.repeat == r, { v = v.copy(repeat = r) }) }
                 }
             }
+        }
+        if (editing && place != null) {
+            StatusSection(v, { v = it }, started, place, worth, travel, student?.student?.feeChoice, settings?.feeRule ?: FeeRule())
         }
         if (series != null) {
             Field(stringResource(R.string.lesson_scope)) {
@@ -334,6 +392,102 @@ fun LessonForm(
     }
 }
 
+/** "90 min × R$ 120,00/h", plus travel, for Registrar (AC-006-7). */
+@Composable
+private fun howWorked(
+    place: Place?,
+    who: Who?,
+    minutes: Int,
+    travel: Cents,
+): String? {
+    val price = place?.let { p -> who?.let { currentPrice(p, it) } } ?: return null
+    val language = currentLanguage()
+    val base =
+        if (price.rateType == RateType.HOUR) {
+            stringResource(R.string.lesson_howHour, minutes.toString(), formatMoney(price.cents, language))
+        } else {
+            stringResource(R.string.lesson_howLesson, formatMoney(price.cents, language))
+        }
+    return if (travel > 0) stringResource(R.string.lesson_howTravel, base, formatMoney(travel, language)) else base
+}
+
+/**
+ * Situação with its hint, "Avisou em" under Cancelada, and the fee switch or why there is none
+ * (AC-006-9, 11, 22 to 26).
+ */
+@Composable
+private fun StatusSection(
+    v: LessonValues,
+    onChange: (LessonValues) -> Unit,
+    started: Boolean,
+    place: Place,
+    worth: Worth?,
+    travel: Cents,
+    studentChoice: FeeChoice?,
+    default: FeeRule,
+) {
+    val services = LocalServices.current
+    val language = currentLanguage()
+    val zone = services.zone
+    val statuses =
+        if (started) LessonStatus.entries else listOf(LessonStatus.SCHEDULED, LessonStatus.CANCELLED)
+    Field(stringResource(R.string.lesson_status)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            statuses.forEach { st -> Chip(statusLabel(st), v.status == st, { onChange(v.copy(status = st)) }) }
+        }
+        HintLine(statusHint(v.status))
+    }
+    if (v.status == LessonStatus.CANCELLED) {
+        val now = localOf(services.now(), zone)
+        val date = v.noticeDate ?: now.date
+        val time = v.noticeTime ?: LocalTime(now.hour, now.minute)
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            DateField(
+                stringResource(R.string.lesson_noticeAt),
+                shortDate(date, language),
+                date,
+                { onChange(v.copy(noticeDate = it, noticeTime = time)) },
+                Modifier.weight(1f),
+                title = stringResource(R.string.lesson_noticeAt),
+            )
+            TimeField(
+                stringResource(R.string.lesson_noticeTime),
+                time.hour,
+                time.minute,
+                { h, m -> onChange(v.copy(noticeDate = date, noticeTime = LocalTime(h, m))) },
+                Modifier.weight(1f),
+            )
+        }
+    }
+    if (v.status != LessonStatus.CANCELLED && v.status != LessonStatus.MISSED) return
+    val rule = ruleFor(studentChoice, place.feeChoice, default)
+    val value = (worth as? Worth.Set)?.cents?.let { it - travel }
+    val startAt = localToInstant(v.date, v.time, zone).isoText()
+    val notice =
+        if (v.status == LessonStatus.CANCELLED) {
+            val now = localOf(services.now(), zone)
+            localToInstant(v.noticeDate ?: now.date, v.noticeTime ?: LocalTime(now.hour, now.minute), zone).isoText()
+        } else {
+            null
+        }
+    when (val s = suggestFee(rule, v.status, value, startAt, notice)) {
+        is FeeSuggestion.Charge ->
+            ListGroup(
+                listOf {
+                    ListRow(
+                        stringResource(if (v.status == LessonStatus.MISSED) R.string.fee_chargeMiss else R.string.fee_chargeLate),
+                        subtitle = if (v.keepFee) feeWhy(s) else stringResource(R.string.fee_waived),
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = v.keepFee,
+                        onSwitchChange = { onChange(v.copy(keepFee = it)) },
+                    )
+                },
+            )
+        null -> Unit
+        else -> HintLine(feeReason(s, v.status))
+    }
+}
+
 @Composable
 private fun scheduleErrorText(e: ScheduleError): String =
     stringResource(
@@ -341,6 +495,8 @@ private fun scheduleErrorText(e: ScheduleError): String =
             ScheduleError.NOT_FOUND -> R.string.lesson_errors_notFound
             ScheduleError.PLACE_NOT_LINKED -> R.string.lesson_errors_placeNotLinked
             ScheduleError.STARTED -> R.string.lesson_errors_started
+            ScheduleError.NOT_STARTED -> R.string.lesson_errors_notStarted
+            ScheduleError.FUTURE_DATE -> R.string.lesson_errors_futureDate
         },
     )
 
@@ -357,6 +513,7 @@ fun LessonNewScreen(
     val whoRequired = stringResource(R.string.lesson_errors_whoRequired)
     val placeRequired = stringResource(R.string.lesson_errors_placeRequired)
     val errors = ScheduleError.entries.associateWith { scheduleErrorText(it) }
+    var log by rememberSaveable { mutableStateOf(false) }
     val initial =
         remember {
             LessonValues(
@@ -385,29 +542,47 @@ fun LessonNewScreen(
                 placeId == null -> error = placeRequired
                 else ->
                     scope.launch {
-                        when (
-                            val r =
-                                services.schedule.scheduleLesson(
-                                    LessonDraft(
-                                        who,
-                                        placeId,
-                                        v.date,
-                                        v.time,
-                                        v.plannedMin,
-                                        v.valueCents,
-                                        v.travelFeeCents,
-                                        v.repeat,
-                                        v.notes,
-                                    ),
-                                )
-                        ) {
+                        val d =
+                            LessonDraft(
+                                who,
+                                placeId,
+                                v.date,
+                                v.time,
+                                v.plannedMin,
+                                v.valueCents,
+                                v.travelFeeCents,
+                                if (log) null else v.repeat,
+                                v.notes,
+                            )
+                        // Registrar saves a class already given (AC-006-8); Agendar puts it on the schedule.
+                        when (val r = if (log) services.lessons.logLesson(d) else services.schedule.scheduleLesson(d)) {
                             is ScheduleResult.Ok -> nav.popBackStack()
                             is ScheduleResult.Err -> error = errors.getValue(r.error)
                         }
                     }
             }
-        })
+        }, log = log, onLog = { log = it })
     }
+}
+
+/** The status part of an edit, only when Situação, the notice or the fee switch changed (AC-006-27). */
+private fun statusChange(
+    before: LessonValues,
+    after: LessonValues,
+    zone: String,
+): StatusChange? {
+    val notice =
+        if (after.status == LessonStatus.CANCELLED && after.noticeDate != null && after.noticeTime != null) {
+            localToInstant(after.noticeDate, after.noticeTime, zone).isoText()
+        } else {
+            null
+        }
+    val same =
+        before.status == after.status &&
+            before.noticeDate == after.noticeDate &&
+            before.noticeTime == after.noticeTime &&
+            before.keepFee == after.keepFee
+    return if (same) null else StatusChange(after.status, notice, after.keepFee)
 }
 
 /** Editar aula: date, time, duration, value and notes, for this class or the series (AC-005-10 to 15). */
@@ -440,6 +615,10 @@ fun LessonEditScreen(
                 l.travelFeeCents,
                 l.repeat,
                 l.notes,
+                l.status,
+                l.noticeAt?.let { localOf(it, zone).date },
+                l.noticeAt?.let { localOf(it, zone).time },
+                !l.feeWaived,
             )
         }
     // A class that already happened changes on its own; the series question is for classes ahead.
@@ -479,11 +658,12 @@ fun LessonEditScreen(
                             travelFeeCents = v.travelFeeCents,
                             notes = v.notes,
                             placeId = v.placeId,
+                            status = statusChange(initial, v, zone),
                         ),
                         applyTo,
                     ),
                 )
             }
-        })
+        }, started = l.startAt <= services.now())
     }
 }

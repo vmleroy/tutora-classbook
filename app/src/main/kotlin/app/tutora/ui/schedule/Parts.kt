@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.Dp
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.AgendaBlock
-import app.tutora.designsystem.components.BlockState
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
@@ -184,7 +183,7 @@ fun DayGrid(
                             l.whoTag,
                             l.whoName,
                             subtitle = if (compact) null else lessonSubtitle(l),
-                            state = if (l.id == nextId) BlockState.NEXT else BlockState.DEFAULT,
+                            state = blockState(l, nextId),
                             height = hour * l.plannedMin / 60,
                             onClick = { onOpen(l) },
                             modifier =

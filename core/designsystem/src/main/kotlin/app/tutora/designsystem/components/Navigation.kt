@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import app.tutora.designsystem.R
 import app.tutora.designsystem.TutoraTheme
@@ -208,7 +209,8 @@ fun WeekStrip(
     }
 }
 
-enum class BlockState { DEFAULT, DONE, NEXT }
+/** MUTED is a cancelled or missed class: neutral fill and the title struck through. */
+enum class BlockState { DEFAULT, DONE, NEXT, MUTED }
 
 /** A lesson on the Agenda grid, sized by its duration; the screen places it. */
 @Composable
@@ -225,13 +227,15 @@ fun AgendaBlock(
     val c = TutoraTheme.colors
     val shape = RoundedCornerShape(Radius.md)
     val next = stringResource(R.string.ds_next)
+    val muted = state == BlockState.MUTED
+    val ink = if (muted) c.inkMuted else t.ink
     Column(
         modifier =
             modifier
                 .fillMaxWidth()
                 .height(maxOf(height, Size.agendaMin))
                 .clip(shape)
-                .background(t.soft)
+                .background(if (muted) c.surfaceSunken else t.soft)
                 .then(if (state == BlockState.NEXT) Modifier.border(Size.borderStrong, c.accent, shape) else Modifier)
                 .then(
                     if (onClick != null) {
@@ -248,15 +252,15 @@ fun AgendaBlock(
             if (state == BlockState.DONE) Icon(IconName.CHECK, tint = t.ink, size = Size.iconSm)
             Text(
                 title,
-                style = TutoraTheme.type.caption,
-                color = t.ink,
+                style = TutoraTheme.type.caption.copy(textDecoration = if (muted) TextDecoration.LineThrough else null),
+                color = ink,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false),
             )
             if (state == BlockState.NEXT) Badge(next, tone = BadgeTone.ACCENT)
         }
-        if (subtitle != null) Text(subtitle, style = TutoraTheme.type.meta, color = t.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        if (subtitle != null) Text(subtitle, style = TutoraTheme.type.meta, color = ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

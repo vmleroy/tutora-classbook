@@ -31,6 +31,7 @@ import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Language
 import app.tutora.domain.Settings
 import app.tutora.state.LocalServices
+import app.tutora.ui.schedule.ruleSummary
 import kotlinx.coroutines.launch
 
 /** A string in a given language, whatever the app's (for the language samples). */
@@ -45,11 +46,12 @@ private fun stringIn(
     return context.createConfigurationContext(config).resources.getString(id, *args)
 }
 
-/** Ajustes: Geral (language, default places) and Sobre (AC-001-22, AC-003-11, AC-004-29). */
+/** Ajustes: Geral (language, default places), Aulas e cobrança and Sobre (AC-001-22, AC-003-11, AC-004-29, AC-006-18). */
 @Composable
 fun SettingsScreen(
     appInfo: AppInfo,
     schemaVersion: Int,
+    onFees: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val settings by services.settings.collectAsState(initial = null)
@@ -75,6 +77,18 @@ fun SettingsScreen(
                         )
                     },
                 ),
+        )
+        ListGroup(
+            title = stringResource(R.string.settings_lessonsCharging),
+            rows =
+                listOf {
+                    ListRow(
+                        stringResource(R.string.fees_title),
+                        subtitle = ruleSummary(s.feeRule),
+                        icon = IconName.NO_SHOW,
+                        onClick = onFees,
+                    )
+                },
         )
         Card(label = stringResource(R.string.settings_about)) {
             Text(stringResource(R.string.settings_about), style = TutoraTheme.type.rowTitle, color = TutoraTheme.colors.ink)

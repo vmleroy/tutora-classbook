@@ -67,6 +67,7 @@ import app.tutora.ui.minutesText
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateMoney
+import app.tutora.ui.schedule.FeeChoiceField
 import app.tutora.ui.tag
 import app.tutora.ui.travelText
 import app.tutora.usecases.Kind
@@ -411,6 +412,7 @@ private fun PlaceForm(
                 }
             }
         }
+        FeeChoiceField(d.feeChoice) { d = d.copy(feeChoice = it) }
         Card(label = stringResource(R.string.places_previewTitle)) {
             Text(stringResource(R.string.places_previewTitle), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
             val cycleWord =

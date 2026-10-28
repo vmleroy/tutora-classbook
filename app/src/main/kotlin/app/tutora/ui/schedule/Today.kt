@@ -140,13 +140,17 @@ fun TodayScreen(nav: NavHostController) {
             )
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 lessons.forEach { l ->
+                    // Done, cancelled and missed classes say so; a scheduled one shows its value (AC-006-15).
+                    val badge = statusBadge(l)
                     LessonRow(
                         clockTime(localOf(l.startAt, zone).time, language),
                         l.whoTag,
                         l.whoName,
                         subtitle = "${lessonSubtitle(l)} · ${minutesText(l.plannedMin)}",
+                        status = badge?.let { it.first to it.second },
                         trailing = worthText(l.worth()),
                         onClick = { nav.navigate(LessonDetail(l.id)) },
+                        statusIcon = badge?.third,
                     )
                 }
             }
