@@ -14,6 +14,22 @@ import app.tutora.domain.localToInstant
 import app.tutora.domain.travelFor
 import app.tutora.domain.valueWithoutTravel
 
+/** A row made Dada, with the price it has now and its travel frozen on it (AC-006-2, 3). Inside a transaction. */
+internal suspend fun freezeDone(
+    ctx: Ctx,
+    row: LessonRow,
+): LessonRow? {
+    val lesson = ScheduleRepository(ctx.db).load(row) ?: return null
+    val price = currentPrice(lesson.place, lesson.who)
+    return row.copy(
+        status = LessonStatus.DONE.key,
+        rateCents = price?.cents,
+        rateType = price?.rateType?.name,
+        travelFeeCents = travelFor(lesson.place, row.travelFeeCents),
+        updatedAt = ctx.now(),
+    )
+}
+
 /** What the cancel sheet confirms (AC-006-18). */
 data class Cancellation(
     val reason: CancelReason,
@@ -29,18 +45,7 @@ class Lessons(
     private val db get() = ctx.db
     private val dao get() = db.schedule()
 
-    /** A row made Dada, with the price it has now and its travel frozen on it (AC-006-2, 3). */
-    private suspend fun done(row: LessonRow): LessonRow? {
-        val lesson = ScheduleRepository(db).load(row) ?: return null
-        val price = currentPrice(lesson.place, lesson.who)
-        return row.copy(
-            status = LessonStatus.DONE.key,
-            rateCents = price?.cents,
-            rateType = price?.rateType?.name,
-            travelFeeCents = travelFor(lesson.place, row.travelFeeCents),
-            updatedAt = ctx.now(),
-        )
-    }
+    private suspend fun done(row: LessonRow): LessonRow? = freezeDone(ctx, row)
 
     /** Marcar como dada with the real minutes; a class of a series then stands on its own (AC-006-1, 2, 4). */
     suspend fun markDone(

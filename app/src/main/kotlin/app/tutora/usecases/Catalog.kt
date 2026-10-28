@@ -31,6 +31,8 @@ class Ctx(
             .getDefault()
             .id
     },
+    /** The live-class notification, which use cases update after their transaction (spec 007). */
+    val live: LiveNotifier = LiveNotifier.None,
 )
 
 sealed interface Result<out T> {

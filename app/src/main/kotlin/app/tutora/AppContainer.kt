@@ -5,6 +5,9 @@ import androidx.core.app.LocaleManagerCompat
 import app.tutora.data.openTutoraDatabase
 import app.tutora.domain.isoText
 import app.tutora.domain.uuidv7
+import app.tutora.live.AndroidLiveNotifier
+import app.tutora.usecases.Ctx
+import app.tutora.usecases.Live
 import app.tutora.usecases.StartApp
 import java.security.SecureRandom
 import kotlin.time.Clock
@@ -25,9 +28,18 @@ class AppContainer(
 
     fun newId(): String = uuidv7(System.currentTimeMillis(), ByteArray(10).also(random::nextBytes))
 
+    /** The live notification, shared by the screens and the notification's own buttons. */
+    val notifier = AndroidLiveNotifier(context)
+
+    // Opened once per process, so the notification's buttons use the same database as the screens.
+    private val database by lazy { openTutoraDatabase(context) }
+
+    /** The live timer for the notification's buttons, which run without the screens. */
+    val live by lazy { Live(Ctx(database.first, ::now, ::newId, live = notifier)) }
+
     val startApp =
         StartApp(
-            openDatabase = { openTutoraDatabase(context) },
+            openDatabase = { database },
             phoneTags = {
                 LocaleManagerCompat
                     .getSystemLocales(context)
@@ -37,6 +49,7 @@ class AppContainer(
             },
             now = ::now,
             newId = ::newId,
+            notifier = notifier,
         )
 }
 

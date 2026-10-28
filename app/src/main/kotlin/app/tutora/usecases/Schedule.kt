@@ -7,6 +7,7 @@ import app.tutora.data.TutoraDatabase
 import app.tutora.data.inTransaction
 import app.tutora.domain.Cents
 import app.tutora.domain.HORIZON_DAYS
+import app.tutora.domain.LessonStatus
 import app.tutora.domain.Repeat
 import app.tutora.domain.RuleDates
 import app.tutora.domain.isoText
@@ -56,7 +57,7 @@ data class LessonChange(
 
 enum class Scope { ONE, FOLLOWING }
 
-enum class ScheduleError { NOT_FOUND, PLACE_NOT_LINKED, STARTED, NOT_STARTED, FUTURE_DATE, NO_PRICE }
+enum class ScheduleError { NOT_FOUND, PLACE_NOT_LINKED, STARTED, NOT_STARTED, FUTURE_DATE, NO_PRICE, NOT_SCHEDULED }
 
 sealed interface ScheduleResult {
     data class Ok(
@@ -277,6 +278,15 @@ class Schedule(
      * never brings it back. "Esta e as próximas" ends the series from a class still ahead (AC-005-14).
      */
     suspend fun removeLesson(
+        id: String,
+        scope: Scope,
+    ): ScheduleResult {
+        // A live class removed takes its notification with it (AC-007-16).
+        val wasLive = dao.lesson(id)?.status == LessonStatus.LIVE.key
+        return remove(id, scope).also { if (wasLive) ctx.live.hide() }
+    }
+
+    private suspend fun remove(
         id: String,
         scope: Scope,
     ): ScheduleResult =
