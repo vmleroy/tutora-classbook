@@ -8,10 +8,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -56,6 +58,8 @@ fun <T> SegmentedControl(
     val c = TutoraTheme.colors
     val index = options.indexOfFirst { it.first == value }.coerceAtLeast(0)
     val height = if (size == ControlSize.SM) Size.controlSm else Size.touch
+    // The thumb sits inside the 44 hit area, inset as much as a one-line segment is.
+    val inset = (Size.touch - height) / 2
     BoxWithConstraints(
         modifier =
             modifier
@@ -68,23 +72,30 @@ fun <T> SegmentedControl(
     ) {
         val segment = (maxWidth - Spacing.s1 * (options.size - 1)) / options.size
         val x by animateDpAsState((segment + Spacing.s1) * index, motionSpec(TutoraTheme.reduceMotion), label = "thumb")
-        // The thumb is the control's height; each segment's hit area is at least 44 (AC-002-12).
-        Box(
-            Modifier
-                .offset { IntOffset(x.roundToPx(), ((Size.touch - height) / 2).roundToPx()) }
-                .width(segment)
-                .height(height)
-                .clip(RoundedCornerShape(Radius.sm))
-                .background(c.surface),
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+        // Behind the segments, as tall as they are.
+        Box(Modifier.matchParentSize()) {
+            Box(
+                Modifier
+                    .offset { IntOffset(x.roundToPx(), 0) }
+                    .width(segment)
+                    .fillMaxHeight()
+                    .padding(vertical = inset)
+                    .clip(RoundedCornerShape(Radius.sm))
+                    .background(c.surface),
+            )
+        }
+        // A label too long for its segment wraps and every segment grows with it, so nothing is
+        // clipped (AC-002-16). Each segment's hit area is at least 44 (AC-002-12).
+        Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
             options.forEachIndexed { i, (v, text) ->
                 Box(
                     modifier =
                         Modifier
-                            .width(segment)
-                            .height(Size.touch)
-                            .selectable(selected = i == index, role = Role.RadioButton, onClick = { onChange(v) }),
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .heightIn(min = Size.touch)
+                            .selectable(selected = i == index, role = Role.RadioButton, onClick = { onChange(v) })
+                            .padding(horizontal = Spacing.s2, vertical = inset + Spacing.s1),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -92,7 +103,6 @@ fun <T> SegmentedControl(
                         style = if (size == ControlSize.SM) TutoraTheme.type.caption else TutoraTheme.type.rowTitle,
                         color = if (i == index) c.btnPrimary else c.inkMuted,
                         textAlign = TextAlign.Center,
-                        maxLines = 1,
                     )
                 }
             }

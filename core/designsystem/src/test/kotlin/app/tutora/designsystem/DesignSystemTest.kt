@@ -43,6 +43,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.io.File
 
 @RunWith(AndroidJUnit4::class)
@@ -203,6 +204,31 @@ class DesignSystemTest {
         val large = TutoraTypography(LARGE_TEXT_SCALE)
         assertEquals(normal.body.fontSize.value * 1.15f, large.body.fontSize.value, 0.01f)
         assertEquals(normal.moneyXl.fontSize.value * 1.15f, large.moneyXl.fontSize.value, 0.01f)
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun `AC-002-16 a segment label too long for one line wraps instead of being clipped, at 360 px with Large text`() {
+        val long = "Também com o app fechado"
+        compose.setContent {
+            TutoraTheme(dark = false, largeText = true) {
+                Box(Modifier.size(width = 360.dp, height = 400.dp)) {
+                    app.tutora.designsystem.components.SegmentedControl(
+                        listOf(1 to "Só com o app aberto", 2 to long),
+                        1,
+                        {},
+                        "Início automático",
+                        size = app.tutora.designsystem.components.ControlSize.SM,
+                    )
+                }
+            }
+        }
+        val node = compose.onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes().single()
+        val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+        node.config[SemanticsActions.GetTextLayoutResult].action?.invoke(layouts)
+        val layout = layouts.single()
+        assertTrue("the label is not clipped", !layout.hasVisualOverflow)
+        assertTrue("the label wraps to fit", layout.lineCount > 1)
     }
 
     @Test
