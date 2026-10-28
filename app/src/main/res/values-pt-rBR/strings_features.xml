@@ -418,4 +418,5 @@
     <string name="pay_noLessons">Nenhuma aula ainda.</string>
     <string name="pay_byPlace">paga o local</string>
     <string name="pay_leftShort">%1$s a receber</string>
+    <string name="places_search">Buscar local</string>
 </resources>

@@ -77,6 +77,7 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 - **AC-008-32.** Student, group and place details share one section style: a header with its count and a small + to add (no full-width add button), rows that open the item. Aulas shows the last 3 classes with Pago or A receber and "Ver todas", which opens all the payer's classes with Todas, A receber and Pagas filters. Pagamentos follows the same style. The student's detail has no separate Valor card.
 - **AC-008-33.** Each class in these lists says, after its date, where it was ("28/10 · Ventura") on a student's or group's page, and whose it was ("28/10 · ENEM") on a place's page.
 - **AC-008-34.** Nova aula's "Aluno ou turma" list has a search field and Todos, Alunos and Turmas filters.
+- **AC-008-35.** Turmas has Todos, Devendo and Por local filters beside its search, and Locais has a search field with Todos and Devendo, as on Alunos. *(Victor, 28 Oct 2026.)*
 
 ### Language
 

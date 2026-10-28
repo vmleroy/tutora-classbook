@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
+import app.tutora.domain.Group
 import app.tutora.domain.PayMethod
 import app.tutora.domain.Payer
 import app.tutora.domain.PayerKind
@@ -35,6 +36,7 @@ import app.tutora.usecases.PaymentDraft
 import app.tutora.usecases.Result
 import app.tutora.usecases.ScheduleResult
 import app.tutora.usecases.WhoId
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -487,5 +489,32 @@ class PaymentScreensTest {
         compose.onAllNodes(matching("Pedro Lima"), useUnmergedTree = true).assertCountEquals(0)
         click("Turmas", scroll = false)
         compose.onAllNodes(matching("Ana Souza"), useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    @Test
+    fun `AC-008-35 Turmas filters by Devendo and Locais searches and filters by Devendo`() {
+        val place = salinha()
+        runBlocking {
+            h.t.catalog.saveGroup(Group("", place, "ENEM", null, 18_000, emptyList(), null))
+            h.t.catalog.saveGroup(Group("", online, "Redação", null, 15_000, emptyList(), null))
+            val redacao =
+                h.services.catalogRepo
+                    .groups()
+                    .first()
+                    .first { it.name == "Redação" }
+            h.t.lessons.logLesson(
+                LessonDraft(WhoId.OfGroup(redacao.id), online, LocalDate(2026, 10, 22), LocalTime(8, 0), 60, null, null, null),
+            )
+        }
+        h.show(compose)
+        h.go(compose, RegistryHome("groups"))
+        click("Devendo · 1")
+        exists("Redação")
+        compose.onAllNodes(matching("ENEM"), useUnmergedTree = true).assertCountEquals(0)
+        h.go(compose, RegistryHome("places"))
+        compose.onAllNodes(hasSetTextAction(), useUnmergedTree = true).onFirst().performTextReplacement("vent")
+        h.settle(compose)
+        exists("Ventura")
+        compose.onAllNodes(matching("Online / Remoto"), useUnmergedTree = true).assertCountEquals(0)
     }
 }
