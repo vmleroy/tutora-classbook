@@ -240,14 +240,14 @@ fun LessonForm(
             })
         }
         if (place?.kind == PlaceKind.STUDENT_HOME && place.travelMode == TravelMode.VARIES) {
-            MoneyField(stringResource(R.string.lesson_travel), v.travelFeeCents ?: 0, { v = v.copy(travelFeeCents = it) })
+            MoneyField(stringResource(R.string.lesson_travel), v.travelFeeCents, { v = v.copy(travelFeeCents = it) })
         }
         Card(label = stringResource(R.string.lesson_value)) {
             if (v.valueCents != null) {
                 // A value typed by hand is the field itself; the total shows only when travel adds to it.
-                MoneyField(stringResource(R.string.lesson_handValue), v.valueCents ?: 0, { v = v.copy(valueCents = it) })
+                MoneyField(stringResource(R.string.lesson_handValue), v.valueCents, { v = v.copy(valueCents = it ?: 0) })
                 if ((v.travelFeeCents ?: 0) > 0) {
-                    Text(worth?.let { worthText(it) } ?: "—", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
+                    WorthText(worth, small = true)
                 }
                 Button(
                     stringResource(R.string.lesson_usePrice),
@@ -257,7 +257,7 @@ fun LessonForm(
                 )
             } else {
                 Text(stringResource(R.string.lesson_value), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
-                Text(worth?.let { worthText(it) } ?: "—", style = TutoraTheme.type.moneyLg, color = TutoraTheme.colors.ink)
+                WorthText(worth)
                 Button(stringResource(R.string.lesson_setValue), {
                     v = v.copy(valueCents = (worth as? Worth.Set)?.cents?.minus(v.travelFeeCents ?: 0) ?: 0)
                 }, variant = ButtonVariant.GHOST, size = ControlSize.SM)
@@ -516,5 +516,19 @@ fun LessonEditScreen(
                 )
             }
         }, onRemove = { s -> scope.launch { done(services.schedule.removeLesson(l.id, s)) } })
+    }
+}
+
+/** The lesson's value: the amount large, or "Sem preço" in muted text while there is none. */
+@Composable
+private fun WorthText(
+    worth: Worth?,
+    small: Boolean = false,
+) {
+    val c = TutoraTheme.colors
+    when (worth) {
+        is Worth.Set -> Text(worthText(worth), style = if (small) TutoraTheme.type.moneyMd else TutoraTheme.type.moneyLg, color = c.ink)
+        Worth.Salary -> Text(worthText(worth), style = TutoraTheme.type.bodyStrong, color = c.ink)
+        Worth.Unset, null -> Text(stringResource(R.string.places_noPrice), style = TutoraTheme.type.bodyStrong, color = c.inkMuted)
     }
 }

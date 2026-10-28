@@ -178,7 +178,6 @@
     <string name="lesson_setValue">Set value</string>
     <string name="lesson_usePrice">Use the price</string>
     <string name="lesson_handValue">Value set by you</string>
-    <string name="lesson_noPrice">No price</string>
     <string name="lesson_travel">Travel for this lesson</string>
     <string name="lesson_repeat">Repeat</string>
     <string name="lesson_repeats_none">Doesn\'t repeat</string>

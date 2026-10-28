@@ -317,8 +317,8 @@ private fun StudentForm(
                     if (custom) {
                         MoneyField(
                             stringResource(R.string.students_custom),
-                            link.rateCents ?: 0,
-                            { v -> links = links.map { if (it.placeId == link.placeId) it.copy(rateCents = v) else it } },
+                            link.rateCents,
+                            { v -> links = links.map { if (it.placeId == link.placeId) it.copy(rateCents = v ?: 0) else it } },
                             helper =
                                 stringResource(
                                     if (d.rateType ==
@@ -488,9 +488,10 @@ private fun GroupForm(
         } else {
             MoneyField(
                 stringResource(R.string.groups_price),
-                d.rateCents ?: 0,
+                d.rateCents,
                 { d = d.copy(rateCents = it) },
-                helper = stringResource(if (d.rateCents == null) R.string.places_noPrice else R.string.places_perLessonOption),
+                placeholder = stringResource(R.string.places_noPrice),
+                helper = stringResource(R.string.places_perLessonOption),
             )
         }
         Field(stringResource(R.string.groups_members)) {

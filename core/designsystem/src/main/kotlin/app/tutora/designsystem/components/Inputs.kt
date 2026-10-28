@@ -60,6 +60,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -161,6 +162,7 @@ private fun Input(
     alignEnd: Boolean = false,
     imeAction: ImeAction = ImeAction.Next,
     capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
+    textStyle: TextStyle = TutoraTheme.type.body,
 ) {
     val c = TutoraTheme.colors
     val ink = if (onPrimary) c.onPrimary else c.ink
@@ -168,7 +170,7 @@ private fun Input(
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
-        textStyle = TutoraTheme.type.body.copy(color = ink, textAlign = if (alignEnd) TextAlign.End else TextAlign.Start),
+        textStyle = textStyle.copy(color = ink, textAlign = if (alignEnd) TextAlign.End else TextAlign.Start),
         // Next moves to the following field and Done closes the keyboard (Compose's defaults).
         keyboardOptions = KeyboardOptions(capitalization = capitalization, keyboardType = keyboardType, imeAction = imeAction),
         cursorBrush = SolidColor(ink),
@@ -230,31 +232,39 @@ fun TextField(
 /**
  * A money field: shows [cents] in reais for the app language and fills from the right as
  * digits are typed (1, 2, 0, 0, 0 → R$ 120,00); deleting drops the last digit and digits past
- * [maxCents] are refused (AC-003-8 to 10). The caret stays at the end.
+ * [maxCents] are refused (AC-003-8 to 10). The caret stays at the end. With no amount (null or
+ * zero) it is empty and shows [placeholder] in muted text, "R$ 0,00" unless the caller names
+ * the empty state ("Sem preço"); erasing every digit reports null.
  */
 @Composable
 fun MoneyField(
     label: String,
-    cents: Cents,
-    onCentsChange: (Cents) -> Unit,
+    cents: Cents?,
+    onCentsChange: (Cents?) -> Unit,
     modifier: Modifier = Modifier,
     maxCents: Cents = MAX_FIELD_CENTS,
+    placeholder: String? = null,
     helper: String? = null,
     error: String? = null,
     errorKey: Any? = null,
     required: Boolean = false,
 ) {
-    val shown = formatMoney(cents, currentLanguage())
+    val language = currentLanguage()
+    val shown = if (cents == null || cents == 0L) "" else formatMoney(cents, language)
     Column(modifier) {
         FieldFrame(label, helper, error, false, errorKey, required) { m ->
             Input(
                 TextFieldValue(shown, TextRange(shown.length)),
-                { onCentsChange(typedCents(it.text, cents, maxCents)) },
+                {
+                    val next = typedCents(it.text, cents ?: 0, maxCents)
+                    onCentsChange(if (next == 0L) null else next)
+                },
                 m,
-                null,
+                placeholder ?: formatMoney(0, language),
                 KeyboardType.Number,
                 false,
                 alignEnd = true,
+                textStyle = TutoraTheme.type.moneyMd,
             )
         }
     }

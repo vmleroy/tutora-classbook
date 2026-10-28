@@ -207,5 +207,5 @@ fun worthText(w: app.tutora.domain.Worth): String =
             app.tutora.designsystem.components
                 .formatMoney(w.cents, currentLanguage())
         app.tutora.domain.Worth.Salary -> stringResource(R.string.groups_coveredBySalary)
-        app.tutora.domain.Worth.Unset -> stringResource(R.string.lesson_noPrice)
+        app.tutora.domain.Worth.Unset -> stringResource(R.string.places_noPrice)
     }

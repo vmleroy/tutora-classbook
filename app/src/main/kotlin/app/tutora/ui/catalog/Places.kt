@@ -322,7 +322,7 @@ private fun PlaceForm(
             }
         }
         if (mode == PayMode.SALARY) {
-            MoneyField(stringResource(R.string.places_salaryLabel), d.monthlySalaryCents ?: 0, { d = d.copy(monthlySalaryCents = it) })
+            MoneyField(stringResource(R.string.places_salaryLabel), d.monthlySalaryCents, { d = d.copy(monthlySalaryCents = it) })
         } else {
             if (mode == PayMode.CHOOSE) {
                 Field(stringResource(R.string.places_whoPays)) {
@@ -352,14 +352,17 @@ private fun PlaceForm(
             val rateLabel = stringResource(if (d.payer == Payer.PLACE) R.string.places_placePays else R.string.places_studentPays)
             MoneyField(
                 rateLabel,
-                d.rateCents ?: 0,
+                d.rateCents,
                 { d = d.copy(rateCents = it) },
+                placeholder = stringResource(R.string.places_noPrice),
                 helper =
                     stringResource(
-                        when {
-                            d.rateCents == null -> R.string.places_noPrice
-                            d.rateType == RateType.HOUR -> R.string.places_perHourOption
-                            else -> R.string.places_perLessonOption
+                        if (d.rateType ==
+                            RateType.HOUR
+                        ) {
+                            R.string.places_perHourOption
+                        } else {
+                            R.string.places_perLessonOption
                         },
                     ),
             )
@@ -404,7 +407,7 @@ private fun PlaceForm(
                 if (d.travelMode ==
                     TravelMode.FIXED
                 ) {
-                    MoneyField(stringResource(R.string.places_travelFee), d.travelFeeCents, { d = d.copy(travelFeeCents = it) })
+                    MoneyField(stringResource(R.string.places_travelFee), d.travelFeeCents, { d = d.copy(travelFeeCents = it ?: 0) })
                 }
             }
         }
