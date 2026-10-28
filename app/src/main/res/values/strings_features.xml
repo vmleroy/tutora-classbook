@@ -175,9 +175,6 @@
     <string name="lesson_start">Start</string>
     <string name="lesson_duration">Duration</string>
     <string name="lesson_value">Lesson value</string>
-    <string name="lesson_setValue">Set value</string>
-    <string name="lesson_usePrice">Use the price</string>
-    <string name="lesson_handValue">Value set by you</string>
     <string name="lesson_travel">Travel for this lesson</string>
     <string name="lesson_repeat">Repeat</string>
     <string name="lesson_repeats_none">Doesn\'t repeat</string>
@@ -211,4 +208,10 @@
         <item quantity="other">%1$s lessons</item>
     </plurals>
     <string name="form_requiredLegend">Fields marked * are required</string>
+    <string name="lesson_detail">Lesson</string>
+    <string name="lesson_placeLabel">Place</string>
+    <string name="lesson_setValue">Set value</string>
+    <string name="lesson_fromPrice">From the price</string>
+    <string name="lesson_handValueHint">Set by you · clear it to use the price</string>
+    <string name="lesson_totalWithTravel">With travel: %1$s</string>
 </resources>

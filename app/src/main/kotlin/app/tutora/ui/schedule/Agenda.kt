@@ -41,7 +41,7 @@ import app.tutora.domain.nextLesson
 import app.tutora.domain.weekStart
 import app.tutora.domain.worth
 import app.tutora.state.LocalServices
-import app.tutora.ui.LessonEdit
+import app.tutora.ui.LessonDetail
 import app.tutora.ui.LessonNew
 import app.tutora.ui.countText
 import app.tutora.ui.shortDate
@@ -143,7 +143,7 @@ fun AgendaScreen(nav: NavHostController) {
                     compact = week,
                     startHour = startHour,
                     scroll = scroll,
-                    onOpen = { nav.navigate(LessonEdit(it.id)) },
+                    onOpen = { nav.navigate(LessonDetail(it.id)) },
                 )
             }
         }

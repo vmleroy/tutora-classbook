@@ -367,6 +367,19 @@ class FeatureScreensTest {
     }
 
     @Test
+    fun `AC-005-28 a class opens its detail, and the pencil opens the edit form`() {
+        seedClasses()
+        h.show(compose)
+        compose.onNodeWithText("Matemática · Online / Remoto · 60 min", useUnmergedTree = true).performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("lesson-detail").assertExists()
+        compose.onNodeWithText("14:00 – 15:00", useUnmergedTree = true).assertExists()
+        compose.onNodeWithContentDescription("Editar").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("lesson-edit").assertExists()
+    }
+
+    @Test
     fun `AC-005-25 with no classes Hoje and Agenda keep their empty states`() {
         h.show(compose)
         compose.onNodeWithText("Nenhuma aula hoje", useUnmergedTree = true).assertExists()

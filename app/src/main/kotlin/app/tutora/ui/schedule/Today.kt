@@ -36,7 +36,7 @@ import app.tutora.domain.localOf
 import app.tutora.domain.resolvePrice
 import app.tutora.domain.worth
 import app.tutora.state.LocalServices
-import app.tutora.ui.LessonEdit
+import app.tutora.ui.LessonDetail
 import app.tutora.ui.LessonNew
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.clockTime
@@ -146,7 +146,7 @@ fun TodayScreen(nav: NavHostController) {
                         l.whoName,
                         subtitle = "${lessonSubtitle(l)} · ${minutesText(l.plannedMin)}",
                         trailing = worthText(l.worth()),
-                        onClick = { nav.navigate(LessonEdit(l.id)) },
+                        onClick = { nav.navigate(LessonDetail(l.id)) },
                     )
                 }
             }

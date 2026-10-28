@@ -175,9 +175,6 @@
     <string name="lesson_start">Início</string>
     <string name="lesson_duration">Duração</string>
     <string name="lesson_value">Valor da aula</string>
-    <string name="lesson_setValue">Definir valor</string>
-    <string name="lesson_usePrice">Usar o preço</string>
-    <string name="lesson_handValue">Valor definido por você</string>
     <string name="lesson_travel">Deslocamento desta aula</string>
     <string name="lesson_repeat">Repetir</string>
     <string name="lesson_repeats_none">Não repete</string>
@@ -214,4 +211,10 @@
         <item quantity="other">%1$s aulas</item>
     </plurals>
     <string name="form_requiredLegend">Campos com * são obrigatórios</string>
+    <string name="lesson_detail">Aula</string>
+    <string name="lesson_placeLabel">Local</string>
+    <string name="lesson_setValue">Definir valor</string>
+    <string name="lesson_fromPrice">Pelo preço</string>
+    <string name="lesson_handValueHint">Definido por você · apague para usar o preço</string>
+    <string name="lesson_totalWithTravel">Com deslocamento: %1$s</string>
 </resources>

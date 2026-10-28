@@ -30,6 +30,7 @@ import app.tutora.ui.catalog.RegistryScreen
 import app.tutora.ui.catalog.StudentDetailScreen
 import app.tutora.ui.catalog.StudentEditScreen
 import app.tutora.ui.schedule.AgendaScreen
+import app.tutora.ui.schedule.LessonDetailScreen
 import app.tutora.ui.schedule.LessonEditScreen
 import app.tutora.ui.schedule.LessonNewScreen
 import app.tutora.ui.schedule.TodayScreen
@@ -85,6 +86,10 @@ import kotlin.reflect.KClass
 
 @Serializable data class LessonNew(
     val date: String? = null,
+)
+
+@Serializable data class LessonDetail(
+    val id: String,
 )
 
 @Serializable data class LessonEdit(
@@ -162,6 +167,7 @@ fun TutoraNav(
             }
             composable<Archived> { ArchivedScreen(nav) }
             composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
+            composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
             composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
         }
     }

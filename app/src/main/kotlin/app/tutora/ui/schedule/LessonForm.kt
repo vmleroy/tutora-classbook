@@ -23,7 +23,6 @@ import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
-import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
@@ -40,6 +39,7 @@ import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.TimeField
 import app.tutora.designsystem.components.currentLanguage
+import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Cents
 import app.tutora.domain.Group
@@ -146,26 +146,24 @@ fun LessonForm(
         }
     }
 
-    val worth: Worth? =
+    // What the class is worth with a given hand value; null means "follow the price".
+    fun worthWith(valueCents: Long?): Worth? =
         place?.let { p ->
             when {
                 student != null ->
                     lessonWorth(
                         p,
-                        Who.OfStudent(
-                            student.student,
-                            student.links.firstOrNull {
-                                it.placeId == p.id
-                            },
-                        ),
+                        Who.OfStudent(student.student, student.links.firstOrNull { it.placeId == p.id }),
                         v.plannedMin,
-                        v.valueCents,
+                        valueCents,
                         v.travelFeeCents,
                     )
-                group != null -> lessonWorth(p, Who.OfGroup(group), v.plannedMin, v.valueCents, v.travelFeeCents)
+                group != null -> lessonWorth(p, Who.OfGroup(group), v.plannedMin, valueCents, v.travelFeeCents)
                 else -> null
             }
         }
+    val worth = worthWith(v.valueCents)
+    val fromPrice = worthWith(null)
 
     ScreenScaffold(title, tag, variant = HeaderVariant.PUSH, onBack = onBack, bottomBar = {
         // The error shows right above Save, where the eye is when it fails.
@@ -242,26 +240,32 @@ fun LessonForm(
         if (place?.kind == PlaceKind.STUDENT_HOME && place.travelMode == TravelMode.VARIES) {
             MoneyField(stringResource(R.string.lesson_travel), v.travelFeeCents, { v = v.copy(travelFeeCents = it) })
         }
-        Card(label = stringResource(R.string.lesson_value)) {
-            if (v.valueCents != null) {
-                // A value typed by hand is the field itself; the total shows only when travel adds to it.
-                MoneyField(stringResource(R.string.lesson_handValue), v.valueCents, { v = v.copy(valueCents = it ?: 0) })
-                if ((v.travelFeeCents ?: 0) > 0) {
-                    WorthText(worth, small = true)
-                }
-                Button(
-                    stringResource(R.string.lesson_usePrice),
-                    { v = v.copy(valueCents = null) },
-                    variant = ButtonVariant.GHOST,
-                    size = ControlSize.SM,
-                )
-            } else {
-                Text(stringResource(R.string.lesson_value), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
-                WorthText(worth)
-                Button(stringResource(R.string.lesson_setValue), {
-                    v = v.copy(valueCents = (worth as? Worth.Set)?.cents?.minus(v.travelFeeCents ?: 0) ?: 0)
-                }, variant = ButtonVariant.GHOST, size = ControlSize.SM)
-            }
+        // One field: empty, it follows the price (shown as its placeholder); typed, it is the
+        // value for this class; erased, it goes back to the price.
+        val travel = v.travelFeeCents ?: 0
+        MoneyField(
+            stringResource(R.string.lesson_value),
+            v.valueCents,
+            { v = v.copy(valueCents = it) },
+            placeholder =
+                when (fromPrice) {
+                    is Worth.Set -> formatMoney(fromPrice.cents - travel, language)
+                    Worth.Salary -> stringResource(R.string.groups_coveredBySalary)
+                    Worth.Unset, null -> stringResource(R.string.lesson_setValue)
+                },
+            helper =
+                when {
+                    v.valueCents != null -> stringResource(R.string.lesson_handValueHint)
+                    fromPrice is Worth.Set -> stringResource(R.string.lesson_fromPrice)
+                    else -> null
+                },
+        )
+        if (travel > 0 && worth is Worth.Set) {
+            Text(
+                stringResource(R.string.lesson_totalWithTravel, formatMoney(worth.cents, language)),
+                style = TutoraTheme.type.bodyStrong,
+                color = TutoraTheme.colors.ink,
+            )
         }
         if (!editing) {
             Field(stringResource(R.string.lesson_repeat)) {
@@ -516,19 +520,5 @@ fun LessonEditScreen(
                 )
             }
         }, onRemove = { s -> scope.launch { done(services.schedule.removeLesson(l.id, s)) } })
-    }
-}
-
-/** The lesson's value: the amount large, or "Sem preço" in muted text while there is none. */
-@Composable
-private fun WorthText(
-    worth: Worth?,
-    small: Boolean = false,
-) {
-    val c = TutoraTheme.colors
-    when (worth) {
-        is Worth.Set -> Text(worthText(worth), style = if (small) TutoraTheme.type.moneyMd else TutoraTheme.type.moneyLg, color = c.ink)
-        Worth.Salary -> Text(worthText(worth), style = TutoraTheme.type.bodyStrong, color = c.ink)
-        Worth.Unset, null -> Text(stringResource(R.string.places_noPrice), style = TutoraTheme.type.bodyStrong, color = c.inkMuted)
     }
 }
