@@ -18,10 +18,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
-import app.tutora.designsystem.components.EmptyState
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
-import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
@@ -67,17 +65,6 @@ fun ScreenScaffold(
                     .padding(horizontal = Spacing.s5, vertical = Spacing.s3),
             ) { bottomBar() }
         }
-    }
-}
-
-@Composable
-fun EarningsScreen() {
-    ScreenScaffold(stringResource(R.string.tab_earnings), "earnings-screen") {
-        EmptyState(
-            stringResource(R.string.empty_earnings_title),
-            icon = IconName.WALLET,
-            body = stringResource(R.string.empty_earnings_body),
-        )
     }
 }
 

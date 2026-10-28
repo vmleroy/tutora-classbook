@@ -2,6 +2,7 @@ package app.tutora.state
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import app.tutora.data.CatalogRepository
+import app.tutora.data.EarningsRepository
 import app.tutora.data.PaymentRepository
 import app.tutora.data.ScheduleRepository
 import app.tutora.data.SettingsRepository
@@ -36,6 +37,7 @@ class AppServices(
     val lessons = Lessons(ctx)
     val live = Live(ctx)
     val paymentRepo = PaymentRepository(db)
+    val earningsRepo = EarningsRepository(db)
     val payments = Payments(ctx)
 
     val settings: Flow<Settings> = settingsRepo.observe()

@@ -8,6 +8,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -158,7 +159,11 @@ class LiveScreensTest {
         exists("Ao vivo · Ana Souza · 00:23:00")
         h.go(compose, LessonDetail(id))
         compose.onNode(hasPlainText("Abrir aula ao vivo")).performClick()
-        h.settle(compose)
+        // The live screen reads its class from the database first; give it the time it needs.
+        for (i in 0 until 60) {
+            if (compose.onAllNodesWithTag("live-screen").fetchSemanticsNodes().isNotEmpty()) break
+            h.settle(compose)
+        }
         compose.onNodeWithTag("live-screen").assertExists()
     }
 

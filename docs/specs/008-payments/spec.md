@@ -68,9 +68,12 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 ### Credits and bonus (Victor, 28 Oct 2026)
 
 - **AC-008-28.** Ajustes has "Créditos e bônus", off at first. Off, no credit shows anywhere, and the payment sheet refuses an amount above what is owed ("Maior que o valor devido…").
-- **AC-008-29.** On, money a payment has left after the classes given up to its date is credit and waits: it never pays later classes by itself. The detail shows it under the balance ("Crédito: R$ 40,00 · Bônus: 90 min").
+- **AC-008-29.** On, money a payment has left after the classes given up to its date is credit and waits: it never pays later classes by itself. The detail shows it in Créditos e bônus ("Crédito: R$ 40,00 · Bônus: 90 min", AC-008-37).
 - **AC-008-30.** "Usar crédito" puts the credit on the classes the teacher ticks, oldest first, as far as it goes. Undoing a class gives its credit back.
-- **AC-008-31.** "Dar bônus" gives free money, free minutes, or both; it is credit, not money received. Minutes cover a class by the hour at its price, up to the class's own minutes; a class with a fixed price is covered only when the minutes cover all of it.
+- **AC-008-31.** "Dar bônus" gives free money or free minutes, one or the other, never both in one bonus; it is credit, not money received. Minutes cover a class by the hour at its price, up to the class's own minutes; a class with a fixed price is covered only when the minutes cover all of it.
+- **AC-008-37.** Credit and bonus have their own section on a student's and a group's detail, "Créditos e bônus", apart from what is owed: what credit and minutes are left, Usar crédito, a small + to give a bonus, each bonus (tapping it edits or removes it) and each time credit went on a class (tapping it gives it back, and the class owes that again). Removing a bonus that already paid for classes also takes back its newest uses, so credit never goes below zero. *(Victor, 28 Oct 2026.)*
+- **AC-008-38.** Turning Créditos e bônus off while a student or group holds a bonus first warns how many ("1 aluno tem bônus") and that the bonuses and the credit used on classes will be deleted; only "Desligar e apagar" turns it off and deletes them. *(Victor, 28 Oct 2026.)*
+- **AC-008-39.** With Créditos e bônus on, marking a class done (Marcar como dada or Encerrar aula) for a student or group with credit or a bonus asks "Usar bônus nesta aula?", with what is available; ticking it lets the teacher choose money or minutes and how much, and that comes off the class once it is done. *(Victor, 28 Oct 2026.)*
 
 ### Layout (Victor, 28 Oct 2026)
 

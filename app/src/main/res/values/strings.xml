@@ -16,8 +16,6 @@
     <string name="empty_schedule_body">Your lessons for the week show up here, day by day.</string>
     <string name="empty_registry_title">No students yet</string>
     <string name="empty_registry_body">Your students, the places where each one studies and who owes you show up here.</string>
-    <string name="empty_earnings_title">Nothing earned yet</string>
-    <string name="empty_earnings_body">How much you earned and how much you will still receive show up here.</string>
 
     <string name="settings_about">About</string>
     <string name="settings_about_value">Version %1$s · build %2$s · database v%3$d</string>

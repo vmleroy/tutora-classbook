@@ -10,15 +10,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import app.tutora.AppInfo
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.components.BottomSheet
+import app.tutora.designsystem.components.Button
+import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.IconName
@@ -59,6 +67,26 @@ fun SettingsScreen(
 
     fun save(next: Settings) = scope.launch { services.saveSettings(next) }
 
+    val bonusHolders by remember { services.paymentRepo.bonusHolders() }.collectAsState(initial = 0)
+    var confirmingOff by rememberSaveable { mutableStateOf(false) }
+    if (confirmingOff) {
+        BottomSheet(
+            pluralStringResource(R.plurals.settings_creditsOffTitle, bonusHolders, bonusHolders),
+            { confirmingOff = false },
+            subtitle = stringResource(R.string.settings_creditsOffBody),
+            actions =
+                listOf(
+                    { m -> Button(stringResource(R.string.catalog_cancel), { confirmingOff = false }, m, variant = ButtonVariant.OUTLINE) },
+                    { m ->
+                        Button(stringResource(R.string.settings_creditsOff), {
+                            confirmingOff = false
+                            scope.launch { services.payments.turnCreditsOff() }
+                        }, m, variant = ButtonVariant.DANGER)
+                    },
+                ),
+        )
+    }
+
     // A change to the timer or its automatic start sets or clears the alarm at once.
     fun saveTimer(next: Settings) =
         scope.launch {
@@ -82,22 +110,45 @@ fun SettingsScreen(
                             onSwitchChange = { save(s.copy(showDefaultPlaces = it)) },
                         )
                     },
+                    {
+                        ListRow(
+                            stringResource(R.string.settings_clockDurations),
+                            subtitle = stringResource(R.string.settings_clockDurationsHint),
+                            icon = IconName.CLOCK,
+                            trailing = RowTrailing.SWITCH,
+                            switchValue = s.clockDurations,
+                            onSwitchChange = { save(s.copy(clockDurations = it)) },
+                        )
+                    },
                 ),
         )
         ListGroup(
             title = stringResource(R.string.settings_lessons),
             rows =
-                listOf {
-                    // Off hides Iniciar aula everywhere (AC-007-3, 17).
-                    ListRow(
-                        stringResource(R.string.settings_liveTimer),
-                        subtitle = stringResource(R.string.settings_liveTimerHint),
-                        icon = IconName.PLAY,
-                        trailing = RowTrailing.SWITCH,
-                        switchValue = s.liveTimer,
-                        onSwitchChange = { saveTimer(s.copy(liveTimer = it)) },
-                    )
-                },
+                listOf(
+                    {
+                        // Off hides Iniciar aula everywhere (AC-007-3, 17).
+                        ListRow(
+                            stringResource(R.string.settings_liveTimer),
+                            subtitle = stringResource(R.string.settings_liveTimerHint),
+                            icon = IconName.PLAY,
+                            trailing = RowTrailing.SWITCH,
+                            switchValue = s.liveTimer,
+                            onSwitchChange = { saveTimer(s.copy(liveTimer = it)) },
+                        )
+                    },
+                    {
+                        // On, Marcar como dada shows on a class still ahead (AC-006-25).
+                        ListRow(
+                            stringResource(R.string.settings_earlyDone),
+                            subtitle = stringResource(R.string.settings_earlyDoneHint),
+                            icon = IconName.CALENDAR_CHECK,
+                            trailing = RowTrailing.SWITCH,
+                            switchValue = s.earlyDone,
+                            onSwitchChange = { save(s.copy(earlyDone = it)) },
+                        )
+                    },
+                ),
         )
         // Início automático, only while the timer is on (AC-007-19).
         if (s.liveTimer) {
@@ -134,7 +185,8 @@ fun SettingsScreen(
                         icon = IconName.WALLET,
                         trailing = RowTrailing.SWITCH,
                         switchValue = s.credits,
-                        onSwitchChange = { save(s.copy(credits = it)) },
+                        // Off with bonuses given asks first: they will be deleted (AC-008-38).
+                        onSwitchChange = { on -> if (!on && bonusHolders > 0) confirmingOff = true else save(s.copy(credits = on)) },
                     )
                 },
         )

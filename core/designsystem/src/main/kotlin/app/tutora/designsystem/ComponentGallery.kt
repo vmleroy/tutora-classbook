@@ -56,6 +56,8 @@ import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyField
 import app.tutora.designsystem.components.MoneySize
 import app.tutora.designsystem.components.MoneyTone
+import app.tutora.designsystem.components.MonthBar
+import app.tutora.designsystem.components.MonthBars
 import app.tutora.designsystem.components.ProgressBar
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.ScreenHeader
@@ -101,6 +103,7 @@ val galleryComponents =
         "ProgressBar",
         "Card",
         "EarningsSummary",
+        "MonthBars",
         "SectionHeader",
         "LessonRow",
         "ListGroup",
@@ -241,6 +244,14 @@ fun GallerySections() {
     Section("ProgressBar") {
         ProgressBar(0.63f, "Ganho em relação ao previsto")
         ProgressBar(0.3f, "Fino", thin = true)
+    }
+    Section("MonthBars") {
+        MonthBars(
+            listOf("mai" to 3_000L, "jun" to 4_200L, "jul" to 3_600L, "ago" to 5_100L, "set" to 4_800L, "out" to 5_020L).map { (m, v) ->
+                MonthBar(m, v * 100, v * 80)
+            },
+            "Últimos 6 meses",
+        )
     }
     Section("Card") {
         CardElevation.entries.forEach { e ->

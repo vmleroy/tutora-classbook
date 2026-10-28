@@ -225,4 +225,22 @@ class LessonScreensTest {
         h.go(compose, LessonDetail(id))
         exists("No-show · charges R$120.00")
     }
+
+    @Test
+    fun `AC-009-16 with Duracoes em HH MM on, durations read as hours and minutes`() {
+        val id =
+            runBlocking {
+                val r =
+                    h.t.schedule.scheduleLesson(
+                        LessonDraft(WhoId.OfStudent(ana), online, LocalDate(2026, 10, 26), LocalTime(14, 0), 90, null, null, null),
+                    )
+                (r as ScheduleResult.Ok).lessonId ?: ""
+            }
+        h.show(compose)
+        h.go(compose, LessonDetail(id))
+        compose.onNode(hasPlainText("90 min · 1h30"), useUnmergedTree = true).assertExists()
+        runBlocking { h.services.saveSettings(h.services.currentSettings().copy(clockDurations = true)) }
+        h.settle(compose)
+        compose.onNode(hasPlainText("01:30"), useUnmergedTree = true).assertExists()
+    }
 }

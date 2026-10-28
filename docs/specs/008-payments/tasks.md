@@ -22,6 +22,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 18. Layout: `SectionHeader` action and tappable aside (design system), small + on connection sections, Aulas and Pagamentos sections with Ver todas page, names on class rows, no Valor card, place note in Locais, search in Nova aula's picker. Test: `PaymentScreensTest.kt`. (AC-008-32 to 34)
 - [x] 19. Filters on Turmas (Todos, Devendo, Por local) and search with Todos / Devendo on Locais. Test: `PaymentScreensTest.kt`. (AC-008-35)
 - [x] 20. Locais: the places where students pay show what is owed for their classes (`PaymentRepository.owedAtPlaces`). Test: `PaymentScreensTest.kt`. (AC-008-36)
+- [x] 21. Créditos e bônus as its own section (edit, remove, give back), a bonus is money or minutes, the warning when turning it off, and using a bonus while marking a class done. Test: `PaymentsTest.kt`, `PaymentScreensTest.kt`. (AC-008-37, 38, 39)
 
 ## Pending on a device
 

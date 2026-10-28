@@ -58,6 +58,8 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     abstract fun payments(): PaymentDao
 
+    abstract fun earnings(): EarningsDao
+
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
         const val VERSION = 5

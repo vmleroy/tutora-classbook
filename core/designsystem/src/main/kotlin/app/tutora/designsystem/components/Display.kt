@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
@@ -237,6 +238,11 @@ fun EarningsSummary(
     expectedCents: Cents? = null,
     expectedLabel: String? = null,
     stats: List<EarningsStat> = emptyList(),
+    /** Ganhos: the share received, drawn success on danger, read aloud as [receivedLabel]. */
+    receivedShare: Float? = null,
+    receivedLabel: String = "",
+    /** A line under the stats ("comissão dos locais: R$ 30,00"). */
+    footnote: String? = null,
 ) {
     val c = TutoraTheme.colors
     Card(modifier, label = title) {
@@ -246,6 +252,9 @@ fun EarningsSummary(
             if (expectedLabel != null) Text(expectedLabel, style = TutoraTheme.type.meta, color = c.inkMuted)
             ProgressBar(earnedCents.toFloat() / expectedCents, expectedLabel ?: title)
         }
+        if (receivedShare != null) {
+            ProgressBar(receivedShare, receivedLabel, tone = ProgressTone.SUCCESS, track = ProgressTrack.DANGER)
+        }
         if (stats.isNotEmpty()) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 stats.forEach { s ->
@@ -254,6 +263,61 @@ fun EarningsSummary(
                         Money(s.cents, size = MoneySize.MD, tone = s.tone, compact = true)
                     }
                 }
+            }
+        }
+        if (footnote != null) Text(footnote, style = TutoraTheme.type.meta, color = c.inkMuted)
+    }
+}
+
+/** One month in [MonthBars]: its label, the bar's total and the part filled in. */
+data class MonthBar(
+    val label: String,
+    val total: Cents,
+    val filled: Cents,
+)
+
+/**
+ * A few months side by side as bars (the 6-month trend on Ganhos): each bar's height follows its
+ * total against the largest, with the filled part (received) drawn inside it. The whole chart is
+ * read aloud as [description].
+ */
+@Composable
+fun MonthBars(
+    bars: List<MonthBar>,
+    description: String,
+    modifier: Modifier = Modifier,
+) {
+    val c = TutoraTheme.colors
+    val max = bars.maxOfOrNull { it.total }?.takeIf { it > 0 } ?: 1L
+    val chart = Size.touch * 2
+    Row(
+        modifier
+            .fillMaxWidth()
+            .clearAndSetSemantics { contentDescription = description },
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        bars.forEach { b ->
+            Column(
+                Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Spacing.s1),
+            ) {
+                Box(Modifier.fillMaxWidth().height(chart), contentAlignment = Alignment.BottomCenter) {
+                    val share = b.total.toFloat() / max
+                    val part = if (b.total > 0) (b.filled.toFloat() / b.total).coerceIn(0f, 1f) else 0f
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(chart * share)
+                            .clip(RoundedCornerShape(Radius.xs))
+                            .background(c.accentSoft),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        Box(Modifier.fillMaxWidth().height(chart * share * part).background(c.success))
+                    }
+                }
+                Text(b.label, style = TutoraTheme.type.caption, color = c.inkMuted, maxLines = 1)
             }
         }
     }

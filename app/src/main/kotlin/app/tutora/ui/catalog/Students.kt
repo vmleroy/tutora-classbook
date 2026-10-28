@@ -87,6 +87,7 @@ import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
 import app.tutora.ui.errorText
+import app.tutora.ui.payments.CreditsSection
 import app.tutora.ui.payments.PackageCard
 import app.tutora.ui.payments.PayerBalance
 import app.tutora.ui.payments.PayerHistory
@@ -108,9 +109,9 @@ fun StudentDetailScreen(
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
-    val item by services.catalogRepo.student(id).collectAsState(initial = null)
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
-    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
+    val item by remember(id) { services.catalogRepo.student(id) }.collectAsState(initial = null)
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
+    val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
     val settings by services.settings.collectAsState(initial = null)
     var picking by rememberSaveable { mutableStateOf<String?>(null) }
     val s = item ?: return
@@ -172,6 +173,7 @@ fun StudentDetailScreen(
         // What the student owes and their package, near the top (spec 008).
         PayerBalance(PayerRef(PayerKind.STUDENT, id), stringResource(R.string.pay_record))
         if (s.student.rateType == RateType.PACKAGE) PackageCard(id, s.student.packagePriceCents ?: 0)
+        CreditsSection(PayerRef(PayerKind.STUDENT, id))
         val elsewhere by remember(id) { services.paymentRepo.elsewhere(id) }.collectAsState(initial = emptyList())
         val language = currentLanguage()
         val placePays = stringResource(R.string.pay_byPlace)
@@ -310,7 +312,7 @@ private fun StudentForm(
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val settings by services.settings.collectAsState(initial = null)
     var d by remember(initial) { mutableStateOf(initial) }
     var links by remember(initialLinks) { mutableStateOf(initialLinks) }
@@ -538,8 +540,8 @@ fun GroupDetailScreen(
     val scope = rememberCoroutineScope()
     val language = currentLanguage()
     val group by remember(id) { services.catalogRepo.groupFlow(id) }.collectAsState(initial = null)
-    val everyone by services.catalogRepo.students().collectAsState(initial = emptyList())
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val everyone by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     var picking by rememberSaveable { mutableStateOf<String?>(null) }
     var moving by rememberSaveable { mutableStateOf<String?>(null) }
     val g = group ?: return
@@ -595,6 +597,7 @@ fun GroupDetailScreen(
         // A group owes as one, unless its place pays the teacher or a salary covers it (AC-008-1).
         val groupOwes = place?.let { it.payer == Payer.PLACE || it.kind == PlaceKind.SCHOOL } == false
         if (groupOwes) PayerBalance(PayerRef(PayerKind.GROUP, id), stringResource(R.string.pay_record))
+        if (groupOwes) CreditsSection(PayerRef(PayerKind.GROUP, id))
         // Local: one place, moved with Trocar local; Alunos: the members (AC-004-35).
         ConnectionSection(
             stringResource(R.string.lesson_groupPlace),
@@ -701,8 +704,8 @@ private fun GroupForm(
     var error by remember { mutableStateOf<CatalogError?>(null) }
     // Each Save that fails counts, so the same error blinks again.
     var tries by remember { mutableIntStateOf(0) }
-    val place by services.catalogRepo.place(d.placeId).collectAsState(initial = null)
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val place by remember(d.placeId) { services.catalogRepo.place(d.placeId) }.collectAsState(initial = null)
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val school = place?.kind == PlaceKind.SCHOOL
     ScreenScaffold(
         stringResource(

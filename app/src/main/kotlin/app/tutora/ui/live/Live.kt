@@ -75,6 +75,7 @@ import app.tutora.ui.TodayGraph
 import app.tutora.ui.clockText
 import app.tutora.ui.clockTime
 import app.tutora.ui.durationText
+import app.tutora.ui.minutesText
 import app.tutora.ui.payments.DoneMoney
 import app.tutora.ui.schedule.DoneSheet
 import app.tutora.ui.schedule.lessonSubtitle
@@ -213,9 +214,12 @@ fun LiveScreen(
         val counted = elapsedMs(t, services.now())
         DoneSheet(l, liveMinutes(counted), stringResource(R.string.live_end), {
             ending = false
-        }, stringResource(R.string.live_continue)) { minutes ->
+        }, stringResource(R.string.live_continue)) { minutes, bonus ->
             ending = false
-            scope.launch { services.live.end(id, minutes) }
+            scope.launch {
+                services.live.end(id, minutes)
+                bonus?.let { services.payments.useCredit(it.payer, listOf(id), it.minutes, it.amount) }
+            }
         }
     }
     if (discarding) {
@@ -287,7 +291,7 @@ private fun Clock(
         TimerRing(
             clockText(ms),
             ms / (l.plannedMin * MINUTE_MS).toFloat(),
-            caption = stringResource(R.string.live_planned, l.plannedMin),
+            caption = stringResource(R.string.live_planned, minutesText(l.plannedMin)),
             label = "${stringResource(R.string.live_time)} ${clockText(ms)}",
         )
         val price = currentPrice(l.place, l.who)

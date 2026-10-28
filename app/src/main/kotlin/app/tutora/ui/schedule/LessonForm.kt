@@ -62,6 +62,7 @@ import app.tutora.ui.catalog.DurationStepper
 import app.tutora.ui.catalog.Field
 import app.tutora.ui.catalog.RequiredLegend
 import app.tutora.ui.clockTime
+import app.tutora.ui.minutesText
 import app.tutora.ui.payments.methodName
 import app.tutora.ui.placeName
 import app.tutora.ui.shortDate
@@ -120,9 +121,9 @@ fun LessonForm(
     val language = currentLanguage()
     // Each Save that fails counts, so the same error blinks again.
     var tries by remember { mutableIntStateOf(0) }
-    val students by services.catalogRepo.students().collectAsState(initial = emptyList())
-    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
-    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    val students by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
+    val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     var v by remember(initial) { mutableStateOf(initial) }
     var applyTo by rememberSaveable { mutableStateOf(Scope.ONE) }
     var sheet by rememberSaveable { mutableStateOf<String?>(null) }
@@ -431,7 +432,7 @@ private fun howWorked(
     val language = currentLanguage()
     val base =
         if (price.rateType == RateType.HOUR) {
-            stringResource(R.string.lesson_howHour, minutes.toString(), formatMoney(price.cents, language))
+            stringResource(R.string.lesson_howHour, minutesText(minutes), formatMoney(price.cents, language))
         } else {
             stringResource(R.string.lesson_howLesson, formatMoney(price.cents, language))
         }

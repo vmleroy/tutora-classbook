@@ -8,6 +8,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -437,7 +438,7 @@ class PaymentScreensTest {
         openAna()
         exists("Crédito: R$ 50,00")
         exists("Usar crédito")
-        exists("Dar bônus")
+        compose.onNodeWithContentDescription("Dar bônus").assertExists()
     }
 
     @Test
@@ -527,5 +528,98 @@ class PaymentScreensTest {
         pay(12_000)
         h.settle(compose)
         exists("Em dia")
+    }
+
+    @Test
+    fun `AC-008-31 Dar bonus from the student's page is money or minutes`() {
+        creditsOn()
+        openAna()
+        compose.onNodeWithContentDescription("Dar bônus").performScrollTo().performClick()
+        h.settle(compose)
+        click("Minutos", scroll = false)
+        repeat(2) { compose.onNodeWithContentDescription("Aumentar").performClick() }
+        h.settle(compose)
+        compose.onAllNodes(matching("Dar bônus"), useUnmergedTree = true).onLast().performClick()
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .ledgerNow(anaRef)
+                .creditMinutes == 30
+        }
+        val ledger = runBlocking { h.services.paymentRepo.ledgerNow(anaRef) }
+        org.junit.Assert.assertEquals(0L, ledger.creditCents)
+        org.junit.Assert.assertEquals(30, ledger.creditMinutes)
+        h.settle(compose)
+        exists("Bônus: 30 min")
+    }
+
+    @Test
+    fun `AC-008-37 Creditos e bonus is its own section, and a bonus there can be removed`() {
+        creditsOn()
+        runBlocking { h.services.payments.giveBonus(anaRef, 5_000, 0, "aniversário") }
+        openAna()
+        compose.onNodeWithTag("credits-section").assertExists()
+        exists("Bônus · R$ 50,00")
+        click("Bônus · R$ 50,00")
+        click("Remover bônus", scroll = false)
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .ledgerNow(anaRef)
+                .creditCents == 0L
+        }
+        h.settle(compose)
+        exists("Sem crédito nem bônus")
+    }
+
+    @Test
+    fun `AC-008-38 turning Creditos e bonus off with a bonus given warns, and confirming deletes the bonuses`() {
+        creditsOn()
+        runBlocking { h.services.payments.giveBonus(anaRef, 5_000, 0) }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.SettingsGraph)
+        compose.onNodeWithContentDescription("Créditos e bônus").performScrollTo().performClick()
+        h.settle(compose)
+        exists("1 aluno tem bônus")
+        click("Desligar e apagar", scroll = false)
+        h.awaitDb(compose) { !h.services.currentSettings().credits }
+        org.junit.Assert.assertEquals(
+            0,
+            runBlocking {
+                h.services.paymentRepo
+                    .ledgerNow(anaRef)
+                    .bonuses.size
+            },
+        )
+    }
+
+    @Test
+    fun `AC-008-39 marking a class done offers the bonus, and the minutes chosen come off the class`() {
+        creditsOn()
+        runBlocking { h.services.payments.giveBonus(anaRef, 0, 30) }
+        val id =
+            runBlocking {
+                val r =
+                    h.t.schedule.scheduleLesson(
+                        LessonDraft(WhoId.OfStudent(ana.id), online, LocalDate(2026, 10, 26), LocalTime(8, 0), 60, null, null, null),
+                    )
+                (r as ScheduleResult.Ok).lessonId ?: ""
+            }
+        h.show(compose)
+        h.go(compose, LessonDetail(id))
+        click("Marcar como dada", scroll = false)
+        click("Usar bônus nesta aula? · 30 min", scroll = false)
+        compose.onAllNodes(matching("Confirmar · R$ 120,00"), useUnmergedTree = true).onFirst().performClick()
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .ledgerNow(anaRef)
+                .creditMinutes == 0
+        }
+        org.junit.Assert.assertEquals(
+            6_000L,
+            runBlocking {
+                h.services.paymentRepo
+                    .ledgerNow(anaRef)
+                    .owedCents
+            },
+        )
     }
 }

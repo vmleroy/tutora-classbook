@@ -54,6 +54,10 @@ A class on the schedule can now end the way it really did: given, cancelled or m
 - **AC-006-22.** Confirming saves the status (Cancelada, or Faltou for "Aluno faltou"), the reason and the charge. A charge stays the same if the price changes later.
 - **AC-006-23.** There is no cancellation rule to set: Ajustes has no Cancelamentos e faltas, and student and place forms have no fee choice. Each charge is decided in the sheet.
 
+### Added 28 Oct 2026 (Victor)
+
+- **AC-006-25.** Ajustes › Aulas has "Marcar como dada antes do horário", off at first. On, Marcar como dada is offered on any scheduled class, even one still ahead, and confirming it makes the class Dada as in AC-006-2. Off, AC-006-9 and 11 hold: it waits for the class to start.
+
 ### Language
 
 - **AC-006-24.** Statuses, reasons, charges and the sheets follow the app language; switching it never changes a value or a charge.

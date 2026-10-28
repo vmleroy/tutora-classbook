@@ -52,6 +52,8 @@ class SettingsRepository(
                 "auto_start" to quote(s.autoStart.key),
                 "auto_start_skipped" to org.json.JSONArray(s.autoStartSkipped.toList()).toString(),
                 "credits" to s.credits.toString(),
+                "early_done" to s.earlyDone.toString(),
+                "clock_durations" to s.clockDurations.toString(),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
         private fun customColors(json: String): Map<CustomPart, String> {
@@ -81,6 +83,8 @@ class SettingsRepository(
                 autoStart = AutoStart.fromKey(v["auto_start"]?.let(::unquote)),
                 autoStartSkipped = v["auto_start_skipped"]?.let(::skipped) ?: emptySet(),
                 credits = v["credits"] == "true",
+                earlyDone = v["early_done"] == "true",
+                clockDurations = v["clock_durations"] == "true",
                 customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
             )
         }
