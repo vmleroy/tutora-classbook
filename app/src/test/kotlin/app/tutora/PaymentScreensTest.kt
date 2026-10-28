@@ -569,4 +569,57 @@ class PaymentScreensTest {
         h.settle(compose)
         exists("Sem crédito nem bônus")
     }
+
+    @Test
+    fun `AC-008-38 turning Creditos e bonus off with a bonus given warns, and confirming deletes the bonuses`() {
+        creditsOn()
+        runBlocking { h.services.payments.giveBonus(anaRef, 5_000, 0) }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.SettingsGraph)
+        compose.onNodeWithContentDescription("Créditos e bônus").performScrollTo().performClick()
+        h.settle(compose)
+        exists("1 aluno tem bônus")
+        click("Desligar e apagar", scroll = false)
+        h.awaitDb(compose) { !h.services.currentSettings().credits }
+        org.junit.Assert.assertEquals(
+            0,
+            runBlocking {
+                h.services.paymentRepo
+                    .ledgerNow(anaRef)
+                    .bonuses.size
+            },
+        )
+    }
+
+    @Test
+    fun `AC-008-39 marking a class done offers the bonus, and the minutes chosen come off the class`() {
+        creditsOn()
+        runBlocking { h.services.payments.giveBonus(anaRef, 0, 30) }
+        val id =
+            runBlocking {
+                val r =
+                    h.t.schedule.scheduleLesson(
+                        LessonDraft(WhoId.OfStudent(ana.id), online, LocalDate(2026, 10, 26), LocalTime(8, 0), 60, null, null, null),
+                    )
+                (r as ScheduleResult.Ok).lessonId ?: ""
+            }
+        h.show(compose)
+        h.go(compose, LessonDetail(id))
+        click("Marcar como dada", scroll = false)
+        click("Usar bônus nesta aula? · 30 min", scroll = false)
+        compose.onAllNodes(matching("Confirmar · R$ 120,00"), useUnmergedTree = true).onFirst().performClick()
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .ledgerNow(anaRef)
+                .creditMinutes == 0
+        }
+        org.junit.Assert.assertEquals(
+            6_000L,
+            runBlocking {
+                h.services.paymentRepo
+                    .ledgerNow(anaRef)
+                    .owedCents
+            },
+        )
+    }
 }

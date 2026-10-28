@@ -183,6 +183,9 @@ interface PaymentDao {
     @Query("DELETE FROM credit WHERE id = :id")
     suspend fun deleteCredit(id: String)
 
+    @Query("DELETE FROM credit")
+    suspend fun deleteAllCredits()
+
     /** A class no longer owed gives back the credit and minutes put on it. */
     @Query("DELETE FROM credit WHERE kind = 'use' AND lesson_id = :lessonId")
     suspend fun deleteUsesOn(lessonId: String)
@@ -367,6 +370,16 @@ class PaymentRepository(
                 .filter { it.kind == "bonus" || (it.lessonId != null && it.lessonId in starts) }
                 .sortedByDescending { it.createdAt }
                 .map { CreditRecord(it.id, it.kind == "bonus", it.cents, it.minutes, it.note, it.createdAt, it.lessonId?.let(starts::get)) }
+        }
+
+    /** How many students and groups hold a bonus, for the warning when Créditos e bônus is turned off (AC-008-38). */
+    fun bonusHolders(): Flow<Int> =
+        dao.observeAllCredits().map { rows ->
+            rows
+                .filter { it.kind == "bonus" }
+                .map { it.payerRef() }
+                .toSet()
+                .size
         }
 
     suspend fun lastMethod(payer: PayerRef): PayMethod? = dao.lastMethod(payer.kind.key, payer.id)?.let(PayMethod::fromKey)

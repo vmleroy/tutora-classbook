@@ -443,4 +443,12 @@
     <string name="pay_editBonus">Edit bonus</string>
     <string name="pay_removeBonus">Remove bonus</string>
     <string name="pay_bonusKind">Bonus type</string>
+    <string name="settings_creditsOffBody">Turning it off deletes the bonuses and the credit used on lessons. This can\'t be undone.</string>
+    <string name="settings_creditsOff">Turn off and delete</string>
+    <string name="pay_useBonusHere">Use a bonus on this lesson?</string>
+    <string name="pay_useBonusAmount">How much to use</string>
+    <plurals name="settings_creditsOffTitle">
+        <item quantity="one">%1$d student has a bonus</item>
+        <item quantity="other">%1$d students have a bonus</item>
+    </plurals>
 </resources>

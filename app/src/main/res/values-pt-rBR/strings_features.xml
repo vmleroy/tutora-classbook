@@ -452,4 +452,13 @@
     <string name="pay_editBonus">Editar bônus</string>
     <string name="pay_removeBonus">Remover bônus</string>
     <string name="pay_bonusKind">Tipo de bônus</string>
+    <string name="settings_creditsOffBody">Ao desligar, os bônus e os créditos usados em aulas serão apagados. Isso não pode ser desfeito.</string>
+    <string name="settings_creditsOff">Desligar e apagar</string>
+    <string name="pay_useBonusHere">Usar bônus nesta aula?</string>
+    <string name="pay_useBonusAmount">Quanto usar</string>
+    <plurals name="settings_creditsOffTitle">
+        <item quantity="one">%1$d aluno tem bônus</item>
+        <item quantity="many">%1$d alunos têm bônus</item>
+        <item quantity="other">%1$d alunos têm bônus</item>
+    </plurals>
 </resources>

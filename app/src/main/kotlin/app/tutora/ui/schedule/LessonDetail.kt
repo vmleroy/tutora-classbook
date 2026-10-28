@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,16 +25,22 @@ import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
+import app.tutora.designsystem.components.Checkbox
+import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
+import app.tutora.designsystem.components.MoneyField
 import app.tutora.designsystem.components.RowTrailing
+import app.tutora.designsystem.components.SegmentedControl
+import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
+import app.tutora.domain.Cents
 import app.tutora.domain.Lesson
 import app.tutora.domain.LessonStatus
 import app.tutora.domain.Payer
@@ -55,7 +62,9 @@ import app.tutora.ui.clockTime
 import app.tutora.ui.durationText
 import app.tutora.ui.live.rememberStartLesson
 import app.tutora.ui.longDate
+import app.tutora.ui.payments.BonusChoice
 import app.tutora.ui.payments.LessonMoney
+import app.tutora.ui.payments.bonusOffer
 import app.tutora.ui.placeName
 import app.tutora.ui.tag
 import app.tutora.ui.weekdayLong
@@ -213,8 +222,12 @@ fun LessonDetailScreen(
     }
     if (cancelling) CancelSheet(l, started) { cancelling = false }
     marking?.let { start ->
-        DoneSheet(l, start, stringResource(R.string.lesson_markDone), { marking = null }) { minutes ->
-            scope.launch { services.lessons.markDone(l.id, minutes) }
+        DoneSheet(l, start, stringResource(R.string.lesson_markDone), { marking = null }) { minutes, bonus ->
+            scope.launch {
+                services.lessons.markDone(l.id, minutes)
+                // The bonus the teacher chose comes off the class once it is done (AC-008-39).
+                bonus?.let { services.payments.useCredit(it.payer, listOf(l.id), it.minutes, it.amount) }
+            }
             marking = null
         }
     }
@@ -291,11 +304,28 @@ fun DoneSheet(
     title: String,
     onDismiss: () -> Unit,
     dismissLabel: String? = null,
-    onConfirm: (Int) -> Unit,
+    onConfirm: (Int, BonusChoice?) -> Unit,
 ) {
     val language = currentLanguage()
     var minutes by remember(l.id, start) { mutableStateOf(start) }
     val value = l.copy(plannedMin = minutes).worth()
+    // With Créditos e bônus on and credit or a bonus to use, ask whether to use it here (AC-008-39).
+    val offer = bonusOffer(l)
+    var useBonus by rememberSaveable { mutableStateOf(false) }
+    // Money or minutes; until the teacher picks, whichever the payer has (the offer loads after the sheet opens).
+    var picked by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    val inMinutes = picked ?: (offer != null && offer.cents <= 0)
+    var cents by rememberSaveable { mutableStateOf<Cents?>(null) }
+    var bonusMinutes by rememberSaveable { mutableStateOf<Long?>(null) }
+    val worthCents = (value as? Worth.Set)?.cents ?: 0
+    val moneyUse = cents ?: minOf(offer?.cents ?: 0, worthCents)
+    val minutesUse = bonusMinutes ?: minOf((offer?.minutes ?: 0).toLong(), minutes.toLong())
+    val choice =
+        if (useBonus && offer != null) {
+            BonusChoice(offer.payer, inMinutes, if (inMinutes) minutesUse else moneyUse).takeIf { it.amount > 0 }
+        } else {
+            null
+        }
     val confirm: @Composable (Modifier) -> Unit = { m ->
         Button(
             if (value is Worth.Set) {
@@ -303,7 +333,7 @@ fun DoneSheet(
             } else {
                 stringResource(R.string.lesson_confirm)
             },
-            { onConfirm(minutes) },
+            { onConfirm(minutes, choice) },
             m,
         )
     }
@@ -321,6 +351,37 @@ fun DoneSheet(
             DurationStepper(stringResource(R.string.lesson_realDuration), minutes, { minutes = it })
         }
         Fact(stringResource(R.string.lesson_value), worthText(value), muted = value == Worth.Unset)
+        if (offer != null) {
+            Checkbox(stringResource(R.string.pay_useBonusHere) + " · " + offer.label, useBonus, { useBonus = it })
+            if (useBonus) {
+                if (offer.cents > 0 && offer.minutes > 0) {
+                    SegmentedControl(
+                        listOf(false to stringResource(R.string.pay_useMoney), true to stringResource(R.string.pay_useMinutes)),
+                        inMinutes,
+                        { picked = it },
+                        stringResource(R.string.pay_useBonusAmount),
+                        size = ControlSize.SM,
+                    )
+                }
+                if (inMinutes) {
+                    Stepper(
+                        minutesUse,
+                        { bonusMinutes = it },
+                        step = 5,
+                        min = 0,
+                        max = minOf(offer.minutes, minutes).toLong(),
+                        valueLabel = stringResource(R.string.pay_useBonusAmount),
+                    )
+                } else {
+                    MoneyField(
+                        stringResource(R.string.pay_useBonusAmount),
+                        moneyUse,
+                        { cents = it },
+                        maxCents = minOf(offer.cents, worthCents.takeIf { it > 0 } ?: offer.cents),
+                    )
+                }
+            }
+        }
     }
 }
 

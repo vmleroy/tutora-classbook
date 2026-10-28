@@ -213,9 +213,12 @@ fun LiveScreen(
         val counted = elapsedMs(t, services.now())
         DoneSheet(l, liveMinutes(counted), stringResource(R.string.live_end), {
             ending = false
-        }, stringResource(R.string.live_continue)) { minutes ->
+        }, stringResource(R.string.live_continue)) { minutes, bonus ->
             ending = false
-            scope.launch { services.live.end(id, minutes) }
+            scope.launch {
+                services.live.end(id, minutes)
+                bonus?.let { services.payments.useCredit(it.payer, listOf(id), it.minutes, it.amount) }
+            }
         }
     }
     if (discarding) {

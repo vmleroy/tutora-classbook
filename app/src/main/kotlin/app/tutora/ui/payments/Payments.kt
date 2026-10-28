@@ -85,6 +85,7 @@ import app.tutora.ui.StudentDetail
 import app.tutora.ui.localeOf
 import app.tutora.ui.placeName
 import app.tutora.usecases.PaymentDraft
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
@@ -1056,4 +1057,37 @@ fun DoneMoney(lesson: Lesson) {
         val mine = l.owed.filter { it.lessonId == lesson.id }.map { it.lessonId }
         PaymentSheet(payer, l, onDismiss = { paying = false }, preChosen = mine)
     }
+}
+
+/** What the teacher chose to use on a class as it is marked done: money (cents) or minutes (AC-008-39). */
+data class BonusChoice(
+    val payer: PayerRef,
+    val minutes: Boolean,
+    val amount: Long,
+)
+
+/** The credit and bonus minutes a class's payer can use on it, with a label; null when there is none or the switch is off. */
+data class BonusOffer(
+    val payer: PayerRef,
+    val cents: Cents,
+    val minutes: Int,
+    val label: String,
+)
+
+@Composable
+fun bonusOffer(lesson: Lesson): BonusOffer? {
+    val services = LocalServices.current
+    val language = currentLanguage()
+    val settings by services.settings.collectAsState(initial = null)
+    val payer = payerOfLesson(lesson)?.first
+    val ledger by remember(payer) { payer?.let { services.paymentRepo.ledger(it) } ?: flowOf(null) }.collectAsState(initial = null)
+    val l = ledger ?: return null
+    if (settings?.credits != true || payer == null || payer.kind == PayerKind.PLACE) return null
+    if (l.creditCents <= 0 && l.creditMinutes <= 0) return null
+    val label =
+        listOfNotNull(
+            l.creditCents.takeIf { it > 0 }?.let { formatMoney(it, language) },
+            l.creditMinutes.takeIf { it > 0 }?.let { stringResource(R.string.places_minutes, it.toString()) },
+        ).joinToString(" · ")
+    return BonusOffer(payer, l.creditCents.coerceAtLeast(0), l.creditMinutes.coerceAtLeast(0), label)
 }

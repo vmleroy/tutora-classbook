@@ -218,6 +218,18 @@ class Payments(
             PaymentResult.Ok(id)
         }
 
+    /**
+     * Turns Créditos e bônus off: every bonus and every credit put on a class is deleted, after the
+     * warning in Ajustes (AC-008-38). Money paid beyond what was owed then pays the next classes
+     * by itself again.
+     */
+    suspend fun turnCreditsOff() =
+        db.inTransaction {
+            dao.deleteAllCredits()
+            val settings = SettingsRepository(db)
+            settings.save(settings.load().copy(credits = false), ctx.now())
+        }
+
     /** A bonus is money or minutes, never both, and never nothing (AC-008-31). */
     private fun oneKind(
         cents: Cents,
@@ -292,14 +304,16 @@ class Payments(
         payer: PayerRef,
         lessonIds: List<String>,
         minutes: Boolean,
+        /** At most this much money (cents) or this many minutes; null = as far as the credit goes (AC-008-39). */
+        limit: Long? = null,
     ): PaymentResult =
         db.inTransaction {
             if (!SettingsRepository(db).load().credits) return@inTransaction PaymentResult.Err(PaymentError.CREDITS_OFF)
             val ledger = PaymentRepository(db).ledgerNow(payer)
             val chosen = ledger.owed.filter { it.lessonId in lessonIds && (ledger.allocation.left[it.lessonId] ?: 0) > 0 }
             if (chosen.isEmpty()) return@inTransaction PaymentResult.Err(PaymentError.NOT_OWED)
-            var money = ledger.creditCents
-            var mins = ledger.creditMinutes
+            var money = limit?.let { minOf(it, ledger.creditCents) } ?: ledger.creditCents
+            var mins = limit?.let { minOf(it.toInt(), ledger.creditMinutes) } ?: ledger.creditMinutes
             if ((if (minutes) mins.toLong() else money) <= 0) return@inTransaction PaymentResult.Err(PaymentError.NO_CREDIT)
             var first: String? = null
             for (c in chosen.sortedBy { it.startAt }) {
