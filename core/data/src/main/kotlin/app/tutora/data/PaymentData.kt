@@ -299,6 +299,10 @@ class PaymentRepository(
             }
         }
 
+    /** What is still owed on each class, whoever owes it (spec 009, A receber). */
+    fun leftByLesson(): Flow<Map<String, Cents>> =
+        allLedgers().map { (ledgers, _) -> ledgers.values.flatMap { it.allocation.left.entries }.associate { it.key to it.value } }
+
     /** What is still owed for the classes given at each place, whoever owes them (AC-008-36). */
     fun owedAtPlaces(): Flow<Map<String, Cents>> =
         allLedgers().map { (ledgers, placeOf) ->
