@@ -33,7 +33,9 @@ import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.RowTrailing
+import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
+import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.AutoStart
@@ -190,6 +192,10 @@ fun SettingsScreen(
                     )
                 },
         )
+        // Relatórios: printed on the PDF and the copied text when set (AC-010-16).
+        SectionHeader(stringResource(R.string.rep_settings))
+        TextField(stringResource(R.string.rep_settingsName), s.teacherName, { save(s.copy(teacherName = it)) })
+        TextField(stringResource(R.string.rep_settingsPix), s.pixKey, { save(s.copy(pixKey = it)) })
         Card(label = stringResource(R.string.settings_about)) {
             Text(stringResource(R.string.settings_about), style = TutoraTheme.type.rowTitle, color = TutoraTheme.colors.ink)
             Text(

@@ -4,7 +4,7 @@ Tutora is built spec by spec. Each folder holds `spec.md` (what and why), `plan.
 
 ## Roadmap
 
-Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + Compose: the Expo version of 001–005 is archived at the `expo-final` tag, and those specs are re-planned (`/plan`) and implemented again in Kotlin. Only 001 to 009 are written so far; write the next one with `/spec` when its turn comes.
+Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + Compose: the Expo version of 001–005 is archived at the `expo-final` tag, and those specs are re-planned (`/plan`) and implemented again in Kotlin. Only 001 to 010 are written so far; write the next one with `/spec` when its turn comes.
 
 | # | Spec | Status | Mockups |
 | --- | --- | --- | --- |
@@ -17,7 +17,7 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 007 | [Live timer](007-live-timer/spec.md): pause and resume, end with the real duration, discard, ongoing notification, Ajustes switch | done | Live |
 | 008 | [Payments and packages](008-payments/spec.md): who owes, record payment (oldest first or chosen classes), credit, balances on lists and Hoje, packages | done | StudentDetail, PlaceDetail, Students, Places, Main, LessonDetail, Live, AddLesson, StudentEdit |
 | 009 | [Earnings](009-earnings/spec.md): Hoje's earnings card, Ganhos with period and type filters, earned / received / to receive, where it came from, 6-month trend; commission, package, bonus and salary rules | done | Earnings, Main |
-| 010 | Reports: per student or place, PDF, XLSX, copy as text | not written | Report, ReportPdf, EarningsPdf |
+| 010 | [Reports](010-reports/spec.md): per student, group or place with periods; PDF, Excel (own small writer) and copy as text; earnings report from Ganhos; name and Pix key in Ajustes | done | Report, ReportPdf, EarningsPdf |
 | 011 | Backup: manual JSON and restore, automatic backup to a folder (after the SAF spike) | not written | Backup |
 | 012 | Calendar sync and .ics | not written | Calendar |
 | 013 | Appearance screens: theme picker, Suas cores, text size | not written | Theme, ColorPicker |

@@ -27,6 +27,7 @@ import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.EarningsStat
 import app.tutora.designsystem.components.EarningsSummary
 import app.tutora.designsystem.components.EmptyState
+import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
@@ -55,6 +56,7 @@ import app.tutora.ui.EarningsGraph
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.localeOf
 import app.tutora.ui.payments.payerRoute
+import app.tutora.ui.reports.EarningsReportSheet
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
@@ -97,7 +99,13 @@ fun EarningsScreen(nav: NavHostController) {
     val period = Period(kind, LocalDate.parse(anchor))
     val view by remember(period, filter) { services.earningsRepo.view(period, filter, today, zone) }.collectAsState(initial = null)
     val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
-    ScreenScaffold(stringResource(R.string.tab_earnings), "earnings-screen") {
+    var reporting by rememberSaveable { mutableStateOf(false) }
+    // Relatório: the earnings report for the period and type on screen (AC-010-13).
+    ScreenScaffold(
+        stringResource(R.string.tab_earnings),
+        "earnings-screen",
+        actions = listOf(HeaderAction(IconName.FILE, stringResource(R.string.rep_screen)) { reporting = true }),
+    ) {
         SegmentedControl(
             listOf(
                 PeriodKind.MONTH to stringResource(R.string.earn_month),
@@ -137,6 +145,21 @@ fun EarningsScreen(nav: NavHostController) {
             ).forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
         }
         val v = view ?: return@ScreenScaffold
+        if (reporting) {
+            val typeLabel =
+                stringResource(
+                    when (filter) {
+                        TypeFilter.ALL -> R.string.earn_all
+                        TypeFilter.PRIVATE -> R.string.earn_private
+                        TypeFilter.JOB -> R.string.earn_job
+                    },
+                )
+            EarningsReportSheet(
+                v,
+                "${rangeLabel(period, language)} · $typeLabel",
+                "${stringResource(R.string.rep_earningsTitle)} - ${rangeLabel(period, language)}",
+            ) { reporting = false }
+        }
         val s = v.summary
         if (s.earned == 0L && v.sources.isEmpty()) {
             EmptyState(stringResource(R.string.earn_empty), icon = IconName.WALLET)

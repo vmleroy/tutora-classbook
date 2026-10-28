@@ -144,7 +144,7 @@ Every v1 feature maps to a platform API or a maintained library that works offli
 | Live timer, background | An ongoing notification (no foreground service, spec 007) using `setUsesChronometer` from the start minus pauses, with Pausar / Retomar through a `BroadcastReceiver` and Encerrar opening the app | The system ticks the chronometer with no app code running; elapsed time comes from timestamps, so nothing needs to stay alive. Re-posted on start-up after a reboot | On Android 14+ the user can swipe it away; the class stays live in the app |
 | Reminders | `AlarmManager` (inexact) or WorkManager, `NotificationManager` | Next 8 weeks of lessons, rescheduled whenever lessons change; weekly "who owes you" | Inexact alarms can be minutes late; fine for reminders |
 | PDF reports | `android.graphics.pdf.PdfDocument` drawn with Canvas, or an HTML template printed through `WebView` | Themed tables and the 6-month trend | Pagination for long ranges; test a 12-month report |
-| XLSX export (**spike**) | `fastexcel` (dhatim) or a minimal hand-written XLSX writer | Sheets for lessons, payments, students, places, monthly summary; numbers as numbers | Check the library runs on Android (it targets plain Java) before spec 010 |
+| XLSX export | A minimal hand-written XLSX writer (spec 010; no library) | Sheets per report; numbers as numbers, dates as dates | Check files open in Google Sheets and LibreOffice |
 | Calendar sync | `CalendarContract` provider | A "Tutora – Aulas" calendar on the chosen account; a use case diffs the next 8 weeks against `calendar_link` | Never read events back as Tutora data |
 | .ics export | Hand-written (plain text) | One VEVENT per lesson, UID = lesson id | Times in UTC |
 | Backup and restore | `kotlinx.serialization`, Storage Access Framework, WorkManager periodic work | JSON to a folder picked once; keep the last N; catch up on open if a run was skipped | Whether Google Drive shows in the folder picker varies by device |
@@ -222,7 +222,7 @@ Build a signed release APK locally and install it over the previous one; the sig
 ## Risks
 
 - **Rebuilding 001–005.** The specs and lessons carry over, so the rebuild is faster than the first pass; each spec still ships on its own PR and APK.
-- **XLSX on Android.** Spike the library before spec 010; a minimal writer is the fallback.
+- **XLSX on Android.** Settled in spec 010 with a minimal writer of our own; it still needs checking in Google Sheets and LibreOffice on a device.
 - **Auto-backup into Google Drive** through the folder picker varies by phone. Fallbacks: a local folder plus a sync app, or a reminder that opens the share sheet.
 - **Battery savers** delay background work. The app catches up on every open and warns after 14 days without a backup.
 - **Losing the signing key** means the next install wipes data. Back it up on day one.

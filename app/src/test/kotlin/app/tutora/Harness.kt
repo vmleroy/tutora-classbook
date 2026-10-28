@@ -20,6 +20,9 @@ class Harness(
     val t: TestDb,
 ) {
     val services = AppServices(t.db, t.ctx, 1)
+
+    /** What reports shared and copied (spec 010). */
+    val exports = FakeExports()
     lateinit var nav: NavHostController
 
     init {
@@ -36,6 +39,7 @@ class Harness(
         TutoraTheme(dark = false, largeText = settings.textScale == "large") {
             CompositionLocalProvider(
                 LocalServices provides services,
+                app.tutora.adapters.export.LocalExports provides exports,
             ) { TutoraNav(AppInfo("1.1.0", "7"), services.schemaVersion, nav = nav) }
         }
     }
