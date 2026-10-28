@@ -43,7 +43,7 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 
 - **AC-008-13.** Each row on Alunos and Turmas shows its balance (Deve R$ 240, Em dia or Crédito R$ 40). Alunos has a "Devendo" filter with a count ("Devendo · 3") listing only students who owe.
 - **AC-008-14.** A place that pays the teacher shows "A receber da salinha: R$ 360" (or of the cursinho, etc., after its type) on Locais. Its detail has Receber da salinha, which pays everything it owes by default.
-- **AC-008-15.** Hoje shows "3 alunos com pagamento pendente · R$ 560" when any student, group or place owes. Tapping it opens Alunos with Devendo on. With nothing owed it is not shown.
+- **AC-008-15.** Hoje shows "3 alunos com pagamento pendente · R$ 560" when any student, group or place owes ("3 com pagamento pendente" when a group or place is among them). Tapping it opens whoever owes: their detail when only one does, Alunos with Devendo on when all are students, and otherwise a list of everyone who owes. With nothing owed it is not shown. *(Changed 28 Oct 2026 after trying the build: a group or place owing led to an empty Devendo list.)*
 - **AC-008-16.** A lesson's detail shows "Pago" or "A receber" by its value, and the payer's balance ("Saldo da aluna · 2 aulas a receber · R$ 240,00"), which opens the payer.
 
 ### Paying with the class

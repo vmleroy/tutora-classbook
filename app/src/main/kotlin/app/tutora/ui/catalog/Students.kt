@@ -87,7 +87,8 @@ import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
 import app.tutora.ui.errorText
 import app.tutora.ui.payments.PackageCard
-import app.tutora.ui.payments.PayerMoney
+import app.tutora.ui.payments.PayerBalance
+import app.tutora.ui.payments.PayerHistory
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateMoney
@@ -166,6 +167,9 @@ fun StudentDetailScreen(
                 }
             }
         }
+        // What the student owes and their package, near the top (spec 008).
+        PayerBalance(PayerRef(PayerKind.STUDENT, id), stringResource(R.string.pay_record))
+        if (s.student.rateType == RateType.PACKAGE) PackageCard(id, s.student.packagePriceCents ?: 0)
         Card(label = stringResource(R.string.students_rate)) {
             Text(stringResource(R.string.students_rate), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
             Text(
@@ -181,9 +185,6 @@ fun StudentDetailScreen(
             )
             s.student.notes?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted) }
         }
-        // What the student owes, their package and payments (spec 008).
-        PayerMoney(nav, PayerRef(PayerKind.STUDENT, id), stringResource(R.string.pay_record))
-        if (s.student.rateType == RateType.PACKAGE) PackageCard(id, s.student.packagePriceCents ?: 0)
         val salary = stringResource(R.string.groups_coveredBySalary)
         val unset = stringResource(R.string.places_noPrice)
         val name = s.student.name
@@ -218,6 +219,7 @@ fun StudentDetailScreen(
             { nav.navigate(GroupDetail(it.id)) },
             { c -> scope.launch { services.catalog.removeMember(c.id, id) } },
         ) { c -> RemoveConfirm(stringResource(R.string.connections_leaveGroupTitle, name, c.title)) }
+        PayerHistory(nav, PayerRef(PayerKind.STUDENT, id))
     }
     when (picking) {
         "places" -> {
@@ -583,9 +585,8 @@ fun GroupDetailScreen(
             )
         }
         // A group owes as one, unless its place pays the teacher or a salary covers it (AC-008-1).
-        if (place?.let { it.payer == Payer.PLACE || it.kind == PlaceKind.SCHOOL } == false) {
-            PayerMoney(nav, PayerRef(PayerKind.GROUP, id), stringResource(R.string.pay_record))
-        }
+        val groupOwes = place?.let { it.payer == Payer.PLACE || it.kind == PlaceKind.SCHOOL } == false
+        if (groupOwes) PayerBalance(PayerRef(PayerKind.GROUP, id), stringResource(R.string.pay_record))
         // Local: one place, moved with Trocar local; Alunos: the members (AC-004-35).
         ConnectionSection(
             stringResource(R.string.lesson_groupPlace),
@@ -605,6 +606,7 @@ fun GroupDetailScreen(
             { nav.navigate(StudentDetail(it.id)) },
             { c -> scope.launch { services.catalog.removeMember(id, c.id) } },
         ) { c -> RemoveConfirm(stringResource(R.string.connections_leaveGroupTitle, c.title, g.name)) }
+        if (groupOwes) PayerHistory(nav, PayerRef(PayerKind.GROUP, id))
     }
     when (picking) {
         "place" ->

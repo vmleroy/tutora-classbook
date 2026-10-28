@@ -144,19 +144,14 @@ fun paidBadge(
 
 private fun OwedClass.localDate(zone: String) = localOf(startAt, zone).date
 
-/**
- * A payer's money on its detail: the balance with its pay button, its classes with Pago or A
- * receber, and Pagamentos (AC-008-9, 11, 14).
- */
+/** At the top of a payer's detail: what it owes, with its pay button (AC-008-11, 14). */
 @Composable
-fun PayerMoney(
-    nav: NavHostController,
+fun PayerBalance(
     payer: PayerRef,
     payLabel: String,
     isPlace: Boolean = false,
 ) {
     val services = LocalServices.current
-    val language = currentLanguage()
     val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
     var paying by rememberSaveable { mutableStateOf(false) }
     val l = ledger ?: return
@@ -182,6 +177,19 @@ fun PayerMoney(
         }
         Button(payLabel, { paying = true }, icon = IconName.WALLET, fullWidth = true)
     }
+    if (paying) PaymentSheet(payer, l, onDismiss = { paying = false })
+}
+
+/** At the end of a payer's detail: its classes with Pago or A receber, and Pagamentos (AC-008-9, 11). */
+@Composable
+fun PayerHistory(
+    nav: NavHostController,
+    payer: PayerRef,
+) {
+    val services = LocalServices.current
+    val language = currentLanguage()
+    val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
+    val l = ledger ?: return
     val owed = l.owed.sortedByDescending { it.startAt }
     if (owed.isNotEmpty()) {
         ListGroup(
@@ -217,7 +225,6 @@ fun PayerMoney(
             },
         )
     }
-    if (paying) PaymentSheet(payer, l, onDismiss = { paying = false })
 }
 
 private const val RECENT = 10
@@ -594,16 +601,26 @@ fun payerRoute(payer: PayerRef): Any =
         PayerKind.PLACE -> PlaceDetailRoute(payer.id)
     }
 
-/** Hoje: "3 alunos com pagamento pendente · R$ 560", opening Alunos › Devendo; hidden when nobody owes (AC-008-15). */
+/**
+ * Hoje: "3 alunos com pagamento pendente · R$ 560", hidden when nobody owes (AC-008-15). It opens
+ * whoever owes: their detail when only one does, Alunos › Devendo when all are students, and
+ * otherwise a list of everyone who owes.
+ */
 @Composable
 fun PendingAlert(nav: NavHostController) {
     val services = LocalServices.current
+    val language = currentLanguage()
     val balances by services.paymentRepo.balances().collectAsState(initial = emptyMap())
+    val students by services.catalogRepo.students().collectAsState(initial = emptyList())
+    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
+    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    var listing by rememberSaveable { mutableStateOf(false) }
     val owing = balances.filterValues { it > 0 }
     if (owing.isEmpty()) return
     val count = owing.size
+    val onlyStudents = owing.keys.all { it.kind == PayerKind.STUDENT }
     val message =
-        if (owing.keys.all { it.kind == PayerKind.STUDENT }) {
+        if (onlyStudents) {
             pluralStringResource(R.plurals.pay_pendingStudents, count, count)
         } else {
             pluralStringResource(R.plurals.pay_pendingAlert, count, count)
@@ -611,9 +628,44 @@ fun PendingAlert(nav: NavHostController) {
     AlertBanner(
         message,
         Modifier.testTag("pending-alert"),
-        value = formatMoney(owing.values.sum(), currentLanguage(), compact = true),
-        onClick = { nav.navigate(RegistryHome(owing = true)) },
+        value = formatMoney(owing.values.sum(), language, compact = true),
+        onClick = {
+            val only = owing.keys.singleOrNull()
+            when {
+                only != null -> nav.navigate(payerRoute(only))
+                onlyStudents -> nav.navigate(RegistryHome(owing = true))
+                else -> listing = true
+            }
+        },
     )
+    if (listing) {
+        val names =
+            students.associate { PayerRef(PayerKind.STUDENT, it.student.id) to it.student.name } +
+                groups.associate { PayerRef(PayerKind.GROUP, it.id) to it.name } +
+                places.associate { PayerRef(PayerKind.PLACE, it.place.id) to placeName(it.place) }
+        BottomSheet(message, { listing = false }) {
+            ListGroup(
+                owing.entries.sortedByDescending { it.value }.map { (payer, cents) ->
+                    {
+                        ListRow(
+                            names[payer].orEmpty(),
+                            icon =
+                                when (payer.kind) {
+                                    PayerKind.STUDENT -> IconName.USERS
+                                    PayerKind.GROUP -> IconName.USERS
+                                    PayerKind.PLACE -> IconName.PIN
+                                },
+                            badge = balanceBadge(cents),
+                            onClick = {
+                                listing = false
+                                nav.navigate(payerRoute(payer))
+                            },
+                        )
+                    }
+                },
+            )
+        }
+    }
 }
 
 /**

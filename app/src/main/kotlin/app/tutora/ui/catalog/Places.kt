@@ -61,7 +61,8 @@ import app.tutora.ui.countText
 import app.tutora.ui.errorText
 import app.tutora.ui.kindName
 import app.tutora.ui.minutesText
-import app.tutora.ui.payments.PayerMoney
+import app.tutora.ui.payments.PayerBalance
+import app.tutora.ui.payments.PayerHistory
 import app.tutora.ui.payments.paysTeacher
 import app.tutora.ui.payments.receiveLabel
 import app.tutora.ui.placeName
@@ -138,6 +139,8 @@ fun PlaceDetailScreen(
                 color = TutoraTheme.colors.inkMuted,
             )
         }
+        // A place that pays the teacher has a balance and Receber da salinha, near the top (AC-008-14).
+        if (paysTeacher(p)) PayerBalance(PayerRef(PayerKind.PLACE, p.id), receiveLabel(p.kind), isPlace = true)
         Card(label = stringResource(R.string.places_model)) {
             Text(stringResource(R.string.places_model), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
             val who = stringResource(if (p.payer == Payer.PLACE) R.string.places_whoPlace else R.string.places_whoStudent)
@@ -198,8 +201,7 @@ fun PlaceDetailScreen(
                 stringResource(R.string.connections_archiveGroupBody),
             )
         }
-        // A place that pays the teacher has a balance and Receber da salinha (AC-008-14).
-        if (paysTeacher(p)) PayerMoney(nav, PayerRef(PayerKind.PLACE, p.id), receiveLabel(p.kind), isPlace = true)
+        if (paysTeacher(p)) PayerHistory(nav, PayerRef(PayerKind.PLACE, p.id))
     }
     when (picking) {
         "students" -> {

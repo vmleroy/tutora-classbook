@@ -221,14 +221,34 @@ class PaymentScreensTest {
     }
 
     @Test
-    fun `AC-008-15 Hoje shows who has a pending payment and opens Alunos with Devendo on`() {
+    fun `AC-008-15 Hoje shows who has a pending payment and opens whoever owes`() {
         given(22)
+        val pedro =
+            runBlocking {
+                (
+                    h.t.catalog.saveStudent(
+                        Student("", "Pedro Lima", null, null, null, TagColor.BLUE, RateType.HOUR, null),
+                        listOf(PlaceLink(online, true, 12_000)),
+                    ) as Result.Ok
+                ).value.id
+            }
+        runBlocking {
+            h.t.lessons.logLesson(
+                LessonDraft(WhoId.OfStudent(pedro), online, LocalDate(2026, 10, 22), LocalTime(10, 0), 60, null, null, null),
+            )
+        }
         h.show(compose)
+        exists("2 alunos com pagamento pendente")
+        compose.onNodeWithTag("pending-alert").performClick()
+        h.settle(compose)
+        compose.onNode(matching("Devendo · 2"), useUnmergedTree = true).assertExists()
+        // Paid up, Pedro leaves the alert, which now opens Ana herself.
+        runBlocking { h.services.payments.record(PaymentDraft(PayerRef(PayerKind.STUDENT, pedro), 12_000, PayMethod.PIX, today)) }
+        h.go(compose, app.tutora.ui.TodayHome)
         exists("1 aluno com pagamento pendente")
         compose.onNodeWithTag("pending-alert").performClick()
         h.settle(compose)
-        compose.onNode(matching("Devendo · 1"), useUnmergedTree = true).assertExists()
-        compose.onNodeWithTag("students-screen").assertExists()
+        compose.onNodeWithTag("student-detail").assertExists()
     }
 
     @Test
