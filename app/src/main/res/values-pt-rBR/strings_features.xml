@@ -397,4 +397,8 @@
         <item quantity="many">%1$d de %2$d usadas</item>
         <item quantity="other">%1$d de %2$d usadas</item>
     </plurals>
+    <string name="pay_markPaid">Marcar como paga</string>
+    <string name="pay_noneToChoose">Nenhuma aula a receber</string>
+    <string name="pay_paidByPlace">Aulas em %1$s: quem paga é o local</string>
+    <string name="pay_placeLeft">%1$s a receber de %2$s</string>
 </resources>

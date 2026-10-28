@@ -336,6 +336,10 @@ fun PaymentSheet(
                 variant = ButtonVariant.GHOST,
                 icon = IconName.CHECK,
             )
+            val choosable = ledger.owed.filter { (others.left[it.lessonId] ?: 0) > 0 || it.lessonId in chosen }
+            if (choosing && choosable.isEmpty()) {
+                Text(stringResource(R.string.pay_noneToChoose), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+            }
             if (choosing) {
                 // Newest first, with what is still owed on each (AC-008-7).
                 ledger.owed
@@ -583,13 +587,23 @@ fun LessonMoney(
     val (payer, name) = payerOfLesson(lesson) ?: return
     val ledger by services.paymentRepo.ledger(payer).collectAsState(initial = null)
     val l = ledger ?: return
+    var paying by rememberSaveable { mutableStateOf(false) }
     val mine = l.owed.firstOrNull { it.lessonId == lesson.id }
     if (mine != null) {
         val (tone, text) = paidBadge(l, mine)
-        Row(Modifier.testTag("lesson-paid"), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        Row(
+            Modifier.testTag("lesson-paid"),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Badge(text, tone = tone, icon = if (tone == BadgeTone.SUCCESS) IconName.CHECK else null)
+            // Marcar como paga: a payment from whoever owes it, with this class ticked (AC-008-25).
+            if ((l.allocation.left[mine.lessonId] ?: 0) > 0) {
+                Button(stringResource(R.string.pay_markPaid), { paying = true }, variant = ButtonVariant.OUTLINE, icon = IconName.WALLET)
+            }
         }
     }
+    if (paying && mine != null) PaymentSheet(payer, l, onDismiss = { paying = false }, preChosen = listOf(mine.lessonId))
     SaldoRow(payer, stringResource(R.string.pay_saldoOf, name)) { nav.navigate(payerRoute(payer)) }
 }
 
@@ -697,5 +711,37 @@ fun DoneMoney(lesson: Lesson) {
     if (paying) {
         val mine = l.owed.filter { it.lessonId == lesson.id }.map { it.lessonId }
         PaymentSheet(payer, l, onDismiss = { paying = false }, preChosen = mine)
+    }
+}
+
+/**
+ * On a student's detail: classes a place owes instead of the student, with what that place still
+ * owes for them, opening the place (AC-008-26).
+ */
+@Composable
+fun PaidByPlace(
+    nav: NavHostController,
+    studentId: String,
+) {
+    val services = LocalServices.current
+    val byPlace by services.paymentRepo.paidByPlace(studentId).collectAsState(initial = emptyMap())
+    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    byPlace.forEach { (placeId, lessonIds) ->
+        val place = places.firstOrNull { it.place.id == placeId }?.place ?: return@forEach
+        val ledger by services.paymentRepo.ledger(PayerRef(PayerKind.PLACE, placeId)).collectAsState(initial = null)
+        val left = ledger?.let { l -> lessonIds.sumOf { l.allocation.left[it] ?: 0 } } ?: return@forEach
+        val name = placeName(place)
+        ListRow(
+            stringResource(R.string.pay_paidByPlace, name),
+            Modifier.testTag("paid-by-place"),
+            subtitle =
+                if (left > 0) {
+                    stringResource(R.string.pay_placeLeft, formatMoney(left, currentLanguage()), name)
+                } else {
+                    stringResource(R.string.pay_paid)
+                },
+            icon = IconName.PIN,
+            onClick = { nav.navigate(PlaceDetailRoute(placeId)) },
+        )
     }
 }

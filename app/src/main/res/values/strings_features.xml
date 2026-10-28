@@ -388,4 +388,8 @@
         <item quantity="one">%1$d of %2$d used</item>
         <item quantity="other">%1$d of %2$d used</item>
     </plurals>
+    <string name="pay_markPaid">Mark as paid</string>
+    <string name="pay_noneToChoose">No lessons to receive</string>
+    <string name="pay_paidByPlace">Lessons at %1$s: the place pays</string>
+    <string name="pay_placeLeft">%1$s to receive from %2$s</string>
 </resources>

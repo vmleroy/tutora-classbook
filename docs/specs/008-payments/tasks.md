@@ -16,6 +16,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 12. Screens: Pacote in the student edit form; the package card, "7 de 10 usadas" on the detail and row, "Resta 1 aula no pacote" on the detail and Aula concluída, Novo pacote. Test: `PaymentScreensTest.kt`. (AC-008-19, 20, 21)
 - [x] 13. Copy in `strings_features.xml` in both languages, with plurals; a test switching the language on a student with payments. Version 1.8.0. Test: `PaymentScreensTest.kt`. (AC-008-24)
 - [x] 14. Update `docs/architecture.md` (frozen `payer` and `due_cents`, allocation in the domain) and `docs/product.md` (the package's lessons used is derived), run `./gradlew check` once, mark the spec done.
+- [x] 15. Screens, after trying the build: Marcar como paga on the lesson detail; the places that pay for a student's classes on the student's detail; "Nenhuma aula a receber" in the sheet; the sheet's body scrolls (design system `BottomSheet`). Test: `PaymentScreensTest.kt`. (AC-008-25, 26)
 
 ## Pending on a device
 

@@ -59,6 +59,11 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 - **AC-008-22.** Undoing a done class that used the package gives that class back to the package.
 - **AC-008-23.** A class given after the package is used up owes the package's price per class (the price ÷ the number of classes, rounded to the centavo once) until a new package is bought. A cancellation charge is always owed as money and never uses a package class.
 
+### Added after trying the build (Victor, 28 Oct 2026)
+
+- **AC-008-25.** A lesson's detail with money still owed on it has "Marcar como paga", which opens the payment sheet for whoever owes the class, with this class ticked and its amount filled in.
+- **AC-008-26.** A student's detail lists the places that owe for the student's classes instead of the student ("Aulas em Ventura: quem paga é o local · R$ 35,00 a receber de Ventura"), each opening the place. In the payment sheet, "Escolher aulas" says "Nenhuma aula a receber" when there is none to choose.
+
 ### Language
 
 - **AC-008-24.** Balances, payment methods, the sheet and every label follow the app language; switching it never changes an amount, a balance or which classes are paid.

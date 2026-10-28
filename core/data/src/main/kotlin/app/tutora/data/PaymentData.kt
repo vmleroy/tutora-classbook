@@ -19,6 +19,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
+/** A student's class owed by the place, which pays the teacher. */
+data class PlacePaidRow(
+    val id: String,
+    @ColumnInfo(name = "place_id") val placeId: String,
+)
+
 /** What one payer owes and has paid, summed. */
 data class BalanceRow(
     val payer: String,
@@ -90,6 +96,9 @@ interface PaymentDao {
         kind: String,
         id: String,
     ): String?
+
+    @Query("SELECT id, place_id FROM lesson WHERE student_id = :studentId AND payer = 'place' AND due_cents > 0")
+    fun observePaidByPlace(studentId: String): Flow<List<PlacePaidRow>>
 
     @Query("SELECT * FROM payment WHERE id = :id")
     suspend fun payment(id: String): PaymentRow?
@@ -187,6 +196,10 @@ class PaymentRepository(
         // The balances read the lesson table, so the count is read again whenever a class changes.
         combine(dao.observeLastPackage(studentId), dao.observeBalances()) { row, _ -> row }
             .map { row -> row?.let { PackageState(it.id, it.lessonsTotal, dao.packageUsed(it.id)) } }
+
+    /** A student's classes that their places owe instead of them, by place id. */
+    fun paidByPlace(studentId: String): Flow<Map<String, List<String>>> =
+        dao.observePaidByPlace(studentId).map { rows -> rows.groupBy({ it.placeId }, { it.id }) }
 
     suspend fun lastMethod(payer: PayerRef): PayMethod? = dao.lastMethod(payer.kind.key, payer.id)?.let(PayMethod::fromKey)
 }

@@ -87,6 +87,7 @@ import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
 import app.tutora.ui.errorText
 import app.tutora.ui.payments.PackageCard
+import app.tutora.ui.payments.PaidByPlace
 import app.tutora.ui.payments.PayerBalance
 import app.tutora.ui.payments.PayerHistory
 import app.tutora.ui.placeName
@@ -170,6 +171,7 @@ fun StudentDetailScreen(
         // What the student owes and their package, near the top (spec 008).
         PayerBalance(PayerRef(PayerKind.STUDENT, id), stringResource(R.string.pay_record))
         if (s.student.rateType == RateType.PACKAGE) PackageCard(id, s.student.packagePriceCents ?: 0)
+        PaidByPlace(nav, id)
         Card(label = stringResource(R.string.students_rate)) {
             Text(stringResource(R.string.students_rate), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
             Text(

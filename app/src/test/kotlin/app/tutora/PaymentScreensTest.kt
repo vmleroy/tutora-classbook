@@ -321,4 +321,66 @@ class PaymentScreensTest {
         listOf("Owes", "R$120.00", "+ R$120.00", "Payments", "Record payment").forEach { exists(it) }
         exists("10/26 · Pix · 1 lesson")
     }
+
+    private fun salinha(): String =
+        runBlocking {
+            val id =
+                (
+                    h.t.catalog.savePlace(
+                        builtinPlace(BuiltinPlace.ONLINE).copy(
+                            id = "",
+                            builtin = null,
+                            name = "Ventura",
+                            kind = PlaceKind.SALINHA,
+                            payer = Payer.PLACE,
+                            rateCents = 12_000,
+                        ),
+                    ) as Result.Ok
+                ).value.id
+            h.t.catalog.linkStudents(listOf(ana.id to id))
+            id
+        }
+
+    @Test
+    fun `AC-008-25 Marcar como paga on a lesson opens the sheet for whoever owes it, with the class ticked`() {
+        val place = salinha()
+        val id =
+            runBlocking {
+                val r =
+                    h.t.lessons.logLesson(
+                        LessonDraft(WhoId.OfStudent(ana.id), place, LocalDate(2026, 10, 22), LocalTime(8, 0), 60, null, null, null),
+                    )
+                (r as ScheduleResult.Ok).lessonId ?: ""
+            }
+        given(19)
+        h.show(compose)
+        h.go(compose, LessonDetail(id))
+        click("Marcar como paga")
+        exists("Registrar · R$ 120,00")
+        exists("Paga 1 aula: 22/10")
+        compose.onAllNodes(matching("Registrar · R$ 120,00"), useUnmergedTree = true).onFirst().performClick()
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .ledgerNow(PayerRef(PayerKind.PLACE, place))
+                .payments.size == 1
+        }
+        h.settle(compose)
+        exists("Pago")
+    }
+
+    @Test
+    fun `AC-008-26 a student's detail shows the place that pays for their classes, and Escolher aulas says when there is none`() {
+        val place = salinha()
+        runBlocking {
+            h.t.lessons.logLesson(
+                LessonDraft(WhoId.OfStudent(ana.id), place, LocalDate(2026, 10, 22), LocalTime(8, 0), 60, null, null, null),
+            )
+        }
+        openAna()
+        exists("Aulas em Ventura: quem paga é o local")
+        exists("R$ 120,00 a receber de Ventura")
+        click("Registrar pagamento")
+        click("Escolher aulas", scroll = false)
+        exists("Nenhuma aula a receber")
+    }
 }
