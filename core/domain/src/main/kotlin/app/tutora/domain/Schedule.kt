@@ -121,7 +121,8 @@ fun Lesson.valueWithoutTravel(): Cents? {
 /** What Previsto adds for a class: its worth while scheduled or done, its charge otherwise (AC-006-16). */
 fun Lesson.counted(): Worth? =
     when (status) {
-        LessonStatus.SCHEDULED, LessonStatus.DONE -> worth()
+        // A live class counts at its value as scheduled (AC-007-14).
+        LessonStatus.SCHEDULED, LessonStatus.LIVE, LessonStatus.DONE -> worth()
         LessonStatus.CANCELLED, LessonStatus.MISSED -> feeCents?.let { Worth.Set(it, PriceSource.HAND) }
     }
 

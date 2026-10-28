@@ -403,6 +403,7 @@ private fun scheduleErrorText(e: ScheduleError): String =
             ScheduleError.NOT_STARTED -> R.string.lesson_errors_notStarted
             ScheduleError.FUTURE_DATE -> R.string.lesson_errors_futureDate
             ScheduleError.NO_PRICE -> R.string.cancel_noPrice
+            ScheduleError.NOT_SCHEDULED -> R.string.lesson_errors_notScheduled
         },
     )
 

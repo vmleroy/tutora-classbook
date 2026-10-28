@@ -2,6 +2,7 @@ package app.tutora.data
 
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.Group
+import app.tutora.domain.LessonTimer
 import app.tutora.domain.PayCycle
 import app.tutora.domain.Payer
 import app.tutora.domain.Place
@@ -69,3 +70,5 @@ fun Group.toRow(
     createdAt: String,
     now: String,
 ) = GroupRow(id, placeId, name, subject, rateCents, archivedAt, createdAt, now)
+
+fun TimerRow.toTimer() = LessonTimer(lessonId, startedAt, pausedMs, pausedAt, note)

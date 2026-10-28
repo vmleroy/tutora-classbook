@@ -1,5 +1,6 @@
 package app.tutora.data
 
+import app.tutora.domain.AutoStart
 import app.tutora.domain.Language
 import app.tutora.domain.Settings
 import app.tutora.domain.ThemeMode
@@ -47,6 +48,9 @@ class SettingsRepository(
                 "custom_colors" to JSONObject(s.customColors.mapKeys { it.key.key }).toString(),
                 "text_scale" to quote(s.textScale),
                 "show_default_places" to s.showDefaultPlaces.toString(),
+                "live_timer" to s.liveTimer.toString(),
+                "auto_start" to quote(s.autoStart.key),
+                "auto_start_skipped" to org.json.JSONArray(s.autoStartSkipped.toList()).toString(),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
         private fun customColors(json: String): Map<CustomPart, String> {
@@ -58,6 +62,11 @@ class SettingsRepository(
                 .toMap()
         }
 
+        private fun skipped(json: String): Set<String> {
+            val a = org.json.JSONArray(json)
+            return (0 until a.length()).map { a.getString(it) }.toSet()
+        }
+
         fun toSettings(rows: List<SettingRow>): Settings {
             val v = rows.associate { it.key to it.value }
             return Settings(
@@ -67,6 +76,9 @@ class SettingsRepository(
                 setupDone = v["setup_done"] == "true",
                 textScale = v["text_scale"]?.let(::unquote) ?: "normal",
                 showDefaultPlaces = v["show_default_places"] != "false",
+                liveTimer = v["live_timer"] != "false",
+                autoStart = AutoStart.fromKey(v["auto_start"]?.let(::unquote)),
+                autoStartSkipped = v["auto_start_skipped"]?.let(::skipped) ?: emptySet(),
                 customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
             )
         }

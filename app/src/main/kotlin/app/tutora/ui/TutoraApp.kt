@@ -21,6 +21,8 @@ fun TutoraApp(
     state: AppState,
     appInfo: AppInfo,
     services: AppServices? = null,
+    liveRequest: LiveRequest? = null,
+    onLiveRequestHandled: () -> Unit = {},
 ) {
     // Test tags double as resource ids so Maestro flows can find them.
     val root = Modifier.semantics { testTagsAsResourceId = true }
@@ -38,7 +40,15 @@ fun TutoraApp(
                 custom = settings.customColors,
                 largeText = settings.textScale == "large",
             ) {
-                CompositionLocalProvider(LocalServices provides s) { TutoraNav(appInfo, s.schemaVersion, root) }
+                CompositionLocalProvider(LocalServices provides s) {
+                    TutoraNav(
+                        appInfo,
+                        s.schemaVersion,
+                        root,
+                        liveRequest = liveRequest,
+                        onLiveRequestHandled = onLiveRequestHandled,
+                    )
+                }
             }
         }
     }

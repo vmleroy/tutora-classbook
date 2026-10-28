@@ -32,6 +32,8 @@ class StartApp(
     private val phoneTags: () -> List<String>,
     private val now: () -> String,
     private val newId: () -> String,
+    private val notifier: LiveNotifier = LiveNotifier.None,
+    private val alarm: AutoStartAlarm = AutoStartAlarm.None,
 ) {
     suspend operator fun invoke(): StartResult {
         val phone = phoneTags()
@@ -42,10 +44,14 @@ class StartApp(
             // The first query runs Room's pending migrations.
             val repo = SettingsRepository(db)
             repo.ensureDefaults(firstRunLanguage(phone), now())
-            val ctx = Ctx(db, now, newId)
+            val ctx = Ctx(db, now, newId, live = notifier, alarm = alarm)
             Catalog(ctx).ensureBuiltinPlaces()
             // Repeating classes stay filled 8 weeks ahead (AC-005-8).
             Schedule(ctx).fillSchedule()
+            // A class still live (the phone restarted, say) gets its notification back.
+            Live(ctx).restoreNotification()
+            // A class whose time came while the app was closed starts now (AC-007-21).
+            Live(ctx).autoStart()
             StartResult.Ready(db, repo.load(), TutoraDatabase.VERSION, ctx)
         } catch (e: Exception) {
             StartResult.Failed(startupLanguage(null, phone), backup, e.message ?: e.toString())

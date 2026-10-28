@@ -28,6 +28,7 @@ import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
+import app.tutora.domain.AutoStart
 import app.tutora.domain.Language
 import app.tutora.domain.Settings
 import app.tutora.state.LocalServices
@@ -45,7 +46,7 @@ private fun stringIn(
     return context.createConfigurationContext(config).resources.getString(id, *args)
 }
 
-/** Ajustes: Geral (language, default places) and Sobre (AC-001-22, AC-003-11, AC-004-29). */
+/** Ajustes: Geral (language, default places), Aulas (live timer) and Sobre (AC-001-22, AC-003-11, AC-004-29, AC-007-17). */
 @Composable
 fun SettingsScreen(
     appInfo: AppInfo,
@@ -57,6 +58,13 @@ fun SettingsScreen(
     val s = settings ?: return
 
     fun save(next: Settings) = scope.launch { services.saveSettings(next) }
+
+    // A change to the timer or its automatic start sets or clears the alarm at once.
+    fun saveTimer(next: Settings) =
+        scope.launch {
+            services.saveSettings(next)
+            services.live.autoStart()
+        }
 
     ScreenScaffold(stringResource(R.string.tab_settings), "settings-screen") {
         ListGroup(
@@ -76,6 +84,45 @@ fun SettingsScreen(
                     },
                 ),
         )
+        ListGroup(
+            title = stringResource(R.string.settings_lessons),
+            rows =
+                listOf {
+                    // Off hides Iniciar aula everywhere (AC-007-3, 17).
+                    ListRow(
+                        stringResource(R.string.settings_liveTimer),
+                        subtitle = stringResource(R.string.settings_liveTimerHint),
+                        icon = IconName.PLAY,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.liveTimer,
+                        onSwitchChange = { saveTimer(s.copy(liveTimer = it)) },
+                    )
+                },
+        )
+        // Início automático, only while the timer is on (AC-007-19).
+        if (s.liveTimer) {
+            ListGroup(
+                title = stringResource(R.string.settings_autoStart),
+                rows =
+                    listOfNotNull(
+                        {
+                            ListRow(
+                                stringResource(R.string.settings_autoStartSwitch),
+                                subtitle = stringResource(R.string.settings_autoStartHint),
+                                icon = IconName.CLOCK,
+                                trailing = RowTrailing.SWITCH,
+                                switchValue = s.autoStart != AutoStart.OFF,
+                                onSwitchChange = { on -> saveTimer(s.copy(autoStart = if (on) AutoStart.APP_OPEN else AutoStart.OFF)) },
+                            )
+                        },
+                        if (s.autoStart != AutoStart.OFF) {
+                            { AutoStartMode(s.autoStart) { saveTimer(s.copy(autoStart = it)) } }
+                        } else {
+                            null
+                        },
+                    ),
+            )
+        }
         Card(label = stringResource(R.string.settings_about)) {
             Text(stringResource(R.string.settings_about), style = TutoraTheme.type.rowTitle, color = TutoraTheme.colors.ink)
             Text(
@@ -84,6 +131,31 @@ fun SettingsScreen(
                 color = TutoraTheme.colors.inkMuted,
             )
         }
+    }
+}
+
+/** Só com o app aberto / Também com o app fechado, with a line on what the choice does (AC-007-19). */
+@Composable
+private fun AutoStartMode(
+    mode: AutoStart,
+    onChange: (AutoStart) -> Unit,
+) {
+    Column(Modifier.padding(horizontal = Spacing.s4, vertical = Spacing.s2_5), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        SegmentedControl(
+            listOf(
+                AutoStart.APP_OPEN to stringResource(R.string.settings_autoStartOpen),
+                AutoStart.ALWAYS to stringResource(R.string.settings_autoStartAlways),
+            ),
+            mode,
+            onChange,
+            stringResource(R.string.settings_autoStart),
+            size = ControlSize.SM,
+        )
+        Text(
+            stringResource(if (mode == AutoStart.ALWAYS) R.string.settings_autoStartAlwaysHint else R.string.settings_autoStartOpenHint),
+            style = TutoraTheme.type.meta,
+            color = TutoraTheme.colors.inkMuted,
+        )
     }
 }
 

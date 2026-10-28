@@ -9,6 +9,7 @@ import app.tutora.domain.Settings
 import app.tutora.usecases.Catalog
 import app.tutora.usecases.Ctx
 import app.tutora.usecases.Lessons
+import app.tutora.usecases.Live
 import app.tutora.usecases.Schedule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +32,7 @@ class AppServices(
     val catalog = Catalog(ctx)
     val schedule = Schedule(ctx)
     val lessons = Lessons(ctx)
+    val live = Live(ctx)
 
     val settings: Flow<Settings> = settingsRepo.observe()
 

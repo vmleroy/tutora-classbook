@@ -3,6 +3,7 @@ package app.tutora.ui
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -30,6 +31,7 @@ import app.tutora.ui.catalog.PlaceEditScreen
 import app.tutora.ui.catalog.RegistryScreen
 import app.tutora.ui.catalog.StudentDetailScreen
 import app.tutora.ui.catalog.StudentEditScreen
+import app.tutora.ui.live.LiveScreen
 import app.tutora.ui.schedule.AgendaScreen
 import app.tutora.ui.schedule.LessonDetailScreen
 import app.tutora.ui.schedule.LessonEditScreen
@@ -83,6 +85,18 @@ import kotlin.reflect.KClass
     val placeId: String? = null,
 )
 
+@Serializable data class LiveLesson(
+    val id: String,
+    /** Open on the end sheet (Encerrar from the notification). */
+    val end: Boolean = false,
+)
+
+/** A tap on the live notification: open the live screen, or its end sheet. */
+data class LiveRequest(
+    val lessonId: String,
+    val end: Boolean,
+)
+
 @Serializable data class GroupDetail(
     val id: String,
 )
@@ -122,7 +136,15 @@ fun TutoraNav(
     schemaVersion: Int,
     modifier: Modifier = Modifier,
     nav: NavHostController = rememberNavController(),
+    liveRequest: LiveRequest? = null,
+    onLiveRequestHandled: () -> Unit = {},
 ) {
+    // The notification opens the live screen, or Encerrar's sheet (AC-007-15).
+    LaunchedEffect(liveRequest) {
+        val r = liveRequest ?: return@LaunchedEffect
+        nav.navigate(LiveLesson(r.lessonId, r.end)) { launchSingleTop = true }
+        onLiveRequestHandled()
+    }
     val entry by nav.currentBackStackEntryAsState()
     val activeTab = Tab.entries.firstOrNull { tab -> entry?.destination?.hierarchy?.any { it.hasRoute(tab.graphClass) } == true }
     Scaffold(
@@ -169,6 +191,10 @@ fun TutoraNav(
             composable<GroupEdit> {
                 val r = it.toRoute<GroupEdit>()
                 GroupEditScreen(nav, r.id, r.placeId)
+            }
+            composable<LiveLesson> {
+                val r = it.toRoute<LiveLesson>()
+                LiveScreen(nav, r.id, r.end)
             }
             composable<GroupDetail> { GroupDetailScreen(nav, it.toRoute<GroupDetail>().id) }
             composable<Archived> { ArchivedScreen(nav) }

@@ -31,6 +31,10 @@ class Ctx(
             .getDefault()
             .id
     },
+    /** The live-class notification, which use cases update after their transaction (spec 007). */
+    val live: LiveNotifier = LiveNotifier.None,
+    /** The alarm that starts a class with the app closed (AC-007-22). */
+    val alarm: AutoStartAlarm = AutoStartAlarm.None,
 )
 
 sealed interface Result<out T> {
