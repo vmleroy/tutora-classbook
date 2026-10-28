@@ -13,9 +13,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.lerp
@@ -52,7 +53,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -68,10 +68,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
 import app.tutora.designsystem.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
@@ -96,6 +94,7 @@ fun FieldLabel(
     modifier: Modifier = Modifier,
     required: Boolean = false,
     onPrimary: Boolean = false,
+    inline: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     val requiredWord = stringResource(R.string.ds_required)
@@ -105,8 +104,16 @@ fun FieldLabel(
             if (required) withStyle(SpanStyle(color = c.dangerInk)) { append(" *") }
         },
         modifier.semantics { if (required) contentDescription = "$label, $requiredWord" },
-        style = TutoraTheme.type.fieldLabel,
-        color = if (onPrimary) c.onPrimaryMuted else c.inkMuted,
+        // Inside a receipt-style row the label reads as the line's name, not a caption.
+        style = if (inline) TutoraTheme.type.body else TutoraTheme.type.fieldLabel,
+        color =
+            if (inline) {
+                c.ink
+            } else if (onPrimary) {
+                c.onPrimaryMuted
+            } else {
+                c.inkMuted
+            },
     )
 }
 
@@ -119,7 +126,6 @@ private fun FieldFrame(
     onPrimary: Boolean,
     errorKey: Any? = null,
     required: Boolean = false,
-    fieldWidth: Dp? = null,
     field: @Composable (Modifier) -> Unit,
 ) {
     val c = TutoraTheme.colors
@@ -129,7 +135,7 @@ private fun FieldFrame(
         FieldLabel(label, required = required, onPrimary = onPrimary)
         field(
             Modifier
-                .then(if (fieldWidth != null) Modifier.width(fieldWidth) else Modifier.fillMaxWidth())
+                .fillMaxWidth()
                 .height(Size.controlMd)
                 .background(errorFill(if (onPrimary) c.onPrimary.copy(alpha = 0.1f) else c.surface, error != null, red), shape)
                 .border(
@@ -235,11 +241,12 @@ fun TextField(
 }
 
 /**
- * A money field: shows [cents] in reais for the app language and fills from the right as
- * digits are typed (1, 2, 0, 0, 0 → R$ 120,00); deleting drops the last digit and digits past
- * [maxCents] are refused (AC-003-8 to 10). The caret stays at the end. With no amount (null or
- * zero) it is empty and shows [placeholder] in muted text, "R$ 0,00" unless the caller names
- * the empty state ("Sem preço"); erasing every digit reports null.
+ * A money field, as a receipt line: the label inside on the left, the amount on the right,
+ * the whole row one tap target. It shows [cents] in reais for the app language and fills from
+ * the right as digits are typed (1, 2, 0, 0, 0 → R$ 120,00); deleting drops the last digit and
+ * digits past [maxCents] are refused (AC-003-8 to 10). With no amount (null or zero) it shows
+ * [placeholder] in muted text, "R$ 0,00" unless the caller names the empty state ("Sem
+ * preço"); erasing every digit reports null.
  */
 @Composable
 fun MoneyField(
@@ -254,46 +261,59 @@ fun MoneyField(
     errorKey: Any? = null,
     required: Boolean = false,
 ) {
+    val c = TutoraTheme.colors
+    val shape = RoundedCornerShape(Radius.lg)
     val language = currentLanguage()
     val shown = if (cents == null || cents == 0L) "" else formatMoney(cents, language)
-    val hint = placeholder ?: formatMoney(0, language)
-    // As wide as the largest amount it takes (R$ 99.999,99) or its hint, not the whole row.
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
-    val widest = formatMoney(maxCents, language)
-    val textWidth =
-        with(density) {
-            maxOf(
-                measurer.measure(widest, TutoraTheme.type.moneyMd).size.width,
-                measurer.measure(hint, TutoraTheme.type.body).size.width,
-            ).toDp()
-        }
-    Column(modifier) {
-        FieldFrame(
-            label,
-            helper,
-            error,
-            false,
-            errorKey,
-            required,
-            fieldWidth =
-                (textWidth + Spacing.s3_5 * 2 + Spacing.s2).coerceAtLeast(
-                    Size.touch * 3,
-                ),
-        ) { m ->
+    val red by errorBlink(error?.let { it to errorKey })
+    val focus = remember { FocusRequester() }
+    var focused by remember { mutableStateOf(false) }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.s1_5)) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = Size.controlMd)
+                .background(errorFill(c.surface, error != null, red), shape)
+                .border(
+                    if (error != null || focused) Size.borderStrong else Size.border,
+                    when {
+                        error != null -> c.danger
+                        focused -> c.primary
+                        else -> c.line
+                    },
+                    shape,
+                ).clickable(interactionSource = null, indication = null) { runCatching { focus.requestFocus() } }
+                .padding(horizontal = Spacing.s3_5),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FieldLabel(label, Modifier.weight(1f), required = required, inline = true)
             Input(
                 TextFieldValue(shown, TextRange(shown.length)),
                 {
                     val next = typedCents(it.text, cents ?: 0, maxCents)
                     onCentsChange(if (next == 0L) null else next)
                 },
-                m,
-                hint,
+                Modifier
+                    .weight(1f)
+                    .height(Size.controlMd)
+                    .focusRequester(focus)
+                    .onFocusChanged { focused = it.isFocused }
+                    .semantics {
+                        contentDescription = label
+                        if (error != null) error(error)
+                    },
+                placeholder ?: formatMoney(0, language),
                 KeyboardType.Number,
                 false,
                 alignEnd = true,
                 textStyle = TutoraTheme.type.moneyMd,
             )
+        }
+        if (error != null) {
+            Text(error, style = TutoraTheme.type.meta, color = c.dangerInk)
+        } else if (helper != null) {
+            Text(helper, style = TutoraTheme.type.meta, color = c.inkMuted)
         }
     }
 }
