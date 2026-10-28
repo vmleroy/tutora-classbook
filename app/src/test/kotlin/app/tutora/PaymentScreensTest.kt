@@ -531,13 +531,12 @@ class PaymentScreensTest {
     }
 
     @Test
-    fun `AC-008-31 Dar bonus from the student's page saves the money and the minutes`() {
+    fun `AC-008-31 Dar bonus from the student's page is money or minutes`() {
         creditsOn()
         openAna()
         compose.onNodeWithContentDescription("Dar bônus").performScrollTo().performClick()
         h.settle(compose)
-        compose.onAllNodes(hasSetTextAction(), useUnmergedTree = true).onFirst().performTextReplacement("R$ 50,00")
-        h.settle(compose)
+        click("Minutos", scroll = false)
         repeat(2) { compose.onNodeWithContentDescription("Aumentar").performClick() }
         h.settle(compose)
         compose.onAllNodes(matching("Dar bônus"), useUnmergedTree = true).onLast().performClick()
@@ -547,10 +546,10 @@ class PaymentScreensTest {
                 .creditMinutes == 30
         }
         val ledger = runBlocking { h.services.paymentRepo.ledgerNow(anaRef) }
-        org.junit.Assert.assertEquals(5_000L, ledger.creditCents)
+        org.junit.Assert.assertEquals(0L, ledger.creditCents)
         org.junit.Assert.assertEquals(30, ledger.creditMinutes)
         h.settle(compose)
-        exists("Crédito: R$ 50,00 · Bônus: 30 min")
+        exists("Bônus: 30 min")
     }
 
     @Test

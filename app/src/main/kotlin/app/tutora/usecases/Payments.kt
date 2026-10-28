@@ -218,6 +218,12 @@ class Payments(
             PaymentResult.Ok(id)
         }
 
+    /** A bonus is money or minutes, never both, and never nothing (AC-008-31). */
+    private fun oneKind(
+        cents: Cents,
+        minutes: Int,
+    ) = cents >= 0 && minutes >= 0 && (cents > 0) != (minutes > 0)
+
     /** Dar bônus: free money, free minutes or both, as credit (AC-008-31). */
     suspend fun giveBonus(
         payer: PayerRef,
@@ -227,7 +233,7 @@ class Payments(
     ): PaymentResult =
         db.inTransaction {
             if (!SettingsRepository(db).load().credits) return@inTransaction PaymentResult.Err(PaymentError.CREDITS_OFF)
-            if (cents < 0 || minutes < 0 || cents + minutes == 0L) return@inTransaction PaymentResult.Err(PaymentError.AMOUNT)
+            if (!oneKind(cents, minutes)) return@inTransaction PaymentResult.Err(PaymentError.AMOUNT)
             val id = ctx.newId()
             dao.upsertCredit(creditRow(id, payer, "bonus", cents, minutes, null, note))
             PaymentResult.Ok(id)
@@ -242,7 +248,7 @@ class Payments(
     ): PaymentResult =
         db.inTransaction {
             val row = dao.credit(id)?.takeIf { it.kind == "bonus" } ?: return@inTransaction PaymentResult.Err(PaymentError.NOT_FOUND)
-            if (cents < 0 || minutes < 0 || cents + minutes == 0L) return@inTransaction PaymentResult.Err(PaymentError.AMOUNT)
+            if (!oneKind(cents, minutes)) return@inTransaction PaymentResult.Err(PaymentError.AMOUNT)
             dao.upsertCredit(row.copy(cents = cents, minutes = minutes, note = note?.trim()?.ifEmpty { null }, updatedAt = ctx.now()))
             settleCredit(row.payerRef())
             PaymentResult.Ok(id)

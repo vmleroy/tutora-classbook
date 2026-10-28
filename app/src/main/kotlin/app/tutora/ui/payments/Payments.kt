@@ -504,6 +504,10 @@ private fun BonusSheet(
     val scope = rememberCoroutineScope()
     var cents by rememberSaveable { mutableStateOf(editing?.cents?.takeIf { it > 0 }) }
     var minutes by rememberSaveable { mutableStateOf((editing?.minutes ?: 0).toLong()) }
+    // A bonus is money or minutes, never both (AC-008-31).
+    var inMinutes by rememberSaveable { mutableStateOf((editing?.minutes ?: 0) > 0) }
+    val money = if (inMinutes) 0L else cents ?: 0
+    val mins = if (inMinutes) minutes.toInt() else 0
     var note by rememberSaveable { mutableStateOf(editing?.note.orEmpty()) }
     // "%1$s min", filled in by the stepper.
     val minutesTemplate = stringResource(R.string.places_minutes)
@@ -511,13 +515,13 @@ private fun BonusSheet(
         Button(stringResource(if (editing == null) R.string.pay_bonusSave else R.string.catalog_save), {
             scope.launch {
                 if (editing == null) {
-                    services.payments.giveBonus(payer, cents ?: 0, minutes.toInt(), note)
+                    services.payments.giveBonus(payer, money, mins, note)
                 } else {
-                    services.payments.editBonus(editing.id, cents ?: 0, minutes.toInt(), note)
+                    services.payments.editBonus(editing.id, money, mins, note)
                 }
                 onDismiss()
             }
-        }, m, enabled = (cents ?: 0) > 0 || minutes > 0)
+        }, m, enabled = money > 0 || mins > 0)
     }
     val remove: @Composable (Modifier) -> Unit = { m ->
         Button(stringResource(R.string.pay_removeBonus), {
@@ -533,17 +537,26 @@ private fun BonusSheet(
         actions = if (editing == null) listOf(save) else listOf(remove, save),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            MoneyField(stringResource(R.string.pay_bonusMoney), cents, { cents = it })
-            Text(stringResource(R.string.pay_bonusMinutes), style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
-            Stepper(
-                minutes,
-                { minutes = it },
-                step = 15,
-                min = 0,
-                max = 600,
-                format = { minutesTemplate.format(it.toString()) },
-                valueLabel = stringResource(R.string.pay_bonusMinutes),
+            SegmentedControl(
+                listOf(false to stringResource(R.string.pay_useMoney), true to stringResource(R.string.pay_useMinutes)),
+                inMinutes,
+                { inMinutes = it },
+                stringResource(R.string.pay_bonusKind),
+                size = ControlSize.SM,
             )
+            if (inMinutes) {
+                Stepper(
+                    minutes,
+                    { minutes = it },
+                    step = 15,
+                    min = 0,
+                    max = 600,
+                    format = { minutesTemplate.format(it.toString()) },
+                    valueLabel = stringResource(R.string.pay_bonusMinutes),
+                )
+            } else {
+                MoneyField(stringResource(R.string.pay_bonusMoney), cents, { cents = it })
+            }
             TextField(stringResource(R.string.pay_note), note, { note = it })
         }
     }

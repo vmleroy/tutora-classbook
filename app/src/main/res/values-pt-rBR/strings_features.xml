@@ -451,4 +451,5 @@
     <string name="pay_giveBack">Devolver</string>
     <string name="pay_editBonus">Editar bônus</string>
     <string name="pay_removeBonus">Remover bônus</string>
+    <string name="pay_bonusKind">Tipo de bônus</string>
 </resources>

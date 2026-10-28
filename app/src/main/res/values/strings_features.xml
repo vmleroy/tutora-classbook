@@ -442,4 +442,5 @@
     <string name="pay_giveBack">Give back</string>
     <string name="pay_editBonus">Edit bonus</string>
     <string name="pay_removeBonus">Remove bonus</string>
+    <string name="pay_bonusKind">Bonus type</string>
 </resources>

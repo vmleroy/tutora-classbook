@@ -214,10 +214,12 @@ class PaymentsTest {
         }
 
     @Test
-    fun `AC-008-31 a bonus in money and minutes is credit, and minutes cover a class by the hour`() =
+    fun `AC-008-31 a bonus is money or minutes, never both, and minutes cover a class by the hour`() =
         runTest {
             creditsOn()
-            payments.giveBonus(anaRef, 2_000, 30)
+            payments.giveBonus(anaRef, 2_000, 0)
+            payments.giveBonus(anaRef, 0, 30)
+            assertEquals(PaymentResult.Err(PaymentError.AMOUNT), payments.giveBonus(anaRef, 1_000, 15))
             val lesson = given(22)
             payments.useCredit(anaRef, listOf(lesson), minutes = true)
             assertEquals(6_000L, balance())
