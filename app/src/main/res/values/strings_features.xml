@@ -228,7 +228,7 @@
     <string name="lesson_modes_schedule">Schedule a lesson</string>
     <string name="lesson_saveLog">Log lesson · %1$s</string>
     <string name="lesson_saveLogPlain">Log lesson</string>
-    <string name="lesson_howHour">%1$s min × %2$s/h</string>
+    <string name="lesson_howHour">%1$s × %2$s/h</string>
     <string name="lesson_howLesson">%1$s per lesson</string>
     <string name="lesson_howTravel">%1$s + %2$s travel</string>
     <string name="lesson_errors_notStarted">This lesson hasn\'t started yet.</string>
@@ -281,7 +281,7 @@
     <string name="live_alreadyTitle">A lesson is already live</string>
     <string name="live_alreadyBody">End or discard the live lesson before starting another.</string>
     <string name="live_time">Lesson time</string>
-    <string name="live_planned">of %1$d min planned</string>
+    <string name="live_planned">of %1$s planned</string>
     <string name="live_earned">Earned so far</string>
     <string name="live_rateLine">%1$s per hour · %2$s per minute</string>
     <string name="live_note">Quick note</string>
@@ -389,7 +389,7 @@
     <string name="settings_credits">Credits and bonus</string>
     <string name="settings_creditsHint">Overpayments become credit, and you choose which lessons it goes to. You can also give a bonus in money or minutes.</string>
     <string name="pay_creditLine">Credit: %1$s</string>
-    <string name="pay_minutesLine">Bonus: %1$d min</string>
+    <string name="pay_minutesLine">Bonus: %1$s</string>
     <string name="pay_useCredit">Use credit</string>
     <string name="pay_giveBonus">Give bonus</string>
     <string name="pay_bonusMoney">Money bonus</string>
@@ -451,4 +451,6 @@
         <item quantity="one">%1$d student has a bonus</item>
         <item quantity="other">%1$d students have a bonus</item>
     </plurals>
+    <string name="settings_clockDurations">Durations as HH:MM</string>
+    <string name="settings_clockDurationsHint">Shows 01:30 instead of 90 min across the app</string>
 </resources>

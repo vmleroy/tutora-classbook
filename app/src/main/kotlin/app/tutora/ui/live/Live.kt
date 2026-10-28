@@ -75,6 +75,7 @@ import app.tutora.ui.TodayGraph
 import app.tutora.ui.clockText
 import app.tutora.ui.clockTime
 import app.tutora.ui.durationText
+import app.tutora.ui.minutesText
 import app.tutora.ui.payments.DoneMoney
 import app.tutora.ui.schedule.DoneSheet
 import app.tutora.ui.schedule.lessonSubtitle
@@ -290,7 +291,7 @@ private fun Clock(
         TimerRing(
             clockText(ms),
             ms / (l.plannedMin * MINUTE_MS).toFloat(),
-            caption = stringResource(R.string.live_planned, l.plannedMin),
+            caption = stringResource(R.string.live_planned, minutesText(l.plannedMin)),
             label = "${stringResource(R.string.live_time)} ${clockText(ms)}",
         )
         val price = currentPrice(l.place, l.who)

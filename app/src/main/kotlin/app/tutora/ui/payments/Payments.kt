@@ -77,12 +77,15 @@ import app.tutora.domain.payerOf
 import app.tutora.state.LocalServices
 import app.tutora.ui.GroupDetail
 import app.tutora.ui.LessonDetail
+import app.tutora.ui.LocalClockDurations
 import app.tutora.ui.PayerLessons
 import app.tutora.ui.PaymentDetail
 import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
+import app.tutora.ui.clockDuration
 import app.tutora.ui.localeOf
+import app.tutora.ui.minutesText
 import app.tutora.ui.placeName
 import app.tutora.usecases.PaymentDraft
 import kotlinx.coroutines.flow.flowOf
@@ -223,7 +226,7 @@ fun CreditsSection(payer: PayerRef) {
         val left =
             listOfNotNull(
                 l.creditCents.takeIf { it > 0 }?.let { stringResource(R.string.pay_creditLine, formatMoney(it, language)) },
-                l.creditMinutes.takeIf { it > 0 }?.let { stringResource(R.string.pay_minutesLine, it) },
+                l.creditMinutes.takeIf { it > 0 }?.let { stringResource(R.string.pay_minutesLine, minutesText(it)) },
             ).joinToString(" · ")
         Text(
             left.ifEmpty { stringResource(R.string.pay_noCredit) },
@@ -241,7 +244,7 @@ fun CreditsSection(payer: PayerRef) {
                         val amount =
                             listOfNotNull(
                                 r.cents.takeIf { it > 0 }?.let { formatMoney(it, language) },
-                                r.minutes.takeIf { it > 0 }?.let { stringResource(R.string.places_minutes, it.toString()) },
+                                r.minutes.takeIf { it > 0 }?.let { minutesText(it) },
                             ).joinToString(" · ")
                         ListRow(
                             if (r.isBonus) {
@@ -343,7 +346,7 @@ private fun PayerClassRow(
         listOfNotNull(dayMonth(c.owed.localDate(services.zone), language), summary?.takeIf { it.isNotEmpty() }).joinToString(" · "),
         subtitle =
             listOfNotNull(
-                stringResource(R.string.places_minutes, c.owed.minutes.toString()),
+                minutesText(c.owed.minutes),
                 formatMoney(c.owed.dueCents, language),
                 c.placePays?.let { stringResource(R.string.pay_byPlace) },
             ).joinToString(" · "),
@@ -456,7 +459,7 @@ private fun UseCreditSheet(
         subtitle =
             listOfNotNull(
                 ledger.creditCents.takeIf { it > 0 }?.let { stringResource(R.string.pay_creditLine, formatMoney(it, language)) },
-                ledger.creditMinutes.takeIf { it > 0 }?.let { stringResource(R.string.pay_minutesLine, it) },
+                ledger.creditMinutes.takeIf { it > 0 }?.let { stringResource(R.string.pay_minutesLine, minutesText(it)) },
             ).joinToString(" · "),
         actions =
             listOf { m ->
@@ -485,7 +488,7 @@ private fun UseCreditSheet(
                     val label =
                         listOf(
                             dayMonth(localOf(c.startAt, services.zone).date, language),
-                            stringResource(R.string.places_minutes, c.minutes.toString()),
+                            minutesText(c.minutes),
                             stringResource(R.string.pay_leftOn, formatMoney(ledger.allocation.left[c.lessonId] ?: 0, language)),
                         ).joinToString(" · ")
                     Checkbox(label, c.lessonId in chosen, { on -> chosen = if (on) chosen + c.lessonId else chosen - c.lessonId })
@@ -510,7 +513,8 @@ private fun BonusSheet(
     val money = if (inMinutes) 0L else cents ?: 0
     val mins = if (inMinutes) minutes.toInt() else 0
     var note by rememberSaveable { mutableStateOf(editing?.note.orEmpty()) }
-    // "%1$s min", filled in by the stepper.
+    // "30 min" or "00:30", as Ajustes says; the stepper's format can't read it itself.
+    val clock = LocalClockDurations.current
     val minutesTemplate = stringResource(R.string.places_minutes)
     val save: @Composable (Modifier) -> Unit = { m ->
         Button(stringResource(if (editing == null) R.string.pay_bonusSave else R.string.catalog_save), {
@@ -552,7 +556,7 @@ private fun BonusSheet(
                     step = 15,
                     min = 0,
                     max = 600,
-                    format = { minutesTemplate.format(it.toString()) },
+                    format = { if (clock) clockDuration(it.toInt()) else minutesTemplate.format(it.toString()) },
                     valueLabel = stringResource(R.string.pay_bonusMinutes),
                 )
             } else {
@@ -706,7 +710,7 @@ fun PaymentSheet(
                     val label =
                         listOfNotNull(
                             dayMonth(localOf(lesson.startAt, zone).date, language),
-                            stringResource(R.string.places_minutes, lesson.minutes.toString()),
+                            minutesText(lesson.minutes),
                             place?.let { stringResource(R.string.pay_placePays, it) },
                             stringResource(R.string.pay_leftOn, formatMoney(left, language)),
                         ).joinToString(" · ")
@@ -1087,7 +1091,7 @@ fun bonusOffer(lesson: Lesson): BonusOffer? {
     val label =
         listOfNotNull(
             l.creditCents.takeIf { it > 0 }?.let { formatMoney(it, language) },
-            l.creditMinutes.takeIf { it > 0 }?.let { stringResource(R.string.places_minutes, it.toString()) },
+            l.creditMinutes.takeIf { it > 0 }?.let { minutesText(it) },
         ).joinToString(" · ")
     return BonusOffer(payer, l.creditCents.coerceAtLeast(0), l.creditMinutes.coerceAtLeast(0), label)
 }

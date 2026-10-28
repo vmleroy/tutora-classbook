@@ -231,7 +231,7 @@
     <string name="lesson_modes_schedule">Agendar aula</string>
     <string name="lesson_saveLog">Registrar aula · %1$s</string>
     <string name="lesson_saveLogPlain">Registrar aula</string>
-    <string name="lesson_howHour">%1$s min × %2$s/h</string>
+    <string name="lesson_howHour">%1$s × %2$s/h</string>
     <string name="lesson_howLesson">%1$s por aula</string>
     <string name="lesson_howTravel">%1$s + %2$s de deslocamento</string>
     <string name="lesson_errors_notStarted">Esta aula ainda não começou.</string>
@@ -284,7 +284,7 @@
     <string name="live_alreadyTitle">Já tem uma aula ao vivo</string>
     <string name="live_alreadyBody">Encerre ou descarte a aula ao vivo antes de começar outra.</string>
     <string name="live_time">Tempo de aula</string>
-    <string name="live_planned">de %1$d min planejados</string>
+    <string name="live_planned">de %1$s planejados</string>
     <string name="live_earned">Ganho até agora</string>
     <string name="live_rateLine">%1$s por hora · %2$s por minuto</string>
     <string name="live_note">Anotação rápida</string>
@@ -398,7 +398,7 @@
     <string name="settings_credits">Créditos e bônus</string>
     <string name="settings_creditsHint">Pagamento a mais vira crédito, e você escolhe em que aulas usar. Dá para dar bônus em dinheiro ou minutos.</string>
     <string name="pay_creditLine">Crédito: %1$s</string>
-    <string name="pay_minutesLine">Bônus: %1$d min</string>
+    <string name="pay_minutesLine">Bônus: %1$s</string>
     <string name="pay_useCredit">Usar crédito</string>
     <string name="pay_giveBonus">Dar bônus</string>
     <string name="pay_bonusMoney">Bônus em dinheiro</string>
@@ -461,4 +461,6 @@
         <item quantity="many">%1$d alunos têm bônus</item>
         <item quantity="other">%1$d alunos têm bônus</item>
     </plurals>
+    <string name="settings_clockDurations">Durações em HH:MM</string>
+    <string name="settings_clockDurationsHint">Mostra 01:30 em vez de 90 min em todo o app</string>
 </resources>

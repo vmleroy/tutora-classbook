@@ -41,6 +41,10 @@ The teacher sees what they earned: today and this week on Hoje, and on the Ganho
 - **AC-009-13.** "De onde veio" lists each student, group, paying place and school that earned something in the period, largest first, with its total, a bar in proportion to the largest, and "deve R$ 240" when it owes now. Tapping a row opens its detail.
 - **AC-009-14.** A period with nothing earned shows "Nada ganho neste período" instead of the card and the list.
 
+### Added after trying the build (Victor, 28 Oct 2026)
+
+- **AC-009-16.** Ajustes › Geral has "Durações em HH:MM", off at first. On, every duration in the app reads as hours and minutes ("01:30") instead of minutes ("90 min"): classes, Hoje, the live screen, places, and bonus minutes.
+
 ### Language
 
 - **AC-009-15.** Every label, month name and amount follows the app language; switching it never changes a number.

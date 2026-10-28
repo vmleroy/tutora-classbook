@@ -29,4 +29,6 @@ data class Settings(
     val credits: Boolean = false,
     /** Ajustes › Aulas › Marcar como dada antes do horário, off by default (AC-006-25). */
     val earlyDone: Boolean = false,
+    /** Ajustes › Geral › Durações em HH:MM, off by default: "90 min" or "01:30" everywhere. */
+    val clockDurations: Boolean = false,
 )

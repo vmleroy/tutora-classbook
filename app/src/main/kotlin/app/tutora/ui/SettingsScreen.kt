@@ -110,6 +110,16 @@ fun SettingsScreen(
                             onSwitchChange = { save(s.copy(showDefaultPlaces = it)) },
                         )
                     },
+                    {
+                        ListRow(
+                            stringResource(R.string.settings_clockDurations),
+                            subtitle = stringResource(R.string.settings_clockDurationsHint),
+                            icon = IconName.CLOCK,
+                            trailing = RowTrailing.SWITCH,
+                            switchValue = s.clockDurations,
+                            onSwitchChange = { save(s.copy(clockDurations = it)) },
+                        )
+                    },
                 ),
         )
         ListGroup(

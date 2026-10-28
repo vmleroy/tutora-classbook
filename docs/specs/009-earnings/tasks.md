@@ -11,6 +11,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 7. Screens: Hoje's earnings card (Ganho hoje, previstos, Semana, month, Alunos devem), opening Ganhos. Test: `EarningsScreensTest.kt`. (AC-009-8)
 - [x] 8. Copy in both languages; English test; version 1.9.0. Test: `EarningsScreensTest.kt`. (AC-009-15)
 - [x] 9. Update `docs/architecture.md` (earnings in the domain over one range query) and the design-system component list; run `./gradlew check` once; mark the spec done.
+- [x] 10. Durações em HH:MM in Ajustes, read by every duration through `minutesText` / `durationText`. Test: `LessonScreensTest.kt`. (AC-009-16)
 
 ## Pending on a device
 

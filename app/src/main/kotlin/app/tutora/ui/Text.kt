@@ -2,6 +2,7 @@ package app.tutora.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import app.tutora.R
@@ -97,16 +98,24 @@ fun travelText(place: Place): String =
         TravelMode.NONE -> stringResource(R.string.places_travel_none)
     }
 
+/** Ajustes › Durações em HH:MM, shared with every screen from the top of the app. */
+val LocalClockDurations = staticCompositionLocalOf { false }
+
+/** "01:30" for 90 minutes. */
+fun clockDuration(minutes: Int): String = "${(minutes / 60).toString().padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}"
+
+/** "90 min", or "01:30" with Durações em HH:MM on. */
 @Composable
 @ReadOnlyComposable
-fun minutesText(minutes: Int): String = stringResource(R.string.places_minutes, minutes.toString())
+fun minutesText(minutes: Int): String =
+    if (LocalClockDurations.current) clockDuration(minutes) else stringResource(R.string.places_minutes, minutes.toString())
 
-/** "45 min", or "90 min · 1h30" from an hour on, as in the mockups. */
+/** "45 min", or "90 min · 1h30" from an hour on, as in the mockups; "01:30" with Durações em HH:MM on. */
 @Composable
 @ReadOnlyComposable
 fun durationText(minutes: Int): String {
     val label = minutesText(minutes)
-    if (minutes < 60) return label
+    if (minutes < 60 || LocalClockDurations.current) return label
     val rest = minutes % 60
     return "$label · ${minutes / 60}h${if (rest > 0) rest.toString().padStart(2, '0') else ""}"
 }

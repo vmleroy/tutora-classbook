@@ -62,6 +62,7 @@ import app.tutora.ui.catalog.DurationStepper
 import app.tutora.ui.catalog.Field
 import app.tutora.ui.catalog.RequiredLegend
 import app.tutora.ui.clockTime
+import app.tutora.ui.minutesText
 import app.tutora.ui.payments.methodName
 import app.tutora.ui.placeName
 import app.tutora.ui.shortDate
@@ -431,7 +432,7 @@ private fun howWorked(
     val language = currentLanguage()
     val base =
         if (price.rateType == RateType.HOUR) {
-            stringResource(R.string.lesson_howHour, minutes.toString(), formatMoney(price.cents, language))
+            stringResource(R.string.lesson_howHour, minutesText(minutes), formatMoney(price.cents, language))
         } else {
             stringResource(R.string.lesson_howLesson, formatMoney(price.cents, language))
         }
