@@ -313,7 +313,6 @@ private fun PlacesPane(nav: NavHostController) {
         }
     }
     Column(Modifier.testTag("places-screen"), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
-        Text(stringResource(R.string.places_subtitle), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
         TextField(stringResource(R.string.places_search), query, { query = it })
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             Chip(stringResource(R.string.students_all, places.size.toString()), !owingOnly, { owingOnly = false })
@@ -324,7 +323,7 @@ private fun PlacesPane(nav: NavHostController) {
                 builtins.map {
                     row(it)
                 },
-                title = "${stringResource(R.string.places_builtinGroup)} · ${stringResource(R.string.places_builtinHint)}",
+                title = stringResource(R.string.places_builtinGroup),
             )
         }
         if (own.isNotEmpty()) ListGroup(own.map { row(it) }, title = stringResource(R.string.places_own))

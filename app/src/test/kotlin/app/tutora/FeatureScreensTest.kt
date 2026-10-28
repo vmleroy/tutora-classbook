@@ -186,7 +186,7 @@ class FeatureScreensTest {
         salinha()
         h.show(compose)
         h.go(compose, RegistryHome("places"))
-        compose.onNodeWithContentDescription("Padrão · alunos herdam o preço").assertExists()
+        compose.onNodeWithContentDescription("Padrão").assertExists()
         compose
             .onNode(
                 hasPlainText("Sem preço · 60 min · nenhum aluno · Deslocamento: varia, você informa em cada aula"),

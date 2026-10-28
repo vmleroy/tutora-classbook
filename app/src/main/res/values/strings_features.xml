@@ -11,9 +11,7 @@
     <string name="languages_en">English</string>
     <string name="places_builtin_student_home">Student\'s home</string>
     <string name="places_builtin_online">Online / Remote</string>
-    <string name="places_subtitle">Where you teach · each with its students</string>
     <string name="places_builtinGroup">Default</string>
-    <string name="places_builtinHint">students inherit the price</string>
     <string name="places_own">Your places</string>
     <string name="places_noPrice">No price</string>
     <string name="places_students_zero">no students</string>

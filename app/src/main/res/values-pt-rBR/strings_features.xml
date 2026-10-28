@@ -11,9 +11,7 @@
     <string name="languages_en">English</string>
     <string name="places_builtin_student_home">Casa do Aluno</string>
     <string name="places_builtin_online">Online / Remoto</string>
-    <string name="places_subtitle">Onde você dá aula · cada um com seus alunos</string>
     <string name="places_builtinGroup">Padrão</string>
-    <string name="places_builtinHint">alunos herdam o preço</string>
     <string name="places_own">Seus locais</string>
     <string name="places_noPrice">Sem preço</string>
     <string name="places_students_zero">nenhum aluno</string>
