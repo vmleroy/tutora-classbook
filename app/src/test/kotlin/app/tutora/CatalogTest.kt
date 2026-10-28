@@ -109,22 +109,30 @@ class CatalogTest {
         }
 
     @Test
-    fun `AC-004-16 a group keeps only members linked to its place, and at an Escola it has no price`() =
+    fun `AC-004-16 adding a student who isn't at the group's place links them to it, and at an Escola a group has no price`() =
         runTest {
             val p = placeId()
             val s = studentId(listOf(PlaceLink(p, true, null)))
             val other = studentId(listOf(PlaceLink(online, true, null)), ana.copy(name = "Bia"))
             val g = (t.catalog.saveGroup(Group("", p, "Turma ENEM", "Redação", 18_000, listOf(s, other), null)) as Result.Ok).value
             assertEquals(
-                listOf(s),
-                t.catalog.let {
-                    repo
-                        .groups()
-                        .first()
-                        .first { it.id == g.id }
-                        .memberIds
-                },
+                setOf(s, other),
+                repo
+                    .groups()
+                    .first()
+                    .first { it.id == g.id }
+                    .memberIds
+                    .toSet(),
             )
+            // Bia keeps Online as her default and is now linked to the group's place with its price.
+            val bia =
+                repo
+                    .student(other)
+                    .first()
+                    ?.links
+                    .orEmpty()
+            assertEquals(listOf(online to true, p to false), bia.map { it.placeId to it.isDefault })
+            assertNull(bia.last().rateCents)
             val school = placeId(salinha(kind = PlaceKind.SCHOOL, name = "Colégio Santa Clara"))
             assertNull((t.catalog.saveGroup(Group("", school, "9º B", null, 5000, emptyList(), null)) as Result.Ok).value.rateCents)
         }

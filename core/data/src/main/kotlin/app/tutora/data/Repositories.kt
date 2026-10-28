@@ -55,6 +55,11 @@ class CatalogRepository(
             groups.map { it.toGroup(byGroup[it.id].orEmpty()) }
         }
 
+    fun groupFlow(id: String): Flow<Group?> =
+        combine(db.groups().observeOne(id), db.groups().observeMembers()) { g, members ->
+            g?.toGroup(members.filter { it.groupId == id }.map { it.studentId })
+        }
+
     suspend fun group(id: String): Group? = db.groups().get(id)?.let { it.toGroup(db.groups().members(id)) }
 }
 

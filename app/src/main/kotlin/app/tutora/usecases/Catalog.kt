@@ -117,7 +117,10 @@ class Catalog(
         db.students().insertLinks(listOf(LinkRow(studentId, placeId, current.isEmpty(), null, ctx.now())))
     }
 
-    /** Members must be linked to the group's place; at a school the salary covers the price (AC-004-16). */
+    /**
+     * Saves a group; a member not yet linked to the group's place is linked to it with the
+     * place's price. At a school the salary covers the price (AC-004-16).
+     */
     suspend fun saveGroup(draft: Group): Result<Group> =
         db.inTransaction {
             if (draft.name.isBlank()) return@inTransaction Result.Err(CatalogError.NAME_REQUIRED)
@@ -128,6 +131,12 @@ class Catalog(
                     .atPlace(draft.placeId)
                     .map { it.id }
                     .toSet()
+            val members = draft.memberIds.distinct().filter { id -> db.students().get(id)?.let { it.archivedAt == null } == true }
+            for (m in members.filter { it !in atPlace }) {
+                // A student with no place yet gets this one as their default.
+                val first = db.students().visibleLinks(m).isEmpty()
+                db.students().insertLinks(listOf(LinkRow(m, draft.placeId, first, null, ctx.now())))
+            }
             val school =
                 db
                     .places()
@@ -139,7 +148,7 @@ class Catalog(
                     name = draft.name.trim(),
                     id = beforeRow?.id ?: draft.id.ifEmpty { ctx.newId() },
                     rateCents = if (school) null else draft.rateCents,
-                    memberIds = draft.memberIds.filter { it in atPlace },
+                    memberIds = members,
                     archivedAt = beforeRow?.archivedAt,
                 )
             db.groups().upsert(next.toRow(beforeRow?.createdAt ?: ctx.now(), ctx.now()))

@@ -58,6 +58,7 @@ import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.TagDot
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.TileTone
+import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.CatalogError
@@ -75,12 +76,15 @@ import app.tutora.domain.resolvePrice
 import app.tutora.domain.unlink
 import app.tutora.domain.withDefault
 import app.tutora.state.LocalServices
+import app.tutora.ui.GroupEdit
 import app.tutora.ui.PlaceDetail
 import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
+import app.tutora.ui.StudentDetail
 import app.tutora.ui.errorText
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
+import app.tutora.ui.rateMoney
 import app.tutora.ui.rateText
 import app.tutora.ui.tag
 import app.tutora.usecases.Kind
@@ -95,17 +99,27 @@ fun StudentDetailScreen(
     id: String,
 ) {
     val services = LocalServices.current
+    val scope = rememberCoroutineScope()
     val item by services.catalogRepo.student(id).collectAsState(initial = null)
     val places by services.catalogRepo.places().collectAsState(initial = emptyList())
     val s = item ?: return
+    val archived = s.student.archivedAt != null
     val byId = places.associateBy { it.place.id }
     ScreenScaffold(
         stringResource(R.string.students_detail),
         "student-detail",
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
+        // Arquivar sits beside the pencil (AC-004-23).
         actions =
-            listOf(
+            listOfNotNull(
+                if (!archived) {
+                    HeaderAction(IconName.ARCHIVE, stringResource(R.string.catalog_archive)) {
+                        scope.launch { services.catalog.archive(Kind.STUDENT, id).also { nav.popBackStack() } }
+                    }
+                } else {
+                    null
+                },
                 HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) {
                     nav.navigate(
                         app.tutora.ui
@@ -114,6 +128,20 @@ fun StudentDetailScreen(
                 },
             ),
     ) {
+        if (archived) {
+            ArchiveActions(
+                s.student.name,
+                archived = true,
+                onArchive = {},
+                onRestore = { scope.launch { services.catalog.restore(Kind.STUDENT, id) } },
+                onRemove = {
+                    scope.launch {
+                        services.catalog.removePermanently(Kind.STUDENT, id)
+                        nav.navigate(RegistryHome()) { popUpTo<RegistryHome> { inclusive = true } }
+                    }
+                },
+            )
+        }
         Card {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3), verticalAlignment = Alignment.CenterVertically) {
                 Avatar(initials(s.student.name), s.student.color.tag(), size = AvatarSize.LG)
@@ -344,20 +372,6 @@ private fun StudentForm(
         TextField(stringResource(R.string.students_notes), d.notes.orEmpty(), {
             d = d.copy(notes = it.ifEmpty { null })
         }, imeAction = ImeAction.Done)
-        if (id != null) {
-            ArchiveActions(
-                d.name,
-                d.archivedAt != null,
-                onArchive = { scope.launch { services.catalog.archive(Kind.STUDENT, id).also { nav.popBackStack() } } },
-                onRestore = { scope.launch { services.catalog.restore(Kind.STUDENT, id).also { nav.popBackStack() } } },
-                onRemove = {
-                    scope.launch {
-                        services.catalog.removePermanently(Kind.STUDENT, id)
-                        nav.navigate(RegistryHome()) { popUpTo<RegistryHome> { inclusive = true } }
-                    }
-                },
-            )
-        }
     }
     if (picking) {
         // Default places stay out of the picker when Ajustes hides them (AC-004-29).
@@ -410,7 +424,88 @@ private fun ColorPicker(
     }
 }
 
-/** Nova turma / Editar turma: optional members from the place's students; no price at a school (AC-004-16). */
+/** A group in full: place, price and members; the pencil edits, Arquivar sits beside it (AC-004-23, 30). */
+@Composable
+fun GroupDetailScreen(
+    nav: NavHostController,
+    id: String,
+) {
+    val services = LocalServices.current
+    val scope = rememberCoroutineScope()
+    val language = currentLanguage()
+    val group by remember(id) { services.catalogRepo.groupFlow(id) }.collectAsState(initial = null)
+    val everyone by services.catalogRepo.students().collectAsState(initial = emptyList())
+    val g = group ?: return
+    val place by remember(g.placeId) { services.catalogRepo.place(g.placeId) }.collectAsState(initial = null)
+    val archived = g.archivedAt != null
+    val members = everyone.map { it.student }.filter { it.id in g.memberIds }
+    ScreenScaffold(
+        stringResource(R.string.groups_detail),
+        "group-detail",
+        variant = HeaderVariant.PUSH,
+        onBack = { nav.popBackStack() },
+        actions =
+            listOfNotNull(
+                if (!archived) {
+                    HeaderAction(IconName.ARCHIVE, stringResource(R.string.catalog_archive)) {
+                        scope.launch { services.catalog.archive(Kind.GROUP, id).also { nav.popBackStack() } }
+                    }
+                } else {
+                    null
+                },
+                HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) { nav.navigate(GroupEdit(id = id)) },
+            ),
+    ) {
+        if (archived) {
+            ArchiveActions(
+                g.name,
+                archived = true,
+                onArchive = {},
+                onRestore = { scope.launch { services.catalog.restore(Kind.GROUP, id) } },
+                onRemove = { scope.launch { services.catalog.removePermanently(Kind.GROUP, id).also { nav.popBackStack() } } },
+            )
+        }
+        Card {
+            Text(g.name, style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
+            Text(
+                listOfNotNull(g.subject, place?.let { placeName(it) }).joinToString(" · "),
+                style = TutoraTheme.type.meta,
+                color = TutoraTheme.colors.inkMuted,
+            )
+        }
+        Card(label = stringResource(R.string.groups_price)) {
+            Text(stringResource(R.string.groups_price), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
+            Text(
+                when {
+                    place?.kind == PlaceKind.SCHOOL -> stringResource(R.string.groups_coveredBySalary)
+                    g.rateCents != null -> stringResource(R.string.places_perLesson, rateMoney(g.rateCents ?: 0, language))
+                    else -> stringResource(R.string.places_noPrice)
+                },
+                style = TutoraTheme.type.bodyStrong,
+                color = TutoraTheme.colors.ink,
+            )
+        }
+        SectionHeader("${stringResource(R.string.groups_members)} · ${members.size}")
+        if (members.isEmpty()) {
+            Text(stringResource(R.string.groups_noMembers), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
+        } else {
+            ListGroup(
+                members.map { st ->
+                    {
+                        ListRow(
+                            st.name,
+                            subtitle = st.subject,
+                            avatar = initials(st.name) to st.color.tag(),
+                            onClick = { nav.navigate(StudentDetail(st.id)) },
+                        )
+                    }
+                },
+            )
+        }
+    }
+}
+
+/** Nova turma / Editar turma: optional members, any of whom saving links to the place; no price at a school (AC-004-16). */
 @Composable
 fun GroupEditScreen(
     nav: NavHostController,
@@ -439,7 +534,11 @@ private fun GroupForm(
     // Each Save that fails counts, so the same error blinks again.
     var tries by remember { mutableIntStateOf(0) }
     val place by services.catalogRepo.place(d.placeId).collectAsState(initial = null)
-    val students by services.catalogRepo.studentsAt(d.placeId).collectAsState(initial = emptyList())
+    val atPlace by services.catalogRepo.studentsAt(d.placeId).collectAsState(initial = emptyList())
+    val everyone by services.catalogRepo.students().collectAsState(initial = emptyList())
+    var adding by rememberSaveable { mutableStateOf(false) }
+    // The place's students, then anyone added who isn't linked yet (saving links them).
+    val listed = atPlace + everyone.map { it.student }.filter { st -> st.id in d.memberIds && atPlace.none { it.id == st.id } }
     val school = place?.kind == PlaceKind.SCHOOL
     ScreenScaffold(
         stringResource(
@@ -496,18 +595,35 @@ private fun GroupForm(
         }
         Field(stringResource(R.string.groups_members)) {
             Text(stringResource(R.string.groups_membersHint), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
-            students.forEach { s ->
+            listed.forEach { s ->
                 Checkbox(s.name, s.id in d.memberIds, { on -> d = d.copy(memberIds = if (on) d.memberIds + s.id else d.memberIds - s.id) })
             }
         }
-        if (id != null) {
-            ArchiveActions(
-                d.name,
-                d.archivedAt != null,
-                onArchive = { scope.launch { services.catalog.archive(Kind.GROUP, id).also { nav.popBackStack() } } },
-                onRestore = { scope.launch { services.catalog.restore(Kind.GROUP, id).also { nav.popBackStack() } } },
-                onRemove = { scope.launch { services.catalog.removePermanently(Kind.GROUP, id).also { nav.popBackStack() } } },
-            )
+        Button(stringResource(R.string.groups_addStudent), { adding = true }, variant = ButtonVariant.OUTLINE)
+    }
+    if (adding) {
+        val others = everyone.filter { e -> listed.none { it.id == e.student.id } }
+        BottomSheet(stringResource(R.string.groups_addStudent), { adding = false }) {
+            if (others.isEmpty()) {
+                Text(stringResource(R.string.places_noStudentsToLink), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
+            } else {
+                ListGroup(
+                    others.map { e ->
+                        {
+                            ListRow(
+                                e.student.name,
+                                subtitle = e.student.subject,
+                                avatar = initials(e.student.name) to e.student.color.tag(),
+                                trailing = RowTrailing.NONE,
+                                onClick = {
+                                    d = d.copy(memberIds = d.memberIds + e.student.id)
+                                    adding = false
+                                },
+                            )
+                        }
+                    },
+                )
+            }
         }
     }
 }

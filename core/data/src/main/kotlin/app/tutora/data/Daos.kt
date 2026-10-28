@@ -122,6 +122,9 @@ interface GroupDao {
     @Query("SELECT * FROM group_class WHERE id = :id")
     suspend fun get(id: String): GroupRow?
 
+    @Query("SELECT * FROM group_class WHERE id = :id")
+    fun observeOne(id: String): Flow<GroupRow?>
+
     @Query("SELECT * FROM group_member")
     fun observeMembers(): Flow<List<MemberRow>>
 

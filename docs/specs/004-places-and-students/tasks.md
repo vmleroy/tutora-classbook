@@ -4,6 +4,7 @@
 - [x] 2. Room tables, DAOs, repositories; catalog use cases. Test: `CatalogTest`. (AC-004-2, AC-004-3, AC-004-9, AC-004-10, AC-004-12, AC-004-13, AC-004-16, AC-004-17, AC-004-23, AC-004-24, AC-004-25)
 - [x] 3. Duration typing as hh:mm. Test: `MoneyRulesTest`. (AC-004-27)
 - [x] 4. Cadastro, place, student, group and Arquivados screens; default places in Ajustes. Test: `FeatureScreensTest`. (AC-004-1, AC-004-2, AC-004-14, AC-004-15, AC-004-17, AC-004-23, AC-004-26, AC-004-28, AC-004-29)
+- [x] 5. (28 Oct 2026) Group detail with the pencil, Arquivar beside the pencil on every detail, any student can join a group. Tests: `CatalogTest`, `FeatureScreensTest`. (AC-004-16, AC-004-23, AC-004-30)
 
 ## Pending on a device
 

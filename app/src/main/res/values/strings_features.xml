@@ -127,7 +127,10 @@
     <string name="groups_price">Price per lesson</string>
     <string name="groups_coveredBySalary">Covered by the school salary</string>
     <string name="groups_members">Students in the group</string>
-    <string name="groups_membersHint">Optional: only students linked to this place</string>
+    <string name="groups_detail">Group</string>
+    <string name="groups_addStudent">+ Add a student</string>
+    <string name="groups_noMembers">No students in this group yet.</string>
+    <string name="groups_membersHint">Optional. Anyone who doesn\'t study at this place yet is linked to it.</string>
     <string name="groups_size_zero">no students</string>
     <string name="catalog_edit">Edit</string>
     <string name="catalog_save">Save</string>

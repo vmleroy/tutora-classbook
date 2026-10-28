@@ -127,7 +127,10 @@
     <string name="groups_price">Preço por aula</string>
     <string name="groups_coveredBySalary">Coberta pelo salário da escola</string>
     <string name="groups_members">Alunos da turma</string>
-    <string name="groups_membersHint">Opcional: só alunos ligados a este local</string>
+    <string name="groups_detail">Turma</string>
+    <string name="groups_addStudent">+ Adicionar aluno</string>
+    <string name="groups_noMembers">Nenhum aluno na turma ainda.</string>
+    <string name="groups_membersHint">Opcional. Quem ainda não estuda neste local passa a ser ligado a ele.</string>
     <string name="groups_size_zero">nenhum aluno</string>
     <string name="catalog_edit">Editar</string>
     <string name="catalog_save">Salvar</string>
