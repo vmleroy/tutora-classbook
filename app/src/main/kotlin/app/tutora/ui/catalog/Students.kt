@@ -60,6 +60,7 @@ import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.TagDot
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
+import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.CatalogError
@@ -87,7 +88,6 @@ import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
 import app.tutora.ui.errorText
 import app.tutora.ui.payments.PackageCard
-import app.tutora.ui.payments.PaidByPlace
 import app.tutora.ui.payments.PayerBalance
 import app.tutora.ui.payments.PayerHistory
 import app.tutora.ui.placeName
@@ -167,26 +167,15 @@ fun StudentDetailScreen(
                     )
                 }
             }
+            s.student.notes?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted) }
         }
         // What the student owes and their package, near the top (spec 008).
         PayerBalance(PayerRef(PayerKind.STUDENT, id), stringResource(R.string.pay_record))
         if (s.student.rateType == RateType.PACKAGE) PackageCard(id, s.student.packagePriceCents ?: 0)
-        PaidByPlace(nav, id)
-        Card(label = stringResource(R.string.students_rate)) {
-            Text(stringResource(R.string.students_rate), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
-            Text(
-                stringResource(
-                    when (s.student.rateType) {
-                        RateType.HOUR -> R.string.students_perHour
-                        RateType.LESSON -> R.string.students_perLesson
-                        RateType.PACKAGE -> R.string.students_package
-                    },
-                ),
-                style = TutoraTheme.type.bodyStrong,
-                color = TutoraTheme.colors.ink,
-            )
-            s.student.notes?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted) }
-        }
+        val elsewhere by remember(id) { services.paymentRepo.elsewhere(id) }.collectAsState(initial = emptyList())
+        val language = currentLanguage()
+        val placePays = stringResource(R.string.pay_byPlace)
+        val paidText = stringResource(R.string.pay_paid)
         val salary = stringResource(R.string.groups_coveredBySalary)
         val unset = stringResource(R.string.places_noPrice)
         val name = s.student.name
@@ -201,7 +190,24 @@ fun StudentDetailScreen(
                         Price.Salary -> salary
                         Price.Unset -> unset
                     }
-                Connection(place.id, placeName(place), price, icon = if (link.isDefault) IconName.STAR else IconName.PIN)
+                // A place that pays you for this student's classes says so, with what it still owes (AC-008-26).
+                val owedThere = elsewhere.filter { it.payer.id == place.id }
+                val paysNote =
+                    if (owedThere.isEmpty()) {
+                        null
+                    } else {
+                        val left = owedThere.sumOf { it.left }
+                        listOf(
+                            placePays,
+                            if (left > 0) stringResource(R.string.pay_leftShort, formatMoney(left, language)) else paidText,
+                        ).joinToString(" · ")
+                    }
+                Connection(
+                    place.id,
+                    placeName(place),
+                    listOfNotNull(price, paysNote).joinToString(" · "),
+                    icon = if (link.isDefault) IconName.STAR else IconName.PIN,
+                )
             },
             stringResource(R.string.connections_noPlaces),
             if (archived) null else stringResource(R.string.connections_addPlace),

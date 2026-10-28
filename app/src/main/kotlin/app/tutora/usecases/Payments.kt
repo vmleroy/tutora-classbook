@@ -1,11 +1,13 @@
 package app.tutora.usecases
 
+import app.tutora.data.CreditRow
 import app.tutora.data.LessonRow
 import app.tutora.data.PackageRow
 import app.tutora.data.PaymentLessonRow
 import app.tutora.data.PaymentRepository
 import app.tutora.data.PaymentRow
 import app.tutora.data.ScheduleRepository
+import app.tutora.data.SettingsRepository
 import app.tutora.data.inTransaction
 import app.tutora.data.toStudent
 import app.tutora.domain.Cents
@@ -20,6 +22,7 @@ import app.tutora.domain.dueOf
 import app.tutora.domain.isoText
 import app.tutora.domain.localOf
 import app.tutora.domain.localToInstant
+import app.tutora.domain.minutesCover
 import app.tutora.domain.payerOf
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -34,7 +37,11 @@ internal suspend fun withDue(
     row: LessonRow,
 ): LessonRow {
     val status = LessonStatus.fromKey(row.status)
-    if (status == LessonStatus.SCHEDULED || status == LessonStatus.LIVE) return row.copy(payer = null, dueCents = null, packageId = null)
+    if (status == LessonStatus.SCHEDULED || status == LessonStatus.LIVE) {
+        // Credit or minutes put on it go back to the payer (AC-008-30).
+        ctx.db.payments().deleteUsesOn(row.id)
+        return row.copy(payer = null, dueCents = null, packageId = null)
+    }
     val lesson = ScheduleRepository(ctx.db).load(row) ?: return row
     val dao = ctx.db.payments()
     val pkg =
@@ -55,7 +62,7 @@ data class PaymentDraft(
     val chosen: List<String> = emptyList(),
 )
 
-enum class PaymentError { NOT_FOUND, AMOUNT, FUTURE_DATE, NOT_OWED, NO_PACKAGE }
+enum class PaymentError { NOT_FOUND, AMOUNT, FUTURE_DATE, NOT_OWED, NO_PACKAGE, OVERPAID, CREDITS_OFF, NO_CREDIT }
 
 sealed interface PaymentResult {
     data class Ok(
@@ -107,7 +114,7 @@ class Payments(
 
     /** Inside a transaction: the chosen classes must be owed by this payer (AC-008-7, 8). */
     private suspend fun checkChosen(draft: PaymentDraft): PaymentError? {
-        val owed = dao.owed(draft.payer.kind.key, draft.payer.id).map { it.id }.toSet()
+        val owed = dao.owed(draft.payer.kind.key, draft.payer.id).map { it.lesson.id }.toSet()
         return if (owed.containsAll(draft.chosen)) null else PaymentError.NOT_OWED
     }
 
@@ -130,6 +137,11 @@ class Payments(
             val foreign = elsewhere.filter { it.owed.lessonId in draft.chosen && it.left > 0 }
             val own = draft.copy(chosen = draft.chosen - elsewhere.map { it.owed.lessonId }.toSet())
             checkChosen(own)?.let { return@inTransaction PaymentResult.Err(it) }
+            // With Créditos e bônus off there is no credit: a payment can't be more than is owed (AC-008-28).
+            if (!SettingsRepository(db).load().credits) {
+                val owedHere = PaymentRepository(db).ledgerNow(draft.payer).owedCents + foreign.sumOf { it.left }
+                if (draft.cents > owedHere) return@inTransaction PaymentResult.Err(PaymentError.OVERPAID)
+            }
             var remaining = draft.cents
             var first: String? = null
             for ((payer, classes) in foreign.groupBy { it.payer }) {
@@ -204,6 +216,82 @@ class Payments(
             dao.upsertPayment(draft.payer.row(id, draft, packageId, ctx.now()))
             PaymentResult.Ok(id)
         }
+
+    /** Dar bônus: free money, free minutes or both, as credit (AC-008-31). */
+    suspend fun giveBonus(
+        payer: PayerRef,
+        cents: Cents,
+        minutes: Int,
+        note: String? = null,
+    ): PaymentResult =
+        db.inTransaction {
+            if (!SettingsRepository(db).load().credits) return@inTransaction PaymentResult.Err(PaymentError.CREDITS_OFF)
+            if (cents < 0 || minutes < 0 || cents + minutes == 0L) return@inTransaction PaymentResult.Err(PaymentError.AMOUNT)
+            val id = ctx.newId()
+            dao.upsertCredit(creditRow(id, payer, "bonus", cents, minutes, null, note))
+            PaymentResult.Ok(id)
+        }
+
+    /**
+     * Usar crédito: puts the payer's money credit, or its bonus minutes, on the chosen classes,
+     * oldest first, as far as it goes (AC-008-30, 31).
+     */
+    suspend fun useCredit(
+        payer: PayerRef,
+        lessonIds: List<String>,
+        minutes: Boolean,
+    ): PaymentResult =
+        db.inTransaction {
+            if (!SettingsRepository(db).load().credits) return@inTransaction PaymentResult.Err(PaymentError.CREDITS_OFF)
+            val ledger = PaymentRepository(db).ledgerNow(payer)
+            val chosen = ledger.owed.filter { it.lessonId in lessonIds && (ledger.allocation.left[it.lessonId] ?: 0) > 0 }
+            if (chosen.isEmpty()) return@inTransaction PaymentResult.Err(PaymentError.NOT_OWED)
+            var money = ledger.creditCents
+            var mins = ledger.creditMinutes
+            if ((if (minutes) mins.toLong() else money) <= 0) return@inTransaction PaymentResult.Err(PaymentError.NO_CREDIT)
+            var first: String? = null
+            for (c in chosen.sortedBy { it.startAt }) {
+                val left = ledger.allocation.left[c.lessonId] ?: 0
+                val row = db.schedule().lesson(c.lessonId) ?: continue
+                val (cents, used) =
+                    if (minutes) {
+                        val lesson = ScheduleRepository(db).load(row) ?: continue
+                        val take = minOf(mins, row.plannedMin)
+                        minutesCover(lesson.frozenRate, row.plannedMin, take, left) to take
+                    } else {
+                        minOf(money, left) to 0
+                    }
+                if (cents <= 0) continue
+                val id = ctx.newId()
+                dao.upsertCredit(creditRow(id, payer, "use", cents, used, c.lessonId, null))
+                if (minutes) mins -= used else money -= cents
+                first = first ?: id
+                if ((if (minutes) mins.toLong() else money) <= 0) break
+            }
+            first?.let { PaymentResult.Ok(it) } ?: PaymentResult.Err(PaymentError.NO_CREDIT)
+        }
+
+    private fun creditRow(
+        id: String,
+        payer: PayerRef,
+        kind: String,
+        cents: Cents,
+        minutes: Int,
+        lessonId: String?,
+        note: String?,
+    ) = CreditRow(
+        id,
+        payer.id.takeIf { payer.kind == PayerKind.STUDENT },
+        payer.id.takeIf { payer.kind == PayerKind.GROUP },
+        payer.id.takeIf { payer.kind == PayerKind.PLACE },
+        kind,
+        cents,
+        minutes,
+        lessonId,
+        note?.trim()?.ifEmpty { null },
+        ctx.now(),
+        ctx.now(),
+    )
 
     /** The method the sheet starts at: the last one this payer used, or Pix (AC-008-5). */
     suspend fun lastMethod(payer: PayerRef): PayMethod = dao.lastMethod(payer.kind.key, payer.id)?.let(PayMethod::fromKey) ?: PayMethod.PIX

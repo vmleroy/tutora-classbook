@@ -18,6 +18,8 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 14. Update `docs/architecture.md` (frozen `payer` and `due_cents`, allocation in the domain) and `docs/product.md` (the package's lessons used is derived), run `./gradlew check` once, mark the spec done.
 - [x] 15. Screens, after trying the build: Marcar como paga on the lesson detail; the places that pay for a student's classes on the student's detail; "Nenhuma aula a receber" in the sheet; the sheet's body scrolls (design system `BottomSheet`). Test: `PaymentScreensTest.kt`. (AC-008-25, 26)
 - [x] 16. A student sees and pays their classes a place owes: `PaymentRepository.elsewhere`, `Payments.record` splits the money to the place, the student's list and sheet show them. Test: `PaymentsTest.kt`, `PaymentScreensTest.kt`. (AC-008-26, 27)
+- [x] 17. Credits and bonus: `credit` table and migration 4 → 5, `credits` setting, held credit, credit uses and bonus minutes in `allocate`, `Payments.giveBonus` / `useCredit`, overpaying refused when off; Ajustes switch, credit line, Usar crédito and Dar bônus sheets. Test: `PaymentRulesTest.kt`, `PaymentsTest.kt`, `PaymentScreensTest.kt`, `MigrationsTest.kt`. (AC-008-28 to 31)
+- [x] 18. Layout: `SectionHeader` action and tappable aside (design system), small + on connection sections, Aulas and Pagamentos sections with Ver todas page, names on class rows, no Valor card, place note in Locais, search in Nova aula's picker. Test: `PaymentScreensTest.kt`. (AC-008-32 to 34)
 
 ## Pending on a device
 

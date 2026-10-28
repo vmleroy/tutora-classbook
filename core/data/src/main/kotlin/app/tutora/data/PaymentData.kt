@@ -6,7 +6,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
+import app.tutora.domain.Bonus
 import app.tutora.domain.Cents
+import app.tutora.domain.CreditUse
 import app.tutora.domain.Ledger
 import app.tutora.domain.OwedClass
 import app.tutora.domain.OwedElsewhere
@@ -26,6 +28,16 @@ data class PlacePaidRow(
     @ColumnInfo(name = "place_id") val placeId: String,
 )
 
+/** An owed class with the name of its student or group, for the lists. */
+data class OwedRow(
+    @androidx.room.Embedded val lesson: LessonRow,
+    @ColumnInfo(name = "who_name") val whoName: String?,
+)
+
+private const val OWED_SELECT =
+    "SELECT lesson.*, COALESCE(s.name, g.name) AS who_name FROM lesson " +
+        "LEFT JOIN student s ON s.id = lesson.student_id LEFT JOIN group_class g ON g.id = lesson.group_id"
+
 /** What one payer owes and has paid, summed. */
 data class BalanceRow(
     val payer: String,
@@ -38,6 +50,9 @@ data class BalanceRow(
 private const val LESSON_PAYER =
     "lesson.payer = :kind AND CASE lesson.payer WHEN 'student' THEN lesson.student_id " +
         "WHEN 'group' THEN lesson.group_id ELSE lesson.place_id END = :id"
+private const val CREDIT_PAYER =
+    "((:kind = 'student' AND credit.student_id = :id) OR (:kind = 'group' AND credit.group_id = :id) " +
+        "OR (:kind = 'place' AND credit.place_id = :id))"
 private const val PAYMENT_PAYER =
     "((:kind = 'student' AND payment.student_id = :id) OR (:kind = 'group' AND payment.group_id = :id) " +
         "OR (:kind = 'place' AND payment.place_id = :id))"
@@ -56,17 +71,17 @@ interface PaymentDao {
     )
     fun observeBalances(): Flow<List<BalanceRow>>
 
-    @Query("SELECT * FROM lesson WHERE $LESSON_PAYER AND due_cents IS NOT NULL AND due_cents > 0 ORDER BY start_at")
+    @Query("$OWED_SELECT WHERE $LESSON_PAYER AND lesson.due_cents IS NOT NULL AND lesson.due_cents > 0 ORDER BY lesson.start_at")
     fun observeOwed(
         kind: String,
         id: String,
-    ): Flow<List<LessonRow>>
+    ): Flow<List<OwedRow>>
 
-    @Query("SELECT * FROM lesson WHERE $LESSON_PAYER AND due_cents IS NOT NULL AND due_cents > 0")
+    @Query("$OWED_SELECT WHERE $LESSON_PAYER AND lesson.due_cents IS NOT NULL AND lesson.due_cents > 0")
     suspend fun owed(
         kind: String,
         id: String,
-    ): List<LessonRow>
+    ): List<OwedRow>
 
     @Query("SELECT * FROM payment WHERE $PAYMENT_PAYER ORDER BY paid_at DESC")
     fun observePayments(
@@ -146,6 +161,44 @@ interface PaymentDao {
     @Query("SELECT * FROM lesson WHERE package_id = :packageId")
     suspend fun packageLessons(packageId: String): List<LessonRow>
 
+    @Query("SELECT * FROM credit WHERE $CREDIT_PAYER")
+    fun observeCredits(
+        kind: String,
+        id: String,
+    ): Flow<List<CreditRow>>
+
+    @Query("SELECT * FROM credit WHERE $CREDIT_PAYER")
+    suspend fun credits(
+        kind: String,
+        id: String,
+    ): List<CreditRow>
+
+    @Upsert
+    suspend fun upsertCredit(row: CreditRow)
+
+    @Query("DELETE FROM credit WHERE id = :id")
+    suspend fun deleteCredit(id: String)
+
+    /** A class no longer owed gives back the credit and minutes put on it. */
+    @Query("DELETE FROM credit WHERE kind = 'use' AND lesson_id = :lessonId")
+    suspend fun deleteUsesOn(lessonId: String)
+
+    // Everything at once, for the balances on the lists and Hoje.
+
+    @Query(
+        "$OWED_SELECT WHERE lesson.payer IS NOT NULL AND lesson.due_cents IS NOT NULL AND lesson.due_cents > 0",
+    )
+    fun observeAllOwed(): Flow<List<OwedRow>>
+
+    @Query("SELECT * FROM payment")
+    fun observeAllPayments(): Flow<List<PaymentRow>>
+
+    @Query("SELECT * FROM payment_lesson")
+    fun observeAllChosen(): Flow<List<PaymentLessonRow>>
+
+    @Query("SELECT * FROM credit")
+    fun observeAllCredits(): Flow<List<CreditRow>>
+
     /** Classes done, cancelled or missed before spec 008, still without a payer. */
     @Query("SELECT * FROM lesson WHERE status IN ('done', 'cancelled', 'missed') AND payer IS NULL")
     suspend fun unsettled(): List<LessonRow>
@@ -161,15 +214,40 @@ fun PaymentRow.payerRef(): PayerRef =
 fun PaymentRow.toPayment(chosen: List<String>) =
     PaymentRecord(id, payerRef(), amountCents, PayMethod.fromKey(method) ?: PayMethod.PIX, paidAt, note, packageId, chosen)
 
-fun LessonRow.toOwed() = OwedClass(id, startAt, plannedMin, dueCents ?: 0)
+fun OwedRow.toOwed() = OwedClass(lesson.id, lesson.startAt, lesson.plannedMin, lesson.dueCents ?: 0, whoName.orEmpty())
+
+fun OwedRow.payerRef(): PayerRef? =
+    when (PayerKind.fromKey(lesson.payer)) {
+        PayerKind.STUDENT -> lesson.studentId?.let { PayerRef(PayerKind.STUDENT, it) }
+        PayerKind.GROUP -> lesson.groupId?.let { PayerRef(PayerKind.GROUP, it) }
+        PayerKind.PLACE -> PayerRef(PayerKind.PLACE, lesson.placeId)
+        null -> null
+    }
+
+fun CreditRow.payerRef(): PayerRef =
+    when {
+        studentId != null -> PayerRef(PayerKind.STUDENT, studentId)
+        groupId != null -> PayerRef(PayerKind.GROUP, groupId)
+        else -> PayerRef(PayerKind.PLACE, placeId.orEmpty())
+    }
 
 fun ledgerOf(
-    owed: List<LessonRow>,
+    owed: List<OwedRow>,
     payments: List<PaymentRow>,
     chosen: List<PaymentLessonRow>,
+    credits: List<CreditRow> = emptyList(),
+    holdCredit: Boolean = false,
 ): Ledger {
     val byPayment = chosen.groupBy({ it.paymentId }, { it.lessonId })
-    return ledgerOf(owed.map { it.toOwed() }, payments.map { it.toPayment(byPayment[it.id].orEmpty()) })
+    return ledgerOf(
+        owed.map { it.toOwed() },
+        payments.map { it.toPayment(byPayment[it.id].orEmpty()) },
+        credits.filter { it.kind == "bonus" }.map { Bonus(it.id, it.cents, it.minutes, it.createdAt) },
+        credits.filter { it.kind == "use" && it.lessonId != null }.sortedBy { it.createdAt }.map {
+            CreditUse(it.lessonId.orEmpty(), it.cents, it.minutes)
+        },
+        holdCredit,
+    )
 }
 
 /** Balances, ledgers and packages as Flows; Room re-emits after any write (AC-008-10). */
@@ -177,10 +255,40 @@ class PaymentRepository(
     private val db: TutoraDatabase,
 ) {
     private val dao get() = db.payments()
+    private val settings = SettingsRepository(db)
 
+    /**
+     * What each payer owes (positive) or has as credit (negative, only with Créditos e bônus on).
+     * Worked out per payer in the domain, since held credit and credit put on classes can't be
+     * summed in SQL.
+     */
     fun balances(): Flow<Map<PayerRef, Cents>> =
-        dao.observeBalances().map { rows ->
-            rows.mapNotNull { r -> PayerKind.fromKey(r.payer)?.let { PayerRef(it, r.payerId) to r.due - r.paid } }.toMap()
+        combine(
+            dao.observeAllOwed(),
+            dao.observeAllPayments(),
+            dao.observeAllChosen(),
+            dao.observeAllCredits(),
+            settings.observe(),
+        ) { owed, payments, chosen, credits, s ->
+            val owedBy = owed.groupBy { it.payerRef() }
+            val paidBy = payments.filter { it.packageId == null }.groupBy { it.payerRef() }
+            val creditsBy = credits.groupBy { it.payerRef() }
+            (owedBy.keys.filterNotNull() + paidBy.keys + creditsBy.keys).toSet().associateWith { p ->
+                val ids = paidBy[p].orEmpty().map { it.id }.toSet()
+                val l =
+                    ledgerOf(
+                        owedBy[p].orEmpty(),
+                        paidBy[p].orEmpty(),
+                        chosen.filter { it.paymentId in ids },
+                        creditsBy[p].orEmpty(),
+                        s.credits,
+                    )
+                when {
+                    l.owedCents > 0 -> l.owedCents
+                    s.credits -> -l.creditCents
+                    else -> 0L
+                }
+            }
         }
 
     fun ledger(payer: PayerRef): Flow<Ledger> =
@@ -188,10 +296,18 @@ class PaymentRepository(
             dao.observeOwed(payer.kind.key, payer.id),
             dao.observePayments(payer.kind.key, payer.id),
             dao.observeChosen(payer.kind.key, payer.id),
-        ) { owed, payments, chosen -> ledgerOf(owed, payments, chosen) }
+            dao.observeCredits(payer.kind.key, payer.id),
+            settings.observe(),
+        ) { owed, payments, chosen, credits, s -> ledgerOf(owed, payments, chosen, credits, s.credits) }
 
     suspend fun ledgerNow(payer: PayerRef): Ledger =
-        ledgerOf(dao.owed(payer.kind.key, payer.id), dao.payments(payer.kind.key, payer.id), dao.chosen(payer.kind.key, payer.id))
+        ledgerOf(
+            dao.owed(payer.kind.key, payer.id),
+            dao.payments(payer.kind.key, payer.id),
+            dao.chosen(payer.kind.key, payer.id),
+            dao.credits(payer.kind.key, payer.id),
+            settings.load().credits,
+        )
 
     fun payment(id: String): Flow<PaymentRecord?> = dao.observePayment(id).map { it?.toPayment(emptyList()) }
 

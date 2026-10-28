@@ -51,6 +51,7 @@ class SettingsRepository(
                 "live_timer" to s.liveTimer.toString(),
                 "auto_start" to quote(s.autoStart.key),
                 "auto_start_skipped" to org.json.JSONArray(s.autoStartSkipped.toList()).toString(),
+                "credits" to s.credits.toString(),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
         private fun customColors(json: String): Map<CustomPart, String> {
@@ -79,6 +80,7 @@ class SettingsRepository(
                 liveTimer = v["live_timer"] != "false",
                 autoStart = AutoStart.fromKey(v["auto_start"]?.let(::unquote)),
                 autoStartSkipped = v["auto_start_skipped"]?.let(::skipped) ?: emptySet(),
+                credits = v["credits"] == "true",
                 customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
             )
         }

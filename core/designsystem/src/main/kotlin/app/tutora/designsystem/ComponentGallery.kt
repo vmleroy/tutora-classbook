@@ -264,6 +264,7 @@ fun GallerySections() {
     Section("SectionHeader") {
         SectionHeader("Aulas de hoje", aside = "4 aulas")
         SectionHeader("Pagamentos", aside = "Ver todos", asidePrimary = true)
+        SectionHeader("Alunos · 3", aside = "Ver todas", onAside = {}, action = IconName.PLUS, actionLabel = "Adicionar aluno")
     }
     Section("LessonRow") {
         LessonRow("10:00", Tag.GREEN, "Pedro Lima", subtitle = "Física · Presencial", trailing = "+ R$ 120", onClick = {})

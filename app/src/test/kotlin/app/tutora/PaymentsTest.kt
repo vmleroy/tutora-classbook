@@ -178,9 +178,52 @@ class PaymentsTest {
                     ) as ScheduleResult.Ok
                 ).lessonId ?: error("no class")
             val place = PayerRef(PayerKind.PLACE, salinha)
+            creditsOn()
             payments.record(PaymentDraft(anaRef, 15_000, PayMethod.PIX, today, chosen = listOf(lesson)))
             assertEquals(0L, repo.balances().first()[place])
             assertTrue(repo.ledgerNow(place).allocation.isPaid(lesson))
             assertEquals(-3_000L, balance())
+        }
+
+    private suspend fun creditsOn() {
+        val settings = app.tutora.data.SettingsRepository(t.db)
+        settings.save(settings.load().copy(credits = true), t.now)
+    }
+
+    @Test
+    fun `AC-008-28 with Creditos e bonus off, paying more than is owed is refused`() =
+        runTest {
+            given(22)
+            assertEquals(PaymentResult.Err(PaymentError.OVERPAID), payments.record(PaymentDraft(anaRef, 15_000, PayMethod.PIX, today)))
+            assertTrue(payments.record(PaymentDraft(anaRef, 12_000, PayMethod.PIX, today)) is PaymentResult.Ok)
+        }
+
+    @Test
+    fun `AC-008-30 Usar credito puts credit on the chosen class, and undoing the class gives it back`() =
+        runTest {
+            creditsOn()
+            // Paid on the 20th, before the class on the 22nd: the money waits as credit.
+            payments.record(PaymentDraft(anaRef, 5_000, PayMethod.PIX, LocalDate(2026, 10, 20)))
+            val lesson = given(22)
+            assertEquals(5_000L, repo.ledgerNow(anaRef).creditCents)
+            payments.useCredit(anaRef, listOf(lesson), minutes = false)
+            assertEquals(7_000L, balance())
+            assertEquals(0L, repo.ledgerNow(anaRef).creditCents)
+            t.lessons.undo(lesson)
+            assertEquals(5_000L, repo.ledgerNow(anaRef).creditCents)
+        }
+
+    @Test
+    fun `AC-008-31 a bonus in money and minutes is credit, and minutes cover a class by the hour`() =
+        runTest {
+            creditsOn()
+            payments.giveBonus(anaRef, 2_000, 30)
+            val lesson = given(22)
+            payments.useCredit(anaRef, listOf(lesson), minutes = true)
+            assertEquals(6_000L, balance())
+            val ledger = repo.ledgerNow(anaRef)
+            assertEquals(0, ledger.creditMinutes)
+            assertEquals(2_000L, ledger.creditCents)
+            assertEquals(0L, ledger.paidCents)
         }
 }

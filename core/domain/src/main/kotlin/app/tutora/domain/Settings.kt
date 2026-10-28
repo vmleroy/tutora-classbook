@@ -25,4 +25,6 @@ data class Settings(
     val autoStart: AutoStart = AutoStart.OFF,
     /** Classes discarded after starting by themselves, so they don't start again (AC-007-20). */
     val autoStartSkipped: Set<String> = emptySet(),
+    /** Ajustes › Créditos e bônus, off by default; off hides every credit (AC-008-28). */
+    val credits: Boolean = false,
 )

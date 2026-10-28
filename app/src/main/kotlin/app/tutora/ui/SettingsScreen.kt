@@ -123,6 +123,21 @@ fun SettingsScreen(
                     ),
             )
         }
+        // Créditos e bônus, off at first: off, a payment can't be more than is owed (AC-008-28).
+        ListGroup(
+            title = stringResource(R.string.pay_section),
+            rows =
+                listOf {
+                    ListRow(
+                        stringResource(R.string.settings_credits),
+                        subtitle = stringResource(R.string.settings_creditsHint),
+                        icon = IconName.WALLET,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.credits,
+                        onSwitchChange = { save(s.copy(credits = it)) },
+                    )
+                },
+        )
         Card(label = stringResource(R.string.settings_about)) {
             Text(stringResource(R.string.settings_about), style = TutoraTheme.type.rowTitle, color = TutoraTheme.colors.ink)
             Text(

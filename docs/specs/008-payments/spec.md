@@ -23,14 +23,14 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 - **AC-008-1.** A class marked done owes its value to whoever pays for it: the student, the group (as one, whatever its members), or the place when the place pays the teacher. A class with no price, and a class at an Escola (covered by the salary), owe nothing.
 - **AC-008-2.** A cancelled or missed class with a charge owes that charge to the same payer. Without a charge it owes nothing.
 - **AC-008-3.** Scheduled and live classes owe nothing. Undoing a done class or a charge (AC-006-13) takes it off the balance; any money already paid for it stays with the payer and pays the next owed class.
-- **AC-008-4.** The balance of a student, group or place is what its classes owe minus what it has paid. It shows as "Deve R$ 240", "Em dia" at zero, or "Crédito R$ 40" when it has paid more than it owes.
+- **AC-008-4.** The balance of a student, group or place is what its classes still owe after its payments and credit. It shows as "Deve R$ 240" while anything is owed, "Em dia" at zero, and, with Créditos e bônus on, "Crédito R$ 40" when only credit is left.
 
 ### Recording a payment
 
 - **AC-008-5.** Registrar pagamento on a student's or group's detail, and Receber da salinha on a place that pays the teacher, open the payment sheet: the amount, starting at the balance owed; the method (Pix, Dinheiro, Transferência, Cartão), starting at the last method used for that payer, or Pix; the date (today or earlier, never later); an optional note; and Salvar with the amount ("Registrar · R$ 240,00").
-- **AC-008-6.** By default the sheet says which classes the payment pays ("Paga 2 aulas: 15/10 e 22/10"), taken oldest first while the amount lasts. Any amount above zero can be saved, less or more than the balance.
+- **AC-008-6.** By default the sheet says which classes the payment pays ("Paga 2 aulas: 15/10 e 22/10"), taken oldest first while the amount lasts. Any amount above zero up to what is owed can be saved; more only with Créditos e bônus on (AC-008-28).
 - **AC-008-7.** "Escolher aulas" in the sheet lists the payer's owed classes, newest first, with date, minutes and what is still owed on each. Ticking classes sets the amount to their total. The amount can still be typed over afterwards.
-- **AC-008-8.** A payment pays the classes ticked for it first. Money left over, from any payment, pays the oldest owed classes. Money left after every owed class is paid is the payer's credit, and pays the next classes as they are given.
+- **AC-008-8.** A payment pays the classes ticked for it first. Money left over pays the oldest owed classes. Money left after every owed class is paid is the payer's credit (with Créditos e bônus on, AC-008-29).
 - **AC-008-9.** A class paid in full shows "Pago" in green wherever its money is shown. A class still owing all or part shows "A receber", with what is left when it was paid in part ("A receber · falta R$ 40").
 - **AC-008-10.** Saving a payment updates the balance, the classes it pays, the lists and Hoje at once.
 
@@ -62,8 +62,21 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 ### Added after trying the build (Victor, 28 Oct 2026)
 
 - **AC-008-25.** A lesson's detail with money still owed on it has "Marcar como paga", which opens the payment sheet for whoever owes the class, with this class ticked and its amount filled in.
-- **AC-008-26.** A student's detail shows all their classes, those a place pays for included ("22/10 · 60 min · R$ 120,00 · Ventura paga", with Pago or A receber from what the place owes), and lists those places ("Aulas em Ventura: quem paga é o local · R$ 120,00 a receber de Ventura"), each opening the place. In the payment sheet, "Escolher aulas" says "Nenhuma aula a receber" when there is none to choose.
+- **AC-008-26.** A student's detail shows all their classes, those a place pays for included ("21 min · R$ 35,00 · Ventura paga", with Pago or A receber from what the place owes). The place's row under Locais says it pays and what it still owes for the student ("R$ 100/h · paga o local · R$ 35,00 a receber"). In the payment sheet, "Escolher aulas" says "Nenhuma aula a receber" when there is none to choose.
 - **AC-008-27.** A student's payment sheet also lists, in "Escolher aulas", their classes a place pays for. Ticking one records that part of the money as the place's payment for that class, so the place's balance drops and the class shows Pago; any rest of the amount is the student's.
+
+### Credits and bonus (Victor, 28 Oct 2026)
+
+- **AC-008-28.** Ajustes has "Créditos e bônus", off at first. Off, no credit shows anywhere, and the payment sheet refuses an amount above what is owed ("Maior que o valor devido…").
+- **AC-008-29.** On, money a payment has left after the classes given up to its date is credit and waits: it never pays later classes by itself. The detail shows it under the balance ("Crédito: R$ 40,00 · Bônus: 90 min").
+- **AC-008-30.** "Usar crédito" puts the credit on the classes the teacher ticks, oldest first, as far as it goes. Undoing a class gives its credit back.
+- **AC-008-31.** "Dar bônus" gives free money, free minutes, or both; it is credit, not money received. Minutes cover a class by the hour at its price, up to the class's own minutes; a class with a fixed price is covered only when the minutes cover all of it.
+
+### Layout (Victor, 28 Oct 2026)
+
+- **AC-008-32.** Student, group and place details share one section style: a header with its count and a small + to add (no full-width add button), rows that open the item. Aulas shows the last 3 classes with Pago or A receber and "Ver todas", which opens all the payer's classes with Todas, A receber and Pagas filters. Pagamentos follows the same style. The student's detail has no separate Valor card.
+- **AC-008-33.** On a place's or group's lists, each class says whose it is ("28/10 · ENEM").
+- **AC-008-34.** Nova aula's "Aluno ou turma" list has a search field and Todos, Alunos and Turmas filters.
 
 ### Language
 
@@ -76,6 +89,7 @@ The teacher can now see who owes them money and record it when it comes in. Ever
 - **014:** the weekly "who still owes you" reminder.
 - More than one package open at a time for the same student, and packages for groups.
 - Refunds and paying money back out of a credit.
+- Credit and bonus in earnings (009): a bonus is not money received.
 
 ## Open questions
 

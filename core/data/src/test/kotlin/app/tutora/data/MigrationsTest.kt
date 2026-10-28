@@ -124,4 +124,24 @@ class MigrationsTest {
             assertEquals(12000L, db.payments().payment("pay")?.amountCents)
             db.close()
         }
+
+    @Test
+    fun `migration 4 to 5 keeps payments and adds credits`() =
+        runTest {
+            val file = File(tmp.root, "tutora.db")
+            val t = "'2026-10-26T12:00:00.000Z'"
+            createAt(
+                4,
+                file,
+                listOf(
+                    "INSERT INTO student (id, name, color, rate_type, created_at, updated_at) VALUES ('s', 'Ana', 'AMBER', 'HOUR', $t, $t)",
+                    "INSERT INTO payment VALUES ('pay', 's', NULL, NULL, 12000, 'pix', $t, NULL, NULL, $t, $t)",
+                ),
+            )
+            val (db, _) = openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver())
+            assertEquals(12000L, db.payments().payment("pay")?.amountCents)
+            db.payments().upsertCredit(CreditRow("c", "s", null, null, "bonus", 5000, 30, null, null, "x", "x"))
+            assertEquals(1, db.payments().credits("student", "s").size)
+            db.close()
+        }
 }

@@ -40,7 +40,7 @@ interface SettingsDao {
     entities = [
         SettingRow::class, PlaceRow::class, StudentRow::class, LinkRow::class, GroupRow::class, MemberRow::class,
         RuleRow::class, SkipRow::class, LessonRow::class, TimerRow::class, PackageRow::class, PaymentRow::class,
-        PaymentLessonRow::class,
+        PaymentLessonRow::class, CreditRow::class,
     ],
     version = TutoraDatabase.VERSION,
     exportSchema = true,
@@ -60,10 +60,10 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 4
+        const val VERSION = 5
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
     }
 }
 
@@ -125,6 +125,26 @@ val MIGRATION_3_4 =
                 "ALTER TABLE lesson ADD COLUMN package_id TEXT REFERENCES package(id) ON UPDATE NO ACTION ON DELETE SET NULL",
                 "CREATE INDEX IF NOT EXISTS `index_lesson_payer` ON `lesson` (`payer`)",
                 "CREATE INDEX IF NOT EXISTS `index_lesson_package_id` ON `lesson` (`package_id`)",
+            ).forEach { connection.execSQL(it) }
+        }
+    }
+
+/** Spec 008, Créditos e bônus: bonuses and credit put on classes. */
+val MIGRATION_4_5 =
+    object : Migration(4, 5) {
+        override fun migrate(connection: SQLiteConnection) {
+            listOf(
+                "CREATE TABLE IF NOT EXISTS `credit` (`id` TEXT NOT NULL, `student_id` TEXT, `group_id` TEXT, `place_id` TEXT, " +
+                    "`kind` TEXT NOT NULL, `cents` INTEGER NOT NULL, `minutes` INTEGER NOT NULL, `lesson_id` TEXT, `note` TEXT, " +
+                    "`created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`student_id`) " +
+                    "REFERENCES `student`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`group_id`) REFERENCES " +
+                    "`group_class`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`place_id`) REFERENCES `place`(`id`) " +
+                    "ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`lesson_id`) REFERENCES `lesson`(`id`) ON UPDATE NO " +
+                    "ACTION ON DELETE CASCADE )",
+                "CREATE INDEX IF NOT EXISTS `index_credit_student_id` ON `credit` (`student_id`)",
+                "CREATE INDEX IF NOT EXISTS `index_credit_group_id` ON `credit` (`group_id`)",
+                "CREATE INDEX IF NOT EXISTS `index_credit_place_id` ON `credit` (`place_id`)",
+                "CREATE INDEX IF NOT EXISTS `index_credit_lesson_id` ON `credit` (`lesson_id`)",
             ).forEach { connection.execSQL(it) }
         }
     }

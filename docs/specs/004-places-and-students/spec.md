@@ -39,7 +39,7 @@ The teacher registers once where they teach and whom they teach: their places (t
 - **AC-004-13.** At a place that pays the teacher, the student has no price of their own; the card says "Pago pelo local" with the place's rate.
 - **AC-004-14.** Alunos lists active students by name, with search by name and a "Por local" filter. Each row shows the subject and places. *(28 Oct 2026: groups moved to their own page, AC-004-31.)*
 - **AC-004-28.** A new student starts with a random color tag, which the teacher can change. Every row that lists a student (Alunos, a place's students, pickers, Arquivados) shows their initials in their color.
-- **AC-004-15.** A student's detail shows their contact and rate, then their places and their groups as connections (AC-004-32, 33); tapping a place opens that place's detail.
+- **AC-004-15.** A student's detail shows their contact and rate, then their places and their groups as connections (AC-004-32, 33); tapping a place opens that place's detail. *(28 Oct 2026: the rate shows on each place under Locais; the separate Valor card is gone, AC-008-32.)*
 
 ### Groups
 

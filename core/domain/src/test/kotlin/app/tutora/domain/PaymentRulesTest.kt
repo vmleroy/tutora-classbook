@@ -84,4 +84,30 @@ class PaymentRulesTest {
             dueOf(lesson(status = LessonStatus.CANCELLED, frozen = null, fee = 5_000), pkg),
         )
     }
+
+    @Test
+    fun `AC-008-29 with credit held, a payment's leftover never pays a class given after it`() {
+        val early = listOf(Owed("a", "2026-10-15T17:00:00.000Z", 12_000), Owed("later", "2026-10-30T17:00:00.000Z", 12_000))
+        val held = allocate(early, listOf(Paid("p", "2026-10-20T12:00:00.000Z", 20_000)), holdCredit = true)
+        assertEquals(12_000L, held.left["later"])
+        assertEquals(8_000L, held.credit)
+        assertEquals(4_000L, allocate(early, listOf(Paid("p", "2026-10-20T12:00:00.000Z", 20_000))).left["later"])
+    }
+
+    @Test
+    fun `AC-008-30 credit put on a class comes off it, and only while the class is owed`() {
+        val a = allocate(owed, emptyList(), uses = listOf(CreditUse("b", 5_000), CreditUse("gone", 3_000)))
+        assertEquals(7_000L, a.left["b"])
+        assertEquals(5_000L, a.usedCents)
+    }
+
+    @Test
+    fun `AC-008-31 bonus minutes cover a class by the hour, or a fixed price only in full`() {
+        val hour = Price.Set(12_000, RateType.HOUR, PriceSource.PLACE)
+        assertEquals(6_000L, minutesCover(hour, 60, 30, 12_000))
+        assertEquals(12_000L, minutesCover(hour, 60, 90, 12_000))
+        val fixed = Price.Set(15_000, RateType.LESSON, PriceSource.PLACE)
+        assertEquals(0L, minutesCover(fixed, 60, 30, 15_000))
+        assertEquals(15_000L, minutesCover(fixed, 60, 60, 15_000))
+    }
 }

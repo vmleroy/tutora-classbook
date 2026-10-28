@@ -112,7 +112,6 @@
     <string name="students_colors_orange">Laranja</string>
     <string name="students_colors_red">Vermelho</string>
     <string name="students_colors_teal">Azul-esverdeado</string>
-    <string name="students_rate">Valor</string>
     <string name="students_places">Locais</string>
     <string name="students_noSearchResults">Nenhum aluno com esse nome</string>
     <string name="groups_new">Nova turma</string>
@@ -124,7 +123,7 @@
     <string name="groups_coveredBySalary">Coberta pelo salário da escola</string>
     <string name="groups_members">Alunos da turma</string>
     <string name="groups_detail">Turma</string>
-    <string name="groups_addStudent">+ Adicionar aluno</string>
+    <string name="groups_addStudent">Adicionar aluno</string>
     <string name="groups_noMembers">Nenhum aluno na turma ainda.</string>
     <string name="groups_size_zero">nenhum aluno</string>
     <string name="catalog_edit">Editar</string>
@@ -259,8 +258,8 @@
     <string name="connections_add">Adicionar %1$d</string>
     <string name="connections_nothingToAdd">Nada para adicionar: todos já estão aqui.</string>
     <string name="connections_search">Buscar</string>
-    <string name="connections_addPlace">+ Adicionar local</string>
-    <string name="connections_addGroup">+ Adicionar turma</string>
+    <string name="connections_addPlace">Adicionar local</string>
+    <string name="connections_addGroup">Adicionar turma</string>
     <string name="connections_noPlaces">Nenhum local ainda.</string>
     <string name="connections_noGroups">Nenhuma turma ainda.</string>
     <string name="connections_noStudents">Nenhum aluno ainda.</string>
@@ -328,8 +327,6 @@
     <string name="pay_leftPart">A receber · falta %1$s</string>
     <string name="pay_owesLabel">Deve</string>
     <string name="pay_placeOwesLabel">Me deve</string>
-    <string name="pay_creditLabel">Crédito</string>
-    <string name="pay_lessons">Últimas aulas</string>
     <string name="pay_payments">Pagamentos</string>
     <string name="pay_none">Nenhum pagamento ainda</string>
     <string name="pay_packageBought">pacote</string>
@@ -399,8 +396,29 @@
     </plurals>
     <string name="pay_markPaid">Marcar como paga</string>
     <string name="pay_noneToChoose">Nenhuma aula a receber</string>
-    <string name="pay_paidByPlace">Aulas em %1$s: quem paga é o local</string>
-    <string name="pay_placeLeft">%1$s a receber de %2$s</string>
     <string name="pay_placePays">%1$s paga</string>
     <string name="pay_asCredit">como crédito</string>
+    <string name="lesson_whoSearch">Buscar aluno ou turma</string>
+    <string name="lesson_whoAll">Todos</string>
+    <string name="settings_credits">Créditos e bônus</string>
+    <string name="settings_creditsHint">Pagamento a mais vira crédito, e você escolhe em que aulas usar. Dá para dar bônus em dinheiro ou minutos.</string>
+    <string name="pay_creditLine">Crédito: %1$s</string>
+    <string name="pay_minutesLine">Bônus: %1$d min</string>
+    <string name="pay_useCredit">Usar crédito</string>
+    <string name="pay_giveBonus">Dar bônus</string>
+    <string name="pay_bonusMoney">Bônus em dinheiro</string>
+    <string name="pay_bonusMinutes">Bônus em minutos</string>
+    <string name="pay_bonusSave">Dar bônus</string>
+    <string name="pay_useMoney">Dinheiro</string>
+    <string name="pay_useMinutes">Minutos</string>
+    <string name="pay_useSave">Usar</string>
+    <string name="pay_overpaid">Maior que o valor devido. Ligue Créditos e bônus em Ajustes para guardar o resto como crédito.</string>
+    <string name="pay_seeAll">Ver todas</string>
+    <string name="pay_lessonsAll">Aulas</string>
+    <string name="pay_filterOwed">A receber</string>
+    <string name="pay_filterPaid">Pagas</string>
+    <string name="pay_filterAll">Todas</string>
+    <string name="pay_noLessons">Nenhuma aula ainda.</string>
+    <string name="pay_byPlace">paga o local</string>
+    <string name="pay_leftShort">%1$s a receber</string>
 </resources>

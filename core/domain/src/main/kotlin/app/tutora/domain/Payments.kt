@@ -120,23 +120,45 @@ data class Allocation(
     val left: Map<String, Cents>,
     /** The classes each payment paid, by payment id, oldest first. */
     val paidBy: Map<String, List<String>>,
-    /** Money left after every owed class is paid. */
+    /** Money from payments left after the classes it could pay. */
     val credit: Cents,
+    /** What credit uses took off classes still owed: money and minutes (AC-008-30). */
+    val usedCents: Cents = 0,
+    val usedMinutes: Int = 0,
 ) {
     fun isPaid(lessonId: String): Boolean = (left[lessonId] ?: 0) == 0L
 }
 
+/** Credit or bonus minutes the teacher put on a class (AC-008-30). [cents] is what it takes off the class. */
+data class CreditUse(
+    val lessonId: String,
+    val cents: Cents,
+    val minutes: Int = 0,
+)
+
 /**
- * Which classes the payments pay (AC-008-6, 8). Payments go in date order; each first pays the
- * classes chosen for it, then what is left of each, in the same order, pays the oldest owed
- * classes. Whatever remains is credit.
+ * Which classes the payments pay (AC-008-6, 8). Credit the teacher put on a class comes off it
+ * first. Payments go in date order; each first pays the classes chosen for it, then what is left
+ * of each, in the same order, pays the oldest owed classes. With [holdCredit] (Créditos e bônus
+ * on), that leftover only pays classes given by the payment's date, so credit waits for the
+ * teacher to say where it goes (AC-008-29). Whatever remains is credit.
  */
 fun allocate(
     owed: List<Owed>,
     payments: List<Paid>,
+    uses: List<CreditUse> = emptyList(),
+    holdCredit: Boolean = false,
 ): Allocation {
     val classes = owed.sortedWith(compareBy({ it.startAt }, { it.lessonId }))
     val left = classes.associate { it.lessonId to it.cents }.toMutableMap()
+    var usedCents = 0L
+    var usedMinutes = 0
+    for (u in uses) {
+        val owes = left[u.lessonId] ?: continue
+        val part = minOf(owes, u.cents)
+        left[u.lessonId] = owes - part
+        if (u.minutes > 0) usedMinutes += u.minutes else usedCents += part
+    }
     val order = payments.sortedWith(compareBy({ it.paidAt }, { it.id }))
     val remaining = order.associate { it.id to it.cents }.toMutableMap()
     val paidBy = order.associate { it.id to mutableListOf<String>() }
@@ -157,10 +179,18 @@ fun allocate(
         classes.filter { it.lessonId in p.chosen }.forEach { pay(p, it.lessonId) }
     }
     for (p in order) {
-        classes.forEach { pay(p, it.lessonId) }
+        classes.filter { !holdCredit || it.startAt <= p.paidAt }.forEach { pay(p, it.lessonId) }
     }
-    return Allocation(left, paidBy.mapValues { (_, ids) -> ids.distinct() }, sum(remaining.values))
+    return Allocation(left, paidBy.mapValues { (_, ids) -> ids.distinct() }, sum(remaining.values), usedCents, usedMinutes)
 }
+
+/** A bonus the teacher gave: free money, free minutes, or both (AC-008-31). */
+data class Bonus(
+    val id: String,
+    val cents: Cents,
+    val minutes: Int,
+    val at: String,
+)
 
 /** Deve, Em dia or Crédito (AC-008-4). */
 sealed interface Balance {
@@ -193,6 +223,8 @@ data class OwedClass(
     val startAt: String,
     val minutes: Int,
     val dueCents: Cents,
+    /** The student's or group's name, so a place's list says whose class it is. */
+    val who: String = "",
 )
 
 /** A payment as the screens show it, with the classes chosen for it. */
@@ -212,13 +244,32 @@ data class Ledger(
     val owed: List<OwedClass>,
     val payments: List<PaymentRecord>,
     val allocation: Allocation,
+    val bonuses: List<Bonus> = emptyList(),
+    val uses: List<CreditUse> = emptyList(),
+    val holdCredit: Boolean = false,
 ) {
     val dueCents: Cents get() = sum(owed.map { it.dueCents })
 
     /** A package's purchase pays no class, so it is left out. */
     val paidCents: Cents get() = sum(payments.filter { it.packageId == null }.map { it.cents })
 
-    val balance: Balance get() = balanceOf(dueCents, paidCents)
+    /** What is still owed on the classes. */
+    val owedCents: Cents get() = sum(allocation.left.values)
+
+    /** Money credit: what payments didn't spend plus money bonuses, minus credit put on classes (AC-008-28, 30). */
+    val creditCents: Cents get() = allocation.credit + sum(bonuses.map { it.cents }) - allocation.usedCents
+
+    /** Bonus minutes not used yet (AC-008-31). */
+    val creditMinutes: Int get() = bonuses.sumOf { it.minutes } - allocation.usedMinutes
+
+    /** Deve while anything is owed; otherwise Crédito or Em dia. */
+    val balance: Balance
+        get() =
+            when {
+                owedCents > 0 -> Balance.Owes(owedCents)
+                creditCents > 0 -> Balance.Credit(creditCents)
+                else -> Balance.Settled
+            }
 
     /** Allocation as it would be with [draft] added and [without] left out, for the payment sheet. */
     fun with(
@@ -229,6 +280,8 @@ data class Ledger(
             owed.map { Owed(it.lessonId, it.startAt, it.dueCents) },
             payments.filter { it.packageId == null && it.id != without }.map { Paid(it.id, it.paidAt, it.cents, it.chosen) } +
                 listOfNotNull(draft),
+            uses,
+            holdCredit,
         )
 }
 
@@ -236,9 +289,32 @@ data class Ledger(
 fun ledgerOf(
     owed: List<OwedClass>,
     payments: List<PaymentRecord>,
+    bonuses: List<Bonus> = emptyList(),
+    uses: List<CreditUse> = emptyList(),
+    holdCredit: Boolean = false,
 ): Ledger {
-    val ledger = Ledger(owed, payments.sortedByDescending { it.paidAt }, Allocation(emptyMap(), emptyMap(), 0))
+    val ledger = Ledger(owed, payments.sortedByDescending { it.paidAt }, Allocation(emptyMap(), emptyMap(), 0), bonuses, uses, holdCredit)
     return ledger.copy(allocation = ledger.with(null))
+}
+
+/** What a bonus of [minutes] takes off a class worth [due] for [classMinutes] at [price]: by the hour, or the whole class only when it covers it (AC-008-31). */
+fun minutesCover(
+    price: Price.Set?,
+    classMinutes: Int,
+    minutes: Int,
+    due: Cents,
+): Cents {
+    val used = minOf(minutes, classMinutes)
+    if (used <= 0 || price == null) return 0
+    return if (price.rateType ==
+        RateType.HOUR
+    ) {
+        minOf(due, lessonValue(price.cents, RateType.HOUR, used))
+    } else if (used >= classMinutes) {
+        due
+    } else {
+        0
+    }
 }
 
 /** A student's class that a place owes instead of the student, with what is still owed on it (AC-008-26). */

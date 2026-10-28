@@ -4,11 +4,14 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.PayMethod
@@ -318,7 +321,7 @@ class PaymentScreensTest {
         given(22)
         pay(12_000)
         openAna()
-        listOf("Owes", "R$120.00", "+ R$120.00", "Payments", "Record payment").forEach { exists(it) }
+        listOf("Owes", "R$120.00", "+ R$120.00", "Payments · 1", "Record payment").forEach { exists(it) }
         exists("10/26 · Pix · 1 lesson")
     }
 
@@ -386,8 +389,7 @@ class PaymentScreensTest {
                 ).value.id
             }
         openAna()
-        exists("Aulas em Ventura: quem paga é o local")
-        exists("R$ 120,00 a receber de Ventura")
+        exists("paga o local · R$ 120,00 a receber", part = true)
         exists("60 min · R$ 120,00 · Ventura paga")
         h.go(compose, StudentDetail(pedro))
         click("Registrar pagamento")
@@ -410,5 +412,76 @@ class PaymentScreensTest {
         h.settle(compose)
         exists("Registrar · R$ 120,00")
         exists("Paga 1 aula: 22/10")
+    }
+
+    private fun creditsOn() = runBlocking { h.services.saveSettings(h.services.currentSettings().copy(credits = true)) }
+
+    @Test
+    fun `AC-008-28 with Creditos e bonus off, the sheet refuses more than is owed`() {
+        given(22)
+        openAna()
+        click("Registrar pagamento")
+        compose.onAllNodes(hasSetTextAction(), useUnmergedTree = true).onFirst().performTextReplacement("R$ 150,00")
+        h.settle(compose)
+        exists("Maior que o valor devido", part = true)
+    }
+
+    @Test
+    fun `AC-008-29 with Creditos e bonus on, the detail shows the credit waiting`() {
+        creditsOn()
+        runBlocking { h.services.payments.record(PaymentDraft(anaRef, 5_000, PayMethod.PIX, LocalDate(2026, 10, 20))) }
+        given(22)
+        openAna()
+        exists("Crédito: R$ 50,00")
+        exists("Usar crédito")
+        exists("Dar bônus")
+    }
+
+    @Test
+    fun `AC-008-32 the Aulas section shows the last 3 classes and Ver todas opens them all with filters`() {
+        listOf(15, 19, 20, 22).forEach { given(it) }
+        pay(12_000)
+        openAna()
+        exists("Aulas · 4")
+        compose.onAllNodes(matching("15/10"), useUnmergedTree = true).assertCountEquals(0)
+        click("Ver todas")
+        compose.onNodeWithTag("payer-lessons").assertExists()
+        exists("15/10")
+        click("Pagas")
+        exists("15/10")
+        compose.onAllNodes(matching("22/10"), useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    @Test
+    fun `AC-008-33 a place's classes say whose they are`() {
+        val place = salinha()
+        runBlocking {
+            h.t.lessons.logLesson(
+                LessonDraft(WhoId.OfStudent(ana.id), place, LocalDate(2026, 10, 22), LocalTime(8, 0), 60, null, null, null),
+            )
+        }
+        h.show(compose)
+        h.go(compose, PlaceDetail(place))
+        exists("22/10 · Ana Souza")
+    }
+
+    @Test
+    fun `AC-008-34 Nova aula's who list can be searched and filtered`() {
+        runBlocking {
+            h.t.catalog.saveStudent(
+                Student("", "Pedro Lima", null, null, null, TagColor.BLUE, RateType.HOUR, null),
+                listOf(PlaceLink(online, true, 12_000)),
+            )
+        }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.LessonNew())
+        click("Escolher aluno ou turma")
+        exists("Pedro Lima")
+        compose.onAllNodes(hasSetTextAction(), useUnmergedTree = true).onLast().performTextReplacement("ana")
+        h.settle(compose)
+        exists("Ana Souza")
+        compose.onAllNodes(matching("Pedro Lima"), useUnmergedTree = true).assertCountEquals(0)
+        click("Turmas", scroll = false)
+        compose.onAllNodes(matching("Ana Souza"), useUnmergedTree = true).assertCountEquals(0)
     }
 }

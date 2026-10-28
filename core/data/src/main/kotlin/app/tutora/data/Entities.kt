@@ -258,3 +258,32 @@ data class PaymentLessonRow(
     @ColumnInfo(name = "payment_id") val paymentId: String,
     @ColumnInfo(name = "lesson_id") val lessonId: String,
 )
+
+/**
+ * Credit and bonus (spec 008, Créditos e bônus): a `bonus` gives free money and/or minutes; a
+ * `use` puts credit money or bonus minutes on a class, taking `cents` off it. Exactly one payer
+ * is set, which the use cases check.
+ */
+@Entity(
+    tableName = "credit",
+    foreignKeys = [
+        ForeignKey(StudentRow::class, ["id"], ["student_id"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(GroupRow::class, ["id"], ["group_id"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(PlaceRow::class, ["id"], ["place_id"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(LessonRow::class, ["id"], ["lesson_id"], onDelete = ForeignKey.CASCADE),
+    ],
+    indices = [Index("student_id"), Index("group_id"), Index("place_id"), Index("lesson_id")],
+)
+data class CreditRow(
+    @PrimaryKey val id: String,
+    @ColumnInfo(name = "student_id") val studentId: String?,
+    @ColumnInfo(name = "group_id") val groupId: String?,
+    @ColumnInfo(name = "place_id") val placeId: String?,
+    val kind: String,
+    val cents: Long,
+    val minutes: Int,
+    @ColumnInfo(name = "lesson_id") val lessonId: String?,
+    val note: String?,
+    @ColumnInfo(name = "created_at") val createdAt: String,
+    @ColumnInfo(name = "updated_at") val updatedAt: String,
+)

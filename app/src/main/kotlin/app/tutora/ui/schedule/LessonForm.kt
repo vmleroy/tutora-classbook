@@ -368,8 +368,22 @@ fun LessonForm(
     when (sheet) {
         "who" ->
             BottomSheet(stringResource(R.string.lesson_pickWho), { sheet = null }) {
+                // Search by name, and show students, groups or both.
+                var query by rememberSaveable { mutableStateOf("") }
+                var kind by rememberSaveable { mutableStateOf("all") }
+                val q = fold(query.trim())
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    TextField(stringResource(R.string.lesson_whoSearch), query, { query = it })
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                        listOf(
+                            "all" to R.string.lesson_whoAll,
+                            "students" to R.string.tab_students,
+                            "groups" to R.string.tab_groups,
+                        ).forEach { (k, label) -> Chip(stringResource(label), kind == k, { kind = k }) }
+                    }
+                }
                 val studentRows: List<@Composable () -> Unit> =
-                    students.filter { it.links.isNotEmpty() }.map { s ->
+                    students.filter { it.links.isNotEmpty() && kind != "groups" && fold(it.student.name).contains(q) }.map { s ->
                         {
                             ListRow(
                                 s.student.name,
@@ -381,7 +395,7 @@ fun LessonForm(
                         }
                     }
                 val groupRows: List<@Composable () -> Unit> =
-                    groups.map { g: Group ->
+                    groups.filter { kind != "students" && fold(it.name).contains(q) }.map { g: Group ->
                         {
                             ListRow(
                                 g.name,
@@ -392,7 +406,15 @@ fun LessonForm(
                             )
                         }
                     }
-                ListGroup(studentRows + groupRows)
+                if (studentRows.isEmpty() && groupRows.isEmpty()) {
+                    Text(
+                        stringResource(R.string.students_noSearchResults),
+                        style = TutoraTheme.type.body,
+                        color = TutoraTheme.colors.inkMuted,
+                    )
+                } else {
+                    ListGroup(studentRows + groupRows)
+                }
             }
     }
 }
@@ -573,3 +595,10 @@ fun LessonEditScreen(
         })
     }
 }
+
+/** Accent- and case-insensitive match, so "ana" finds "Ána". */
+private fun fold(s: String) =
+    java.text.Normalizer
+        .normalize(s, java.text.Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}"), "")
+        .lowercase()

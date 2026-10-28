@@ -32,6 +32,7 @@ import app.tutora.ui.catalog.RegistryScreen
 import app.tutora.ui.catalog.StudentDetailScreen
 import app.tutora.ui.catalog.StudentEditScreen
 import app.tutora.ui.live.LiveScreen
+import app.tutora.ui.payments.PayerLessonsScreen
 import app.tutora.ui.payments.PaymentDetailScreen
 import app.tutora.ui.schedule.AgendaScreen
 import app.tutora.ui.schedule.LessonDetailScreen
@@ -115,6 +116,11 @@ data class LiveRequest(
 )
 
 @Serializable data class PaymentDetail(
+    val id: String,
+)
+
+@Serializable data class PayerLessons(
+    val kind: String,
     val id: String,
 )
 
@@ -212,6 +218,10 @@ fun TutoraNav(
             composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
             composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
             composable<PaymentDetail> { PaymentDetailScreen(nav, it.toRoute<PaymentDetail>().id) }
+            composable<PayerLessons> {
+                val r = it.toRoute<PayerLessons>()
+                PayerLessonsScreen(nav, r.kind, r.id)
+            }
         }
     }
 }
