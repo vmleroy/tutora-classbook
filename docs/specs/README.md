@@ -8,11 +8,11 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 
 | # | Spec | Status | Mockups |
 | --- | --- | --- | --- |
-| 001 | [Foundation](001-foundation/spec.md): Kotlin project, 5 tabs, theme tokens, i18n, SQLite + migrations, CI | ready (re-plan in Kotlin) | NavMap, Settings |
-| 002 | [Design system](002-design-system/spec.md): tokens for 4 themes × light/dark, 30 components, custom colors, Large text | ready (re-plan in Kotlin) | Palette, Themes |
-| 003 | [Money and language](003-money-and-language/spec.md): R$ money rules, amount entry, language switch in Ajustes | ready (re-plan in Kotlin) | Settings |
-| 004 | [Places and students](004-places-and-students/spec.md): built-in places, own places, students, groups, student–place links, price resolution, archive | ready (re-plan in Kotlin) | Students, StudentDetail, StudentEdit, Places, PlaceDetail, PlaceEdit |
-| 005 | [Schedule](005-schedule/spec.md): recurring and one-off classes, 8 weeks ahead, this-only vs this-and-following edits, Agenda and Hoje | ready (re-plan in Kotlin) | Main, Schedule, AddLesson, EditLesson |
+| 001 | [Foundation](001-foundation/spec.md): Kotlin project, 5 tabs, theme tokens, i18n, SQLite + migrations, CI | done | NavMap, Settings |
+| 002 | [Design system](002-design-system/spec.md): tokens for 4 themes × light/dark, 30 components, custom colors, Large text | done | Palette, Themes |
+| 003 | [Money and language](003-money-and-language/spec.md): R$ money rules, amount entry, language switch in Ajustes | done | Settings |
+| 004 | [Places and students](004-places-and-students/spec.md): built-in places, own places, students, groups, student–place links, price resolution, archive | done | Students, StudentDetail, StudentEdit, Places, PlaceDetail, PlaceEdit |
+| 005 | [Schedule](005-schedule/spec.md): recurring and one-off classes, 8 weeks ahead, this-only vs this-and-following edits, Agenda and Hoje | done | Main, Schedule, AddLesson, EditLesson |
 | 006 | Lessons: add, log a past lesson, mark done, edit, status changes, cancellation and no-show fees | not written | AddLesson, LessonDetail, EditLesson, Fees |
 | 007 | Live timer: timestamps, pause and resume, background notification (foreground service) | not written | Live |
 | 008 | Payments and packages: record payment, covered lessons, balances | not written | StudentDetail |

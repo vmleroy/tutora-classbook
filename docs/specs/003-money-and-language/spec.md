@@ -1,6 +1,6 @@
 # Spec 003: Money and language
 
-Status: ready (Kotlin rebuild: re-plan)
+Status: done
 Depends on: 001 Foundation, 002 Design system
 Mockups: docs/mockups/Settings.dc.html
 

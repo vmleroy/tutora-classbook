@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Tutora</string>
+
+    <string name="tab_today">Today</string>
+    <string name="tab_schedule">Schedule</string>
+    <string name="tab_registry">Directory</string>
+    <string name="tab_earnings">Earnings</string>
+    <string name="tab_settings">Settings</string>
+    <string name="tab_students">Students</string>
+    <string name="tab_places">Places</string>
+
+    <string name="empty_today_title">No lessons today</string>
+    <string name="empty_today_body">Today\'s lessons, what you earned and your next lesson show up here.</string>
+    <string name="empty_schedule_title">Your schedule is empty</string>
+    <string name="empty_schedule_body">Your lessons for the week show up here, day by day.</string>
+    <string name="empty_registry_title">No students yet</string>
+    <string name="empty_registry_body">Your students, the places where each one studies and who owes you show up here.</string>
+    <string name="empty_earnings_title">Nothing earned yet</string>
+    <string name="empty_earnings_body">How much you earned and how much you will still receive show up here.</string>
+
+    <string name="settings_about">About</string>
+    <string name="settings_about_value">Version %1$s · build %2$s · database v%3$d</string>
+
+    <string name="startup_error_title">Your data could not be updated</string>
+    <string name="startup_error_body">A copy of the database was saved before the update. Nothing was lost.</string>
+    <string name="startup_error_backup">Copy saved at: %1$s</string>
+    <string name="startup_error_no_backup">The database was not changed.</string>
+    <string name="startup_error_detail">Error: %1$s</string>
+</resources>

@@ -1,6 +1,6 @@
 # Spec 004: Places and students
 
-Status: ready (Kotlin rebuild: re-plan)
+Status: done
 Depends on: 003 Money and language
 Mockups: docs/mockups/Places.dc.html, PlaceDetail.dc.html, PlaceEdit.dc.html, Students.dc.html, StudentDetail.dc.html, StudentEdit.dc.html
 

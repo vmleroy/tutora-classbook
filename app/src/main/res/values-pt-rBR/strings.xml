@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_today">Hoje</string>
+    <string name="tab_schedule">Agenda</string>
+    <string name="tab_registry">Cadastro</string>
+    <string name="tab_earnings">Ganhos</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="tab_students">Alunos</string>
+    <string name="tab_places">Locais</string>
+
+    <string name="empty_today_title">Nenhuma aula hoje</string>
+    <string name="empty_today_body">As aulas do dia, o que você ganhou e a próxima aula aparecem aqui.</string>
+    <string name="empty_schedule_title">Agenda vazia</string>
+    <string name="empty_schedule_body">Suas aulas da semana aparecem aqui, dia a dia.</string>
+    <string name="empty_registry_title">Nenhum aluno ainda</string>
+    <string name="empty_registry_body">Seus alunos, os locais onde cada um estuda e quem está devendo aparecem aqui.</string>
+    <string name="empty_earnings_title">Nada ganho ainda</string>
+    <string name="empty_earnings_body">Quanto você ganhou e quanto ainda vai receber aparecem aqui.</string>
+
+    <string name="settings_about">Sobre</string>
+    <string name="settings_about_value">Versão %1$s · build %2$s · banco v%3$d</string>
+
+    <string name="startup_error_title">Não foi possível atualizar seus dados</string>
+    <string name="startup_error_body">Uma cópia do banco de dados foi salva antes da atualização. Nada foi perdido.</string>
+    <string name="startup_error_backup">Cópia salva em: %1$s</string>
+    <string name="startup_error_no_backup">O banco de dados não foi alterado.</string>
+    <string name="startup_error_detail">Erro: %1$s</string>
+</resources>

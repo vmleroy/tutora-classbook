@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Debug builds only: the component gallery (AC-002-15). -->
+        <activity
+            android:name=".DevComponentsActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Tutora" />
+    </application>
+</manifest>

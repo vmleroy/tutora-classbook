@@ -18,7 +18,8 @@ keytool -genkeypair -v -storetype PKCS12 \
 
 ## Tools
 
-- JDK 17 (`brew install openjdk@17`) and the Android SDK (`brew install --cask android-commandlinetools`, then `sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;37.0.0" "ndk;27.1.12297006"`).
+- A JDK 17 or newer to run Gradle (`brew install openjdk@17`). The build compiles and tests with JDK 21, which Gradle downloads by itself (toolchain resolver).
+- The Android SDK (`brew install --cask android-commandlinetools`, then `sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"`).
 - Environment:
 
 ```bash
@@ -34,18 +35,16 @@ export TUTORA_KEYSTORE_PATH=~/secure/tutora-release.p12
 export TUTORA_KEY_ALIAS=tutora
 export TUTORA_KEYSTORE_PASSWORD=…   # from the password manager
 export TUTORA_KEY_PASSWORD=…
-TUTORA_VERSION_CODE=2 npm run release:android
+TUTORA_VERSION_CODE=2 ./gradlew check assembleRelease
 ```
 
-`scripts/release-android.sh` does the following:
+- `check` runs Lint, ktlint and every test first; drop it for a quick rebuild.
+- `app/build.gradle.kts` signs the release build from those variables; without `TUTORA_KEYSTORE_PATH` the release APK is left unsigned and cannot be installed, so the debug key is never used by mistake.
+- The APK is `app/build/outputs/apk/release/app-release.apk`. Copy it to `dist/tutora-<version>-<versionCode>.apk` and compare the certificate with the last release: `$ANDROID_HOME/build-tools/37.0.0/apksigner verify --print-certs <apk>`.
 
-1. Refuses to start if any of the variables are missing.
-2. Runs the type check, lint and tests.
-3. Regenerates `android/` with `expo prebuild --clean`. The `plugins/withReleaseSigning` config plugin wires the release build to the keystore above, never the debug key.
-4. Runs `./gradlew assembleRelease`.
-5. Writes `dist/tutora-<version>-<versionCode>.apk` and prints the signing certificate so you can compare it with the last release.
+**Versioning.** `versionCode` must be higher than the APK on the phone, every build. `versionName` in `app/build.gradle.kts` follows the last spec shipped (`1.1.0` = spec 001).
 
-**Versioning.** `versionCode` must be higher than the APK on the phone, every build. `version` in `package.json` and `app.config.ts` follows the last spec shipped (`1.1.0` = spec 001).
+**Application id.** The Kotlin app is `app.tutora.app`. The archived Expo app was `app.tutora`, so both can be installed side by side; the Expo app's data is not carried over.
 
 ## Install on the phone
 
@@ -59,6 +58,6 @@ Before installing a new APK, check the date of the last automatic backup (spec 0
 1. Install build N. Open it and let it create its database. From spec 004 on, add a student.
 2. Build N+1 with `TUTORA_VERSION_CODE` one higher and install it with `adb install -r`. Don't uninstall in between.
 3. Open the app. It starts normally and the data from step 1 is still there.
-4. To confirm on the device itself: `adb shell run-as com.vmleroy.tutora ls files/SQLite` lists `tutora.db`, plus a `tutora-pre-v{n}.db` copy when the update included a migration.
+4. To confirm on the device itself: `adb shell run-as app.tutora.app ls databases` lists `tutora.db`, plus a `tutora-pre-v{n}.db` copy when the update included a migration.
 
 **Android developer verification.** From September 2026, certified Android phones in Brazil may require apps from registered developers, sideloading included. `adb install` is exempt. Check the current rule before the first release (see `docs/architecture.md`, "Build and sideload").
