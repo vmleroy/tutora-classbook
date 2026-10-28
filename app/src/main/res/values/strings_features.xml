@@ -432,4 +432,6 @@
     <string name="earn_expected">of %1$s expected</string>
     <string name="earn_week">Week</string>
     <string name="earn_studentsOwe">Students owe</string>
+    <string name="settings_earlyDone">Mark as given before its time</string>
+    <string name="settings_earlyDoneHint">Lets you complete a class that hasn\'t started yet</string>
 </resources>

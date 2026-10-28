@@ -117,7 +117,8 @@ fun LessonDetailScreen(
                             Modifier.weight(1f),
                             variant = ButtonVariant.OUTLINE,
                         )
-                        if (started) {
+                        // Ahead of its time only with Ajustes › Marcar como dada antes do horário (AC-006-25).
+                        if (started || settings?.earlyDone == true) {
                             Button(
                                 stringResource(R.string.lesson_markDone),
                                 { marking = l.plannedMin },

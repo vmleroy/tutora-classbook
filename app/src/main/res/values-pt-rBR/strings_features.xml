@@ -441,4 +441,6 @@
     <string name="earn_expected">de %1$s previstos</string>
     <string name="earn_week">Semana</string>
     <string name="earn_studentsOwe">Alunos devem</string>
+    <string name="settings_earlyDone">Marcar como dada antes do horário</string>
+    <string name="settings_earlyDoneHint">Permite concluir uma aula que ainda não começou</string>
 </resources>

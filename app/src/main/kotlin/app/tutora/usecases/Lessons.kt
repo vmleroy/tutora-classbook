@@ -4,6 +4,7 @@ import app.tutora.data.LessonRow
 import app.tutora.data.PaymentLessonRow
 import app.tutora.data.PaymentRow
 import app.tutora.data.ScheduleRepository
+import app.tutora.data.SettingsRepository
 import app.tutora.data.inTransaction
 import app.tutora.domain.CancelReason
 import app.tutora.domain.Charge
@@ -64,7 +65,10 @@ class Lessons(
     ): ScheduleResult =
         db.inTransaction {
             val row = dao.lesson(id) ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
-            if (row.startAt > ctx.now()) return@inTransaction ScheduleResult.Err(ScheduleError.NOT_STARTED)
+            // A class ahead can be marked done only with the Ajustes switch on (AC-006-25).
+            if (row.startAt > ctx.now() && !SettingsRepository(db).load().earlyDone) {
+                return@inTransaction ScheduleResult.Err(ScheduleError.NOT_STARTED)
+            }
             val next = done(row.copy(plannedMin = minutes)) ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
             dao.upsertLesson(next.copy(isDetached = row.ruleId != null))
             ScheduleResult.Ok(id)

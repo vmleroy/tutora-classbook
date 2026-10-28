@@ -87,17 +87,30 @@ fun SettingsScreen(
         ListGroup(
             title = stringResource(R.string.settings_lessons),
             rows =
-                listOf {
-                    // Off hides Iniciar aula everywhere (AC-007-3, 17).
-                    ListRow(
-                        stringResource(R.string.settings_liveTimer),
-                        subtitle = stringResource(R.string.settings_liveTimerHint),
-                        icon = IconName.PLAY,
-                        trailing = RowTrailing.SWITCH,
-                        switchValue = s.liveTimer,
-                        onSwitchChange = { saveTimer(s.copy(liveTimer = it)) },
-                    )
-                },
+                listOf(
+                    {
+                        // Off hides Iniciar aula everywhere (AC-007-3, 17).
+                        ListRow(
+                            stringResource(R.string.settings_liveTimer),
+                            subtitle = stringResource(R.string.settings_liveTimerHint),
+                            icon = IconName.PLAY,
+                            trailing = RowTrailing.SWITCH,
+                            switchValue = s.liveTimer,
+                            onSwitchChange = { saveTimer(s.copy(liveTimer = it)) },
+                        )
+                    },
+                    {
+                        // On, Marcar como dada shows on a class still ahead (AC-006-25).
+                        ListRow(
+                            stringResource(R.string.settings_earlyDone),
+                            subtitle = stringResource(R.string.settings_earlyDoneHint),
+                            icon = IconName.CALENDAR_CHECK,
+                            trailing = RowTrailing.SWITCH,
+                            switchValue = s.earlyDone,
+                            onSwitchChange = { save(s.copy(earlyDone = it)) },
+                        )
+                    },
+                ),
         )
         // Início automático, only while the timer is on (AC-007-19).
         if (s.liveTimer) {

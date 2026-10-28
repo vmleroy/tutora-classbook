@@ -185,4 +185,15 @@ class LessonsTest {
             // "Eu cancelei" is never charged (AC-006-20).
             assertEquals(null, one(mine).feeCents)
         }
+
+    @Test
+    fun `AC-006-25 a class still ahead can be marked done only with the Ajustes switch on`() =
+        runTest {
+            val ahead = schedule(draft(date = "2026-10-28", time = LocalTime(14, 0)))
+            assertEquals(ScheduleResult.Err(ScheduleError.NOT_STARTED), t.lessons.markDone(ahead ?: "", 60))
+            val settings = app.tutora.data.SettingsRepository(t.db)
+            settings.save(settings.load().copy(earlyDone = true), t.now)
+            assertEquals(ScheduleResult.Ok(ahead), t.lessons.markDone(ahead ?: "", 60))
+            assertEquals(LessonStatus.DONE, one(ahead).status)
+        }
 }

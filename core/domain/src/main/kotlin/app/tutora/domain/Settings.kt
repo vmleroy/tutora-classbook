@@ -27,4 +27,6 @@ data class Settings(
     val autoStartSkipped: Set<String> = emptySet(),
     /** Ajustes › Créditos e bônus, off by default; off hides every credit (AC-008-28). */
     val credits: Boolean = false,
+    /** Ajustes › Aulas › Marcar como dada antes do horário, off by default (AC-006-25). */
+    val earlyDone: Boolean = false,
 )
