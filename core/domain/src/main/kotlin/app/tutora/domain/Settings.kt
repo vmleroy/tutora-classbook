@@ -19,4 +19,6 @@ data class Settings(
     val textScale: String = "normal",
     val showDefaultPlaces: Boolean = true,
     val customColors: Map<CustomPart, String> = emptyMap(),
+    /** The default cancellation and no-show rule; both parts off until the teacher sets it (AC-006-19). */
+    val feeRule: FeeRule = FeeRule(),
 )

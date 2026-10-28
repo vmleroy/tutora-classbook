@@ -243,7 +243,7 @@ interface ScheduleDao {
            LEFT JOIN place p ON p.id = lesson.place_id
            LEFT JOIN student s ON s.id = lesson.student_id
            LEFT JOIN student_place sp ON sp.student_id = lesson.student_id AND sp.place_id = lesson.place_id
-           WHERE lesson.start_at > :now ORDER BY lesson.start_at LIMIT 1""",
+           WHERE lesson.start_at > :now AND lesson.status = 'scheduled' ORDER BY lesson.start_at LIMIT 1""",
     )
     fun observeFirstAfter(now: String): Flow<LessonWithRepeat?>
 

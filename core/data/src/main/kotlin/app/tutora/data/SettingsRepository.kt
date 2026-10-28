@@ -1,5 +1,6 @@
 package app.tutora.data
 
+import app.tutora.domain.FeeRule
 import app.tutora.domain.Language
 import app.tutora.domain.Settings
 import app.tutora.domain.ThemeMode
@@ -47,6 +48,7 @@ class SettingsRepository(
                 "custom_colors" to JSONObject(s.customColors.mapKeys { it.key.key }).toString(),
                 "text_scale" to quote(s.textScale),
                 "show_default_places" to s.showDefaultPlaces.toString(),
+                "fee_rule" to encodeRule(s.feeRule),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
         private fun customColors(json: String): Map<CustomPart, String> {
@@ -68,6 +70,7 @@ class SettingsRepository(
                 textScale = v["text_scale"]?.let(::unquote) ?: "normal",
                 showDefaultPlaces = v["show_default_places"] != "false",
                 customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
+                feeRule = v["fee_rule"]?.let(::decodeRule) ?: FeeRule(),
             )
         }
     }

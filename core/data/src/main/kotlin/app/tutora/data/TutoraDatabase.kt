@@ -8,6 +8,8 @@ import androidx.room.Query
 import androidx.room.RoomDatabase
 import androidx.room.Upsert
 import androidx.room.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 import kotlinx.coroutines.flow.Flow
 
 /** App settings as key → JSON value (product doc, data model). */
@@ -55,9 +57,25 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 1
+        const val VERSION = 2
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
-        val MIGRATIONS: Array<Migration> = emptyArray()
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2)
     }
 }
+
+/** Spec 006: a done class freezes its price, cancellations keep a fee, and fee rules per student and place. */
+val MIGRATION_1_2 =
+    object : Migration(1, 2) {
+        override fun migrate(connection: SQLiteConnection) {
+            listOf(
+                "ALTER TABLE lesson ADD COLUMN rate_cents INTEGER",
+                "ALTER TABLE lesson ADD COLUMN rate_type TEXT",
+                "ALTER TABLE lesson ADD COLUMN fee_cents INTEGER",
+                "ALTER TABLE lesson ADD COLUMN fee_waived INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE lesson ADD COLUMN notice_at TEXT",
+                "ALTER TABLE student ADD COLUMN fee_rule TEXT",
+                "ALTER TABLE place ADD COLUMN fee_rule TEXT",
+            ).forEach { connection.execSQL(it) }
+        }
+    }

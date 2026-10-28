@@ -56,6 +56,8 @@ data class Place(
     val travelMode: TravelMode,
     val travelFeeCents: Cents,
     val archivedAt: String?,
+    /** Cancelamentos e faltas for classes here (AC-006-20). */
+    val feeChoice: FeeChoice = FeeChoice.Default,
 )
 
 data class Student(
@@ -67,6 +69,8 @@ data class Student(
     val color: TagColor,
     val rateType: RateType,
     val archivedAt: String?,
+    /** Cancelamentos e faltas for this student's classes (AC-006-20). */
+    val feeChoice: FeeChoice = FeeChoice.Default,
 )
 
 /** A student's link to a place; `rateCents` null = the place's price ("Do local"). */
