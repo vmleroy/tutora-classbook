@@ -93,6 +93,7 @@ data class EarnedClass(
     val gross: Cents,
     val commission: Cents,
     val bonus: Cents,
+    val minutes: Int = 0,
 ) {
     /** What the teacher keeps: after the place's commission and what a bonus paid for. */
     val earned: Cents get() = (gross - commission - bonus).coerceAtLeast(0)
@@ -121,7 +122,8 @@ fun earnedOf(
         }
     val commission =
         if (c.placePayer == Payer.STUDENT && c.commissionBp > 0 && base > 0) base - afterCommission(base, c.commissionBp) else 0L
-    return EarnedClass(c.lessonId, c.day, type, c.payer, c.payerName, gross, commission, minOf(bonus, gross))
+    val minutes = if (c.status == LessonStatus.DONE) c.minutes else 0
+    return EarnedClass(c.lessonId, c.day, type, c.payer, c.payerName, gross, commission, minOf(bonus, gross), minutes)
 }
 
 /** A credit row as the bonus attribution reads it: oldest first. */
@@ -201,6 +203,9 @@ data class EarningsView(
     val summary: Summary,
     val trend: List<MonthPoint>,
     val sources: List<Source>,
+    /** The period's classes and payments, for the earnings report (spec 010). */
+    val classes: List<EarnedClass> = emptyList(),
+    val received: List<Received> = emptyList(),
 )
 
 /**

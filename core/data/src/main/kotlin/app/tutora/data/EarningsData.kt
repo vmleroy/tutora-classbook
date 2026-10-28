@@ -108,6 +108,15 @@ interface EarningsDao {
     fun observeSchools(): Flow<List<SchoolRow>>
 }
 
+/** What bonuses covered on each class, across every payer (AC-009-4). */
+internal fun coverOf(credits: List<CreditRow>): Map<String, Long> =
+    credits
+        .groupBy { it.payerRef() }
+        .values
+        .flatMap { list ->
+            bonusCover(list.sortedBy { it.createdAt }.map { CreditEntry(it.lessonId, it.cents, it.minutes, it.kind == "bonus") }).entries
+        }.associate { it.key to it.value }
+
 /** Ganhos and Hoje's card, read again after any write (spec 009). */
 class EarningsRepository(
     private val db: TutoraDatabase,
@@ -115,12 +124,12 @@ class EarningsRepository(
     private val dao get() = db.earnings()
     private val payments = PaymentRepository(db)
 
-    private fun instant(
+    internal fun instant(
         day: LocalDate,
         zone: String,
     ) = localToInstant(day, LocalTime(0, 0), zone).isoText()
 
-    private fun EarnedRow.record(zone: String) =
+    internal fun EarnedRow.record(zone: String) =
         ClassRecord(
             lessonId = id,
             day = localOf(startAt, zone).date,
@@ -154,15 +163,7 @@ class EarningsRepository(
             dao.observeClasses(instant(first, zone), instant(last.plus(DatePeriod(days = 1)), zone)),
             db.payments().observeAllCredits(),
         ) { rows, credits ->
-            val cover =
-                credits
-                    .groupBy { it.payerRef() }
-                    .values
-                    .flatMap { list ->
-                        bonusCover(
-                            list.sortedBy { it.createdAt }.map { CreditEntry(it.lessonId, it.cents, it.minutes, it.kind == "bonus") },
-                        ).entries
-                    }.associate { it.key to it.value }
+            val cover = coverOf(credits)
             rows.mapNotNull { earnedOf(it.record(zone), cover[it.id] ?: 0) }
         }
 
@@ -213,6 +214,8 @@ class EarningsRepository(
                 summarize(classes, received.filter { inPeriod(it.day) }, salaries, months, left, filter),
                 trend(period.lastMonth, all, received, salaries, filter, today),
                 sources(classes, salaries, months, filter),
+                classes.filter { filter.matches(it.type) },
+                received.filter { inPeriod(it.day) && filter.matches(it.type) },
             )
         }
     }
