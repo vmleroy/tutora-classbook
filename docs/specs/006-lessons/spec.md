@@ -1,6 +1,6 @@
 # Spec 006: Lessons
 
-Status: in progress
+Status: done
 Depends on: 005 Schedule (and 004 for prices and who pays)
 Mockups: docs/mockups/AddLesson.dc.html (Registrar mode), LessonDetail.dc.html (status line, Quem paga, Marcar como dada), EditLesson.dc.html (Situação and the fee switch), Fees.dc.html
 
