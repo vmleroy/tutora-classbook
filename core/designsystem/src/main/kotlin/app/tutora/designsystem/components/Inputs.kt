@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -51,6 +52,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -66,8 +68,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import app.tutora.designsystem.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
@@ -115,6 +119,7 @@ private fun FieldFrame(
     onPrimary: Boolean,
     errorKey: Any? = null,
     required: Boolean = false,
+    fieldWidth: Dp? = null,
     field: @Composable (Modifier) -> Unit,
 ) {
     val c = TutoraTheme.colors
@@ -124,7 +129,7 @@ private fun FieldFrame(
         FieldLabel(label, required = required, onPrimary = onPrimary)
         field(
             Modifier
-                .fillMaxWidth()
+                .then(if (fieldWidth != null) Modifier.width(fieldWidth) else Modifier.fillMaxWidth())
                 .height(Size.controlMd)
                 .background(errorFill(if (onPrimary) c.onPrimary.copy(alpha = 0.1f) else c.surface, error != null, red), shape)
                 .border(
@@ -251,8 +256,31 @@ fun MoneyField(
 ) {
     val language = currentLanguage()
     val shown = if (cents == null || cents == 0L) "" else formatMoney(cents, language)
+    val hint = placeholder ?: formatMoney(0, language)
+    // As wide as the largest amount it takes (R$ 99.999,99) or its hint, not the whole row.
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val widest = formatMoney(maxCents, language)
+    val textWidth =
+        with(density) {
+            maxOf(
+                measurer.measure(widest, TutoraTheme.type.moneyMd).size.width,
+                measurer.measure(hint, TutoraTheme.type.body).size.width,
+            ).toDp()
+        }
     Column(modifier) {
-        FieldFrame(label, helper, error, false, errorKey, required) { m ->
+        FieldFrame(
+            label,
+            helper,
+            error,
+            false,
+            errorKey,
+            required,
+            fieldWidth =
+                (textWidth + Spacing.s3_5 * 2 + Spacing.s2).coerceAtLeast(
+                    Size.touch * 3,
+                ),
+        ) { m ->
             Input(
                 TextFieldValue(shown, TextRange(shown.length)),
                 {
@@ -260,7 +288,7 @@ fun MoneyField(
                     onCentsChange(if (next == 0L) null else next)
                 },
                 m,
-                placeholder ?: formatMoney(0, language),
+                hint,
                 KeyboardType.Number,
                 false,
                 alignEnd = true,
