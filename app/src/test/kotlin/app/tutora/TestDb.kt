@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.tutora.data.openTutoraDatabase
 import app.tutora.usecases.Catalog
 import app.tutora.usecases.Ctx
+import app.tutora.usecases.Lessons
 import app.tutora.usecases.Schedule
 import java.io.File
 
@@ -19,4 +20,5 @@ class TestDb(
     val ctx = Ctx(db, { now }, { "id-" + (++n).toString().padStart(5, '0') }, { zone })
     val catalog = Catalog(ctx)
     val schedule = Schedule(ctx)
+    val lessons = Lessons(ctx)
 }

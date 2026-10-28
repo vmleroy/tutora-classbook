@@ -3,9 +3,11 @@ package app.tutora.usecases
 import app.tutora.data.LessonRow
 import app.tutora.data.RuleRow
 import app.tutora.data.SkipRow
+import app.tutora.data.TutoraDatabase
 import app.tutora.data.inTransaction
 import app.tutora.domain.Cents
 import app.tutora.domain.HORIZON_DAYS
+import app.tutora.domain.LessonStatus
 import app.tutora.domain.Repeat
 import app.tutora.domain.RuleDates
 import app.tutora.domain.isoText
@@ -51,11 +53,13 @@ data class LessonChange(
     val notes: String? = null,
     /** Another of the student's linked places; a group's class stays at the group's place. */
     val placeId: String? = null,
+    /** A new status, for this class only whatever the scope (AC-006-10). */
+    val status: StatusChange? = null,
 )
 
 enum class Scope { ONE, FOLLOWING }
 
-enum class ScheduleError { NOT_FOUND, PLACE_NOT_LINKED, STARTED }
+enum class ScheduleError { NOT_FOUND, PLACE_NOT_LINKED, STARTED, NOT_STARTED, FUTURE_DATE }
 
 sealed interface ScheduleResult {
     data class Ok(
@@ -66,6 +70,17 @@ sealed interface ScheduleResult {
         val error: ScheduleError,
     ) : ScheduleResult
 }
+
+/** Only the student's linked places, or the group's own place (AC-005-2). */
+internal suspend fun placeAllowed(
+    db: TutoraDatabase,
+    who: WhoId,
+    placeId: String,
+): Boolean =
+    when (who) {
+        is WhoId.OfGroup -> db.groups().get(who.id)?.placeId == placeId
+        is WhoId.OfStudent -> db.students().visibleLinks(who.id).any { it.placeId == placeId }
+    }
 
 /** Scheduling classes (spec 005). Every write runs in one transaction. */
 class Schedule(
@@ -124,11 +139,7 @@ class Schedule(
     private suspend fun placeAllowed(
         who: WhoId,
         placeId: String,
-    ): Boolean =
-        when (who) {
-            is WhoId.OfGroup -> db.groups().get(who.id)?.placeId == placeId
-            is WhoId.OfStudent -> db.students().visibleLinks(who.id).any { it.placeId == placeId }
-        }
+    ) = placeAllowed(db, who, placeId)
 
     private fun newRule(
         d: LessonDraft,
@@ -233,7 +244,7 @@ class Schedule(
             val notes = change.notes ?: row.notes
             val occurrenceText = row.occurrenceDate
             if (scope == Scope.ONE || rule == null || occurrenceText == null) {
-                dao.upsertLesson(
+                val changed =
                     row.copy(
                         placeId = placeId,
                         startAt = localToInstant(date, time, zone).isoText(),
@@ -243,9 +254,20 @@ class Schedule(
                         notes = notes,
                         isDetached = rule != null,
                         updatedAt = ctx.now(),
-                    ),
-                )
+                    )
+                val withStatus =
+                    when (val r = change.status?.let { applyStatus(ctx, changed, it) }) {
+                        null -> changed
+                        is Applied.Ok -> r.value
+                        is Applied.Err -> return@inTransaction ScheduleResult.Err(r.error)
+                    }
+                dao.upsertLesson(withStatus)
                 return@inTransaction ScheduleResult.Ok(id)
+            }
+            // A series change starts from a class still ahead, which can't be Dada or Faltou yet.
+            val status = change.status
+            if (status != null && status.status in listOf(LessonStatus.DONE, LessonStatus.MISSED)) {
+                return@inTransaction ScheduleResult.Err(ScheduleError.NOT_STARTED)
             }
             val occurrence = LocalDate.parse(occurrenceText)
             dao.endRule(rule.id, occurrence.minus(DatePeriod(days = 1)).toString())
@@ -259,8 +281,14 @@ class Schedule(
                 )
             dao.insertRule(fresh)
             fillRule(fresh, until(date))
-            val first = dao.lessonAt(fresh.id, date.toString())
-            if (first != null && notes != null) dao.upsertLesson(first.copy(notes = notes))
+            val first = dao.lessonAt(fresh.id, date.toString())?.let { if (notes != null) it.copy(notes = notes) else it }
+            if (first != null) {
+                // The status is this class's alone: it stands apart from the new series (AC-006-10).
+                when (val r = status?.let { applyStatus(ctx, first, it) }) {
+                    is Applied.Ok -> dao.upsertLesson(r.value.copy(isDetached = status.status != LessonStatus.SCHEDULED))
+                    else -> dao.upsertLesson(first)
+                }
+            }
             ScheduleResult.Ok(first?.id)
         }
 
