@@ -184,6 +184,9 @@ class Live(
                         notes = timer.notesBefore,
                         rateCents = null,
                         rateType = null,
+                        payer = null,
+                        dueCents = null,
+                        packageId = null,
                         updatedAt = ctx.now(),
                     ),
                 )

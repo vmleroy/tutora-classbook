@@ -37,7 +37,14 @@ fun multiplyRate(
     denominator: Long,
 ): Cents = roundHalfAwayFromZero(Math.multiplyExact(amount, numerator), denominator)
 
-enum class RateType { HOUR, LESSON }
+/** Divides and rounds once, half away from zero. */
+fun divideRounded(
+    amount: Cents,
+    by: Long,
+): Cents = roundHalfAwayFromZero(amount, by)
+
+/** PACKAGE is a student's only: a class of a prepaid package, at the package's price per class (spec 008). */
+enum class RateType { HOUR, LESSON, PACKAGE }
 
 /** What one lesson is worth: hourly prices scale by minutes ÷ 60, per-lesson prices do not. */
 fun lessonValue(

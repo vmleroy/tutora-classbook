@@ -39,7 +39,8 @@ interface SettingsDao {
 @Database(
     entities = [
         SettingRow::class, PlaceRow::class, StudentRow::class, LinkRow::class, GroupRow::class, MemberRow::class,
-        RuleRow::class, SkipRow::class, LessonRow::class, TimerRow::class,
+        RuleRow::class, SkipRow::class, LessonRow::class, TimerRow::class, PackageRow::class, PaymentRow::class,
+        PaymentLessonRow::class,
     ],
     version = TutoraDatabase.VERSION,
     exportSchema = true,
@@ -55,12 +56,14 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     abstract fun schedule(): ScheduleDao
 
+    abstract fun payments(): PaymentDao
+
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 3
+        const val VERSION = 4
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
     }
 }
 
@@ -87,5 +90,41 @@ val MIGRATION_2_3 =
                     "`paused_ms` INTEGER NOT NULL, `paused_at` TEXT, `note` TEXT, `notes_before` TEXT, PRIMARY KEY(`lesson_id`), " +
                     "FOREIGN KEY(`lesson_id`) REFERENCES `lesson`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
             )
+        }
+    }
+
+/** Spec 008: payments, packages, and who owes each class. Done classes get their payer at start-up. */
+val MIGRATION_3_4 =
+    object : Migration(3, 4) {
+        override fun migrate(connection: SQLiteConnection) {
+            listOf(
+                "CREATE TABLE IF NOT EXISTS `package` (`id` TEXT NOT NULL, `student_id` TEXT NOT NULL, `lessons_total` INTEGER " +
+                    "NOT NULL, `price_cents` INTEGER NOT NULL, `bought_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` " +
+                    "TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`student_id`) REFERENCES `student`(`id`) ON UPDATE NO ACTION ON " +
+                    "DELETE CASCADE )",
+                "CREATE INDEX IF NOT EXISTS `index_package_student_id_bought_at` ON `package` (`student_id`, `bought_at`)",
+                "CREATE TABLE IF NOT EXISTS `payment` (`id` TEXT NOT NULL, `student_id` TEXT, `group_id` TEXT, `place_id` " +
+                    "TEXT, `amount_cents` INTEGER NOT NULL, `method` TEXT NOT NULL, `paid_at` TEXT NOT NULL, `note` TEXT, " +
+                    "`package_id` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN " +
+                    "KEY(`student_id`) REFERENCES `student`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`group_id`) " +
+                    "REFERENCES `group_class`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`place_id`) REFERENCES " +
+                    "`place`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`package_id`) REFERENCES `package`(`id`) ON " +
+                    "UPDATE NO ACTION ON DELETE CASCADE )",
+                "CREATE INDEX IF NOT EXISTS `index_payment_student_id` ON `payment` (`student_id`)",
+                "CREATE INDEX IF NOT EXISTS `index_payment_group_id` ON `payment` (`group_id`)",
+                "CREATE INDEX IF NOT EXISTS `index_payment_place_id` ON `payment` (`place_id`)",
+                "CREATE INDEX IF NOT EXISTS `index_payment_package_id` ON `payment` (`package_id`)",
+                "CREATE TABLE IF NOT EXISTS `payment_lesson` (`payment_id` TEXT NOT NULL, `lesson_id` TEXT NOT NULL, PRIMARY " +
+                    "KEY(`payment_id`, `lesson_id`), FOREIGN KEY(`payment_id`) REFERENCES `payment`(`id`) ON UPDATE NO ACTION ON " +
+                    "DELETE CASCADE , FOREIGN KEY(`lesson_id`) REFERENCES `lesson`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+                "CREATE INDEX IF NOT EXISTS `index_payment_lesson_lesson_id` ON `payment_lesson` (`lesson_id`)",
+                "ALTER TABLE student ADD COLUMN package_lessons INTEGER",
+                "ALTER TABLE student ADD COLUMN package_price_cents INTEGER",
+                "ALTER TABLE lesson ADD COLUMN payer TEXT",
+                "ALTER TABLE lesson ADD COLUMN due_cents INTEGER",
+                "ALTER TABLE lesson ADD COLUMN package_id TEXT REFERENCES package(id) ON UPDATE NO ACTION ON DELETE SET NULL",
+                "CREATE INDEX IF NOT EXISTS `index_lesson_payer` ON `lesson` (`payer`)",
+                "CREATE INDEX IF NOT EXISTS `index_lesson_package_id` ON `lesson` (`package_id`)",
+            ).forEach { connection.execSQL(it) }
         }
     }

@@ -242,16 +242,20 @@ class Schedule(
             val notes = change.notes ?: row.notes
             val occurrenceText = row.occurrenceDate
             if (scope == Scope.ONE || rule == null || occurrenceText == null) {
+                // A done class's value follows its new minutes, and so does what it owes (AC-008-1).
                 dao.upsertLesson(
-                    row.copy(
-                        placeId = placeId,
-                        startAt = localToInstant(date, time, zone).isoText(),
-                        plannedMin = planned,
-                        valueCents = value,
-                        travelFeeCents = travel,
-                        notes = notes,
-                        isDetached = rule != null,
-                        updatedAt = ctx.now(),
+                    withDue(
+                        ctx,
+                        row.copy(
+                            placeId = placeId,
+                            startAt = localToInstant(date, time, zone).isoText(),
+                            plannedMin = planned,
+                            valueCents = value,
+                            travelFeeCents = travel,
+                            notes = notes,
+                            isDetached = rule != null,
+                            updatedAt = ctx.now(),
+                        ),
                     ),
                 )
                 return@inTransaction ScheduleResult.Ok(id)
