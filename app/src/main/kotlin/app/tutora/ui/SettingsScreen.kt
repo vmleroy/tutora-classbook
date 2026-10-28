@@ -29,11 +29,11 @@ import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.ControlSize
+import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.RowTrailing
-import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.formatMoney
@@ -61,6 +61,7 @@ private fun stringIn(
 fun SettingsScreen(
     appInfo: AppInfo,
     schemaVersion: Int,
+    onPersonal: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val settings by services.settings.collectAsState(initial = null)
@@ -97,6 +98,20 @@ fun SettingsScreen(
         }
 
     ScreenScaffold(stringResource(R.string.tab_settings), "settings-screen") {
+        // Seus dados first, on its own page: name and Pix key for reports (AC-010-16).
+        ListGroup(
+            listOf {
+                ListRow(
+                    stringResource(R.string.rep_personal),
+                    subtitle =
+                        listOf(s.teacherName, s.pixKey).filter { it.isNotBlank() }.joinToString(" · ").ifEmpty {
+                            stringResource(R.string.rep_personalHint)
+                        },
+                    icon = IconName.USERS,
+                    onClick = onPersonal,
+                )
+            },
+        )
         ListGroup(
             title = stringResource(R.string.settings_general),
             rows =
@@ -192,10 +207,6 @@ fun SettingsScreen(
                     )
                 },
         )
-        // Relatórios: printed on the PDF and the copied text when set (AC-010-16).
-        SectionHeader(stringResource(R.string.rep_settings))
-        TextField(stringResource(R.string.rep_settingsName), s.teacherName, { save(s.copy(teacherName = it)) })
-        TextField(stringResource(R.string.rep_settingsPix), s.pixKey, { save(s.copy(pixKey = it)) })
         Card(label = stringResource(R.string.settings_about)) {
             Text(stringResource(R.string.settings_about), style = TutoraTheme.type.rowTitle, color = TutoraTheme.colors.ink)
             Text(
@@ -267,5 +278,23 @@ private fun LanguageRow(
                 )
             }
         }
+    }
+}
+
+/** Seus dados: the teacher's name and Pix key, printed on reports when set (AC-010-16). */
+@Composable
+fun PersonalDataScreen(onBack: () -> Unit) {
+    val services = LocalServices.current
+    val settings by services.settings.collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
+    val s = settings ?: return
+    ScreenScaffold(stringResource(R.string.rep_personal), "personal-screen", variant = HeaderVariant.PUSH, onBack = onBack) {
+        Text(stringResource(R.string.rep_personalBody), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+        TextField(stringResource(R.string.rep_settingsName), s.teacherName, { v ->
+            scope.launch {
+                services.saveSettings(s.copy(teacherName = v))
+            }
+        })
+        TextField(stringResource(R.string.rep_settingsPix), s.pixKey, { v -> scope.launch { services.saveSettings(s.copy(pixKey = v)) } })
     }
 }

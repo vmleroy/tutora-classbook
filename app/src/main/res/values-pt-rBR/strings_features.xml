@@ -513,7 +513,9 @@
     <string name="rep_partSources">Ganhos por aluno e por local</string>
     <string name="rep_partClasses">Lista de aulas</string>
     <string name="rep_partPayments">Pagamentos recebidos</string>
-    <string name="rep_settings">Relatórios</string>
     <string name="rep_settingsName">Seu nome</string>
     <string name="rep_settingsPix">Chave Pix</string>
+    <string name="rep_personal">Seus dados</string>
+    <string name="rep_personalHint">Nome e chave Pix para os relatórios</string>
+    <string name="rep_personalBody">Aparecem no PDF e no texto copiado dos relatórios. Deixe em branco para não mostrar.</string>
 </resources>

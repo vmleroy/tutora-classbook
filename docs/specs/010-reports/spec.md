@@ -46,7 +46,7 @@ The teacher can send someone what they owe and what they took: pick a student, a
 
 ### Ajustes
 
-- **AC-010-16.** Ajustes has "Seu nome" and "Chave Pix", both optional. The PDF and the copied text show them when set and leave those lines out when not.
+- **AC-010-16.** Ajustes starts with "Seus dados", which opens its own page with "Seu nome" and "Chave Pix", both optional. The PDF and the copied text show them when set and leave those lines out when not. *(28 Oct 2026: on its own page at the top of Ajustes, at Victor's request.)*
 
 ### Language
 

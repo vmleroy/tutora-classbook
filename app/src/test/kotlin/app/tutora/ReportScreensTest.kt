@@ -158,11 +158,14 @@ class ReportScreensTest {
     }
 
     @Test
-    fun `AC-010-16 Ajustes has Seu nome and Chave Pix, and the copied text carries them`() {
+    fun `AC-010-16 Seus dados opens from the top of Ajustes, and the copied text carries the name and Pix key`() {
         h.show(compose)
         h.go(compose, SettingsGraph)
-        compose.onNodeWithContentDescription("Seu nome").performScrollTo().performTextReplacement("Victor")
-        compose.onNodeWithContentDescription("Chave Pix").performScrollTo().performTextReplacement("victor@pix.com")
+        click("Seus dados")
+        compose.onNodeWithTag("personal-screen").assertExists()
+        compose.onNodeWithContentDescription("Seu nome").performTextReplacement("Victor")
+        h.awaitDb(compose) { h.services.currentSettings().teacherName == "Victor" }
+        compose.onNodeWithContentDescription("Chave Pix").performTextReplacement("victor@pix.com")
         h.awaitDb(compose) { h.services.currentSettings().pixKey == "victor@pix.com" }
         h.go(compose, StudentDetail(ana.id))
         compose.onNodeWithContentDescription("Relatório").performClick()

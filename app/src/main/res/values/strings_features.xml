@@ -503,7 +503,9 @@
     <string name="rep_partSources">Earnings by student and place</string>
     <string name="rep_partClasses">List of lessons</string>
     <string name="rep_partPayments">Payments received</string>
-    <string name="rep_settings">Reports</string>
     <string name="rep_settingsName">Your name</string>
     <string name="rep_settingsPix">Pix key</string>
+    <string name="rep_personal">Your details</string>
+    <string name="rep_personalHint">Name and Pix key for reports</string>
+    <string name="rep_personalBody">Shown on report PDFs and copied text. Leave blank to leave them out.</string>
 </resources>
