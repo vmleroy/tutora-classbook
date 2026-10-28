@@ -95,6 +95,19 @@ interface StudentDao {
     @Query("DELETE FROM student_place WHERE student_id = :studentId")
     suspend fun deleteLinks(studentId: String)
 
+    @Query("DELETE FROM student_place WHERE student_id = :studentId AND place_id = :placeId")
+    suspend fun deleteLink(
+        studentId: String,
+        placeId: String,
+    )
+
+    /** Stars [placeId] and unstars the student's other places. */
+    @Query("UPDATE student_place SET is_default = (place_id = :placeId) WHERE student_id = :studentId")
+    suspend fun setDefault(
+        studentId: String,
+        placeId: String,
+    )
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertLinks(rows: List<LinkRow>)
 
@@ -137,6 +150,26 @@ interface GroupDao {
     @Query("DELETE FROM group_member WHERE group_id = :groupId")
     suspend fun deleteMembers(groupId: String)
 
+    @Query("DELETE FROM group_member WHERE group_id = :groupId AND student_id = :studentId")
+    suspend fun deleteMember(
+        groupId: String,
+        studentId: String,
+    )
+
+    /** Takes a student out of every group at a place (AC-004-36). */
+    @Query("DELETE FROM group_member WHERE student_id = :studentId AND group_id IN (SELECT id FROM group_class WHERE place_id = :placeId)")
+    suspend fun leaveGroupsAt(
+        studentId: String,
+        placeId: String,
+    )
+
+    @Query("UPDATE group_class SET place_id = :placeId, updated_at = :now WHERE id = :groupId")
+    suspend fun setPlace(
+        groupId: String,
+        placeId: String,
+        now: String,
+    )
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMembers(rows: List<MemberRow>)
 
@@ -178,6 +211,22 @@ interface ScheduleDao {
 
     @Query("SELECT * FROM schedule_rule WHERE ends_on IS NULL OR ends_on >= :today")
     suspend fun activeRules(today: String): List<RuleRow>
+
+    /** A group that moves takes its series and its classes still ahead with it (AC-004-35). */
+    @Query("UPDATE schedule_rule SET place_id = :placeId WHERE group_id = :groupId")
+    suspend fun moveGroupRules(
+        groupId: String,
+        placeId: String,
+    )
+
+    @Query(
+        "UPDATE lesson SET place_id = :placeId, updated_at = :now WHERE group_id = :groupId AND status = 'scheduled' AND start_at > :now",
+    )
+    suspend fun moveGroupLessons(
+        groupId: String,
+        placeId: String,
+        now: String,
+    )
 
     @Query("SELECT occurrence_date FROM rule_skip WHERE rule_id = :ruleId")
     suspend fun skips(ruleId: String): List<String>

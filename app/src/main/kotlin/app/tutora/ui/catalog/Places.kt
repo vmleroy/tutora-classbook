@@ -18,9 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
-import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
-import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
@@ -28,11 +26,7 @@ import app.tutora.designsystem.components.FieldError
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
-import app.tutora.designsystem.components.ListGroup
-import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.MoneyField
-import app.tutora.designsystem.components.RowTrailing
-import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.TextField
@@ -86,8 +80,11 @@ fun PlaceDetailScreen(
     val students by services.catalogRepo.studentsAt(id).collectAsState(initial = emptyList())
     val allStudents by services.catalogRepo.students().collectAsState(initial = emptyList())
     val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
-    var picking by rememberSaveable { mutableStateOf(false) }
+    val allPlaces by services.catalogRepo.places().collectAsState(initial = emptyList())
+    var picking by rememberSaveable { mutableStateOf<String?>(null) }
+    var moving by remember { mutableStateOf(emptyList<String>()) }
     val p = place ?: return
+    val archived = p.archivedAt != null
     val language = currentLanguage()
     val mode = payMode(p.kind)
     ScreenScaffold(
@@ -162,69 +159,86 @@ fun PlaceDetailScreen(
                 if (p.kind == PlaceKind.STUDENT_HOME) travelText(p) else null,
             ).forEach { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.ink) }
         }
-        SectionHeader("${stringResource(R.string.places_studentsHere)} · ${students.size}")
-        if (students.isNotEmpty()) {
-            ListGroup(
-                students.map { s ->
-                    {
-                        ListRow(
-                            s.name,
-                            subtitle = s.subject,
-                            avatar = initials(s.name) to s.color.tag(),
-                            onClick = { nav.navigate(StudentDetail(s.id)) },
-                        )
-                    }
-                },
-            )
-        }
-        Button(stringResource(R.string.places_linkStudent), { picking = true }, variant = ButtonVariant.OUTLINE)
-        SectionHeader(stringResource(R.string.places_groups))
+        // Alunos and Turmas, managed as on every detail (AC-004-32, 34).
         val here = groups.filter { it.placeId == p.id }
-        if (here.isNotEmpty()) {
-            ListGroup(
-                here.map { g ->
-                    val subtitle =
-                        listOfNotNull(
-                            g.subject,
-                            countText(R.string.groups_size_zero, R.plurals.groups_size, g.memberIds.size),
-                            g.rateCents?.let { stringResource(R.string.places_perLesson, rateMoney(it, language)) },
-                        ).joinToString(" · ")
-                    val row: @Composable () -> Unit = {
-                        ListRow(
-                            g.name,
-                            subtitle = subtitle,
-                            onClick = { nav.navigate(GroupDetail(g.id)) },
-                        )
-                    }
-                    row
+        ConnectionSection(
+            stringResource(R.string.places_studentsHere),
+            students.map { st -> Connection(st.id, st.name, st.subject, avatar = initials(st.name) to st.color.tag()) },
+            stringResource(R.string.connections_noStudents),
+            if (archived) null else stringResource(R.string.groups_addStudent),
+            { picking = "students" },
+            { nav.navigate(StudentDetail(it.id)) },
+            { c -> scope.launch { services.catalog.unlinkStudentFromPlace(c.id, p.id) } },
+        ) { c -> unlinkConfirm(c.title, placeName(p), here.filter { c.id in it.memberIds }.map { it.name }) }
+        // A group always has a place: × here archives it; adding moves one in or creates one.
+        ConnectionSection(
+            stringResource(R.string.places_groups),
+            here.map { g ->
+                val subtitle =
+                    listOfNotNull(
+                        g.subject,
+                        countText(R.string.groups_size_zero, R.plurals.groups_size, g.memberIds.size),
+                        g.rateCents?.let { stringResource(R.string.places_perLesson, rateMoney(it, language)) },
+                    ).joinToString(" · ")
+                Connection(g.id, g.name, subtitle, icon = IconName.USERS)
+            },
+            stringResource(R.string.connections_noGroups),
+            if (archived) null else stringResource(R.string.connections_addGroup),
+            { picking = "groups" },
+            { nav.navigate(GroupDetail(it.id)) },
+            { c -> scope.launch { services.catalog.archive(Kind.GROUP, c.id) } },
+        ) { c ->
+            RemoveConfirm(
+                stringResource(R.string.connections_archiveGroupTitle, c.title),
+                stringResource(R.string.connections_archiveGroupBody),
+            )
+        }
+    }
+    when (picking) {
+        "students" -> {
+            val linked = students.map { it.id }.toSet()
+            PickerSheet(
+                stringResource(R.string.groups_addStudent),
+                allStudents.filter { it.student.id !in linked }.map { e ->
+                    Connection(e.student.id, e.student.name, e.student.subject, avatar = initials(e.student.name) to e.student.color.tag())
+                },
+                { picking = null },
+                { ids ->
+                    scope.launch { services.catalog.linkStudents(ids.map { it to p.id }) }
+                    picking = null
                 },
             )
         }
-        Button(stringResource(R.string.places_newGroup), { nav.navigate(GroupEdit(placeId = p.id)) }, variant = ButtonVariant.OUTLINE)
+        "groups" -> {
+            val names = allPlaces.associate { it.place.id to placeName(it.place) }
+            PickerSheet(
+                stringResource(R.string.connections_addGroup),
+                groups.filter { it.placeId != p.id }.map { g ->
+                    Connection(
+                        g.id,
+                        g.name,
+                        names[g.placeId]?.let { stringResource(R.string.connections_atPlace, it) },
+                        icon = IconName.USERS,
+                    )
+                },
+                { picking = null },
+                { ids ->
+                    moving = ids
+                    picking = null
+                },
+                createLabel = stringResource(R.string.groups_new),
+                onCreate = {
+                    picking = null
+                    nav.navigate(GroupEdit(placeId = p.id))
+                },
+            )
+        }
     }
-    if (picking) {
-        val linked = students.map { it.id }.toSet()
-        val unlinked = allStudents.filter { it.student.id !in linked }
-        BottomSheet(stringResource(R.string.places_linkWhich), { picking = false }) {
-            if (unlinked.isEmpty()) {
-                Text(stringResource(R.string.places_noStudentsToLink), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
-            } else {
-                ListGroup(
-                    unlinked.map { s ->
-                        {
-                            ListRow(
-                                s.student.name,
-                                avatar = initials(s.student.name) to s.student.color.tag(),
-                                trailing = RowTrailing.NONE,
-                                onClick = {
-                                    scope.launch { services.catalog.linkStudentToPlace(s.student.id, p.id) }
-                                    picking = false
-                                },
-                            )
-                        }
-                    },
-                )
-            }
+    if (moving.isNotEmpty()) {
+        MoveConfirm(placeName(p), groups.filter { it.id in moving }.map { it.name }, { moving = emptyList() }) {
+            val ids = moving
+            scope.launch { ids.forEach { services.catalog.moveGroup(it, p.id) } }
+            moving = emptyList()
         }
     }
 }

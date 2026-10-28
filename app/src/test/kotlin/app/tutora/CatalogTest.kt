@@ -2,6 +2,7 @@ package app.tutora
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.data.CatalogRepository
+import app.tutora.data.ScheduleRepository
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.CatalogError
 import app.tutora.domain.Group
@@ -15,9 +16,14 @@ import app.tutora.domain.TagColor
 import app.tutora.domain.TravelMode
 import app.tutora.domain.builtinPlace
 import app.tutora.usecases.Kind
+import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.Result
+import app.tutora.usecases.ScheduleResult
+import app.tutora.usecases.WhoId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -202,5 +208,87 @@ class CatalogTest {
             assertEquals(emptyList<PlaceLink>(), repo.student(s).first()?.links)
             t.catalog.restore(Kind.PLACE, p)
             assertEquals(listOf(PlaceLink(p, true, 9000)), repo.student(s).first()?.links)
+        }
+
+    // Connections (AC-004-31 to 37)
+
+    private suspend fun links(student: String) =
+        repo
+            .student(student)
+            .first()
+            ?.links
+            .orEmpty()
+            .map { it.placeId to it.isDefault }
+
+    private suspend fun members(group: String) =
+        repo
+            .groups()
+            .first()
+            .first { it.id == group }
+            .memberIds
+            .toSet()
+
+    @Test
+    fun `AC-004-33 adding places links them at the place's price, and joining a group at another place links it`() =
+        runTest {
+            val p = placeId()
+            val s = studentId(listOf(PlaceLink(online, true, 12_000)))
+            val g = (t.catalog.saveGroup(Group("", home, "Turma Casa", null, null, emptyList(), null)) as Result.Ok).value.id
+            t.catalog.linkStudents(listOf(s to p))
+            t.catalog.addMembers(g, listOf(s))
+            assertEquals(listOf(online to true, p to false, home to false), links(s))
+            assertEquals(setOf(s), members(g))
+        }
+
+    @Test
+    fun `AC-004-35 moving a group links its members there and moves only its classes still ahead`() =
+        runTest {
+            val p = placeId()
+            val s = studentId(listOf(PlaceLink(online, true, null)))
+            val g = (t.catalog.saveGroup(Group("", online, "Turma ENEM", null, 9_000, listOf(s), null)) as Result.Ok).value.id
+            val past =
+                t.schedule.scheduleLesson(
+                    LessonDraft(WhoId.OfGroup(g), online, LocalDate(2026, 10, 26), LocalTime(8, 0), 60, null, null, null),
+                )
+            val ahead =
+                t.schedule.scheduleLesson(
+                    LessonDraft(WhoId.OfGroup(g), online, LocalDate(2026, 10, 27), LocalTime(8, 0), 60, null, null, null),
+                )
+            t.catalog.moveGroup(g, p)
+            assertEquals(p, repo.group(g)?.placeId)
+            assertEquals(listOf(online to true, p to false), links(s))
+            val lessons =
+                ScheduleRepository(
+                    t.db,
+                ).between("2026-01-01T00:00:00.000Z", "2027-01-01T00:00:00.000Z").first().associateBy { it.id }
+            assertEquals(online, lessons[(past as ScheduleResult.Ok).lessonId]?.place?.id)
+            assertEquals(p, lessons[(ahead as ScheduleResult.Ok).lessonId]?.place?.id)
+        }
+
+    @Test
+    fun `AC-004-36 leaving a place leaves its groups too, and the star moves to the next place`() =
+        runTest {
+            val p = placeId()
+            val s = studentId(listOf(PlaceLink(p, true, null), PlaceLink(online, false, null)))
+            val there = (t.catalog.saveGroup(Group("", p, "Turma ENEM", null, null, listOf(s), null)) as Result.Ok).value.id
+            val elsewhere = (t.catalog.saveGroup(Group("", online, "Turma Online", null, null, listOf(s), null)) as Result.Ok).value.id
+            t.catalog.unlinkStudentFromPlace(s, p)
+            assertEquals(listOf(online to true), links(s))
+            assertEquals(emptySet<String>(), members(there))
+            assertEquals(setOf(s), members(elsewhere))
+        }
+
+    @Test
+    fun `AC-004-37 a new group needs its place, and saving an existing one keeps its place and members`() =
+        runTest {
+            assertEquals(
+                Result.Err(CatalogError.PLACE_REQUIRED),
+                t.catalog.saveGroup(Group("", "", "Sem local", null, null, emptyList(), null)),
+            )
+            val s = studentId(listOf(PlaceLink(online, true, null)))
+            val g = (t.catalog.saveGroup(Group("", online, "Turma ENEM", null, null, listOf(s), null)) as Result.Ok).value
+            t.catalog.saveGroup(g.copy(name = "Turma ENEM 2", placeId = home, memberIds = emptyList()))
+            assertEquals(online, repo.group(g.id)?.placeId)
+            assertEquals(setOf(s), members(g.id))
         }
 }

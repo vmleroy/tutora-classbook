@@ -74,11 +74,7 @@
     <string name="places_whoPlace">o local</string>
     <string name="places_whoStudent">o aluno</string>
     <string name="places_studentsHere">Alunos daqui</string>
-    <string name="places_linkStudent">+ Ligar aluno</string>
-    <string name="places_linkWhich">Ligar qual aluno?</string>
-    <string name="places_noStudentsToLink">Todos os alunos já estão ligados a este local.</string>
     <string name="places_groups">Turmas</string>
-    <string name="places_newGroup">+ Nova turma</string>
     <string name="places_empty">Nenhum local seu ainda</string>
     <string name="places_emptyBody">Toque em + para cadastrar uma escola, salinha ou cursinho.</string>
     <string name="students_new">Novo aluno</string>
@@ -130,7 +126,6 @@
     <string name="groups_detail">Turma</string>
     <string name="groups_addStudent">+ Adicionar aluno</string>
     <string name="groups_noMembers">Nenhum aluno na turma ainda.</string>
-    <string name="groups_membersHint">Opcional. Quem ainda não estuda neste local passa a ser ligado a ele.</string>
     <string name="groups_size_zero">nenhum aluno</string>
     <string name="catalog_edit">Editar</string>
     <string name="catalog_save">Salvar</string>
@@ -257,4 +252,30 @@
     <string name="cancel_other">Outro valor</string>
     <string name="cancel_amount">Valor a cobrar</string>
     <string name="cancel_noPrice">Esta aula não tem preço: escolha Outro valor.</string>
+    <!-- Connections between students, places and groups (spec 004, 28 Oct 2026) -->
+    <string name="tab_groups">Turmas</string>
+    <string name="connections_remove">Tirar</string>
+    <string name="connections_pickSome">Marque para adicionar</string>
+    <string name="connections_add">Adicionar %1$d</string>
+    <string name="connections_nothingToAdd">Nada para adicionar: todos já estão aqui.</string>
+    <string name="connections_search">Buscar</string>
+    <string name="connections_addPlace">+ Adicionar local</string>
+    <string name="connections_addGroup">+ Adicionar turma</string>
+    <string name="connections_noPlaces">Nenhum local ainda.</string>
+    <string name="connections_noGroups">Nenhuma turma ainda.</string>
+    <string name="connections_noStudents">Nenhum aluno ainda.</string>
+    <string name="connections_unlinkTitle">Tirar %1$s de %2$s?</string>
+    <string name="connections_alsoLeaves">Também sai das turmas: %1$s.</string>
+    <string name="connections_leaveGroupTitle">Tirar %1$s da turma %2$s?</string>
+    <string name="connections_moveTitle">Mudar para %1$s?</string>
+    <string name="connections_moveBody">%1$s. Os alunos passam a ser ligados a este local e as próximas aulas mudam junto; aulas já dadas ficam como estão.</string>
+    <string name="connections_move">Mudar</string>
+    <string name="connections_changePlace">Trocar local</string>
+    <string name="connections_pickPlace">Escolher local</string>
+    <string name="connections_atPlace">Hoje em %1$s</string>
+    <string name="groups_search">Buscar turma</string>
+    <string name="groups_empty">Nenhuma turma</string>
+    <string name="groups_emptyBody">Crie uma turma com + ou pelo local onde ela acontece.</string>
+    <string name="connections_archiveGroupTitle">Arquivar a turma %1$s?</string>
+    <string name="connections_archiveGroupBody">Uma turma sempre tem um local, então ela sai daqui e da lista de turmas. Fica guardada em Arquivados para restaurar.</string>
 </resources>

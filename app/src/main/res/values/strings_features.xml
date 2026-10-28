@@ -74,11 +74,7 @@
     <string name="places_whoPlace">the place</string>
     <string name="places_whoStudent">the student</string>
     <string name="places_studentsHere">Students here</string>
-    <string name="places_linkStudent">+ Link student</string>
-    <string name="places_linkWhich">Link which student?</string>
-    <string name="places_noStudentsToLink">Every student is already linked to this place.</string>
     <string name="places_groups">Groups</string>
-    <string name="places_newGroup">+ New group</string>
     <string name="places_empty">No places of your own yet</string>
     <string name="places_emptyBody">Tap + to add a school, tutoring room or prep course.</string>
     <string name="students_new">New student</string>
@@ -130,7 +126,6 @@
     <string name="groups_detail">Group</string>
     <string name="groups_addStudent">+ Add a student</string>
     <string name="groups_noMembers">No students in this group yet.</string>
-    <string name="groups_membersHint">Optional. Anyone who doesn\'t study at this place yet is linked to it.</string>
     <string name="groups_size_zero">no students</string>
     <string name="catalog_edit">Edit</string>
     <string name="catalog_save">Save</string>
@@ -254,4 +249,30 @@
     <string name="cancel_other">Other amount</string>
     <string name="cancel_amount">Amount to charge</string>
     <string name="cancel_noPrice">This lesson has no price: pick Other amount.</string>
+    <!-- Connections between students, places and groups (spec 004, 28 Oct 2026) -->
+    <string name="tab_groups">Groups</string>
+    <string name="connections_remove">Remove</string>
+    <string name="connections_pickSome">Tick to add</string>
+    <string name="connections_add">Add %1$d</string>
+    <string name="connections_nothingToAdd">Nothing to add: everyone is already here.</string>
+    <string name="connections_search">Search</string>
+    <string name="connections_addPlace">+ Add a place</string>
+    <string name="connections_addGroup">+ Add a group</string>
+    <string name="connections_noPlaces">No places yet.</string>
+    <string name="connections_noGroups">No groups yet.</string>
+    <string name="connections_noStudents">No students yet.</string>
+    <string name="connections_unlinkTitle">Remove %1$s from %2$s?</string>
+    <string name="connections_alsoLeaves">Also leaves the groups: %1$s.</string>
+    <string name="connections_leaveGroupTitle">Remove %1$s from the group %2$s?</string>
+    <string name="connections_moveTitle">Move to %1$s?</string>
+    <string name="connections_moveBody">%1$s. Its students are linked to this place and upcoming lessons move with it; lessons already given stay as they are.</string>
+    <string name="connections_move">Move</string>
+    <string name="connections_changePlace">Change place</string>
+    <string name="connections_pickPlace">Pick a place</string>
+    <string name="connections_atPlace">Now at %1$s</string>
+    <string name="groups_search">Search groups</string>
+    <string name="groups_empty">No groups</string>
+    <string name="groups_emptyBody">Create a group with + or from the place where it meets.</string>
+    <string name="connections_archiveGroupTitle">Archive the group %1$s?</string>
+    <string name="connections_archiveGroupBody">A group always has a place, so it leaves here and the list of groups. It stays in Archived to restore.</string>
 </resources>

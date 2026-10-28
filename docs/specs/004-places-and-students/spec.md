@@ -34,18 +34,30 @@ The teacher registers once where they teach and whom they teach: their places (t
 ### Students
 
 - **AC-004-10.** A student has a name (required), subject and grade, phone, how they are charged (Por hora or Por aula), a color tag and notes.
-- **AC-004-11.** A student is saved with at least one linked place (saving with none is refused with a message); one of them is starred as the default. The first place linked becomes the default, and removing the default moves the star to the next one.
+- **AC-004-11.** A new student is saved with at least one linked place (saving with none is refused with a message); one of them is starred as the default. The first place linked becomes the default, and removing the default moves the star to the next one.
 - **AC-004-12.** At each linked place the student pays by the hour or lesson, either the place's price ("Do local") or their own price ("Personalizado"). Prices are set with − / + in R$ 5 steps, and tapping the amount lets the teacher type the exact value.
 - **AC-004-13.** At a place that pays the teacher, the student has no price of their own; the card says "Pago pelo local" with the place's rate.
-- **AC-004-14.** Alunos lists active students and groups by name, with search by name and a "Por local" filter. Each row shows the subject and places, or the group's place and size.
+- **AC-004-14.** Alunos lists active students by name, with search by name and a "Por local" filter. Each row shows the subject and places. *(28 Oct 2026: groups moved to their own page, AC-004-31.)*
 - **AC-004-28.** A new student starts with a random color tag, which the teacher can change. Every row that lists a student (Alunos, a place's students, pickers, Arquivados) shows their initials in their color.
-- **AC-004-15.** A student's detail shows their contact, rate and linked places; tapping a place opens that place's detail.
+- **AC-004-15.** A student's detail shows their contact and rate, then their places and their groups as connections (AC-004-32, 33); tapping a place opens that place's detail.
 
 ### Groups
 
 - **AC-004-16.** A group (turma) belongs to one place and has a name, subject, optional members and a price per lesson. A group at an Escola has no price of its own; it is covered by the salary. "+ Adicionar aluno" offers every active student; adding one who isn't linked to the group's place links them to it with the place's price. *(Changed 28 Oct 2026 at Victor's request: members were limited to students already linked, so a new place's group could not have any.)*
 - **AC-004-30.** Tapping a group opens its detail first: name, subject, place, price (or covered by the salary) and its members, each opening the student. The pencil in the header opens the edit form. *(Added 28 Oct 2026 at Victor's request.)*
 - **AC-004-17.** A place's detail shows its type, address, who pays and its rate, duration and settlement cycle, then the students linked to it with "+ Ligar aluno", then its groups. Tapping a student opens their detail.
+
+### Connections (added 28 Oct 2026 at Victor's request)
+
+Students, places and groups are managed the same way from each other's detail.
+
+- **AC-004-31.** Cadastro has three pages at its top: Alunos, Turmas and Locais. Turmas lists active groups by name, with search, each showing its subject, place and size. Its + creates a group, asking for its place.
+- **AC-004-32.** On every detail, each connection is a section with its count. Its rows look the same everywhere. Tapping a row opens that item. × removes it after a confirmation. "+ Adicionar" opens a searchable list where several can be ticked and added at once. Changes are saved at once, with no Salvar.
+- **AC-004-33.** A student's detail has Locais and Turmas. Adding a place links it with the place's price, starred if it is the first. Joining a group at a place the student isn't linked to also links them to that place.
+- **AC-004-34.** A place's detail has Alunos and Turmas. Adding a student links them with the place's price. "+ Adicionar turma" lists Nova turma first (it creates a group here), then the groups at other places; picking one moves it here, after a confirmation. × on a group archives it after a confirmation, since a group always has a place; it can be restored from Arquivados.
+- **AC-004-35.** A group's detail has its Local, with Trocar, and Alunos. Changing the place links every member to the new place and moves the group's upcoming classes there; classes that already happened keep their place.
+- **AC-004-36.** Removing a student from a place also takes them out of that place's groups; the confirmation names the groups. Removing their starred place moves the star to the next one. A student left with no place shows "Sem local".
+- **AC-004-37.** A group's edit form has only its own fields: name, subject, price and, for a new group, its place. Members are managed on its detail.
 
 ### Price of a lesson
 

@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import app.tutora.designsystem.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
@@ -160,7 +162,8 @@ fun ListGroup(
 
 enum class TileTone { SECONDARY, DANGER, SUCCESS, ACCENT, PRIMARY }
 
-enum class RowTrailing { CHEVRON, SWITCH, NONE }
+/** REMOVE is a × that takes the row's item out of a list of connections. */
+enum class RowTrailing { CHEVRON, SWITCH, NONE, REMOVE }
 
 /** A settings or navigation row whose subtitle states the current value. */
 @Composable
@@ -176,6 +179,7 @@ fun ListRow(
     onSwitchChange: (Boolean) -> Unit = {},
     badge: Pair<BadgeTone, String>? = null,
     onClick: (() -> Unit)? = null,
+    onRemove: () -> Unit = {},
 ) {
     val c = TutoraTheme.colors
     val (tile, tileInk) =
@@ -223,6 +227,8 @@ fun ListRow(
         when (trailing) {
             RowTrailing.CHEVRON -> Icon(IconName.CHEVRON_RIGHT, tint = c.inkMuted, size = Size.iconSm)
             RowTrailing.SWITCH -> Switch(switchValue, onSwitchChange, title)
+            RowTrailing.REMOVE ->
+                IconButton(IconName.CLOSE, stringResource(R.string.ds_remove, title), onRemove, variant = IconButtonVariant.PLAIN)
             RowTrailing.NONE -> Unit
         }
     }

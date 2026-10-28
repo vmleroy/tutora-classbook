@@ -36,6 +36,7 @@ import app.tutora.state.PlaceItem
 import app.tutora.state.StudentItem
 import app.tutora.ui.Archived
 import app.tutora.ui.GroupDetail
+import app.tutora.ui.GroupEdit
 import app.tutora.ui.PlaceDetail
 import app.tutora.ui.PlaceEdit
 import app.tutora.ui.RegistryHome
@@ -56,15 +57,14 @@ import java.text.Normalizer
 private fun fold(s: String) = Normalizer.normalize(s, Normalizer.Form.NFD).replace(Regex("\\p{M}"), "").lowercase()
 
 /**
- * Cadastro: students and places share one tab, since each links to the other; Alunos and
- * Locais are its two sub-pages (AC-005-27). The header has Arquivados and + (AC-004-23).
+ * Cadastro: students, groups and places share one tab, since each links to the others; Alunos,
+ * Turmas and Locais are its sub-pages (AC-004-31, AC-005-27). The header has Arquivados and +.
  */
 @Composable
 fun RegistryScreen(
     nav: NavHostController,
     view: String,
 ) {
-    val places = view == "places"
     ScreenScaffold(
         stringResource(R.string.tab_registry),
         "registry-screen",
@@ -77,20 +77,40 @@ fun RegistryScreen(
                 ) { nav.navigate(Archived) },
                 HeaderAction(
                     IconName.PLUS,
-                    stringResource(if (places) R.string.places_new else R.string.students_new),
+                    stringResource(
+                        when (view) {
+                            "places" -> R.string.places_new
+                            "groups" -> R.string.groups_new
+                            else -> R.string.students_new
+                        },
+                    ),
                     IconButtonVariant.ACCENT,
                 ) {
-                    nav.navigate(if (places) PlaceEdit() else StudentEdit())
+                    nav.navigate(
+                        when (view) {
+                            "places" -> PlaceEdit()
+                            "groups" -> GroupEdit()
+                            else -> StudentEdit()
+                        },
+                    )
                 },
             ),
     ) {
         SegmentedControl(
-            listOf("students" to stringResource(R.string.tab_students), "places" to stringResource(R.string.tab_places)),
+            listOf(
+                "students" to stringResource(R.string.tab_students),
+                "groups" to stringResource(R.string.tab_groups),
+                "places" to stringResource(R.string.tab_places),
+            ),
             view,
             { nav.navigate(RegistryHome(it)) { popUpTo<RegistryHome> { inclusive = true } } },
             stringResource(R.string.tab_registry),
         )
-        if (places) PlacesPane(nav) else StudentsPane(nav)
+        when (view) {
+            "places" -> PlacesPane(nav)
+            "groups" -> GroupsPane(nav)
+            else -> StudentsPane(nav)
+        }
     }
 }
 
@@ -98,14 +118,12 @@ fun RegistryScreen(
 private fun StudentsPane(nav: NavHostController) {
     val services = LocalServices.current
     val students by services.catalogRepo.students().collectAsState(initial = emptyList())
-    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
     val places by services.catalogRepo.places().collectAsState(initial = emptyList())
     var query by rememberSaveable { mutableStateOf("") }
     var byPlace by rememberSaveable { mutableStateOf(false) }
     val names = places.associate { it.place.id to placeName(it.place) }
-    val language = currentLanguage()
     Column(Modifier.testTag("students-screen"), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
-        if (students.isEmpty() && groups.isEmpty()) {
+        if (students.isEmpty()) {
             EmptyState(
                 stringResource(R.string.empty_registry_title),
                 icon = IconName.USERS,
@@ -115,12 +133,11 @@ private fun StudentsPane(nav: NavHostController) {
         }
         TextField(stringResource(R.string.students_search), query, { query = it })
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            Chip(stringResource(R.string.students_all, (students.size + groups.size).toString()), !byPlace, { byPlace = false })
+            Chip(stringResource(R.string.students_all, students.size.toString()), !byPlace, { byPlace = false })
             Chip(stringResource(R.string.students_byPlace), byPlace, { byPlace = true })
         }
         val q = fold(query.trim())
         val shownStudents = students.filter { fold(it.student.name).contains(q) }
-        val shownGroups = groups.filter { fold(it.name).contains(q) }
         val noPlace = stringResource(R.string.students_noPlace)
 
         @Composable
@@ -140,33 +157,58 @@ private fun StudentsPane(nav: NavHostController) {
             }
         }
 
-        @Composable
-        fun groupRow(g: Group): @Composable () -> Unit {
-            val subtitle =
-                listOfNotNull(
-                    g.subject,
-                    names[g.placeId],
-                    countText(R.string.groups_size_zero, R.plurals.groups_size, g.memberIds.size),
-                    g.rateCents?.let { stringResource(R.string.places_perLesson, rateMoney(it, language)) },
-                ).joinToString(" · ")
-            return { ListRow(g.name, subtitle = subtitle, icon = IconName.USERS, onClick = { nav.navigate(GroupDetail(g.id)) }) }
-        }
         when {
-            shownStudents.isEmpty() && shownGroups.isEmpty() ->
+            shownStudents.isEmpty() ->
                 Text(stringResource(R.string.students_noSearchResults), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
             byPlace -> {
                 places.forEach { p ->
                     val here = shownStudents.filter { s -> s.links.any { it.placeId == p.place.id } }
-                    val groupsHere = shownGroups.filter { it.placeId == p.place.id }
-                    if (here.isNotEmpty() || groupsHere.isNotEmpty()) {
-                        ListGroup(here.map { studentRow(it) } + groupsHere.map { groupRow(it) }, title = placeName(p.place))
-                    }
+                    if (here.isNotEmpty()) ListGroup(here.map { studentRow(it) }, title = placeName(p.place))
                 }
                 val without = shownStudents.filter { it.links.isEmpty() }
                 if (without.isNotEmpty()) ListGroup(without.map { studentRow(it) }, title = noPlace)
             }
-            else -> ListGroup(shownStudents.map { studentRow(it) } + shownGroups.map { groupRow(it) })
+            else -> ListGroup(shownStudents.map { studentRow(it) })
         }
+    }
+}
+
+/** Turmas: active groups with search, each with its subject, place, size and price (AC-004-31). */
+@Composable
+private fun GroupsPane(nav: NavHostController) {
+    val services = LocalServices.current
+    val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
+    val places by services.catalogRepo.places().collectAsState(initial = emptyList())
+    var query by rememberSaveable { mutableStateOf("") }
+    val names = places.associate { it.place.id to placeName(it.place) }
+    val language = currentLanguage()
+    Column(Modifier.testTag("groups-screen"), verticalArrangement = Arrangement.spacedBy(Spacing.s4)) {
+        if (groups.isEmpty()) {
+            EmptyState(stringResource(R.string.groups_empty), icon = IconName.USERS, body = stringResource(R.string.groups_emptyBody))
+            return@Column
+        }
+        TextField(stringResource(R.string.groups_search), query, { query = it })
+        val q = fold(query.trim())
+        val shown = groups.filter { fold(it.name).contains(q) }
+        if (shown.isEmpty()) {
+            Text(stringResource(R.string.students_noSearchResults), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
+            return@Column
+        }
+        ListGroup(
+            shown.map { g: Group ->
+                val subtitle =
+                    listOfNotNull(
+                        g.subject,
+                        names[g.placeId],
+                        countText(R.string.groups_size_zero, R.plurals.groups_size, g.memberIds.size),
+                        g.rateCents?.let { stringResource(R.string.places_perLesson, rateMoney(it, language)) },
+                    ).joinToString(" · ")
+                val row: @Composable () -> Unit = {
+                    ListRow(g.name, subtitle = subtitle, icon = IconName.USERS, onClick = { nav.navigate(GroupDetail(g.id)) })
+                }
+                row
+            },
+        )
     }
 }
 

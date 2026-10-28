@@ -283,6 +283,7 @@ fun GallerySections() {
         TileTone.entries.forEach { ListRow(it.name.lowercase(), icon = IconName.PIN, iconTone = it, onClick = {}) }
         ListRow("Ana Souza", subtitle = "Matemática", avatar = "AS" to Tag.VIOLET, badge = BadgeTone.DANGER to "Deve", onClick = {})
         ListRow("Sem seta", trailing = RowTrailing.NONE)
+        ListRow("Pedro Lima", subtitle = "Física", avatar = "PL" to Tag.GREEN, trailing = RowTrailing.REMOVE, onClick = {}, onRemove = {})
     }
     Section("AlertBanner") {
         AlertTone.entries.forEach { AlertBanner("3 alunos com pagamento pendente", tone = it, value = "R$ 560", onClick = {}) }
