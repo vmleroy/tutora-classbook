@@ -102,4 +102,46 @@ class MigrationsTest {
             assertEquals("2026-10-26T12:00:00.000Z", db.schedule().timer("l")?.startedAt)
             db.close()
         }
+
+    @Test
+    fun `migration 3 to 4 keeps a done class, unsettled, and adds payments and packages`() =
+        runTest {
+            val file = File(tmp.root, "tutora.db")
+            val t = "'2026-10-26T12:00:00.000Z'"
+            createAt(
+                3,
+                file,
+                listOf(
+                    "INSERT INTO place VALUES ('p', 'ONLINE', NULL, NULL, 'online', 'STUDENT', 'HOUR', 12000, 0, 'LESSON', NULL, 60, 'NONE', 0, NULL, $t, $t)",
+                    "INSERT INTO student VALUES ('s', 'Ana', NULL, NULL, NULL, 'AMBER', 'HOUR', NULL, $t, $t)",
+                    "INSERT INTO lesson (id, student_id, place_id, start_at, planned_min, status, is_detached, created_at, updated_at, " +
+                        "rate_cents, rate_type) VALUES ('l', 's', 'p', $t, 60, 'done', 0, $t, $t, 12000, 'HOUR')",
+                ),
+            )
+            val (db, _) = openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver())
+            assertEquals(listOf("l"), db.payments().unsettled().map { it.id })
+            db.payments().upsertPayment(PaymentRow("pay", "s", null, null, 12000, "pix", "2026-10-26T12:00:00.000Z", null, null, "x", "x"))
+            assertEquals(12000L, db.payments().payment("pay")?.amountCents)
+            db.close()
+        }
+
+    @Test
+    fun `migration 4 to 5 keeps payments and adds credits`() =
+        runTest {
+            val file = File(tmp.root, "tutora.db")
+            val t = "'2026-10-26T12:00:00.000Z'"
+            createAt(
+                4,
+                file,
+                listOf(
+                    "INSERT INTO student (id, name, color, rate_type, created_at, updated_at) VALUES ('s', 'Ana', 'AMBER', 'HOUR', $t, $t)",
+                    "INSERT INTO payment VALUES ('pay', 's', NULL, NULL, 12000, 'pix', $t, NULL, NULL, $t, $t)",
+                ),
+            )
+            val (db, _) = openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver())
+            assertEquals(12000L, db.payments().payment("pay")?.amountCents)
+            db.payments().upsertCredit(CreditRow("c", "s", null, null, "bonus", 5000, 30, null, null, "x", "x"))
+            assertEquals(1, db.payments().credits("student", "s").size)
+            db.close()
+        }
 }

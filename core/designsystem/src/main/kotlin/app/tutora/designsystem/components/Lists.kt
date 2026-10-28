@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +32,10 @@ import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
-/** A section title with an optional aside ("4 aulas", "Ver todas"). */
+/**
+ * A section title with an optional aside ("4 aulas", "Ver todas"), tappable with [onAside], and
+ * an optional small icon action at the end ("+" to add to the section).
+ */
 @Composable
 fun SectionHeader(
     title: String,
@@ -39,10 +43,18 @@ fun SectionHeader(
     aside: String? = null,
     asidePrimary: Boolean = false,
     required: Boolean = false,
+    onAside: (() -> Unit)? = null,
+    action: IconName? = null,
+    actionLabel: String = "",
+    onAction: () -> Unit = {},
 ) {
     val c = TutoraTheme.colors
     // The title wraps; the aside keeps its own width on one line, never squeezed into a column.
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.Bottom) {
+    Row(
+        modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+        verticalAlignment = if (action != null || onAside != null) Alignment.CenterVertically else Alignment.Bottom,
+    ) {
         Text(
             buildAnnotatedString {
                 append(title)
@@ -56,11 +68,23 @@ fun SectionHeader(
             Text(
                 aside,
                 style = TutoraTheme.type.caption,
-                color = if (asidePrimary) c.btnPrimary else c.inkMuted,
+                color = if (asidePrimary || onAside != null) c.btnPrimary else c.inkMuted,
                 maxLines = 1,
                 softWrap = false,
+                modifier =
+                    if (onAside != null) {
+                        Modifier
+                            .sizeIn(
+                                minWidth = Size.touch,
+                                minHeight = Size.touch,
+                            ).clickable(role = Role.Button, onClick = onAside)
+                            .wrapContentHeight()
+                    } else {
+                        Modifier
+                    },
             )
         }
+        if (action != null) IconButton(action, actionLabel, onAction, variant = IconButtonVariant.PLAIN)
     }
 }
 

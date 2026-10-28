@@ -3,6 +3,7 @@
 Section title with an optional count or hint on the right.
 
 ## Rules
+- A section that can grow has a small plain `+` at the end of its header (`action`), never a full-width add button under it. "Ver todas" is the tappable aside (`onAside`).
 - Title in `section` style, sentence case. Aside in `caption` ink-muted, or primary when it is time-sensitive ("em 25 min").
 
 ## Props

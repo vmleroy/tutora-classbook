@@ -55,12 +55,24 @@ fun Place.toRow(
     now,
 )
 
-fun StudentRow.toStudent() = Student(id, name, subject, phone, notes, TagColor.valueOf(color), RateType.valueOf(rateType), archivedAt)
+fun StudentRow.toStudent() =
+    Student(
+        id,
+        name,
+        subject,
+        phone,
+        notes,
+        TagColor.valueOf(color),
+        RateType.valueOf(rateType),
+        archivedAt,
+        packageLessons,
+        packagePriceCents,
+    )
 
 fun Student.toRow(
     createdAt: String,
     now: String,
-) = StudentRow(id, name, subject, phone, notes, color.name, rateType.name, archivedAt, createdAt, now)
+) = StudentRow(id, name, subject, phone, notes, color.name, rateType.name, archivedAt, createdAt, now, packageLessons, packagePriceCents)
 
 fun LinkRow.toLink() = PlaceLink(placeId, isDefault, rateCents)
 

@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -70,7 +72,8 @@ fun BottomSheet(
                 Text(title, style = TutoraTheme.type.titleLg, color = c.ink, modifier = Modifier.semantics { heading() })
                 if (subtitle != null) Text(subtitle, style = TutoraTheme.type.caption, color = c.inkMuted)
             }
-            content()
+            // A tall body scrolls; the title and the buttons stay in view.
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) { content() }
             if (actions.isNotEmpty()) {
                 // Outline + primary sit side by side, 1 : 2.
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2_5)) {

@@ -28,7 +28,7 @@ import java.text.Normalizer
 
 // Students, places and groups manage each other the same way on every detail (AC-004-32): a
 // section of connections with its count, rows that open the item, × to take one out after a
-// confirmation, and "+ Adicionar" opening a searchable list to add several at once.
+// confirmation, and a small + in the header opening a searchable list to add several at once.
 
 /** One connected item: a student, a place or a group. */
 data class Connection(
@@ -60,7 +60,13 @@ fun ConnectionSection(
 ) {
     var removing by remember { mutableStateOf<Connection?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-        SectionHeader("$title · ${items.size}")
+        // A small + in the header adds, the same on every detail.
+        SectionHeader(
+            "$title · ${items.size}",
+            action = if (addLabel != null) IconName.PLUS else null,
+            actionLabel = addLabel.orEmpty(),
+            onAction = onAdd,
+        )
         if (items.isEmpty()) {
             Text(empty, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
         } else {
@@ -80,7 +86,6 @@ fun ConnectionSection(
                 },
             )
         }
-        if (addLabel != null) Button(addLabel, onAdd, variant = ButtonVariant.OUTLINE)
     }
     removing?.let { c ->
         val text = confirm(c)

@@ -1,6 +1,6 @@
 package app.tutora.domain
 
-enum class PriceSource { PLACE, STUDENT, GROUP, HAND }
+enum class PriceSource { PLACE, STUDENT, GROUP, HAND, PACKAGE }
 
 sealed interface Price {
     data class Set(
@@ -27,9 +27,18 @@ fun resolvePrice(
 ): Price {
     if (place.kind == PlaceKind.SCHOOL) return Price.Salary
     if (group != null) return group.rateCents?.let { Price.Set(it, RateType.LESSON, PriceSource.GROUP) } ?: Price.Unset
+    if (place.payer == Payer.STUDENT && student != null) packagePrice(student)?.let { return it }
     val own = if (place.payer == Payer.STUDENT) link?.rateCents else null
     if (own != null && student != null) return Price.Set(own, student.rateType, PriceSource.STUDENT)
     return place.rateCents?.let { Price.Set(it, place.rateType, PriceSource.PLACE) } ?: Price.Unset
+}
+
+/** A package student pays its price per class wherever the student pays (AC-008-19, 23). */
+fun packagePrice(student: Student): Price.Set? {
+    if (student.rateType != RateType.PACKAGE) return null
+    val lessons = student.packageLessons?.takeIf { it > 0 } ?: return null
+    val price = student.packagePriceCents ?: return null
+    return Price.Set(packageUnit(price, lessons), RateType.PACKAGE, PriceSource.PACKAGE)
 }
 
 sealed interface Preview {

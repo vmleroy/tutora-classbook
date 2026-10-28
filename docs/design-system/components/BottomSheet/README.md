@@ -7,6 +7,7 @@ Panel that rises from the bottom for choices, confirmations and pickers, over a 
 
 ## Rules
 - Use for: report options, record payment, confirm restore or delete, student and place pickers.
+- A body taller than the screen scrolls, while the title and the actions stay in view.
 - Never stack two sheets. Destructive confirmations name what will be lost ("Os dados atuais serão substituídos").
 - In the app: a transparent `Modal` (so it covers the whole screen wherever the screen places it, and Android back closes it, and it rises above the keyboard when a field inside has focus) holding a Reanimated panel with the grabber that slides up (instantly when the phone asks for reduced motion) and closes on scrim tap. Swipe-to-dismiss comes with the first screen that needs a sheet.
 

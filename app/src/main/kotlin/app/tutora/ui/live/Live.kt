@@ -75,6 +75,7 @@ import app.tutora.ui.TodayGraph
 import app.tutora.ui.clockText
 import app.tutora.ui.clockTime
 import app.tutora.ui.durationText
+import app.tutora.ui.payments.DoneMoney
 import app.tutora.ui.schedule.DoneSheet
 import app.tutora.ui.schedule.lessonSubtitle
 import app.tutora.ui.schedule.whoName
@@ -358,6 +359,8 @@ private fun Done(
                 Text(worthText(worth), style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
             }
         }
+        // The balance it was added to, Registrar pagamento, and a package's last class (AC-008-18, 21).
+        DoneMoney(l)
     }
 }
 

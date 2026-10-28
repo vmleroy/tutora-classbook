@@ -193,9 +193,9 @@ Ten SQLite tables plus one link table cover v1; money is stored as integer cents
 | schedule\_rule | id, student\_id or group\_id, weekday, start\_time, duration\_min, repeat (weekly / biweekly), starts\_on, ends\_on | generates lessons |
 | lesson | id, rule\_id (nullable), student\_id or group\_id, place\_id, start\_at, end\_at, status (scheduled / live / done / cancelled / missed), rate\_type, rate\_cents, earned\_cents, travel\_fee\_cents, fee\_cents, fee\_waived, paid, source (manual / timer), calendar\_event\_id, notes | belongs to student or group; optional rule |
 | lesson\_timer | lesson\_id, started\_at, paused\_ms, last\_resume\_at | one per live lesson, so the timer survives the app being closed |
-| payment | id, student\_id or place\_id, amount\_cents, method (cash / pix / transfer / card), paid\_at, note | belongs to student; covers lessons via payment\_lesson |
+| payment | id, student\_id, group\_id or place\_id, amount\_cents, method (cash / pix / transfer / card), paid\_at, note | belongs to student; covers lessons via payment\_lesson |
 | payment\_lesson | payment\_id, lesson\_id | links a payment to the lessons it pays |
-| package | id, student\_id, lessons\_total, lessons\_used, price\_cents, bought\_at | belongs to student |
+| package | id, student\_id, lessons\_total, price\_cents, bought\_at; the lessons used are the done lessons whose package\_id is it (008) | belongs to student; its purchase is a payment with package\_id |
 | settings | key, value | language (pt-BR / en), default rate, reminder minutes, theme\_id, theme\_mode (light / dark / system), custom\_colors (JSON map of element to hex, e.g. {"primaryBtn":"#7A2E3B"}), text\_scale, calendar\_sync\_on, calendar\_id, auto\_backup (off / daily / weekly / monthly), backup\_folder\_uri, backup\_keep, cancel\_window\_h, late\_cancel\_fee, no\_show\_fee, setup\_done, last\_backup\_at |
 
 **Notes**

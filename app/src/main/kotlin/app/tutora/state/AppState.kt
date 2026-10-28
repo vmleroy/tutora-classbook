@@ -2,6 +2,7 @@ package app.tutora.state
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import app.tutora.data.CatalogRepository
+import app.tutora.data.PaymentRepository
 import app.tutora.data.ScheduleRepository
 import app.tutora.data.SettingsRepository
 import app.tutora.data.TutoraDatabase
@@ -10,6 +11,7 @@ import app.tutora.usecases.Catalog
 import app.tutora.usecases.Ctx
 import app.tutora.usecases.Lessons
 import app.tutora.usecases.Live
+import app.tutora.usecases.Payments
 import app.tutora.usecases.Schedule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +35,8 @@ class AppServices(
     val schedule = Schedule(ctx)
     val lessons = Lessons(ctx)
     val live = Live(ctx)
+    val paymentRepo = PaymentRepository(db)
+    val payments = Payments(ctx)
 
     val settings: Flow<Settings> = settingsRepo.observe()
 

@@ -186,13 +186,13 @@ class FeatureScreensTest {
         salinha()
         h.show(compose)
         h.go(compose, RegistryHome("places"))
-        compose.onNodeWithContentDescription("Padrão · alunos herdam o preço").assertExists()
+        compose.onNodeWithContentDescription("Padrão").assertExists()
         compose
             .onNode(
                 hasPlainText("Sem preço · 60 min · nenhum aluno · Deslocamento: varia, você informa em cada aula"),
                 useUnmergedTree = true,
             ).assertExists()
-        compose.onNode(hasPlainText("R$ 60/h pagos pelo local · 60 min · nenhum aluno"), useUnmergedTree = true).assertExists()
+        compose.onNode(hasPlainText("Salinha · R$ 60/h pagos pelo local · 60 min · nenhum aluno"), useUnmergedTree = true).assertExists()
         compose.onAllNodesWithText("Nenhum local seu ainda", useUnmergedTree = true).assertCountEquals(0)
     }
 
@@ -207,7 +207,7 @@ class FeatureScreensTest {
         compose.onNodeWithText("Quem paga: o local", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Mensal", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Alunos daqui · 1", useUnmergedTree = true).assertExists()
-        compose.onNodeWithText("+ Adicionar aluno", useUnmergedTree = true).assertExists()
+        compose.onNodeWithContentDescription("Adicionar aluno").assertExists()
         compose.onNodeWithText("Turma ENEM", useUnmergedTree = true).assertExists()
         compose.onAllNodes(hasContentDescription("Pedro Lima", substring = true)).onFirst().performClick()
         compose.waitForIdle()
@@ -244,7 +244,7 @@ class FeatureScreensTest {
         val ana = student("Ana Souza", "Matemática", listOf(PlaceLink(online, true, 12_000), PlaceLink(home, false, null)))
         h.show(compose)
         h.go(compose, StudentDetail(ana))
-        compose.onNodeWithText("Por hora", useUnmergedTree = true).assertExists()
+        // The rate shows on each place (AC-008-32 dropped the Valor card).
         compose.onNode(hasPlainText("R$ 120/h"), useUnmergedTree = true).assertExists()
         compose.onAllNodes(hasContentDescription("Casa do Aluno", substring = true)).onFirst().performClick()
         compose.waitForIdle()
@@ -310,7 +310,7 @@ class FeatureScreensTest {
         val bia = student("Bia Costa", "Química", listOf(PlaceLink(online, true, null)))
         h.show(compose)
         h.go(compose, PlaceDetail(p))
-        compose.onNodeWithText("+ Adicionar aluno").performClick()
+        compose.onNodeWithContentDescription("Adicionar aluno").performClick()
         h.settle(compose)
         compose.onNodeWithText("Bia Costa · Química", useUnmergedTree = true).performClick()
         compose.onNodeWithText("Adicionar 1").performClick()
@@ -320,6 +320,8 @@ class FeatureScreensTest {
                 .first()
                 .size == 2
         }
+        // The picker sheet animates away before the list behind it takes taps again.
+        h.settle(compose)
         compose.onNodeWithContentDescription("Remover Bia Costa").performClick()
         h.settle(compose)
         compose.onNodeWithText("Tirar Bia Costa de Salinha Aprender+?", useUnmergedTree = true).assertExists()
@@ -349,7 +351,7 @@ class FeatureScreensTest {
         h.show(compose)
         h.go(compose, PlaceDetail(p))
         compose.onNodeWithText("+ Nova turma", useUnmergedTree = true).assertDoesNotExist()
-        compose.onNodeWithText("+ Adicionar turma").performClick()
+        compose.onNodeWithContentDescription("Adicionar turma").performClick()
         h.settle(compose)
         compose.onNodeWithText("Nova turma", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Turma ENEM · Hoje em Online / Remoto", useUnmergedTree = true).performClick()

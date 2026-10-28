@@ -67,6 +67,9 @@ data class Student(
     val color: TagColor,
     val rateType: RateType,
     val archivedAt: String?,
+    /** The package terms when [rateType] is PACKAGE: how many classes, for what price (AC-008-19). */
+    val packageLessons: Int? = null,
+    val packagePriceCents: Cents? = null,
 )
 
 /** A student's link to a place; `rateCents` null = the place's price ("Do local"). */

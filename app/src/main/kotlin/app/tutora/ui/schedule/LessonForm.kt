@@ -43,6 +43,7 @@ import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Cents
 import app.tutora.domain.Group
 import app.tutora.domain.LessonStatus
+import app.tutora.domain.PayMethod
 import app.tutora.domain.Place
 import app.tutora.domain.PlaceKind
 import app.tutora.domain.RateType
@@ -61,6 +62,7 @@ import app.tutora.ui.catalog.DurationStepper
 import app.tutora.ui.catalog.Field
 import app.tutora.ui.catalog.RequiredLegend
 import app.tutora.ui.clockTime
+import app.tutora.ui.payments.methodName
 import app.tutora.ui.placeName
 import app.tutora.ui.shortDate
 import app.tutora.ui.tag
@@ -88,6 +90,8 @@ data class LessonValues(
     val notes: String?,
     /** A done class's duration is its real one. */
     val status: LessonStatus = LessonStatus.SCHEDULED,
+    /** Registrar's "Já foi pago" and its method; null = "Fica a receber" (AC-008-17). */
+    val paidWith: PayMethod? = null,
 )
 
 /** The series a class belongs to, shown as "Semanal · segunda-feira, 14:00". */
@@ -309,6 +313,25 @@ fun LessonForm(
                 readOnly = true,
             )
         }
+        // Pagamento: "Fica a receber" or "Já foi pago" with the method (AC-008-17).
+        if (log == true) {
+            Field(stringResource(R.string.pay_section)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    SegmentedControl(
+                        listOf(false to stringResource(R.string.pay_owedLater), true to stringResource(R.string.pay_alreadyPaid)),
+                        v.paidWith != null,
+                        { paid -> v = v.copy(paidWith = if (paid) v.paidWith ?: PayMethod.PIX else null) },
+                        stringResource(R.string.pay_section),
+                        size = ControlSize.SM,
+                    )
+                    v.paidWith?.let { method ->
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                            PayMethod.entries.forEach { m -> Chip(methodName(m), method == m, { v = v.copy(paidWith = m) }) }
+                        }
+                    }
+                }
+            }
+        }
         if (!editing && log != true) {
             Field(stringResource(R.string.lesson_repeat)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
@@ -345,8 +368,22 @@ fun LessonForm(
     when (sheet) {
         "who" ->
             BottomSheet(stringResource(R.string.lesson_pickWho), { sheet = null }) {
+                // Search by name, and show students, groups or both.
+                var query by rememberSaveable { mutableStateOf("") }
+                var kind by rememberSaveable { mutableStateOf("all") }
+                val q = fold(query.trim())
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    TextField(stringResource(R.string.lesson_whoSearch), query, { query = it })
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                        listOf(
+                            "all" to R.string.lesson_whoAll,
+                            "students" to R.string.tab_students,
+                            "groups" to R.string.tab_groups,
+                        ).forEach { (k, label) -> Chip(stringResource(label), kind == k, { kind = k }) }
+                    }
+                }
                 val studentRows: List<@Composable () -> Unit> =
-                    students.filter { it.links.isNotEmpty() }.map { s ->
+                    students.filter { it.links.isNotEmpty() && kind != "groups" && fold(it.student.name).contains(q) }.map { s ->
                         {
                             ListRow(
                                 s.student.name,
@@ -358,7 +395,7 @@ fun LessonForm(
                         }
                     }
                 val groupRows: List<@Composable () -> Unit> =
-                    groups.map { g: Group ->
+                    groups.filter { kind != "students" && fold(it.name).contains(q) }.map { g: Group ->
                         {
                             ListRow(
                                 g.name,
@@ -369,7 +406,15 @@ fun LessonForm(
                             )
                         }
                     }
-                ListGroup(studentRows + groupRows)
+                if (studentRows.isEmpty() && groupRows.isEmpty()) {
+                    Text(
+                        stringResource(R.string.students_noSearchResults),
+                        style = TutoraTheme.type.body,
+                        color = TutoraTheme.colors.inkMuted,
+                    )
+                } else {
+                    ListGroup(studentRows + groupRows)
+                }
             }
     }
 }
@@ -462,7 +507,7 @@ fun LessonNewScreen(
                                 v.notes,
                             )
                         // Registrar saves a class already given (AC-006-8); Agendar puts it on the schedule.
-                        when (val r = if (log) services.lessons.logLesson(d) else services.schedule.scheduleLesson(d)) {
+                        when (val r = if (log) services.lessons.logLesson(d, v.paidWith) else services.schedule.scheduleLesson(d)) {
                             is ScheduleResult.Ok -> nav.popBackStack()
                             is ScheduleResult.Err -> error = errors.getValue(r.error)
                         }
@@ -550,3 +595,10 @@ fun LessonEditScreen(
         })
     }
 }
+
+/** Accent- and case-insensitive match, so "ana" finds "Ána". */
+private fun fold(s: String) =
+    java.text.Normalizer
+        .normalize(s, java.text.Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}"), "")
+        .lowercase()

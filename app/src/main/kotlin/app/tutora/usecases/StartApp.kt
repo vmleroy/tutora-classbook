@@ -46,6 +46,8 @@ class StartApp(
             repo.ensureDefaults(firstRunLanguage(phone), now())
             val ctx = Ctx(db, now, newId, live = notifier, alarm = alarm)
             Catalog(ctx).ensureBuiltinPlaces()
+            // Classes given before payments existed get who owes them (spec 008).
+            Payments(ctx).backfill()
             // Repeating classes stay filled 8 weeks ahead (AC-005-8).
             Schedule(ctx).fillSchedule()
             // A class still live (the phone restarted, say) gets its notification back.
