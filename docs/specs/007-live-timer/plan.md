@@ -37,7 +37,7 @@ Architecture reference: "Live timer = timestamps" (state), "Native APIs" (live t
     - After confirming, "Aula concluída" shows with Desfazer and Voltar para Hoje (AC-007-4, 5, 9 to 12).
   - The end sheet is the Marcar como dada sheet, factored into a shared `DoneSheet` with a "Continuar" dismiss (AC-007-9).
   - Lesson detail: a scheduled class gets Iniciar aula (when the setting is on); a live class gets "Abrir aula ao vivo" (AC-007-1, 13).
-  - Hoje: a live card at the top with the ticking clock, and Iniciar aula on "Próxima aula" (AC-007-1, 13).
+  - Hoje: a live card at the top with the ticking clock; "Próxima aula" stays a plain card (AC-007-1, 13).
   - Agenda and the day list: `AgendaBlock` gets a `LIVE` state (accent outline and an "Ao vivo" badge), and `LessonRow` an "Ao vivo" badge (AC-007-14). The design system's guideline and gallery are updated.
   - Ajustes: an "Aulas" group with the "Aula ao vivo" switch (AC-007-3, 17).
 - All copy goes in `strings_features.xml`, in both languages (AC-007-18).

@@ -20,7 +20,7 @@ The teacher starts a class when it begins, and Tutora counts it: elapsed time an
 
 ### Starting
 
-- **AC-007-1.** Iniciar aula is offered on the detail of any scheduled class, whatever its day, and on Hoje's "Próxima aula" card. Tapping it makes the class Ao vivo and opens the live screen.
+- **AC-007-1.** Iniciar aula is offered on the detail of any scheduled class, whatever its day. Tapping it makes the class Ao vivo and opens the live screen. Hoje's "Próxima aula" card only shows the next class, with no button (Victor, 28 Oct 2026).
 - **AC-007-2.** Only one class can be live at a time. Starting another while one is live says so and offers to open the live one.
 - **AC-007-3.** With "Aula ao vivo" off in Ajustes, Iniciar aula is not offered anywhere; a class already live still opens and ends as usual.
 

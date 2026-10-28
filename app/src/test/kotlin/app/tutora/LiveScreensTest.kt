@@ -94,6 +94,16 @@ class LiveScreensTest {
     private fun absent(text: String) = compose.onNode(hasPlainText(text), useUnmergedTree = true).assertDoesNotExist()
 
     @Test
+    fun `AC-007-1 Iniciar aula is on the class's detail, and Hoje's Proxima aula card only shows the class`() {
+        val id = lesson()
+        h.show(compose)
+        exists("Próxima aula · em 5h")
+        absent("Iniciar aula")
+        h.go(compose, LessonDetail(id))
+        exists("Iniciar aula")
+    }
+
+    @Test
     fun `AC-007-3 with Aula ao vivo off, Iniciar aula is offered nowhere`() {
         val id = lesson()
         runBlocking { h.services.saveSettings(h.services.currentSettings().copy(liveTimer = false)) }

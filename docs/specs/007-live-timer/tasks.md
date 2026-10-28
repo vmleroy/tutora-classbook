@@ -7,7 +7,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 3. Use cases: `Live` (start, pause, resume, setNote, end, undoEnd, discard), notifier adapter on `Ctx`, removing a live class. Test: `app/src/test/kotlin/app/tutora/LiveTest.kt`. (AC-007-1, AC-007-2, AC-007-8, AC-007-10, AC-007-11, AC-007-12, AC-007-14, AC-007-16)
 - [x] 4. Notification: channel, ongoing notification with chronometer and actions, receiver, re-post on start-up, permission request. Test: `app/src/test/kotlin/app/tutora/LiveScreensTest.kt`. (AC-007-15)
 - [x] 5. Design system: `BlockState.LIVE` and its guideline and gallery entry. Test: `core/designsystem/src/test/kotlin/app/tutora/designsystem/DesignSystemTest.kt` (gallery lists it).
-- [x] 6. Screens: live screen and Aula concluída, shared `DoneSheet`, Iniciar aula on the detail and Hoje, live card on Hoje, Ao vivo on Agenda and lists, Ajustes › Aulas; strings in both languages. Test: `app/src/test/kotlin/app/tutora/LiveScreensTest.kt`. (AC-007-3, AC-007-4, AC-007-13, AC-007-17, AC-007-18)
+- [x] 6. Screens: live screen and Aula concluída, shared `DoneSheet`, Iniciar aula on the detail, live card on Hoje, Ao vivo on Agenda and lists, Ajustes › Aulas; strings in both languages. Test: `app/src/test/kotlin/app/tutora/LiveScreensTest.kt`. (AC-007-3, AC-007-4, AC-007-13, AC-007-17, AC-007-18)
 
 ## Pending on a device
 
