@@ -42,6 +42,7 @@ import com.vmleroy.tutora.designsystem.components.EarningsStat
 import com.vmleroy.tutora.designsystem.components.EarningsSummary
 import com.vmleroy.tutora.designsystem.components.EmptyState
 import com.vmleroy.tutora.designsystem.components.Fab
+import com.vmleroy.tutora.designsystem.components.FieldError
 import com.vmleroy.tutora.designsystem.components.HeaderAction
 import com.vmleroy.tutora.designsystem.components.HeaderVariant
 import com.vmleroy.tutora.designsystem.components.Icon
@@ -204,6 +205,8 @@ fun GallerySections() {
         TextField("Telefone", "(11) 9", {}, error = "Número incompleto")
         MoneyField("Valor da aula", cents, { cents = it })
         DurationField("Duração", 90, {})
+        TextField("Nome", "", {}, error = "Digite o nome")
+        FieldError("Escolha um aluno ou turma")
     }
     Section("SelectField") {
         SelectField("Ana Souza", {}, label = "Aluno", sub = "Matemática", avatar = "AS" to Tag.AMBER, actionLabel = "Trocar")

@@ -1,12 +1,14 @@
 package com.vmleroy.tutora.app.ui.schedule
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,6 +42,7 @@ import com.vmleroy.tutora.designsystem.components.Card
 import com.vmleroy.tutora.designsystem.components.Chip
 import com.vmleroy.tutora.designsystem.components.ControlSize
 import com.vmleroy.tutora.designsystem.components.DateField
+import com.vmleroy.tutora.designsystem.components.FieldError
 import com.vmleroy.tutora.designsystem.components.HeaderVariant
 import com.vmleroy.tutora.designsystem.components.IconName
 import com.vmleroy.tutora.designsystem.components.ListGroup
@@ -103,6 +106,8 @@ fun LessonForm(
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val language = currentLanguage()
+    // Each Save that fails counts, so the same error blinks again.
+    var tries by remember { mutableIntStateOf(0) }
     val students by services.catalogRepo.students().collectAsState(initial = emptyList())
     val groups by services.catalogRepo.groups().collectAsState(initial = emptyList())
     val places by services.catalogRepo.places().collectAsState(initial = emptyList())
@@ -162,7 +167,14 @@ fun LessonForm(
         }
 
     ScreenScaffold(title, tag, variant = HeaderVariant.PUSH, onBack = onBack, bottomBar = {
-        Button(stringResource(if (editing) R.string.lesson_saveEdit else R.string.lesson_save), { onSubmit(v, applyTo) }, fullWidth = true)
+        // The error shows right above Save, where the eye is when it fails.
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            if (error != null) FieldError(error, key = tries)
+            Button(stringResource(if (editing) R.string.lesson_saveEdit else R.string.lesson_save), {
+                tries++
+                onSubmit(v, applyTo)
+            }, fullWidth = true)
+        }
     }) {
         if (series != null) {
             val repeat =
@@ -276,7 +288,6 @@ fun LessonForm(
             { v = v.copy(notes = it.ifEmpty { null }) },
             imeAction = ImeAction.Done,
         )
-        if (error != null) Text(error, style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
         if (onRemove != null) {
             Button(stringResource(R.string.lesson_remove), {
                 if (series !=

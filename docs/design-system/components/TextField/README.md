@@ -6,6 +6,7 @@ Labelled single-line input; the label sits above, never only as a placeholder.
 `label`, `value`, `onChangeText` (or `kind="money"` with `cents` and `onChangeCents`), optional `placeholder` (an example, starting "Ex.:"), `helper`, `error`, `keyboardType`, and `tone="onPrimary"` on the live screen.
 
 ## Rules
+- An error turns the border and the message red and blinks three times as it appears, and again on each failed Save; with reduced motion it only shows. An error that belongs to no field (a missing choice, a clash) is a `FieldError` next to the action that failed.
 - Errors say what is wrong and how to fix it, in one line, replacing the helper.
 - Money fields (`kind="money"`) show reais in the app language and fill from the right: typing 1, 2, 0, 0, 0 reads `R$ 120,00`. Only digits count, deleting drops the last digit, and digits past `maxCents` (R$ 99.999,99 by default) are refused. The value is integer cents; the rules live in `typedCents` in `@/domain/money`.
 - Duration fields (`kind="duration"`) show `minutes` as hh:mm and fill from the right the same way (1, 3, 0 → `01:30`). Minutes over 59 or a total over `maxMinutes` (5 hours by default) show an error and report `null`. Rules in `typedDuration` in `@/domain/duration`.

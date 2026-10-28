@@ -11,8 +11,8 @@ Student or group, place, date, start time, calendar target.
 ## Rules
 - Shows the current choice, never an empty box: default to the most likely value (today, the student's default place).
 - Dates read "Hoje, 26 out" / "Seg, 2 nov"; times are 24-hour "14:00" in Portuguese and "2:00 PM" in English.
-- A date is a `DateField`: it opens the month calendar (with the keyboard toggle to type a date), confirmed with OK.
-- A time of day is a `TimeField`: it opens the clock in a bottom sheet, with "Digitar" to type hours and minutes instead; OK applies it. Never type a time into a text field.
+- A date is a `DateField`: it opens the month calendar (with the keyboard toggle to type a date), confirmed with OK. With a keyboard, digits typed on the calendar pick the day (dd mm in Portuguese, mm dd in English, then an optional yyyy) and Enter applies it.
+- A time of day is a `TimeField`: it opens the clock in a bottom sheet, with "Digitar" to type hours and minutes instead; OK applies it. With a keyboard, digits typed on the clock fill the time from the right (1, 4, 3, 0 → 14:30) and Enter applies it. Never type a time into a text field.
 
 ## Props
 

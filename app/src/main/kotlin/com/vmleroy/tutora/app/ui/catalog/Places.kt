@@ -6,6 +6,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,6 +40,7 @@ import com.vmleroy.tutora.designsystem.components.ButtonVariant
 import com.vmleroy.tutora.designsystem.components.Card
 import com.vmleroy.tutora.designsystem.components.Chip
 import com.vmleroy.tutora.designsystem.components.ControlSize
+import com.vmleroy.tutora.designsystem.components.FieldError
 import com.vmleroy.tutora.designsystem.components.HeaderAction
 import com.vmleroy.tutora.designsystem.components.HeaderVariant
 import com.vmleroy.tutora.designsystem.components.IconName
@@ -94,7 +96,7 @@ fun PlaceDetailScreen(
         onBack = { nav.popBackStack() },
         actions =
             listOf(
-                HeaderAction(IconName.FILE, stringResource(R.string.catalog_edit)) {
+                HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) {
                     nav.navigate(
                         com.vmleroy.tutora.app.ui
                             .PlaceEdit(p.id),
@@ -246,6 +248,8 @@ private fun PlaceForm(
     val scope = rememberCoroutineScope()
     var d by remember(initial) { mutableStateOf(initial) }
     var error by remember { mutableStateOf<CatalogError?>(null) }
+    // Each Save that fails counts, so the same error blinks again.
+    var tries by remember { mutableIntStateOf(0) }
     val language = currentLanguage()
     val builtin = d.builtin != null
     val mode = payMode(d.kind)
@@ -264,6 +268,7 @@ private fun PlaceForm(
         onBack = { nav.popBackStack() },
         bottomBar = {
             Button(stringResource(R.string.places_save), {
+                tries++
                 scope.launch {
                     when (val r = services.catalog.savePlace(d)) {
                         is Result.Ok -> nav.popBackStack()
@@ -278,7 +283,7 @@ private fun PlaceForm(
         } else {
             TextField(stringResource(R.string.places_name), d.name.orEmpty(), {
                 d = d.copy(name = it)
-            }, placeholder = stringResource(R.string.places_namePlaceholder), error = error?.let { errorText(it) })
+            }, placeholder = stringResource(R.string.places_namePlaceholder), error = error?.let { errorText(it) }, errorKey = tries)
             TextField(stringResource(R.string.places_address), d.address.orEmpty(), { d = d.copy(address = it.ifEmpty { null }) })
             Field(stringResource(R.string.places_type)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
@@ -415,7 +420,7 @@ private fun PlaceForm(
                 }
             Text(text, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink, modifier = Modifier.testTag("place-preview"))
         }
-        if (error != null && builtin) Text(errorText(error!!), style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
+        if (error != null && builtin) FieldError(errorText(error!!), key = tries)
         if (id != null && !builtin) {
             ArchiveActions(
                 placeName(d),

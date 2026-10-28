@@ -1,8 +1,11 @@
 package com.vmleroy.tutora.designsystem.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimeInput
@@ -26,6 +30,8 @@ import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,11 +39,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -66,9 +83,11 @@ private fun FieldFrame(
     helper: String?,
     error: String?,
     onPrimary: Boolean,
+    errorKey: Any? = null,
     field: @Composable (Modifier) -> Unit,
 ) {
     val c = TutoraTheme.colors
+    val blink by errorBlink(error?.let { it to errorKey })
     val shape = RoundedCornerShape(Radius.lg)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.s1_5)) {
         Text(label, style = TutoraTheme.type.fieldLabel, color = if (onPrimary) c.onPrimaryMuted else c.inkMuted)
@@ -80,7 +99,7 @@ private fun FieldFrame(
                 .border(
                     if (error != null) Size.borderStrong else Size.border,
                     if (error != null) {
-                        c.danger
+                        c.danger.copy(alpha = blink)
                     } else if (onPrimary) {
                         c.onPrimary.copy(alpha = 0.3f)
                     } else {
@@ -93,9 +112,10 @@ private fun FieldFrame(
                     if (error != null) error(error)
                 },
         )
-        val help = error ?: helper
-        if (help != null) {
-            Text(help, style = TutoraTheme.type.meta, color = if (error != null) c.dangerInk else c.inkMuted)
+        if (error != null) {
+            Text(error, Modifier.alpha(blink), style = TutoraTheme.type.meta, color = c.dangerInk)
+        } else if (helper != null) {
+            Text(helper, style = TutoraTheme.type.meta, color = c.inkMuted)
         }
     }
 }
@@ -152,12 +172,13 @@ fun TextField(
     capitalization: KeyboardCapitalization = KeyboardCapitalization.Sentences,
     imeAction: ImeAction = ImeAction.Next,
     onPrimary: Boolean = false,
+    errorKey: Any? = null,
 ) {
     // The field keeps its own selection, so the cursor can be placed anywhere to fix a typo.
     var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
     if (field.text != value) field = TextFieldValue(value, TextRange(value.length))
     Column(modifier) {
-        FieldFrame(label, helper, error, onPrimary) { m ->
+        FieldFrame(label, helper, error, onPrimary, errorKey) { m ->
             Input(
                 field,
                 {
@@ -189,10 +210,11 @@ fun MoneyField(
     maxCents: Cents = MAX_FIELD_CENTS,
     helper: String? = null,
     error: String? = null,
+    errorKey: Any? = null,
 ) {
     val shown = formatMoney(cents, currentLanguage())
     Column(modifier) {
-        FieldFrame(label, helper, error, false) { m ->
+        FieldFrame(label, helper, error, false, errorKey) { m ->
             Input(
                 TextFieldValue(shown, TextRange(shown.length)),
                 { onCentsChange(typedCents(it.text, cents, maxCents)) },
@@ -351,8 +373,30 @@ fun TimeField(
                     },
                 ),
         ) {
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                if (typing) TimeInput(state, colors = colors) else TimePicker(state, colors = colors)
+            // Digits typed on a keyboard while the clock shows fill the time from the right
+            // (1, 4, 3, 0 → 14:30); Enter applies it. "Digitar" opens the boxes for the on-screen keyboard.
+            var digits by remember { mutableStateOf("") }
+            TypingTarget({ key ->
+                when (key) {
+                    is Typed.Digit -> digits = (digits + key.digit).takeLast(4)
+                    Typed.Erase -> digits = digits.dropLast(1)
+                    Typed.Enter -> {
+                        onChange(state.hour, state.minute)
+                        open = false
+                        return@TypingTarget
+                    }
+                }
+                val d = digits.padStart(4, '0')
+                val h = d.take(2).toInt()
+                val m = d.takeLast(2).toInt()
+                if (h < 24 && m < 60) {
+                    state.hour = h
+                    state.minute = m
+                }
+            }, enabled = !typing) {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    if (typing) TimeInput(state, colors = colors) else TimePicker(state, colors = colors)
+                }
             }
         }
     }
@@ -403,22 +447,135 @@ fun DateField(
             dismissButton = { Button(stringResource(R.string.ds_cancel), { open = false }, variant = ButtonVariant.GHOST) },
             colors = colors,
         ) {
-            DatePicker(
-                state,
-                title =
-                    title?.let {
-                        {
-                            Text(
-                                it,
-                                Modifier.padding(start = Spacing.s6, top = Spacing.s4),
-                                style = TutoraTheme.type.caption,
-                            )
-                        }
-                    },
-                colors = colors,
-            )
+            // Digits typed on a keyboard while the calendar shows pick the day: day and month in
+            // the language's order, then an optional four-digit year; Enter applies it.
+            var digits by remember { mutableStateOf("") }
+            val dayFirst = currentLanguage() == com.vmleroy.tutora.domain.Language.PT_BR
+            TypingTarget({ key ->
+                when (key) {
+                    is Typed.Digit -> digits = (digits + key.digit).take(8)
+                    Typed.Erase -> digits = digits.dropLast(1)
+                    Typed.Enter -> {
+                        state.selectedDateMillis?.let { onPick(LocalDate.fromEpochDays(it / DAY_MILLIS)) }
+                        open = false
+                        return@TypingTarget
+                    }
+                }
+                typedDate(digits, dayFirst, date.year)?.let {
+                    state.selectedDateMillis = it.toEpochDays() * DAY_MILLIS
+                    state.displayedMonthMillis = LocalDate(it.year, it.month, 1).toEpochDays() * DAY_MILLIS
+                }
+            }, enabled = state.displayMode == DisplayMode.Picker) {
+                DatePicker(
+                    state,
+                    title =
+                        title?.let {
+                            {
+                                Text(
+                                    it,
+                                    Modifier.padding(start = Spacing.s6, top = Spacing.s4),
+                                    style = TutoraTheme.type.caption,
+                                )
+                            }
+                        },
+                    colors = colors,
+                )
+            }
         }
     }
 }
+
+/** The day typed as digits: dd mm or mm dd, then an optional yyyy; null until it is a real date. */
+internal fun typedDate(
+    digits: String,
+    dayFirst: Boolean,
+    year: Int,
+): LocalDate? {
+    if (digits.length != 4 && digits.length != 8) return null
+    val a = digits.substring(0, 2).toInt()
+    val b = digits.substring(2, 4).toInt()
+    val y = if (digits.length == 8) digits.substring(4).toInt() else year
+    val (day, month) = if (dayFirst) a to b else b to a
+    return runCatching { LocalDate(y, month, day) }.getOrNull()
+}
+
+private sealed interface Typed {
+    data class Digit(
+        val digit: Char,
+    ) : Typed
+
+    data object Erase : Typed
+
+    data object Enter : Typed
+}
+
+/** Takes the keyboard's keys while a picker is open, so a time or date can be typed onto it. */
+@Composable
+private fun TypingTarget(
+    onKey: (Typed) -> Unit,
+    enabled: Boolean,
+    content: @Composable () -> Unit,
+) {
+    val focus = remember { FocusRequester() }
+    Box(
+        Modifier
+            .focusRequester(focus)
+            .focusable()
+            .onPreviewKeyEvent { e ->
+                if (!enabled || e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                val ch = e.utf16CodePoint.toChar()
+                val typed =
+                    when {
+                        ch in '0'..'9' -> Typed.Digit(ch)
+                        e.key == Key.Backspace -> Typed.Erase
+                        e.key == Key.Enter || e.key == Key.NumPadEnter -> Typed.Enter
+                        else -> null
+                    }
+                typed?.let(onKey)
+                typed != null
+            },
+    ) { content() }
+    LaunchedEffect(enabled) { if (enabled) runCatching { focus.requestFocus() } }
+}
+
+/**
+ * A new or repeated error blinks red three times, then stays; with reduced motion it just
+ * shows. [key] changes with each error (and each failed attempt), null when there is none.
+ */
+@Composable
+internal fun errorBlink(key: Any?): State<Float> {
+    val alpha = remember { Animatable(1f) }
+    val reduce = TutoraTheme.reduceMotion
+    LaunchedEffect(key) {
+        alpha.snapTo(1f)
+        if (key != null && !reduce) {
+            repeat(3) {
+                alpha.animateTo(0.15f, tween(BLINK_MS))
+                alpha.animateTo(1f, tween(BLINK_MS))
+            }
+        }
+    }
+    return alpha.asState()
+}
+
+/** A form's own error, outside any field (a missing choice, a clash): red, with the alert icon, blinking as it appears. */
+@Composable
+fun FieldError(
+    text: String,
+    modifier: Modifier = Modifier,
+    key: Any? = null,
+) {
+    val blink by errorBlink(text to key)
+    Row(
+        modifier.alpha(blink).semantics { liveRegion = LiveRegionMode.Polite },
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s1_5),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(IconName.ALERT, size = Size.iconSm, tint = TutoraTheme.colors.dangerInk)
+        Text(text, style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
+    }
+}
+
+private const val BLINK_MS = 160
 
 private const val DAY_MILLIS = 86_400_000L

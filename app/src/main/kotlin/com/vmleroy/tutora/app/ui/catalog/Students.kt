@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,6 +54,7 @@ import com.vmleroy.tutora.designsystem.components.Card
 import com.vmleroy.tutora.designsystem.components.CardElevation
 import com.vmleroy.tutora.designsystem.components.Checkbox
 import com.vmleroy.tutora.designsystem.components.ControlSize
+import com.vmleroy.tutora.designsystem.components.FieldError
 import com.vmleroy.tutora.designsystem.components.HeaderAction
 import com.vmleroy.tutora.designsystem.components.HeaderVariant
 import com.vmleroy.tutora.designsystem.components.IconButton
@@ -104,7 +106,7 @@ fun StudentDetailScreen(
         onBack = { nav.popBackStack() },
         actions =
             listOf(
-                HeaderAction(IconName.FILE, stringResource(R.string.catalog_edit)) {
+                HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) {
                     nav.navigate(
                         com.vmleroy.tutora.app.ui
                             .StudentEdit(id),
@@ -207,6 +209,8 @@ private fun StudentForm(
     var d by remember(initial) { mutableStateOf(initial) }
     var links by remember(initialLinks) { mutableStateOf(initialLinks) }
     var error by remember { mutableStateOf<CatalogError?>(null) }
+    // Each Save that fails counts, so the same error blinks again.
+    var tries by remember { mutableIntStateOf(0) }
     var picking by rememberSaveable { mutableStateOf(false) }
     val byId = places.associateBy { it.place.id }
     ScreenScaffold(
@@ -224,6 +228,7 @@ private fun StudentForm(
         onBack = { nav.popBackStack() },
         bottomBar = {
             Button(stringResource(R.string.catalog_save), {
+                tries++
                 scope.launch {
                     when (val r = services.catalog.saveStudent(d, links)) {
                         is Result.Ok -> nav.popBackStack()
@@ -240,6 +245,7 @@ private fun StudentForm(
             placeholder = stringResource(R.string.students_namePlaceholder),
             capitalization = KeyboardCapitalization.Words,
             error = error?.takeIf { it == CatalogError.NAME_REQUIRED }?.let { errorText(it) },
+            errorKey = tries,
         )
         TextField(stringResource(R.string.students_subject), d.subject.orEmpty(), {
             d = d.copy(subject = it.ifEmpty { null })
@@ -329,7 +335,7 @@ private fun StudentForm(
         if (error ==
             CatalogError.PLACE_REQUIRED
         ) {
-            Text(errorText(CatalogError.PLACE_REQUIRED), style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
+            FieldError(errorText(CatalogError.PLACE_REQUIRED), key = tries)
         }
         Button(stringResource(R.string.students_linkPlace), { picking = true }, variant = ButtonVariant.OUTLINE)
         Field(stringResource(R.string.students_color)) { ColorPicker(d.color) { d = d.copy(color = it) } }
@@ -428,6 +434,8 @@ private fun GroupForm(
     val scope = rememberCoroutineScope()
     var d by remember(initial) { mutableStateOf(initial) }
     var error by remember { mutableStateOf<CatalogError?>(null) }
+    // Each Save that fails counts, so the same error blinks again.
+    var tries by remember { mutableIntStateOf(0) }
     val place by services.catalogRepo.place(d.placeId).collectAsState(initial = null)
     val students by services.catalogRepo.studentsAt(d.placeId).collectAsState(initial = emptyList())
     val school = place?.kind == PlaceKind.SCHOOL
@@ -446,6 +454,7 @@ private fun GroupForm(
         onBack = { nav.popBackStack() },
         bottomBar = {
             Button(stringResource(R.string.catalog_save), {
+                tries++
                 scope.launch {
                     when (val r = services.catalog.saveGroup(d)) {
                         is Result.Ok -> nav.popBackStack()
@@ -458,7 +467,7 @@ private fun GroupForm(
         place?.let { Text(placeName(it), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted) }
         TextField(stringResource(R.string.groups_name), d.name, {
             d = d.copy(name = it)
-        }, placeholder = stringResource(R.string.groups_namePlaceholder), error = error?.let { errorText(it) })
+        }, placeholder = stringResource(R.string.groups_namePlaceholder), error = error?.let { errorText(it) }, errorKey = tries)
         TextField(stringResource(R.string.groups_subject), d.subject.orEmpty(), { d = d.copy(subject = it.ifEmpty { null }) })
         if (school) {
             Text(stringResource(R.string.groups_coveredBySalary), style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted)
