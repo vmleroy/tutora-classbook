@@ -55,6 +55,8 @@ android {
     lint {
         warningsAsErrors = true
         error += listOf("MissingTranslation", "ExtraTranslation")
+        // A release elsewhere must not fail the build: upgrades are a deliberate step (spec 001).
+        disable += listOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
     }
 }
 
