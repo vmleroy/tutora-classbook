@@ -8,7 +8,7 @@ plugins {
 fun env(name: String): String? = System.getenv(name)?.takeIf { it.isNotBlank() }
 
 android {
-    namespace = "app.tutora.app"
+    namespace = "app.tutora"
     compileSdk = 37
 
     defaultConfig {
