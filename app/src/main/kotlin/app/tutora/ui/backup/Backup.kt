@@ -495,19 +495,20 @@ fun BackupScreen(nav: NavHostController) {
 
     // A backup from Recentes: what can be done with it (AC-011-11).
     opened?.let { e ->
-        val inFolder = e.ok && e.name.isNotEmpty() && s.folderUri.isNotEmpty()
+        // Shared backups keep a copy in the app; ones in the folder are read from it.
+        val hasFile = e.ok && e.name.isNotEmpty() && (e.where.isEmpty() || s.folderUri.isNotEmpty())
         BottomSheet(
             recentText(localOf(e.at, services.zone), language),
             { opened = null },
             subtitle =
                 when {
                     !e.ok -> stringResource(R.string.bk_detailFailed)
-                    inFolder -> recentLine(e)
-                    else -> stringResource(R.string.bk_detailShared)
+                    hasFile -> recentLine(e)
+                    else -> stringResource(R.string.bk_detailNoCopy)
                 },
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                if (inFolder) {
+                if (hasFile) {
                     Button(stringResource(R.string.bk_confirm), {
                         opened = null
                         restoreRecent(e)
@@ -517,7 +518,7 @@ fun BackupScreen(nav: NavHostController) {
                         shareRecent(e)
                     }, fullWidth = true, variant = ButtonVariant.OUTLINE)
                 } else if (e.ok) {
-                    Button(stringResource(R.string.bk_restore), {
+                    Button(stringResource(R.string.bk_findFile), {
                         opened = null
                         restoreFromFile()
                     }, fullWidth = true, variant = ButtonVariant.OUTLINE)
@@ -532,7 +533,7 @@ fun BackupScreen(nav: NavHostController) {
 
     // Apagar a backup from Recentes, always confirmed (AC-011-11).
     removing?.let { e ->
-        val inFolder = e.name.isNotEmpty() && s.folderUri.isNotEmpty()
+        val inFolder = e.name.isNotEmpty() && e.where.isNotEmpty() && s.folderUri.isNotEmpty()
         BottomSheet(
             stringResource(R.string.bk_removeTitle, recentText(localOf(e.at, services.zone), language)),
             { removing = null },

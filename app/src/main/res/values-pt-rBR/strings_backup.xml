@@ -79,10 +79,11 @@
     <string name="bk_gone">Este backup não está mais na pasta.</string>
     <string name="bk_removeTitle">Apagar o backup de %1$s?</string>
     <string name="bk_removeFolder">O arquivo será apagado de %1$s.</string>
-    <string name="bk_removeShared">Sai só da lista. O arquivo que você compartilhou continua onde está.</string>
+    <string name="bk_removeShared">Sai da lista, e a cópia guardada no Tutora é apagada. O arquivo que você compartilhou continua onde está.</string>
     <string name="bk_remove">Apagar</string>
     <string name="bk_shareThis">Compartilhar</string>
-    <string name="bk_detailShared">Este backup foi compartilhado e o Tutora não guardou uma cópia. Para restaurá-lo, use Restaurar backup e escolha o arquivo onde você o salvou.</string>
+    <string name="bk_detailNoCopy">O Tutora não guardou uma cópia deste backup. Para restaurá-lo, procure o arquivo onde você o salvou.</string>
+    <string name="bk_findFile">Procurar o arquivo</string>
     <string name="bk_detailFailed">Esta tentativa não salvou nenhum arquivo.</string>
     <string name="bk_confirm">Restaurar</string>
     <string name="bk_thisYear">Este ano</string>

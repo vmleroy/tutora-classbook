@@ -172,6 +172,12 @@ class Backups(
     /** Before a restore, the data it replaced, for Desfazer restauração (AC-011-16). */
     private val undoFile get() = File(ctx.privateDir, "backups/before-restore.json")
 
+    /** Copies of the backups shared from Recentes, so they can be restored from the list (AC-011-11). */
+    private val shared get() = File(ctx.privateDir, "backups/shared")
+
+    /** A shared backup has no folder; its copy lives in the app. */
+    private fun BackupLogEntry.isShared() = !auto && where.isEmpty()
+
     private suspend fun current(): BackupFile = BackupFile(BACKUP_APP, TutoraDatabase.VERSION, ctx.now(), store.dump())
 
     /** A backup made by hand, named with the day and time, for the share sheet (AC-011-2, 4). */
@@ -179,7 +185,9 @@ class Backups(
         val file = current()
         val bytes = encodeBackup(file).encodeToByteArray()
         val name = backupFileName(instantOf(file.exportedAt), ctx.zone(), BACKUP_NAME)
-        record(BackupLogEntry(file.exportedAt, auto = false, where = "", bytes = bytes.size.toLong(), ok = true))
+        shared.mkdirs()
+        File(shared, name).writeBytes(bytes)
+        record(BackupLogEntry(file.exportedAt, auto = false, where = "", bytes = bytes.size.toLong(), ok = true, name = name))
         return name to bytes
     }
 
@@ -226,7 +234,11 @@ class Backups(
      */
     suspend fun remove(entry: BackupLogEntry) {
         val s = store.load()
-        if (entry.name.isNotEmpty() && s.folderUri.isNotEmpty()) runCatching { ctx.backupFolder.delete(s.folderUri, entry.name) }
+        when {
+            entry.name.isEmpty() -> Unit
+            entry.isShared() -> File(shared, entry.name).delete()
+            s.folderUri.isNotEmpty() -> runCatching { ctx.backupFolder.delete(s.folderUri, entry.name) }
+        }
         store.save(s.copy(log = s.log - entry, written = s.written - entry.name), ctx.now())
     }
 
@@ -285,11 +297,12 @@ class Backups(
     /** A successful backup: the date, Recentes, and the copy taken before a restore is let go. */
     private suspend fun record(entry: BackupLogEntry) {
         val s = store.load()
-        store.save(
-            s.copy(lastBackupAt = entry.at, log = (listOf(entry) + s.log).take(BACKUP_LOG_SIZE), restoreUndo = false),
-            ctx.now(),
-        )
+        val log = (listOf(entry) + s.log).take(BACKUP_LOG_SIZE)
+        store.save(s.copy(lastBackupAt = entry.at, log = log, restoreUndo = false), ctx.now())
         undoFile.delete()
+        // Only the copies Recentes still lists are kept.
+        val listed = log.filter { it.isShared() }.map { it.name }.toSet()
+        shared.listFiles()?.filter { it.name !in listed }?.forEach { it.delete() }
     }
 
     /**
@@ -298,10 +311,12 @@ class Backups(
      */
     suspend fun fromRecent(entry: BackupLogEntry): BackupRead? = fileOf(entry)?.let(::inspect)
 
-    /** The bytes of a backup Recentes lists in the folder, to restore or share it; null when it isn't there. */
+    /** The bytes of a backup Recentes lists, from the folder or the app's copy, to restore or share it; null when it isn't there. */
     suspend fun fileOf(entry: BackupLogEntry): ByteArray? {
+        if (!entry.ok || entry.name.isEmpty()) return null
+        if (entry.isShared()) return File(shared, entry.name).takeIf { it.exists() }?.readBytes()
         val s = store.load()
-        if (!entry.ok || entry.name.isEmpty() || s.folderUri.isEmpty()) return null
+        if (s.folderUri.isEmpty()) return null
         return runCatching { ctx.backupFolder.read(s.folderUri, entry.name) }.getOrNull()
     }
 

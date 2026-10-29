@@ -227,13 +227,14 @@ class BackupScreensTest {
     }
 
     @Test
-    fun `AC-011-11 a shared backup in Recentes opens too, saying Tutora kept no copy`() {
+    fun `AC-011-11 a shared backup in Recentes restores from the copy Tutora kept`() {
         runBlocking { h.services.backups.makeBackup() }
         h.show(compose)
         h.go(compose, BackupHome)
         click("Manual · compartilhado")
-        compose.onNodeWithText("Este backup foi compartilhado", substring = true).assertExists()
-        compose.onAllNodesWithTextExact("Apagar").onFirst().assertExists()
+        compose.onAllNodesWithTextExact("Restaurar").onFirst().performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Restaurar o backup de 26/10/2026, 09:00?").assertExists()
     }
 
     @Test
