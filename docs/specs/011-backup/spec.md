@@ -1,6 +1,6 @@
 # Spec 011: Backup and restore
 
-Status: in progress
+Status: done
 Depends on: 001 Foundation (migrations and the copy taken before one), 010 Reports (the Excel writer, Seus dados in Ajustes), 016 Visual refresh (the look of Ajustes and its pages)
 Mockups: docs/mockups/Backup.dc.html, docs/mockups/Settings.dc.html (the "Backup e planilha" row)
 

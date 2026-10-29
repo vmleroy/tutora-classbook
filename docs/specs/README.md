@@ -18,7 +18,7 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 008 | [Payments and packages](008-payments/spec.md): who owes, record payment (oldest first or chosen classes), credit, balances on lists and Hoje, packages | done | StudentDetail, PlaceDetail, Students, Places, Main, LessonDetail, Live, AddLesson, StudentEdit |
 | 009 | [Earnings](009-earnings/spec.md): Hoje's earnings card, Ganhos with period and type filters, earned / received / to receive, where it came from, 6-month trend; commission, package, bonus and salary rules | done | Earnings, Main |
 | 010 | [Reports](010-reports/spec.md): per student, group or place with periods; PDF, Excel (own small writer) and copy as text; earnings report from Ganhos; name and Pix key in Ajustes | done | Report, ReportPdf, EarningsPdf |
-| 011 | [Backup and restore](011-backup/spec.md): full backup file shared anywhere, automatic backup to a folder, restore with undo, readable spreadsheet | in progress | Backup, Settings |
+| 011 | [Backup and restore](011-backup/spec.md): full backup file shared anywhere, automatic backup to a folder, restore with undo, readable spreadsheet | done | Backup, Settings |
 | 012 | Calendar sync and .ics | not written | Calendar |
 | 013 | Appearance screens: theme picker, Suas cores, text size | not written | Theme, ColorPicker |
 | 014 | Reminders and first-run setup | not written | Setup |
