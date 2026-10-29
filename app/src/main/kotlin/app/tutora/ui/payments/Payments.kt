@@ -48,6 +48,9 @@ import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.Stepper
+import app.tutora.designsystem.components.SummaryCard
+import app.tutora.designsystem.components.SummaryTile
+import app.tutora.designsystem.components.SummaryTone
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
@@ -183,19 +186,22 @@ fun PayerBalance(
     val l = ledger ?: return
     val credits = settings?.credits == true
     val owes = l.owedCents
-    Card(Modifier.testTag("balance")) {
-        Text(
+    // On the Topo-colored summary card; what is owed sits in the red tile (AC-016-2, 3).
+    SummaryCard(Modifier.testTag("balance")) {
+        val label =
             stringResource(
                 when {
                     owes > 0 -> if (isPlace) R.string.pay_placeOwesLabel else R.string.pay_owesLabel
                     else -> R.string.pay_settled
                 },
-            ),
-            style = TutoraTheme.type.caption,
-            color = TutoraTheme.colors.inkMuted,
-        )
-        Money(owes, size = MoneySize.LG, tone = if (owes > 0) MoneyTone.OWED else MoneyTone.PAID)
-        Button(payLabel, { sheet = "pay" }, icon = IconName.WALLET, fullWidth = true)
+            )
+        if (owes > 0) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) { SummaryTile(label, owes, SummaryTone.OWED, compact = false) }
+        } else {
+            Text(label, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.onHeaderMuted)
+            Money(owes, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
+        }
+        Button(payLabel, { sheet = "pay" }, icon = IconName.WALLET, fullWidth = true, variant = ButtonVariant.ACCENT)
     }
     if (sheet == "pay") PaymentSheet(payer, l, onDismiss = { sheet = null }, elsewhere = studentElsewhere(payer))
 }

@@ -42,8 +42,8 @@ import app.tutora.domain.Who
 import app.tutora.domain.layoutDay
 import app.tutora.domain.localOf
 import app.tutora.domain.weekStart
+import app.tutora.ui.dayShortMonth
 import app.tutora.ui.hourMark
-import app.tutora.ui.monthYear
 import app.tutora.ui.placeName
 import app.tutora.ui.tag
 import app.tutora.ui.weekdayShort
@@ -82,13 +82,17 @@ fun byLocalDay(
     zone: String,
 ): Map<LocalDate, List<Lesson>> = lessons.groupBy { localOf(it.startAt, zone).date }
 
-/** The month, ‹ › weeks and a Monday-to-Sunday strip; tapping a day picks it (AC-005-17). */
+/**
+ * ‹ "Semana de 26 out a 1 nov" › and a Monday-to-Sunday strip; tapping a day picks it. The
+ * month is the screen's title (AC-005-17, AC-016-13, 15); › stops at the [horizon] (AC-016-23).
+ */
 @Composable
 fun WeekPicker(
     selected: LocalDate,
     today: LocalDate,
     onSelect: (LocalDate) -> Unit,
     byDay: Map<LocalDate, List<Lesson>> = emptyMap(),
+    horizon: LocalDate? = null,
 ) {
     val language = currentLanguage()
     val monday = weekStart(selected)
@@ -99,15 +103,19 @@ fun WeekPicker(
                 onSelect(selected.minus(DatePeriod(days = 7)))
             }, variant = IconButtonVariant.PLAIN)
             Text(
-                monthYear(selected, language),
-                style = TutoraTheme.type.section,
+                stringResource(R.string.schedule_weekOf, dayShortMonth(monday, language), dayShortMonth(days.last(), language)),
+                style = TutoraTheme.type.bodyStrong,
                 color = TutoraTheme.colors.ink,
                 modifier = Modifier.weight(1f),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
-            IconButton(IconName.CHEVRON_RIGHT, stringResource(R.string.schedule_nextWeek), {
-                onSelect(selected.plus(DatePeriod(days = 7)))
-            }, variant = IconButtonVariant.PLAIN)
+            IconButton(
+                IconName.CHEVRON_RIGHT,
+                stringResource(R.string.schedule_nextWeek),
+                { onSelect(selected.plus(DatePeriod(days = 7))) },
+                variant = IconButtonVariant.PLAIN,
+                enabled = horizon == null || monday.plus(DatePeriod(days = 7)) <= horizon,
+            )
         }
         WeekStrip(
             days.map { d -> WeekDay(weekdayShort(d, language), d.day, byDay[d]?.firstOrNull()?.whoTag) },
