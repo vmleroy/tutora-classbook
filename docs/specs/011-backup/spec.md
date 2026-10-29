@@ -1,6 +1,6 @@
 # Spec 011: Backup and restore
 
-Status: draft
+Status: ready
 Depends on: 001 Foundation (migrations and the copy taken before one), 010 Reports (the Excel writer, Seus dados in Ajustes), 016 Visual refresh (the look of Ajustes and its pages)
 Mockups: docs/mockups/Backup.dc.html, docs/mockups/Settings.dc.html (the "Backup e planilha" row)
 
@@ -75,7 +75,4 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 Answered by Victor on 29 Oct 2026: the spreadsheet offers quick periods and Personalizado (AC-011-19); the 14-day warning is on the Ajustes row with an alert on Hoje (AC-011-10); Desfazer restauração lasts until the next backup or restore (AC-011-16); Recentes is a list only (AC-011-11).
 
-Still assumed, for Victor to confirm:
-
-- **Restoring during a live class:** not allowed: "Encerre a aula ao vivo antes de restaurar."
-- **Time of the automatic backup:** 20:00, as in the mockup, not something the teacher picks.
+Also confirmed by Victor on 29 Oct 2026: restoring isn't allowed during a live class ("Encerre a aula ao vivo antes de restaurar"), and the automatic backup runs at 20:00, not at a time the teacher picks.
