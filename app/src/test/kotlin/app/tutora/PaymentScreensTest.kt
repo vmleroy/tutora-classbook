@@ -261,6 +261,17 @@ class PaymentScreensTest {
     }
 
     @Test
+    fun `AC-016-24 a class paid with more than it cost shows Em dia on its balance, never credit`() {
+        val id = given(22)
+        pay(20_000)
+        h.show(compose)
+        h.go(compose, LessonDetail(id))
+        exists("Em dia")
+        exists("nenhuma aula a receber")
+        compose.onAllNodes(matching("Crédito", part = true), useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    @Test
     fun `AC-008-16 a lesson's detail shows A receber and the payer's balance`() {
         val id = given(22)
         h.show(compose)

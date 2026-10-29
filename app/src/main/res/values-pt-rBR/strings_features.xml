@@ -384,6 +384,7 @@
         <item quantity="many">Paga %1$d aulas: %2$s</item>
         <item quantity="other">Paga %1$d aulas: %2$s</item>
     </plurals>
+    <string name="pay_toReceiveNone">nenhuma aula a receber</string>
     <plurals name="pay_toReceiveCount">
         <item quantity="one">%1$d aula a receber</item>
         <item quantity="many">%1$d aulas a receber</item>

@@ -379,6 +379,7 @@
         <item quantity="one">Pays %1$d lesson: %2$s</item>
         <item quantity="other">Pays %1$d lessons: %2$s</item>
     </plurals>
+    <string name="pay_toReceiveNone">no lessons to receive</string>
     <plurals name="pay_toReceiveCount">
         <item quantity="one">%1$d lesson to receive</item>
         <item quantity="other">%1$d lessons to receive</item>

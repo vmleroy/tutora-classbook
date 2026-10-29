@@ -924,11 +924,24 @@ fun SaldoRow(
     val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val l = ledger ?: return
     val count = l.owed.count { !l.allocation.isPaid(it.lessonId) }
-    val (tone, text) = balanceBadge(l.dueCents - l.paidCents)
+    val language = currentLanguage()
+    // The ledger's balance, as on the payer's page: what is owed, else bonus credit, else Em dia.
+    // A tip is never credit (AC-016-24).
+    val (tone, text) =
+        when (val b = l.balance) {
+            is Balance.Owes -> BadgeTone.DANGER to stringResource(R.string.pay_owes, formatMoney(b.cents, language, compact = true))
+            is Balance.Credit -> BadgeTone.SUCCESS to stringResource(R.string.pay_credit, formatMoney(b.cents, language, compact = true))
+            Balance.Settled -> BadgeTone.SUCCESS to stringResource(R.string.pay_settled)
+        }
     ListRow(
         title,
         Modifier.testTag("saldo"),
-        subtitle = pluralStringResource(R.plurals.pay_toReceiveCount, count, count),
+        subtitle =
+            if (count == 0) {
+                stringResource(R.string.pay_toReceiveNone)
+            } else {
+                pluralStringResource(R.plurals.pay_toReceiveCount, count, count)
+            },
         icon = IconName.WALLET,
         badge = tone to text,
         trailing = RowTrailing.CHEVRON,
