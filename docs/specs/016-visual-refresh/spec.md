@@ -41,15 +41,16 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 ### Agenda: the month view
 
 - **AC-016-16.** Mês shows the month as a grid of weeks from Monday to Sunday, with the days of the next and previous months greyed out; ‹ › move a month.
-- **AC-016-17.** Each day shows one dot per class, up to three, colored by kind (school, done, private, group), with a legend under the grid; a day with more than three classes shows "+N".
-- **AC-016-18.** Today is filled in the Botões principais color; the chosen day is tinted. Tapping a day chooses it and lists its classes under the grid with their count and expected value ("2 aulas · R$ 300"); tapping a class opens it.
-- **AC-016-19.** Every day can be read aloud as "28 de outubro, 2 aulas".
+- **AC-016-17.** The Agenda looks ahead only as far as the schedule is filled, 8 weeks from today (AC-005-8): › stops at the month that holds that day, and later months cannot be chosen. Past months stay reachable. Days in the shown month after that day carry no dots (Victor, 28 Oct 2026).
+- **AC-016-18.** Each day shows one dot per class that exists for it, up to three, colored by kind (school, done, private, group), with a legend under the grid; a day with more than three classes shows "+N". A cancelled class has no dot (Victor, 28 Oct 2026).
+- **AC-016-19.** Today is filled in the Botões principais color; the chosen day is tinted. Tapping a day chooses it and lists its classes under the grid with their count and expected value ("2 aulas · R$ 300"); tapping a class opens it.
+- **AC-016-20.** Every day can be read aloud as "28 de outubro, 2 aulas".
 
 ### Agenda: jump to a month
 
-- **AC-016-20.** Tapping the month and year opens a sheet with the year and ‹ › to change it, the twelve months with the number of classes in each, the shown month highlighted, and "Voltar para hoje".
-- **AC-016-21.** Choosing a month there opens Mês on it.
-- **AC-016-22.** Month names and the week's first day follow the app language; switching it never moves a class.
+- **AC-016-21.** Tapping the month and year opens a sheet with the year and ‹ › to change it, the twelve months with the number of classes in each, the shown month highlighted, months past the 8-week limit disabled, and "Voltar para hoje".
+- **AC-016-22.** Choosing a month there opens Mês on it.
+- **AC-016-23.** Month names and the week's first day follow the app language; switching it never moves a class.
 
 ## Out of scope
 
@@ -57,8 +58,12 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 - The Aparência screens (013), the app lock (015) and the PDF layout (done in 010).
 - A year grid with every day of the year.
 
+## Decisions
+
+- Later months: the Agenda stops at the 8-week horizon; no projected classes (Victor, 28 Oct 2026).
+- Cancelled classes: no dot on the month (Victor, 28 Oct 2026).
+- Order: 016 is built right after 010 merges, before 011–015 (Victor, 28 Oct 2026).
+
 ## Open questions
 
-1. **Months beyond the next 8 weeks.** The schedule is kept filled 8 weeks ahead (AC-005-8), so later months would look empty. Options: (a) show the repeating classes there as projected dots, without creating them until they come within 8 weeks (recommended); (b) leave them empty with a note "Aulas repetidas aparecem 8 semanas antes"; (c) fill further ahead.
-2. **Dots for a cancelled class.** Recommended: no dot, so the month shows only classes that happen or happened.
-3. **Order with the other specs.** Recommended: 016 right after 010 merges, before 011–015, so the later screens (Backup, Calendar, Aparência, App lock) are built in the new look from the start.
+None.
