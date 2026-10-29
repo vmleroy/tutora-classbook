@@ -40,7 +40,14 @@ fun TutoraApp(
                 custom = settings.customColors,
                 largeText = settings.textScale == "large",
             ) {
-                CompositionLocalProvider(LocalServices provides s) {
+                // Reports leave the phone through the share sheet and the clipboard (spec 010).
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val exports =
+                    androidx.compose.runtime.remember(context) {
+                        app.tutora.adapters.export
+                            .AndroidExports(context)
+                    }
+                CompositionLocalProvider(LocalServices provides s, app.tutora.adapters.export.LocalExports provides exports) {
                     TutoraNav(
                         appInfo,
                         s.schemaVersion,

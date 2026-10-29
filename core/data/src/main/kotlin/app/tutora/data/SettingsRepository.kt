@@ -36,6 +36,9 @@ class SettingsRepository(
 
         private fun unquote(s: String) = s.trim('"')
 
+        /** A free text saved as a JSON string, so quotes and accents survive. */
+        private fun text(json: String): String = runCatching { org.json.JSONArray("[$json]").getString(0) }.getOrDefault(unquote(json))
+
         fun rows(
             s: Settings,
             now: String,
@@ -54,6 +57,8 @@ class SettingsRepository(
                 "credits" to s.credits.toString(),
                 "early_done" to s.earlyDone.toString(),
                 "clock_durations" to s.clockDurations.toString(),
+                "teacher_name" to org.json.JSONObject.quote(s.teacherName),
+                "pix_key" to org.json.JSONObject.quote(s.pixKey),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
         private fun customColors(json: String): Map<CustomPart, String> {
@@ -85,6 +90,8 @@ class SettingsRepository(
                 credits = v["credits"] == "true",
                 earlyDone = v["early_done"] == "true",
                 clockDurations = v["clock_durations"] == "true",
+                teacherName = v["teacher_name"]?.let(::text).orEmpty(),
+                pixKey = v["pix_key"]?.let(::text).orEmpty(),
                 customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
             )
         }

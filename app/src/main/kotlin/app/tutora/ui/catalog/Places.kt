@@ -108,6 +108,7 @@ fun PlaceDetailScreen(
                 } else {
                     null
                 },
+                HeaderAction(IconName.FILE, stringResource(R.string.rep_screen)) { nav.navigate(app.tutora.ui.Report("PLACE", p.id)) },
                 HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) {
                     nav.navigate(
                         app.tutora.ui

@@ -31,4 +31,7 @@ data class Settings(
     val earlyDone: Boolean = false,
     /** Ajustes › Geral › Durações em HH:MM, off by default: "90 min" or "01:30" everywhere. */
     val clockDurations: Boolean = false,
+    /** Ajustes › Relatórios: the teacher's name and Pix key, printed on reports when set (AC-010-16). */
+    val teacherName: String = "",
+    val pixKey: String = "",
 )

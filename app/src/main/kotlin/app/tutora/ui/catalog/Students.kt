@@ -134,6 +134,8 @@ fun StudentDetailScreen(
                 } else {
                     null
                 },
+                // Relatório, beside the pencil (AC-010-1).
+                HeaderAction(IconName.FILE, stringResource(R.string.rep_screen)) { nav.navigate(app.tutora.ui.Report("STUDENT", id)) },
                 HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) {
                     nav.navigate(
                         app.tutora.ui
@@ -562,6 +564,7 @@ fun GroupDetailScreen(
                 } else {
                     null
                 },
+                HeaderAction(IconName.FILE, stringResource(R.string.rep_screen)) { nav.navigate(app.tutora.ui.Report("GROUP", id)) },
                 HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) { nav.navigate(GroupEdit(id = id)) },
             ),
     ) {

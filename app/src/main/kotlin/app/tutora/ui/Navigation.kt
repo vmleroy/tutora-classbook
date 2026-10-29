@@ -38,6 +38,7 @@ import app.tutora.ui.earnings.EarningsScreen
 import app.tutora.ui.live.LiveScreen
 import app.tutora.ui.payments.PayerLessonsScreen
 import app.tutora.ui.payments.PaymentDetailScreen
+import app.tutora.ui.reports.ReportScreen
 import app.tutora.ui.schedule.AgendaScreen
 import app.tutora.ui.schedule.LessonDetailScreen
 import app.tutora.ui.schedule.LessonEditScreen
@@ -70,6 +71,9 @@ import kotlin.reflect.KClass
 @Serializable data object SettingsGraph
 
 @Serializable data object SettingsHome
+
+/** Ajustes › Seus dados (spec 010). */
+@Serializable data object PersonalData
 
 // Details and forms sit above the tabs, so student and place links never cross tab stacks.
 @Serializable data class PlaceDetail(
@@ -124,6 +128,12 @@ data class LiveRequest(
 )
 
 @Serializable data class PayerLessons(
+    val kind: String,
+    val id: String,
+)
+
+/** Relatório for a student, group or place (spec 010); [kind] is a SubjectKind name. */
+@Serializable data class Report(
     val kind: String,
     val id: String,
 )
@@ -205,7 +215,8 @@ fun TutoraNav(
                     composable<EarningsHome> { EarningsScreen(nav) }
                 }
                 navigation<SettingsGraph>(startDestination = SettingsHome) {
-                    composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) }
+                    composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { nav.navigate(PersonalData) } }
+                    composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
                 }
                 composable<PlaceDetail> { PlaceDetailScreen(nav, it.toRoute<PlaceDetail>().id) }
                 composable<PlaceEdit> { PlaceEditScreen(nav, it.toRoute<PlaceEdit>().id) }
@@ -224,6 +235,10 @@ fun TutoraNav(
                 composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
                 composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
                 composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
+                composable<Report> {
+                    val r = it.toRoute<Report>()
+                    ReportScreen(nav, r.kind, r.id)
+                }
                 composable<PaymentDetail> { PaymentDetailScreen(nav, it.toRoute<PaymentDetail>().id) }
                 composable<PayerLessons> {
                     val r = it.toRoute<PayerLessons>()
