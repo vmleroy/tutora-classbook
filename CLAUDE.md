@@ -43,7 +43,7 @@ Read these when the spec points to them, not all up front:
 - Screens never touch `:core:data`. Every write is a use case in one Room transaction.
 - No raw `Color(0x…)`, `sp` or `dp` literals in screens or design-system components; use `TutoraTheme` tokens. Mockup hex values map to tokens.
 - Every user-facing string is a resource in both `values/strings.xml` (English) and `values-pt-rBR/strings.xml`.
-- New UI pieces come from the design system's components (36 since spec 012). A screen that needs a new one adds it to `:core:designsystem` first, with its guideline in `docs/design-system/components/<Name>/README.md` and a gallery entry.
+- New UI pieces come from the design system's components (39 since spec 013). A screen that needs a new one adds it to `:core:designsystem` first, with its guideline in `docs/design-system/components/<Name>/README.md` and a gallery entry.
 - All Markdown documentation lives under `docs/`. Only `README.md`, `CLAUDE.md` and `.claude/commands/` stay at the root.
 - Test names carry criterion ids: ``fun `AC-001-3 Ajustes is the fifth tab`()``.
 - If a spec is ambiguous, write the question under "Open questions" and ask Victor rather than guessing on anything the teacher would see.
