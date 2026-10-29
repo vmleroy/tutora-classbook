@@ -120,11 +120,13 @@ data class Allocation(
     val left: Map<String, Cents>,
     /** The classes each payment paid, by payment id, oldest first. */
     val paidBy: Map<String, List<String>>,
-    /** Money from payments left after the classes it could pay. */
+    /** Money from payments left after the classes they could pay: tips, never credit (AC-016-24). */
     val credit: Cents,
     /** What credit uses took off classes still owed: money and minutes (AC-008-30). */
     val usedCents: Cents = 0,
     val usedMinutes: Int = 0,
+    /** What each payment had left over, by payment id: its tip, earned on the day it was paid (AC-016-27). */
+    val extra: Map<String, Cents> = emptyMap(),
 ) {
     fun isPaid(lessonId: String): Boolean = (left[lessonId] ?: 0) == 0L
 }
@@ -180,7 +182,14 @@ fun allocate(
     for (p in order) {
         classes.filter { it.startAt <= p.paidAt }.forEach { pay(p, it.lessonId) }
     }
-    return Allocation(left, paidBy.mapValues { (_, ids) -> ids.distinct() }, sum(remaining.values), usedCents, usedMinutes)
+    return Allocation(
+        left,
+        paidBy.mapValues { (_, ids) -> ids.distinct() },
+        sum(remaining.values),
+        usedCents,
+        usedMinutes,
+        remaining.filterValues { it > 0 },
+    )
 }
 
 /** A bonus the teacher gave: free money, free minutes, or both (AC-008-31). */

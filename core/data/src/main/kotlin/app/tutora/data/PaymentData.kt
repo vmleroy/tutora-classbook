@@ -302,6 +302,10 @@ class PaymentRepository(
             }
         }
 
+    /** What each payment had left over after the classes it paid, by payment id: tips (AC-016-27). */
+    fun extras(): Flow<Map<String, Cents>> =
+        allLedgers().map { (ledgers, _) -> ledgers.values.flatMap { it.allocation.extra.entries }.associate { it.key to it.value } }
+
     /** What is still owed on each class, whoever owes it (spec 009, A receber). */
     fun leftByLesson(): Flow<Map<String, Cents>> =
         allLedgers().map { (ledgers, _) -> ledgers.values.flatMap { it.allocation.left.entries }.associate { it.key to it.value } }

@@ -177,6 +177,15 @@ data class Received(
     val type: EarningsType,
 )
 
+/** What a payment gave on top of the classes it paid: earned and received on its day (AC-016-27). */
+data class Tip(
+    val day: LocalDate,
+    val cents: Cents,
+    val type: EarningsType,
+    val payer: PayerRef,
+    val payerName: String,
+)
+
 data class Summary(
     val earned: Cents,
     val received: Cents,
@@ -220,12 +229,15 @@ fun summarize(
     months: List<LocalDate>,
     left: Map<String, Cents>,
     filter: TypeFilter,
+    tips: List<Tip> = emptyList(),
 ): Summary {
     val shown = classes.filter { filter.matches(it.type) }
     val salary =
         if (filter.matches(EarningsType.JOB)) sum(salaries.map { s -> s.cents * salaryMonths(s, months).size }) else 0L
+    // A tip is earned as well as received (AC-016-27).
+    val tipped = sum(tips.filter { filter.matches(it.type) }.map { it.cents })
     return Summary(
-        earned = sum(shown.map { it.earned }) + salary,
+        earned = sum(shown.map { it.earned }) + salary + tipped,
         received = sum(received.filter { filter.matches(it.type) }.map { it.cents }) + salary,
         toReceive = sum(shown.map { left[it.lessonId] ?: 0 }),
         commission = sum(shown.map { it.commission }),
@@ -241,6 +253,7 @@ fun trend(
     salaries: List<Salary>,
     filter: TypeFilter,
     today: LocalDate,
+    tips: List<Tip> = emptyList(),
 ): List<MonthPoint> =
     (5 downTo 0).map { back ->
         val month = monthOf(last).minus(DatePeriod(months = back))
@@ -253,6 +266,7 @@ fun trend(
                 listOf(month).filter { it <= monthOf(today) },
                 emptyMap(),
                 filter,
+                tips.filter { inMonth(it.day) },
             )
         MonthPoint(month, s.earned, s.received)
     }
@@ -263,6 +277,7 @@ fun sources(
     salaries: List<Salary>,
     months: List<LocalDate>,
     filter: TypeFilter,
+    tips: List<Tip> = emptyList(),
 ): List<Source> {
     val byPayer =
         classes
@@ -275,7 +290,8 @@ fun sources(
         } else {
             emptyList()
         }
-    return (byPayer + schools)
+    val tipped = tips.filter { filter.matches(it.type) }.map { Source(it.payer, it.payerName, it.cents) }
+    return (byPayer + schools + tipped)
         .groupBy { it.payer }
         .map { (payer, list) -> Source(payer, list.first().name, sum(list.map { it.cents })) }
         .filter { it.cents > 0 }

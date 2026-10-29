@@ -17,6 +17,7 @@ import app.tutora.domain.PlaceKind
 import app.tutora.domain.RateType
 import app.tutora.domain.Received
 import app.tutora.domain.Salary
+import app.tutora.domain.Tip
 import app.tutora.domain.TypeFilter
 import app.tutora.domain.bonusCover
 import app.tutora.domain.earnedOf
@@ -59,11 +60,16 @@ data class EarnedRow(
     @ColumnInfo(name = "place_name") val placeName: String?,
 )
 
-/** A payment with the type of the place it comes from, if any. */
+/** A payment with the type of the place it comes from, if any, and who paid it. */
 data class ReceivedRow(
+    val id: String,
     @ColumnInfo(name = "paid_at") val paidAt: String,
     @ColumnInfo(name = "amount_cents") val amountCents: Long,
     val kind: String?,
+    @ColumnInfo(name = "student_id") val studentId: String?,
+    @ColumnInfo(name = "group_id") val groupId: String?,
+    @ColumnInfo(name = "place_id") val placeId: String?,
+    @ColumnInfo(name = "payer_name") val payerName: String?,
 )
 
 data class SchoolRow(
@@ -91,8 +97,9 @@ interface EarningsDao {
 
     /** A place pays as its type; a group as its place's; a student as private (null kind). */
     @Query(
-        """SELECT pay.paid_at, pay.amount_cents, COALESCE(pp.kind, gp.kind) AS kind FROM payment pay
-           LEFT JOIN place pp ON pp.id = pay.place_id
+        """SELECT pay.id, pay.paid_at, pay.amount_cents, COALESCE(pp.kind, gp.kind) AS kind,
+             pay.student_id, pay.group_id, pay.place_id, COALESCE(st.name, g.name, pp.name) AS payer_name FROM payment pay
+           LEFT JOIN place pp ON pp.id = pay.place_id LEFT JOIN student st ON st.id = pay.student_id
            LEFT JOIN group_class g ON g.id = pay.group_id LEFT JOIN place gp ON gp.id = g.place_id
            WHERE pay.paid_at >= :from AND pay.paid_at < :to""",
     )
@@ -172,7 +179,32 @@ class EarningsRepository(
         first: LocalDate,
         last: LocalDate,
         zone: String,
-    ): Flow<Long> = classes(first, last, zone).map { list -> list.sumOf { it.earned } }
+    ): Flow<Long> =
+        combine(classes(first, last, zone), tips(first, last, zone)) { list, tips -> list.sumOf { it.earned } + tips.sumOf { it.cents } }
+
+    /** What payments from [first] to [last] gave on top of the classes they paid (AC-016-27). */
+    private fun tips(
+        first: LocalDate,
+        last: LocalDate,
+        zone: String,
+    ): Flow<List<Tip>> =
+        combine(
+            dao.observeReceived(instant(first, zone), instant(last.plus(DatePeriod(days = 1)), zone)),
+            payments.extras(),
+        ) { rows, extra ->
+            rows.mapNotNull { r ->
+                val cents = extra[r.id]?.takeIf { it > 0 } ?: return@mapNotNull null
+                val payer =
+                    when {
+                        r.studentId != null -> PayerRef(PayerKind.STUDENT, r.studentId)
+                        r.groupId != null -> PayerRef(PayerKind.GROUP, r.groupId)
+                        else -> PayerRef(PayerKind.PLACE, r.placeId.orEmpty())
+                    }
+                Tip(localOf(r.paidAt, zone).date, cents, typeOf(r.kind), payer, r.payerName.orEmpty())
+            }
+        }
+
+    private fun typeOf(kind: String?) = kind?.let { earningsType(PlaceKind.fromKey(it)) } ?: EarningsType.PRIVATE
 
     /** Ganhos for [period] and [filter]: summary, six-month trend and sources (AC-009-5 to 7, 11 to 13). */
     fun view(
@@ -188,7 +220,8 @@ class EarningsRepository(
             dao.observeReceived(instant(from, zone), instant(period.last.plus(DatePeriod(days = 1)), zone)),
             dao.observeSchools(),
             payments.leftByLesson(),
-        ) { all, paid, schools, left ->
+            tips(from, period.last, zone),
+        ) { all, paid, schools, left, tips ->
             val received =
                 paid.map { r ->
                     Received(
@@ -210,10 +243,11 @@ class EarningsRepository(
             val inPeriod = { d: LocalDate -> d >= period.first && d <= period.last }
             val months = period.months(today)
             val classes = all.filter { inPeriod(it.day) }
+            val tipsIn = tips.filter { inPeriod(it.day) }
             EarningsView(
-                summarize(classes, received.filter { inPeriod(it.day) }, salaries, months, left, filter),
-                trend(period.lastMonth, all, received, salaries, filter, today),
-                sources(classes, salaries, months, filter),
+                summarize(classes, received.filter { inPeriod(it.day) }, salaries, months, left, filter, tipsIn),
+                trend(period.lastMonth, all, received, salaries, filter, today, tips),
+                sources(classes, salaries, months, filter, tipsIn),
                 classes.filter { filter.matches(it.type) },
                 received.filter { inPeriod(it.day) && filter.matches(it.type) },
             )

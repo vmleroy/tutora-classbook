@@ -181,4 +181,24 @@ class EarningsScreensTest {
         h.settle(compose)
         exists("Setembro 2026")
     }
+
+    @Test
+    fun `AC-016-27 what a payment gives on top of its classes counts as earned and received`() {
+        given(5)
+        runBlocking {
+            h.services.payments.record(
+                app.tutora.usecases.PaymentDraft(
+                    app.tutora.domain.PayerRef(app.tutora.domain.PayerKind.STUDENT, ana.id),
+                    20_000,
+                    app.tutora.domain.PayMethod.PIX,
+                    LocalDate(2026, 10, 26),
+                ),
+            )
+        }
+        h.show(compose)
+        h.go(compose, EarningsGraph)
+        // R$ 120,00 for the class and R$ 80,00 on top.
+        exists("R$ 200,00")
+        exists("R$ 200")
+    }
 }

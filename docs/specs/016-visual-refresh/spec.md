@@ -57,6 +57,7 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 - **AC-016-24.** A payment can be more than is owed. What it doesn't pay is a tip, kept as received: it never becomes credit and never pays a class given after the payment. The sheet only cautions, never blocks: "Este valor não paga nenhuma aula" when it pays none, or "R$ 30,00 a mais do que o devido". Credit comes only from bonuses. (Replaces AC-008-28 and AC-008-29.)
 - **AC-016-25.** The payment sheet shows where the payer stands, a tag "Em dia" or "Deve R$ 240,00", and Escolher aulas is a switch.
 - **AC-016-26.** On Ganhos, tapping the period's name ("Outubro 2026 ▾") opens a picker: the months of a year for Mês and Trimestre (each month ending a three-month period), or nine years for Ano, with nothing later than now and "Voltar para o atual".
+- **AC-016-27.** What a payment gives on top of the classes it pays counts as earned and received on the day it was paid, in Ganhos (the period, the six months and De onde veio, under its payer) and on Hoje's card (Victor, 30 Oct 2026). A payment that paid no class reads just its date and method ("29/10 · Pix"), never "como crédito".
 
 ## Out of scope
 
