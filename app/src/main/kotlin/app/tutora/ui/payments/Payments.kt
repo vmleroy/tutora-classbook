@@ -576,7 +576,7 @@ private fun BonusSheet(
     }
 }
 
-/** "16/10 · Pix · 4 aulas", or "· pacote" for a package's purchase (AC-008-11). */
+/** "16/10 · Pix · 4 aulas", "· pacote" for a package's purchase, or just "29/10 · Pix" when it paid no class (AC-008-11). */
 @Composable
 fun paymentLine(
     p: PaymentRecord,
@@ -588,15 +588,14 @@ fun paymentLine(
         ledger.allocation.paidBy[p.id]
             .orEmpty()
             .size
+    // A payment that paid no class says nothing more: the money is a tip, never credit (AC-016-24).
     val what =
-        if (p.packageId != null) {
-            stringResource(R.string.pay_packageBought)
-        } else if (count == 0) {
-            stringResource(R.string.pay_asCredit)
-        } else {
-            pluralStringResource(R.plurals.pay_lessonsCount, count, count)
+        when {
+            p.packageId != null -> stringResource(R.string.pay_packageBought)
+            count == 0 -> null
+            else -> pluralStringResource(R.plurals.pay_lessonsCount, count, count)
         }
-    return listOf(dayMonth(localOf(p.paidAt, zone).date, language), methodName(p.method), what).joinToString(" · ")
+    return listOfNotNull(dayMonth(localOf(p.paidAt, zone).date, language), methodName(p.method), what).joinToString(" · ")
 }
 
 /**

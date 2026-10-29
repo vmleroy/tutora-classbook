@@ -398,7 +398,6 @@
     <string name="pay_markPaid">Mark as paid</string>
     <string name="pay_noneToChoose">No lessons to receive</string>
     <string name="pay_placePays">%1$s pays</string>
-    <string name="pay_asCredit">as credit</string>
     <string name="lesson_whoSearch">Search a student or group</string>
     <string name="lesson_whoAll">All</string>
     <string name="settings_credits">Credits and bonus</string>

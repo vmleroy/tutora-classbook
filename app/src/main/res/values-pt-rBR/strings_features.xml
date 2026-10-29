@@ -407,7 +407,6 @@
     <string name="pay_markPaid">Marcar como paga</string>
     <string name="pay_noneToChoose">Nenhuma aula a receber</string>
     <string name="pay_placePays">%1$s paga</string>
-    <string name="pay_asCredit">como crédito</string>
     <string name="lesson_whoSearch">Buscar aluno ou turma</string>
     <string name="lesson_whoAll">Todos</string>
     <string name="settings_credits">Créditos e bônus</string>
