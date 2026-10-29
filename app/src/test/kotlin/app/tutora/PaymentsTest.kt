@@ -182,7 +182,8 @@ class PaymentsTest {
             payments.record(PaymentDraft(anaRef, 15_000, PayMethod.PIX, today, chosen = listOf(lesson)))
             assertEquals(0L, repo.balances().first()[place])
             assertTrue(repo.ledgerNow(place).allocation.isPaid(lesson))
-            assertEquals(-3_000L, balance())
+            // The R$ 30 on top is a tip, not credit (AC-016-24).
+            assertEquals(0L, balance())
         }
 
     private suspend fun creditsOn() {
@@ -190,20 +191,27 @@ class PaymentsTest {
         settings.save(settings.load().copy(credits = true), t.now)
     }
 
+    // AC-008-28 (paying more than is owed was refused) is replaced by AC-016-24 (Victor, 29 Oct 2026).
     @Test
-    fun `AC-008-28 with Creditos e bonus off, paying more than is owed is refused`() =
+    fun `AC-016-24 paying more than is owed is recorded, the rest a tip that is never credit and never pays a later class`() =
         runTest {
             given(22)
-            assertEquals(PaymentResult.Err(PaymentError.OVERPAID), payments.record(PaymentDraft(anaRef, 15_000, PayMethod.PIX, today)))
-            assertTrue(payments.record(PaymentDraft(anaRef, 12_000, PayMethod.PIX, today)) is PaymentResult.Ok)
+            // Paid on the 20th, before the class: it pays nothing and does not wait for it.
+            assertTrue(payments.record(PaymentDraft(anaRef, 15_000, PayMethod.PIX, LocalDate(2026, 10, 20))) is PaymentResult.Ok)
+            assertEquals(12_000L, repo.ledgerNow(anaRef).owedCents)
+            // Paid today, R$ 30 more than is owed: the class is paid and nothing becomes credit.
+            assertTrue(payments.record(PaymentDraft(anaRef, 15_000, PayMethod.PIX, today)) is PaymentResult.Ok)
+            val l = repo.ledgerNow(anaRef)
+            assertEquals(0L, l.owedCents)
+            assertEquals(0L, l.creditCents)
         }
 
     @Test
     fun `AC-008-30 Usar credito puts credit on the chosen class, and undoing the class gives it back`() =
         runTest {
             creditsOn()
-            // Paid on the 20th, before the class on the 22nd: the money waits as credit.
-            payments.record(PaymentDraft(anaRef, 5_000, PayMethod.PIX, LocalDate(2026, 10, 20)))
+            // Credit comes only from a bonus since spec 016 (AC-016-24).
+            payments.giveBonus(anaRef, 5_000, 0)
             val lesson = given(22)
             assertEquals(5_000L, repo.ledgerNow(anaRef).creditCents)
             payments.useCredit(anaRef, listOf(lesson), minutes = false)

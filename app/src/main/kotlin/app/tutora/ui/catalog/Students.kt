@@ -189,7 +189,7 @@ fun StudentDetailScreen(
         val elsewhere by remember(id) { services.paymentRepo.elsewhere(id) }.collectAsState(initial = emptyList())
         val language = currentLanguage()
         val placePays = stringResource(R.string.pay_byPlace)
-        val paidText = stringResource(R.string.pay_paid)
+        val paidText = stringResource(R.string.pay_allReceived)
         val salary = stringResource(R.string.groups_coveredBySalary)
         val unset = stringResource(R.string.places_noPrice)
         val name = s.student.name

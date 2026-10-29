@@ -139,15 +139,14 @@ data class CreditUse(
 /**
  * Which classes the payments pay (AC-008-6, 8). Credit the teacher put on a class comes off it
  * first. Payments go in date order; each first pays the classes chosen for it, then what is left
- * of each, in the same order, pays the oldest owed classes. With [holdCredit] (Créditos e bônus
- * on), that leftover only pays classes given by the payment's date, so credit waits for the
- * teacher to say where it goes (AC-008-29). Whatever remains is credit.
+ * of each, in the same order, pays the oldest owed classes given by the payment's date. Whatever
+ * remains was given on top, a tip: it never becomes credit and never pays a later class
+ * (Victor, 29 Oct 2026; AC-016-24).
  */
 fun allocate(
     owed: List<Owed>,
     payments: List<Paid>,
     uses: List<CreditUse> = emptyList(),
-    holdCredit: Boolean = false,
 ): Allocation {
     val classes = owed.sortedWith(compareBy({ it.startAt }, { it.lessonId }))
     val left = classes.associate { it.lessonId to it.cents }.toMutableMap()
@@ -179,7 +178,7 @@ fun allocate(
         classes.filter { it.lessonId in p.chosen }.forEach { pay(p, it.lessonId) }
     }
     for (p in order) {
-        classes.filter { !holdCredit || it.startAt <= p.paidAt }.forEach { pay(p, it.lessonId) }
+        classes.filter { it.startAt <= p.paidAt }.forEach { pay(p, it.lessonId) }
     }
     return Allocation(left, paidBy.mapValues { (_, ids) -> ids.distinct() }, sum(remaining.values), usedCents, usedMinutes)
 }
@@ -248,7 +247,6 @@ data class Ledger(
     val allocation: Allocation,
     val bonuses: List<Bonus> = emptyList(),
     val uses: List<CreditUse> = emptyList(),
-    val holdCredit: Boolean = false,
 ) {
     val dueCents: Cents get() = sum(owed.map { it.dueCents })
 
@@ -258,8 +256,11 @@ data class Ledger(
     /** What is still owed on the classes. */
     val owedCents: Cents get() = sum(allocation.left.values)
 
-    /** Money credit: what payments didn't spend plus money bonuses, minus credit put on classes (AC-008-28, 30). */
-    val creditCents: Cents get() = allocation.credit + sum(bonuses.map { it.cents }) - allocation.usedCents
+    /**
+     * Money credit: money bonuses minus credit put on classes (AC-008-30). What a payment didn't
+     * spend is a tip, not credit (AC-016-24).
+     */
+    val creditCents: Cents get() = sum(bonuses.map { it.cents }) - allocation.usedCents
 
     /** Bonus minutes not used yet (AC-008-31). */
     val creditMinutes: Int get() = bonuses.sumOf { it.minutes } - allocation.usedMinutes
@@ -283,7 +284,6 @@ data class Ledger(
             payments.filter { it.packageId == null && it.id != without }.map { Paid(it.id, it.paidAt, it.cents, it.chosen) } +
                 listOfNotNull(draft),
             uses,
-            holdCredit,
         )
 }
 
@@ -293,9 +293,8 @@ fun ledgerOf(
     payments: List<PaymentRecord>,
     bonuses: List<Bonus> = emptyList(),
     uses: List<CreditUse> = emptyList(),
-    holdCredit: Boolean = false,
 ): Ledger {
-    val ledger = Ledger(owed, payments.sortedByDescending { it.paidAt }, Allocation(emptyMap(), emptyMap(), 0), bonuses, uses, holdCredit)
+    val ledger = Ledger(owed, payments.sortedByDescending { it.paidAt }, Allocation(emptyMap(), emptyMap(), 0), bonuses, uses)
     return ledger.copy(allocation = ledger.with(null))
 }
 

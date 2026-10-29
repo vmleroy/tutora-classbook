@@ -263,7 +263,7 @@ fun MonthPicker(
                                         },
                                 )
                             }
-                            Text(m.count, style = TutoraTheme.type.meta, color = c.inkMuted, maxLines = 1)
+                            if (m.count.isNotEmpty()) Text(m.count, style = TutoraTheme.type.meta, color = c.inkMuted, maxLines = 1)
                         }
                     }
                 }

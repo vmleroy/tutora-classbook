@@ -19,12 +19,12 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 
 ### The new look, everywhere
 
-- **AC-016-1.** No tab screen has a colored band at the top except Hoje: there the date, the greeting and the + sit on the Topo band, which runs under the top of the white earnings card (Victor, 28 Oct 2026). Every other screen's title sits on the background, with its actions beside it.
+- **AC-016-1.** No tab screen has a colored band at the top except Hoje: there the date and the greeting sit on the Topo band, which runs under the top of the white earnings card (Victor, 28 Oct 2026). Every other screen's title sits on the background, with its actions beside it.
 - **AC-016-2.** Hoje's and Ganhos' earnings sit on a white card: the amount, its bar, and the figures under it in equal columns (Semana, the month and Alunos devem on Hoje; Recebido and A receber on Ganhos), owed in red (Victor, 28 and 29 Oct 2026). A student, group or place opens as on its mockup (StudentDetail, PlaceDetail): the picture and name, then three tiles (what is owed, this month's classes, the rate), the main action on its own line (Registrar pagamento, Receber da salinha) and Relatório and Nova aula under it, with Editar in the header (Victor, 29 Oct 2026). The Topo color paints Hoje's band and the live lesson.
 - **AC-016-3.** What is owed sits in red (a red tile or red text) and what is paid or settled in green, the same in every theme.
 - **AC-016-4.** Lists of classes, students, places and settings are grouped cards with thin dividers between rows; a section title sits above each group.
 - **AC-016-5.** On Hoje's next class, Marcar como dada (outlined, with a check) sits beside Iniciar aula (in the Botão de destaque color), the same size (Victor, 28 Oct 2026). Registrar pagamento sits on the balance card in the Botão de destaque color; Relatório stays a round button in the header.
-- **AC-016-6.** The Nova aula button is in the Botão de destaque color: round on Hoje's band, and on the Agenda a small rounded square (48 dp) floating in the bottom-right corner, its fill a little see-through so the classes behind it show (Victor, 28 and 29 Oct 2026).
+- **AC-016-6.** The Nova aula button is in the Botão de destaque color: a small rounded square (48 dp) floating in the bottom-right corner of Hoje, the Agenda and Cadastro, its fill a little see-through so what is behind it shows (Victor, 28 and 29 Oct 2026).
 - **AC-016-7.** The tab bar sits on the sunken card tone; the active tab shows a pill in the Menu ativo color behind its icon, and its label in bold.
 - **AC-016-8.** Back, Editar and Relatório on detail screens are round icon buttons; every tappable thing is at least 48 dp.
 - **AC-016-9.** The look uses only theme colors: in each of the 4 themes, light and dark, and with any accepted Suas cores choice, every text on its ground reaches 4.5:1 (3:1 for big money figures).
@@ -51,6 +51,12 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 - **AC-016-21.** Choosing a month there opens Mês on it.
 - **AC-016-22.** Month names and the week's first day follow the app language; switching it never moves a class.
 - **AC-016-23.** The Agenda looks ahead only as far as the schedule is filled, 8 weeks from today (AC-005-8): › stops at the month that holds that day, and later months cannot be chosen. Past months stay reachable. Days in the shown month after that day carry no dots (Victor, 28 Oct 2026).
+
+### Payments and periods (Victor, 29 Oct 2026)
+
+- **AC-016-24.** A payment can be more than is owed. What it doesn't pay is a tip, kept as received: it never becomes credit and never pays a class given after the payment. The sheet only cautions, never blocks: "Este valor não paga nenhuma aula" when it pays none, or "R$ 30,00 a mais do que o devido". Credit comes only from bonuses. (Replaces AC-008-28 and AC-008-29.)
+- **AC-016-25.** The payment sheet shows where the payer stands, a tag "Em dia" or "Deve R$ 240,00", and Escolher aulas is a switch.
+- **AC-016-26.** On Ganhos, tapping the period's name ("Outubro 2026 ▾") opens a picker: the months of a year for Mês and Trimestre (each month ending a three-month period), or nine years for Ano, with nothing later than now and "Voltar para o atual".
 
 ## Out of scope
 

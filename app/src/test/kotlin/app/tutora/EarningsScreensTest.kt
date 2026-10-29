@@ -168,4 +168,17 @@ class EarningsScreensTest {
         openEarnings()
         listOf("October 2026", "Earned in the period", "R$120.00", "Received", "Where it came from").forEach { exists(it) }
     }
+
+    @Test
+    fun `AC-016-26 the period's name opens a picker that jumps to any month`() {
+        given(5)
+        h.show(compose)
+        h.go(compose, EarningsGraph)
+        compose.onNodeWithContentDescription("Outubro 2026, escolher período").performClick()
+        h.settle(compose)
+        exists("Escolher período")
+        compose.onNodeWithContentDescription("Setembro 2026").performClick()
+        h.settle(compose)
+        exists("Setembro 2026")
+    }
 }

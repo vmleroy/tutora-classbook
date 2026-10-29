@@ -7,30 +7,35 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.EarningsStat
 import app.tutora.designsystem.components.EarningsSummary
 import app.tutora.designsystem.components.EmptyState
+import app.tutora.designsystem.components.Icon
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
@@ -39,12 +44,16 @@ import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.MonthBar
 import app.tutora.designsystem.components.MonthBars
+import app.tutora.designsystem.components.MonthPicker
+import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.ProgressBar
 import app.tutora.designsystem.components.ProgressTone
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
+import app.tutora.designsystem.tokens.TutoraTokens.Radius
+import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Language
 import app.tutora.domain.Lesson
@@ -61,7 +70,9 @@ import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.localeOf
 import app.tutora.ui.payments.payerRoute
 import app.tutora.ui.reports.EarningsReportSheet
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
@@ -104,6 +115,7 @@ fun EarningsScreen(nav: NavHostController) {
     val view by remember(period, filter) { services.earningsRepo.view(period, filter, today, zone) }.collectAsState(initial = null)
     val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
     var reporting by rememberSaveable { mutableStateOf(false) }
+    var picking by rememberSaveable { mutableStateOf(false) }
     // Relatório: the earnings report for the period and type on screen (AC-010-13).
     ScreenScaffold(
         stringResource(R.string.tab_earnings),
@@ -128,13 +140,22 @@ fun EarningsScreen(nav: NavHostController) {
         // ‹ and › move by the period; › stops at the one holding today (AC-009-9).
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.earn_previous), { anchor = period.previous().anchor.toString() })
-            Text(
-                rangeLabel(period, language),
-                Modifier.weight(1f).testTag("earn-range"),
-                style = TutoraTheme.type.titleMd,
-                color = TutoraTheme.colors.ink,
-                textAlign = TextAlign.Center,
-            )
+            // Tapping the period opens a picker of months or years (Victor, 29 Oct 2026).
+            val range = rangeLabel(period, language)
+            val pickLabel = stringResource(R.string.earn_pickPeriod, range)
+            Row(
+                Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(Radius.lg))
+                    .clickable(role = Role.Button) { picking = true }
+                    .semantics(mergeDescendants = true) { contentDescription = pickLabel }
+                    .padding(vertical = Spacing.s2),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s1, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(range, Modifier.testTag("earn-range"), style = TutoraTheme.type.titleMd, color = TutoraTheme.colors.ink)
+                Icon(IconName.CHEVRON_DOWN, tint = TutoraTheme.colors.ink, size = Size.iconSm)
+            }
             IconButton(
                 IconName.CHEVRON_RIGHT,
                 stringResource(R.string.earn_next),
@@ -149,6 +170,12 @@ fun EarningsScreen(nav: NavHostController) {
                 TypeFilter.PRIVATE to R.string.earn_private,
                 TypeFilter.JOB to R.string.earn_job,
             ).forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
+        }
+        if (picking) {
+            PeriodPickerSheet(period, today, { picking = false }) {
+                anchor = it.toString()
+                picking = false
+            }
         }
         val v = view ?: return@ScreenScaffold
         if (reporting) {
@@ -324,3 +351,62 @@ fun TodayEarnings(
         onCard = true,
     )
 }
+
+/**
+ * Choose the period at once: the months of a year (Mês; Trimestre shows the three months ending
+ * at each), or nine years (Ano). Later than now cannot be chosen (Victor, 29 Oct 2026).
+ */
+@Composable
+private fun PeriodPickerSheet(
+    period: Period,
+    today: LocalDate,
+    onDismiss: () -> Unit,
+    onPick: (LocalDate) -> Unit,
+) {
+    val language = currentLanguage()
+    // Mês and Trimestre page by year; Ano pages nine years at a time, ending at [page].
+    var page by rememberSaveable { mutableIntStateOf(period.anchor.year) }
+    val years = period.kind == PeriodKind.YEAR
+    BottomSheet(stringResource(R.string.earn_pickTitle), onDismiss) {
+        if (years) {
+            val list = (page - YEARS_SHOWN + 1..page).toList()
+            MonthPicker(
+                "${list.first()} – ${list.last()}",
+                list.map { y -> PickerMonth(y.toString(), "", y.toString(), y <= today.year) },
+                list.indexOf(period.anchor.year).takeIf { it >= 0 },
+                { onPick(LocalDate(list[it], 1, 1)) },
+                stringResource(R.string.earn_prevYears),
+                { page -= YEARS_SHOWN },
+                stringResource(R.string.earn_nextYears),
+                { page += YEARS_SHOWN },
+                stringResource(R.string.earn_backNow),
+                { onPick(today) },
+                nextEnabled = page < today.year,
+            )
+        } else {
+            val months = (1..12).map { LocalDate(page, it, 1) }
+
+            fun label(m: LocalDate): String {
+                val name = shortMonth(m, language).replaceFirstChar { it.uppercase() }
+                if (period.kind == PeriodKind.MONTH) return name
+                val start = m.minus(DatePeriod(months = 2))
+                return shortMonth(start, language).replaceFirstChar { it.uppercase() } + "–" + name
+            }
+            MonthPicker(
+                page.toString(),
+                months.map { m -> PickerMonth(label(m), "", rangeLabel(Period(period.kind, m), language), m <= today) },
+                months.indexOfFirst { it.year == period.anchor.year && it.month == period.anchor.month }.takeIf { it >= 0 },
+                { onPick(months[it]) },
+                stringResource(R.string.schedule_prevYear),
+                { page -= 1 },
+                stringResource(R.string.schedule_nextYear),
+                { page += 1 },
+                stringResource(R.string.earn_backNow),
+                { onPick(today) },
+                nextEnabled = page < today.year,
+            )
+        }
+    }
+}
+
+private const val YEARS_SHOWN = 9
