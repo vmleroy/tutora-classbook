@@ -249,7 +249,11 @@ fun CalendarScreen(nav: NavHostController) {
                                 Modifier.testTag("calendar-${cal.id}"),
                                 subtitle = listOf(cal.provider, cal.account).filter { it.isNotBlank() }.joinToString(" · "),
                                 // One letter, as on the mockup: G for Google, O for Outlook.
-                                avatar = cal.provider.ifBlank { cal.name }.take(1).uppercase() to Tag.BLUE,
+                                avatar =
+                                    cal.provider
+                                        .ifBlank { cal.name }
+                                        .take(1)
+                                        .uppercase() to Tag.BLUE,
                                 trailing = RowTrailing.NONE,
                                 badge = if (inUse == cal.id) BadgeTone.SUCCESS to inUseLabel else null,
                                 onClick = { if (calendars.isEmpty()) withAccess {} else choose(cal.id) },
