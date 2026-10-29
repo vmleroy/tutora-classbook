@@ -66,6 +66,7 @@ sourceSets["main"].kotlin.srcDir(generateColorSets.map { it.outputDir })
 
 dependencies {
     api(libs.kotlinx.datetime)
+    api(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotest.property)
