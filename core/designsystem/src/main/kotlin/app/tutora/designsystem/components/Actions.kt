@@ -138,7 +138,10 @@ fun IconButton(
 /** How far a tile or control on the summary card moves from the Topo color, away from its text. */
 const val ON_HEADER_FILL = 0.14f
 
-/** The floating + on Agenda: the only thing in the app that floats. */
+/**
+ * The floating + on the Agenda: the only thing in the app that floats. Small, in the bottom-right
+ * corner, its fill a little see-through so the classes behind it show (Victor, 29 Oct 2026).
+ */
 @Composable
 fun Fab(
     onClick: () -> Unit,
@@ -146,17 +149,17 @@ fun Fab(
     icon: IconName = IconName.PLUS,
     label: String = stringResource(R.string.ds_new_lesson),
 ) {
-    val shape = RoundedCornerShape(Radius.x2xl)
+    val shape = RoundedCornerShape(Radius.xl)
     Box(
         modifier =
             modifier
                 .size(Size.fab)
                 .clip(shape)
-                .background(TutoraTheme.colors.accent, shape)
+                .background(TutoraTheme.colors.accent.copy(alpha = Opacity.floating), shape)
                 .clickable(role = Role.Button, onClick = onClick)
                 .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, tint = TutoraTheme.colors.onAccent, size = Size.iconLg)
+        Icon(icon, tint = TutoraTheme.colors.onAccent, size = Size.icon)
     }
 }

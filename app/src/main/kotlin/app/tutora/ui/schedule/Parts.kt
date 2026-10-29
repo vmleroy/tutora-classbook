@@ -147,7 +147,7 @@ fun DayGrid(
     startHour: Int,
     scroll: ScrollState,
     onOpen: (Lesson) -> Unit,
-    today: LocalDate? = null,
+    chosen: LocalDate? = null,
 ) {
     val language = currentLanguage()
     val hour = Size.agendaHour
@@ -179,8 +179,9 @@ fun DayGrid(
                         Span(l.id, t.hour * 60 + t.minute, t.hour * 60 + t.minute + l.plannedMin)
                     }
                 val slots = layoutDay(spans)
-                // In Semana each day is its own column: a line before it, and today's on white (Victor, 29 Oct 2026).
-                val ground = if (compact && date == today) TutoraTheme.colors.surface else TutoraTheme.colors.background
+                // In Semana each day is its own column: a line before it, and the chosen day's on white
+                // (Victor, 29 Oct 2026).
+                val ground = if (compact && date == chosen) TutoraTheme.colors.surface else TutoraTheme.colors.background
                 BoxWithConstraints(
                     Modifier
                         .weight(1f)

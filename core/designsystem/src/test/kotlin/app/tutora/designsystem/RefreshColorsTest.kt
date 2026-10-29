@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -34,6 +35,7 @@ import app.tutora.designsystem.components.ON_HEADER_FILL
 import app.tutora.designsystem.components.TabBar
 import app.tutora.designsystem.components.TabItem
 import app.tutora.designsystem.tokens.TutoraColors
+import app.tutora.designsystem.tokens.TutoraTokens.Opacity
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.domain.theme.CustomColors
 import app.tutora.domain.theme.CustomPart
@@ -46,6 +48,7 @@ import app.tutora.domain.theme.resolvePalette
 import app.tutora.domain.theme.themeIds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -103,7 +106,7 @@ class RefreshColorsTest {
     ) = assertEquals(Integer.toHexString(expected.toArgb()), Integer.toHexString(actual))
 
     @Test
-    fun `AC-016-6 Nova aula is in the highlight color, round on Hoje and a rounded square when it floats`() {
+    fun `AC-016-6 Nova aula is in the highlight color, round on Hoje and a small see-through square when it floats`() {
         show {
             Column {
                 Box(Modifier.testTag("fab")) { Fab({}) }
@@ -123,8 +126,17 @@ class RefreshColorsTest {
                 .size.width / density,
             0.5f,
         )
-        // (8, 8) is outside a circle of that size but inside the rounded square.
-        same(colors.accent, pixel("fab", 8.dp, 8.dp))
+        // (5, 5) is outside a circle of that size but inside the rounded square; the fill lets the page show through.
+        val drawn = pixel("fab", 5.dp, 5.dp)
+        val blend =
+            colors.accent
+                .copy(alpha = Opacity.floating)
+                .compositeOver(colors.background)
+                .toArgb()
+        // Blending rounds each channel; within two steps is the same color.
+        listOf(16, 8, 0).forEach { shift ->
+            assertTrue("fab at (5, 5)", Math.abs((drawn shr shift and 0xFF) - (blend shr shift and 0xFF)) <= 2)
+        }
         same(colors.background, pixel("round", 6.dp, 6.dp))
         same(colors.accent, pixel("round", 10.dp, 24.dp))
     }
@@ -202,7 +214,7 @@ class RefreshColorsTest {
             Column(Modifier.testTag("page").padding(16.dp)) {
                 EarningsSummary("Ganho hoje", 24_000)
                 Box(Modifier.testTag("btn")) { Button("Registrar pagamento", {}) }
-                Box(Modifier.testTag("fab")) { Fab({}) }
+                Box(Modifier.testTag("fab")) { IconButton(IconName.PLUS, "Nova aula", {}, variant = IconButtonVariant.ACCENT_SQUARE) }
                 Card(Modifier.testTag("card")) {
                     Row {
                         Box(Modifier.width(4.dp))

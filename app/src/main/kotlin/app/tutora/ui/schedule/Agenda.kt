@@ -254,13 +254,13 @@ fun AgendaScreen(nav: NavHostController) {
                             startHour = startHour,
                             scroll = scroll,
                             onOpen = { nav.navigate(LessonDetail(it.id)) },
-                            today = today,
+                            chosen = selected,
                         )
                     }
             }
         }
         // The + floats over the Agenda, as on the mockup (AC-005-1).
-        Fab({ nav.navigate(LessonNew(selected.toString())) }, Modifier.align(Alignment.BottomEnd).padding(Spacing.s5))
+        Fab({ nav.navigate(LessonNew(selected.toString())) }, Modifier.align(Alignment.BottomEnd).padding(Spacing.s4))
     }
     if (picking) {
         MonthPickerSheet(month, today, { picking = false }, onToday = {
@@ -362,11 +362,13 @@ private fun MonthView(
                     countText(R.string.schedule_count_zero, R.plurals.schedule_count, kinds.size),
                 ),
                 today = cell.date == today,
+                // A neighbor's day opens its month, up to the horizon (Victor, 29 Oct 2026).
+                enabled = canShowMonth(YearMonth(cell.date.year, cell.date.month), today),
             )
         }
     MonthGrid(
         days,
-        cells.indexOfFirst { it.date == selected && it.inMonth }.takeIf { it >= 0 },
+        cells.indexOfFirst { it.date == selected }.takeIf { it >= 0 },
         { onSelect(cells[it].date) },
         cells.take(7).map { weekdayNarrow(it.date, language) },
         monthYear(month.firstDay, language),

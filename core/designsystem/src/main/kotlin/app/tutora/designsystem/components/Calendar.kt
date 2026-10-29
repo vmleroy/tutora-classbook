@@ -53,8 +53,9 @@ private fun DotTone.color(): Color {
 }
 
 /**
- * One square of a [MonthGrid]. [inMonth] false greys out the neighbors' days; [more] is how
- * many classes the dots leave out ("+N"); [a11y] is read aloud ("28 de outubro, 2 aulas").
+ * One square of a [MonthGrid]. [inMonth] false greys out the neighbors' days, still tappable to
+ * go to their month; [enabled] false (past the Agenda's horizon) is not. [more] is how many
+ * classes the dots leave out ("+N"); [a11y] is read aloud ("28 de outubro, 2 aulas").
  */
 data class MonthDay(
     val day: Int,
@@ -63,6 +64,7 @@ data class MonthDay(
     val more: Int,
     val a11y: String,
     val today: Boolean = false,
+    val enabled: Boolean = true,
 )
 
 /**
@@ -158,11 +160,11 @@ private fun DayCell(
             .height(Size.monthDay)
             .clip(RoundedCornerShape(Radius.xl))
             .background(bg)
-            .then(if (d.inMonth) Modifier.selectable(selected = selected, role = Role.Tab, onClick = onClick) else Modifier)
+            .then(if (d.enabled) Modifier.selectable(selected = selected, role = Role.Tab, onClick = onClick) else Modifier)
             .clearAndSetSemantics {
                 contentDescription = d.a11y
                 this.selected = selected
-                if (!d.inMonth) disabled()
+                if (!d.enabled) disabled()
                 role = Role.Tab
             }.padding(top = Spacing.s1_5),
         horizontalAlignment = Alignment.CenterHorizontally,

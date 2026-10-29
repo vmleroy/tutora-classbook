@@ -141,13 +141,15 @@ class AgendaMonthTest {
     }
 
     @Test
-    fun `AC-016-16 Mes shows the month from Monday, the neighbors' days greyed, and moves a month`() {
+    fun `AC-016-16 Mes shows the month from Monday, and a neighbor's day opens its month`() {
         month()
         compose.onNodeWithTag("month-grid").assertExists()
-        compose.onNodeWithContentDescription("28 de setembro, nenhuma aula").assertIsNotEnabled()
         compose.onNodeWithContentDescription("1 de outubro, nenhuma aula").assertIsEnabled()
-        tap("Mês anterior")
+        tap("28 de setembro, nenhuma aula")
         exists("Setembro 2026")
+        compose.onNodeWithContentDescription("28 de setembro, nenhuma aula").assertIsSelected()
+        tap("Próximo mês")
+        exists("Outubro 2026")
     }
 
     @Test
@@ -228,6 +230,7 @@ class AgendaMonthTest {
         // 21 Dec is the last day with classes; 28 Dec is past the horizon.
         compose.onNodeWithContentDescription("21 de dezembro, 1 aula").assertExists()
         compose.onNodeWithContentDescription("28 de dezembro, nenhuma aula").assertExists()
+        compose.onNodeWithContentDescription("3 de janeiro, nenhuma aula").assertIsNotEnabled()
         tap("Dezembro 2026, escolher mês e ano")
         compose.onNodeWithContentDescription("Próximo ano").assertIsNotEnabled()
     }
