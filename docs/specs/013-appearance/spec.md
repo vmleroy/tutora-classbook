@@ -1,6 +1,6 @@
 # Spec 013: Appearance
 
-Status: draft
+Status: ready
 Depends on: 002 Design system (4 themes × light and dark, the seven Suas cores parts, Large text, contrast rules), 016 Visual refresh (the look and the part names: Topo, Botões principais, Botão de destaque, Números de ganhos, Fundo, Cartões, Menu ativo)
 Mockups: docs/mockups/Theme.dc.html (Aparência), docs/mockups/ColorPicker.dc.html (Suas cores), docs/mockups/Settings.dc.html (the "Aparência" row)
 
@@ -68,7 +68,4 @@ Everything Tutora needs to repaint itself already exists since spec 002: four th
 
 Answered by Victor on 29 Oct 2026: "Cor principal" paints Topo, Botões principais and Menu ativo; custom colors can be saved as a theme of one's own, and switching away from unsaved ones asks first; Suas cores applies each change at once and asks about low contrast on leaving; Modo starts on Sistema.
 
-Still assumed, for Victor to confirm:
-
-- **How many saved themes:** as many as the teacher wants, each with rename and delete.
-- **Saved themes in backups:** they are the teacher's data, so a backup carries them and a restore brings them back (unlike the calendar or backup setup, which belong to the phone).
+Also confirmed by Victor on 29 Oct 2026: as many saved themes as the teacher wants, each with rename and delete; they are the teacher's data, so a backup carries them and a restore brings them back.
