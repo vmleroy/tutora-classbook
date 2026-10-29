@@ -27,46 +27,46 @@ The teacher already lives in Google Calendar or Outlook for the rest of their li
 - **AC-012-2.** "Enviar aulas para o calendário" is off at first. Turning it on asks for the phone's calendar permission once; refusing it leaves the switch off and says "Sem acesso ao calendário. Permita nas configurações do celular." with a way to open them.
 - **AC-012-3.** "Em qual calendário?" lists the accounts already on the phone (each Google and each Microsoft account by its address) and "Só neste aparelho", the first Google account chosen at first, or "Só neste aparelho" when there is none.
 - **AC-012-4.** Tutora puts its classes in a calendar of its own, "Tutora – Aulas", in the chosen account, in the Botões principais color, and never writes into any other calendar.
-- **AC-012-4b.** Every event Tutora makes carries Tutora's mark: a hidden tag the calendar apps don't show, and a last line "Criado pelo Tutora" in its description. Tutora only ever changes or deletes events with its mark (Victor, 29 Oct 2026).
+- **AC-012-5.** Every event Tutora makes carries Tutora's mark: a hidden tag the calendar apps don't show, and a last line "Criado pelo Tutora" in its description. Tutora only ever changes or deletes events with its mark (Victor, 29 Oct 2026).
 
 ### What goes in
 
-- **AC-012-5.** Every class from today to 8 weeks ahead becomes one event at its time and duration, whatever its state: scheduled, live, done, cancelled or missed (Victor, 29 Oct 2026). Its title is who it is with and the subject ("Ana Souza · Matemática", or the group's name), its place is the class's place (with the address when it has one), and its notes are the class's notes (Victor, 29 Oct 2026). A cancelled class's title starts with "Cancelada · " and a missed one's with "Faltou · ", so the history shows them.
-- **AC-012-6.** "Incluir valor na descrição" is off at first. Off, the event shows only who, the subject and the place; on, it adds the class's value ("Valor: R$ 120,00").
-- **AC-012-7.** Creating, moving, editing, cancelling, marking missed or deleting a class in Tutora updates the calendar within moments: a moved class moves its event, a cancelled or missed one is retitled (AC-012-5), a deleted one removes it, and "Só esta aula" and "Esta e as próximas" touch exactly the events they change.
-- **AC-012-8.** As days pass, classes that come into the 8 weeks get their events; past events stay as they were.
-- **AC-012-9.** The status line reads "Atualizado agora · 24 aulas nas próximas 8 semanas", with the time of the last update.
-- **AC-012-10.** Editing or deleting an event in the calendar app never changes Tutora; the next update puts the class's event back as Tutora has it.
+- **AC-012-6.** Every class from today to 8 weeks ahead becomes one event at its time and duration, whatever its state: scheduled, live, done, cancelled or missed (Victor, 29 Oct 2026). Its title is who it is with and the subject ("Ana Souza · Matemática", or the group's name), its place is the class's place (with the address when it has one), and its notes are the class's notes (Victor, 29 Oct 2026). A cancelled class's title starts with "Cancelada · " and a missed one's with "Faltou · ", so the history shows them.
+- **AC-012-7.** "Incluir valor na descrição" is off at first. Off, the event shows only who, the subject and the place; on, it adds the class's value ("Valor: R$ 120,00").
+- **AC-012-8.** Creating, moving, editing, cancelling, marking missed or deleting a class in Tutora updates the calendar within moments: a moved class moves its event, a cancelled or missed one is retitled (AC-012-6), a deleted one removes it, and "Só esta aula" and "Esta e as próximas" touch exactly the events they change.
+- **AC-012-9.** As days pass, classes that come into the 8 weeks get their events; past events stay as they were.
+- **AC-012-10.** The status line reads "Atualizado agora · 24 aulas nas próximas 8 semanas", with the time of the last update.
+- **AC-012-11.** Editing or deleting an event in the calendar app never changes Tutora; the next update puts the class's event back as Tutora has it.
 
 ### Changing or stopping
 
-- **AC-012-11.** Choosing another account moves the events: they leave the old "Tutora – Aulas" and appear in the new one.
-- **AC-012-12.** Turning it off removes "Tutora – Aulas" and every event with Tutora's mark, and nothing else (Victor, 29 Oct 2026).
-- **AC-012-13.** After a backup is restored (spec 011), the calendar shows the restored classes and none of the replaced ones.
+- **AC-012-12.** Choosing another account moves the events: they leave the old "Tutora – Aulas" and appear in the new one.
+- **AC-012-13.** Turning it off removes "Tutora – Aulas" and every event with Tutora's mark, and nothing else (Victor, 29 Oct 2026).
+- **AC-012-14.** After a backup is restored (spec 011), the calendar shows the restored classes and none of the replaced ones.
 
 ### Cleaning up (Victor, 29 Oct 2026)
 
-- **AC-012-20.** The Calendário page has "Limpar eventos do Tutora", with sync on or off. It finds every event with Tutora's mark in any of the phone's calendars, including ones left from an earlier account or an earlier install, and asks first: "Apagar 24 eventos criados pelo Tutora? Seus outros eventos não são tocados." with "Apagar" and "Cancelar". With none, it says "Nenhum evento do Tutora no celular."
-- **AC-012-21.** Apagar deletes exactly those events, and an empty "Tutora – Aulas" calendar, and nothing else: an event without the mark stays, even if it has the same title, time or the words "Criado pelo Tutora" typed in by hand. With sync on, cleaning also turns it off, so the events don't come back at the next update.
+- **AC-012-15.** The Calendário page has "Limpar eventos do Tutora", with sync on or off. It finds every event with Tutora's mark in any of the phone's calendars, including ones left from an earlier account or an earlier install, and asks first: "Apagar 24 eventos criados pelo Tutora? Seus outros eventos não são tocados." with "Apagar" and "Cancelar". With none, it says "Nenhum evento do Tutora no celular."
+- **AC-012-16.** Apagar deletes exactly those events, and an empty "Tutora – Aulas" calendar, and nothing else: an event without the mark stays, even if it has the same title, time or the words "Criado pelo Tutora" typed in by hand. With sync on, cleaning also turns it off, so the events don't come back at the next update.
 
 ### Busy time on the Agenda
 
-- **AC-012-14.** "Mostrar outros compromissos" is off at first. On, events from the phone's other calendars appear on the Agenda's Dia and Semana as grey blocks with their time and title, behind the classes; they can't be opened or edited from Tutora. Mês shows no busy time (Victor, 29 Oct 2026).
-- **AC-012-15.** An all-day event shows as a thin grey band at the top of its day, not as a block across the day.
-- **AC-012-16.** Tutora's own events never show as busy time (the classes are already there).
+- **AC-012-17.** "Mostrar outros compromissos" is off at first. On, events from the phone's other calendars appear on the Agenda's Dia and Semana as grey blocks with their time and title, behind the classes; they can't be opened or edited from Tutora. Mês shows no busy time (Victor, 29 Oct 2026).
+- **AC-012-18.** An all-day event shows as a thin grey band at the top of its day, not as a block across the day.
+- **AC-012-19.** Tutora's own events never show as busy time (the classes are already there).
 
 ### .ics export
 
-- **AC-012-17.** "Exportar agenda como .ics" opens the share sheet with "Tutora aulas.ics" holding the classes of the next 8 weeks as in AC-012-5 and 6, which Google Calendar, Outlook and Apple Calendar can import. It works with sync off and needs no permission.
-- **AC-012-18.** Importing the same file twice, or a newer one, updates the same events instead of doubling them.
+- **AC-012-20.** "Exportar agenda como .ics" opens the share sheet with "Tutora aulas.ics" holding the classes of the next 8 weeks as in AC-012-6 and 6, which Google Calendar, Outlook and Apple Calendar can import. It works with sync off and needs no permission.
+- **AC-012-21.** Importing the same file twice, or a newer one, updates the same events instead of doubling them.
 
 ### Language
 
-- **AC-012-19.** The page, its messages, the calendar's name ("Tutora – Aulas" / "Tutora – Classes") and the event texts follow the app language; times stay the class's times whatever the language.
+- **AC-012-22.** The page, its messages, the calendar's name ("Tutora – Aulas" / "Tutora – Classes") and the event texts follow the app language; times stay the class's times whatever the language.
 
 ## Out of scope
 
-- Reading events back into Tutora as classes, or two-way sync: edits in the calendar app are not pulled back (AC-012-10).
+- Reading events back into Tutora as classes, or two-way sync: edits in the calendar app are not pulled back (AC-012-11).
 - Reminders on the events: spec 014 handles reminders.
 - Signing in to Google or Microsoft: Tutora only uses the accounts the phone already has.
 - Busy time on the Mês view and on Hoje.
@@ -74,7 +74,7 @@ The teacher already lives in Google Calendar or Outlook for the rest of their li
 
 ## Open questions
 
-Answered by Victor on 29 Oct 2026: cancelled and missed classes stay in the calendar, marked (AC-012-5); turning sync off removes Tutora's calendar (AC-012-12); the title is who and the subject (AC-012-5); busy time shows on Dia and Semana from all the phone's other calendars (AC-012-14).
+Answered by Victor on 29 Oct 2026: cancelled and missed classes stay in the calendar, marked (AC-012-6); turning sync off removes Tutora's calendar (AC-012-13); the title is who and the subject (AC-012-6); busy time shows on Dia and Semana from all the phone's other calendars (AC-012-17).
 
 Still assumed, for Victor to confirm:
 
