@@ -112,7 +112,8 @@ fun RowScope.SummaryTile(
             ).semantics(mergeDescendants = true) {}
             .padding(horizontal = Spacing.s3, vertical = Spacing.s2_5),
     ) {
-        Text(label, style = TutoraTheme.type.meta, color = sub, maxLines = 1)
+        // The label may wrap ("Alunos devem" in a third of the card); the amount never does.
+        Text(label, style = TutoraTheme.type.meta, color = sub)
         Text(text, style = TutoraTheme.type.moneyMd, color = fg, maxLines = 1)
     }
 }

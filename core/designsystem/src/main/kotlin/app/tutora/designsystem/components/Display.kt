@@ -250,15 +250,18 @@ fun EarningsSummary(
 ) {
     val c = TutoraTheme.colors
     SummaryCard(modifier, label = title) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-            Column(Modifier.weight(1f)) {
-                Text(title, style = TutoraTheme.type.bodyStrong, color = c.onHeaderMuted)
-                Money(earnedCents, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
-            }
+        // The title and what was expected share a line, so the amount below has the full width.
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(title, style = TutoraTheme.type.bodyStrong, color = c.onHeaderMuted, modifier = Modifier.weight(1f))
             if (expectedCents != null && expectedCents > 0 && expectedLabel != null) {
                 Text(expectedLabel, style = TutoraTheme.type.meta, color = c.onHeaderMuted)
             }
         }
+        Money(earnedCents, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
         if (expectedCents != null && expectedCents > 0) {
             ProgressBar(earnedCents.toFloat() / expectedCents, expectedLabel ?: title, track = ProgressTrack.ON_HEADER)
         }
@@ -269,9 +272,10 @@ fun EarningsSummary(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 stats.forEach { s ->
                     val tone =
-                        when (s.tone) {
-                            MoneyTone.OWED -> SummaryTone.OWED
-                            MoneyTone.PAID -> SummaryTone.PAID
+                        when {
+                            // Red only when something is owed.
+                            s.tone == MoneyTone.OWED && s.cents > 0 -> SummaryTone.OWED
+                            s.tone == MoneyTone.PAID -> SummaryTone.PAID
                             else -> SummaryTone.PLAIN
                         }
                     SummaryTile(s.label, s.cents, tone)

@@ -103,7 +103,8 @@ fun ScreenHeader(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
                 Text(
                     title,
-                    style = if (big) TutoraTheme.type.titleXl else TutoraTheme.type.titleLg,
+                    // A tappable title (the Agenda's month and year) shares its row with more actions.
+                    style = if (big && onTitle == null) TutoraTheme.type.titleXl else TutoraTheme.type.titleLg,
                     color = c.ink,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
