@@ -34,4 +34,20 @@ data class Settings(
     /** Ajustes › Relatórios: the teacher's name and Pix key, printed on reports when set (AC-010-16). */
     val teacherName: String = "",
     val pixKey: String = "",
+    /** Themes of the teacher's own: a theme with custom colors, under a name (AC-013-5). */
+    val savedThemes: List<SavedTheme> = emptyList(),
+    /** The saved theme the current colors came from, if they still match it. */
+    val savedThemeId: String? = null,
 )
+
+data class SavedTheme(
+    val id: String,
+    val name: String,
+    val themeId: String,
+    val custom: Map<CustomPart, String>,
+)
+
+/** Custom colors that no saved theme holds: switching theme asks first (AC-013-6). */
+fun Settings.unsavedColors(): Boolean =
+    customColors.isNotEmpty() &&
+        savedThemes.none { it.themeId == themeId && it.custom == customColors }
