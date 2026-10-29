@@ -1,6 +1,6 @@
 # Spec 013: Appearance
 
-Status: ready
+Status: in progress
 Depends on: 002 Design system (4 themes × light and dark, the seven Suas cores parts, Large text, contrast rules), 016 Visual refresh (the look and the part names: Topo, Botões principais, Botão de destaque, Números de ganhos, Fundo, Cartões, Menu ativo)
 Mockups: docs/mockups/Theme.dc.html (Aparência), docs/mockups/ColorPicker.dc.html (Suas cores), docs/mockups/Settings.dc.html (the "Aparência" row)
 
