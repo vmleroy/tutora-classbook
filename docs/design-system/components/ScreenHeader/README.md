@@ -28,4 +28,4 @@ interface ScreenHeaderProps {
 ```
 
 ## 2026 look (spec 016)
-No variant draws a colored band any more: HERO is Hoje's date over the greeting, on the background like TAB. `onTitle` makes the title a button with a ▾ (the Agenda's month and year, read as `titleLabel`); a `HeaderAction` with `text` shows its label in a sunken pill ("Hoje").
+The header never paints a band itself. HERO is Hoje's date over the greeting in on-header colors, on the Topo band Hoje draws behind it and under the top of its earnings card; there its + is the round `ACCENT` and other actions are `ON_PRIMARY`.

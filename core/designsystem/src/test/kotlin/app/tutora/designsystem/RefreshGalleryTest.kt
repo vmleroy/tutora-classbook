@@ -60,7 +60,7 @@ class RefreshGalleryTest {
     @Test
     fun `AC-016-12 the gallery shows the new and changed pieces`() {
         show { Column(Modifier.verticalScroll(rememberScrollState())) { GallerySections() } }
-        listOf("SummaryCard", "SplitButtons", "MonthGrid", "MonthPicker", "ListGroup", "TabBar", "IconButton", "EarningsSummary").forEach {
+        listOf("SummaryCard", "MonthGrid", "MonthPicker", "ListGroup", "TabBar", "IconButton", "EarningsSummary").forEach {
             compose.onNodeWithTag("section-$it").assertExists()
         }
     }

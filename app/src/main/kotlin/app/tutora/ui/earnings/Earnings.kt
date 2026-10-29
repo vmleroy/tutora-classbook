@@ -283,5 +283,7 @@ fun TodayEarnings(
                 ),
                 EarningsStat(stringResource(R.string.earn_studentsOwe), balances.values.filter { it > 0 }.sum(), MoneyTone.OWED),
             ),
+        // Hoje's white card over the Topo band (Victor, 28 Oct 2026).
+        onCard = true,
     )
 }

@@ -40,18 +40,17 @@ import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
 enum class HeaderVariant { HERO, TAB, PUSH, MODAL }
 
-/** An icon button in a header, or with [text] a small pill that shows its label ("Hoje"). */
 data class HeaderAction(
     val icon: IconName,
     val label: String,
     val variant: IconButtonVariant = IconButtonVariant.SUNKEN,
-    val text: Boolean = false,
     val onClick: () -> Unit,
 )
 
 /**
- * A screen's title bar, always on the background (spec 016: no colored band): HERO is Hoje's
- * date over the greeting, TAB a tab title, PUSH a pushed screen with back, MODAL a sheet.
+ * A screen's title bar. It never paints a band itself: HERO is Hoje's date over the greeting,
+ * in on-header colors for the Topo band the screen draws behind it (spec 016); TAB a tab title,
+ * PUSH a pushed screen with back, MODAL a sheet.
  */
 @Composable
 fun ScreenHeader(
@@ -61,12 +60,10 @@ fun ScreenHeader(
     eyebrow: String? = null,
     actions: List<HeaderAction> = emptyList(),
     onBack: (() -> Unit)? = null,
-    /** Makes the title a button with a ▾, read as [titleLabel] (the Agenda's month and year). */
-    onTitle: (() -> Unit)? = null,
-    titleLabel: String? = null,
 ) {
     val c = TutoraTheme.colors
     val big = variant == HeaderVariant.TAB || variant == HeaderVariant.HERO
+    val hero = variant == HeaderVariant.HERO
     Row(
         modifier =
             modifier
@@ -76,57 +73,27 @@ fun ScreenHeader(
         horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (onBack != null) {
-            IconButton(
-                IconName.CHEVRON_LEFT,
-                stringResource(R.string.ds_back),
-                onBack,
+        if (onBack != null) IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.ds_back), onBack)
+        Column(Modifier.weight(1f)) {
+            if (eyebrow != null) Text(eyebrow, style = TutoraTheme.type.caption, color = if (hero) c.onHeaderMuted else c.inkMuted)
+            Text(
+                title,
+                style = if (big) TutoraTheme.type.titleXl else TutoraTheme.type.titleLg,
+                color = if (hero) c.onHeader else c.ink,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.semantics { heading() },
             )
         }
-        Column(
-            Modifier
-                .weight(1f)
-                .then(
-                    if (onTitle != null) {
-                        Modifier
-                            .testTag("header-title")
-                            .sizeIn(minHeight = Size.touch)
-                            .clip(RoundedCornerShape(Radius.lg))
-                            .clickable(role = Role.Button, onClick = onTitle)
-                            .semantics(mergeDescendants = true) { contentDescription = titleLabel ?: title }
-                    } else {
-                        Modifier
-                    },
-                ),
-        ) {
-            if (eyebrow != null) Text(eyebrow, style = TutoraTheme.type.caption, color = c.inkMuted)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-                Text(
-                    title,
-                    // A tappable title (the Agenda's month and year) shares its row with more actions.
-                    style = if (big && onTitle == null) TutoraTheme.type.titleXl else TutoraTheme.type.titleLg,
-                    color = c.ink,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false).semantics { heading() },
-                )
-                if (onTitle != null) Icon(IconName.CHEVRON_DOWN, tint = c.ink)
-            }
-        }
         actions.forEach {
-            if (it.text) {
-                Box(
-                    Modifier
-                        .sizeIn(minWidth = Size.touch, minHeight = Size.touch)
-                        .clip(RoundedCornerShape(Radius.full))
-                        .background(c.surfaceSunken)
-                        .clickable(role = Role.Button, onClick = it.onClick)
-                        .padding(horizontal = Spacing.s4),
-                    contentAlignment = Alignment.Center,
-                ) { Text(it.label, style = TutoraTheme.type.button, color = c.ink, maxLines = 1) }
-            } else {
-                IconButton(it.icon, it.label, it.onClick, variant = it.variant)
-            }
+            // On Hoje's Topo band the + is round and the other actions are tinted for it.
+            val v =
+                when {
+                    !hero -> it.variant
+                    it.variant == IconButtonVariant.ACCENT || it.variant == IconButtonVariant.ACCENT_SQUARE -> IconButtonVariant.ACCENT
+                    else -> IconButtonVariant.ON_PRIMARY
+                }
+            IconButton(it.icon, it.label, it.onClick, variant = v)
         }
     }
 }
@@ -208,7 +175,6 @@ fun WeekStrip(
     val c = TutoraTheme.colors
     Row(
         modifier = modifier.fillMaxWidth().semantics { contentDescription = label }.selectableGroup(),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
     ) {
         days.forEachIndexed { i, d ->
             val on = i == selected
@@ -216,6 +182,8 @@ fun WeekStrip(
                 modifier =
                     Modifier
                         .weight(1f)
+                        // Equal columns padded like the Agenda's blocks, so each day sits over its column.
+                        .padding(horizontal = AgendaBlockGap)
                         .height(Size.weekDay)
                         .clip(RoundedCornerShape(Radius.x2xl))
                         .background(if (on) c.btnPrimary else c.surface)

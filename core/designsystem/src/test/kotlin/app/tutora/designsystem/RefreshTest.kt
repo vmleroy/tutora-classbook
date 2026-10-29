@@ -25,12 +25,10 @@ import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.ScreenHeader
-import app.tutora.designsystem.components.SplitButtons
 import app.tutora.designsystem.tokens.TutoraColors
 import app.tutora.domain.theme.CustomColors
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -88,7 +86,7 @@ class RefreshTest {
     ) = assertEquals(Integer.toHexString(expected.toArgb()), Integer.toHexString(actual))
 
     @Test
-    fun `AC-016-1 no header draws a colored band, Hoje's date and greeting included`() {
+    fun `AC-016-1 no header paints a band of its own, Hoje's included`() {
         show {
             Column {
                 HeaderVariant.entries.forEach { v ->
@@ -131,16 +129,5 @@ class RefreshTest {
         same(colors.surface, pixel("list-group", 40.dp, 10.dp))
         // The corners are rounded 28: the very corner shows the page behind.
         same(colors.background, pixel("list-group", 1.dp, 1.dp))
-    }
-
-    @Test
-    fun `AC-016-5 a pair of actions is two joined buttons, the main one in the main button color`() {
-        show { SplitButtons("Marcar como dada", {}, "Iniciar aula", {}) }
-        same(colors.primarySoft, pixel("split-first", 60.dp, 20.dp))
-        same(colors.btnPrimary, pixel("split-second", 60.dp, 20.dp))
-        val first = compose.onNodeWithTag("split-first").fetchSemanticsNode().boundsInRoot
-        val second = compose.onNodeWithTag("split-second").fetchSemanticsNode().boundsInRoot
-        assertEquals(first.height, second.height, 0.5f)
-        assertTrue("joined, a small gap apart", second.left - first.right < 6 * 2.625f)
     }
 }

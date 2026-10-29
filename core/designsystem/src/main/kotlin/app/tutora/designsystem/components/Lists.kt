@@ -89,7 +89,7 @@ fun SectionHeader(
     }
 }
 
-/** One lesson in a day list: time, tag, who and where, and its state or value; lists put it in a [ListGroup]. */
+/** One lesson in a day list: time, tag, who and where, and its state or value; in a [ListGroup], or a [card] of its own. */
 @Composable
 fun LessonRow(
     time: String,
@@ -101,6 +101,8 @@ fun LessonRow(
     trailing: String? = null,
     onClick: (() -> Unit)? = null,
     statusIcon: IconName? = null,
+    /** A card of its own (Hoje's list) instead of a row of a [ListGroup]. */
+    card: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     Row(
@@ -108,6 +110,7 @@ fun LessonRow(
             modifier
                 .fillMaxWidth()
                 .sizeIn(minHeight = Size.controlLg)
+                .then(if (card) Modifier.clip(RoundedCornerShape(Radius.x2xl)) else Modifier)
                 .background(c.surface)
                 .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
                 .padding(horizontal = Spacing.s4, vertical = Spacing.s3),

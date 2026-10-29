@@ -1,5 +1,7 @@
 package app.tutora.ui
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -180,6 +182,9 @@ fun TutoraNav(
         Scaffold(
             modifier = modifier,
             containerColor = TutoraTheme.colors.background,
+            // Screens pad for the system bars themselves, so Hoje's band reaches the top edge; the
+            // tab bar's height (with the navigation bar) is consumed here so it is not padded twice.
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 // The bar shows on the tabs; details and forms take the whole screen.
                 if (activeTab != null) {
@@ -198,7 +203,7 @@ fun TutoraNav(
                 }
             },
         ) { padding ->
-            NavHost(nav, startDestination = TodayGraph, modifier = Modifier.padding(padding)) {
+            NavHost(nav, startDestination = TodayGraph, modifier = Modifier.padding(padding).consumeWindowInsets(padding)) {
                 navigation<TodayGraph>(startDestination = TodayHome) {
                     composable<TodayHome> { TodayScreen(nav) }
                 }

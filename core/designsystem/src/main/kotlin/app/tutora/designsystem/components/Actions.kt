@@ -94,11 +94,12 @@ fun Button(
     }
 }
 
-enum class IconButtonVariant { SUNKEN, PLAIN, ON_PRIMARY, ACCENT }
+enum class IconButtonVariant { SUNKEN, PLAIN, ON_PRIMARY, ACCENT, ACCENT_SQUARE }
 
 /**
- * Icon-only action; the label is read aloud since nothing else names it. Round, except ACCENT:
- * the Nova aula button, a larger rounded square in the Botão de destaque color (spec 016).
+ * Icon-only action; the label is read aloud since nothing else names it. Round, except
+ * ACCENT_SQUARE: an add button in a tab header, a 56 dp rounded square in the highlight color
+ * (spec 016).
  */
 @Composable
 fun IconButton(
@@ -115,9 +116,9 @@ fun IconButton(
             IconButtonVariant.SUNKEN -> c.surfaceSunken to c.ink
             IconButtonVariant.PLAIN -> Color.Transparent to c.ink
             IconButtonVariant.ON_PRIMARY -> onHeaderFill() to c.onHeader
-            IconButtonVariant.ACCENT -> c.accent to c.onAccent
+            IconButtonVariant.ACCENT, IconButtonVariant.ACCENT_SQUARE -> c.accent to c.onAccent
         }
-    val square = variant == IconButtonVariant.ACCENT
+    val square = variant == IconButtonVariant.ACCENT_SQUARE
     val shape = if (square) RoundedCornerShape(Radius.x2xl) else CircleShape
     Box(
         modifier =

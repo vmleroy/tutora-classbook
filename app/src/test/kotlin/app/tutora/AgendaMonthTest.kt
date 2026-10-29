@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -101,7 +102,7 @@ class AgendaMonthTest {
     }
 
     @Test
-    fun `AC-016-13 the Agenda is titled by the month and year it shows, under a small Agenda`() {
+    fun `AC-016-13 the Agenda's card shows Agenda with the month and year it shows`() {
         agenda()
         exists("Agenda")
         exists("Outubro 2026")
@@ -125,6 +126,18 @@ class AgendaMonthTest {
     fun `AC-016-15 the switch reads Dia, Semana and Mes, with the week's dates over the strip`() {
         agenda()
         listOf("Dia", "Semana", "Mês", "Semana de 26 out a 1 nov").forEach { exists(it) }
+        // In Semana each day of the strip sits over its column: after the hour labels, seven equal columns.
+        compose.onNodeWithText("Semana").performClick()
+        h.settle(compose)
+        val density =
+            compose
+                .onRoot()
+                .fetchSemanticsNode()
+                .layoutInfo.density.density
+        val grid = compose.onNodeWithTag("day-grid").fetchSemanticsNode().boundsInRoot
+        val column = (grid.width - 48 * density) / 7
+        val wednesday = compose.onNodeWithContentDescription("Qua 28").fetchSemanticsNode().boundsInRoot
+        assertEquals(grid.left + 48 * density + column * 2.5f, wednesday.center.x, 1.5f * density)
     }
 
     @Test

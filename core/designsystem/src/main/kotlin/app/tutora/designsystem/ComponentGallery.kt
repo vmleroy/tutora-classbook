@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
@@ -70,7 +72,6 @@ import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.SelectField
-import app.tutora.designsystem.components.SplitButtons
 import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.SummaryCard
 import app.tutora.designsystem.components.SummaryTile
@@ -127,7 +128,6 @@ val galleryComponents =
         "EmptyState",
         "TimerRing",
         "SummaryCard",
-        "SplitButtons",
         "MonthGrid",
         "MonthPicker",
     )
@@ -278,6 +278,14 @@ fun GallerySections() {
             24_000,
             expectedCents = 38_000,
             expectedLabel = "de R$ 380,00 previstos",
+            stats = listOf(EarningsStat("Semana", 118_000), EarningsStat("Alunos devem", 56_000, MoneyTone.OWED)),
+            onCard = true,
+        )
+        EarningsSummary(
+            "Ganho hoje",
+            24_000,
+            expectedCents = 38_000,
+            expectedLabel = "de R$ 380,00 previstos",
             stats =
                 listOf(
                     EarningsStat("Semana", 118_000),
@@ -290,24 +298,12 @@ fun GallerySections() {
         SummaryCard(label = "Saldo de outubro") {
             Text("Saldo de outubro", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.onHeaderMuted)
             Money(48_000, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 SummaryTile("Semana", 118_000)
                 SummaryTile("Pago", 24_000, SummaryTone.PAID)
                 SummaryTile("Deve", 24_000, SummaryTone.OWED, onClick = {})
             }
-            SplitButtons(
-                "Relatório",
-                {},
-                "Registrar pagamento",
-                {},
-                firstIcon = IconName.FILE,
-                secondIcon = IconName.WALLET,
-                onSummary = true,
-            )
         }
-    }
-    Section("SplitButtons") {
-        SplitButtons("Marcar como dada", {}, "Iniciar aula", {}, secondIcon = IconName.PLAY)
     }
     Section("MonthGrid") {
         var day by remember { mutableIntStateOf(30) }
@@ -316,7 +312,7 @@ fun GallerySections() {
             (28..30).map { MonthDay(it, false, emptyList(), 0, "$it de setembro") } +
                 (1..31).map { d ->
                     val dots = if (d % 7 == 5) emptyList() else tones.take(1 + d % 3).let { if (d == 26) tones else it }
-                    MonthDay(d, true, dots.take(3), (dots.size - 3).coerceAtLeast(0), "$d de outubro, ${dots.size} aulas", today = d == 26)
+                    MonthDay(d, true, dots.take(2), (dots.size - 2).coerceAtLeast(0), "$d de outubro, ${dots.size} aulas", today = d == 26)
                 } + MonthDay(1, false, emptyList(), 0, "1 de novembro")
         MonthGrid(
             days,

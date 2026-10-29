@@ -93,7 +93,7 @@ fun RegistryScreen(
                             else -> R.string.students_new
                         },
                     ),
-                    IconButtonVariant.ACCENT,
+                    IconButtonVariant.ACCENT_SQUARE,
                 ) {
                     nav.navigate(
                         when (view) {

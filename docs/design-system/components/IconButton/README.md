@@ -27,4 +27,4 @@ interface IconButtonProps {
 ```
 
 ## 2026 look (spec 016)
-Round, at least 48 dp. `ACCENT` is the Nova aula button: a 56 dp rounded square (`radius-2xl`) in the highlight color. `ON_PRIMARY` sits on a `SummaryCard` and uses `onHeaderFill()`.
+Round, at least 48 dp. `ACCENT_SQUARE` is an add button in a tab header (Cadastro): a 56 dp rounded square (`radius-2xl`) in the highlight color. On Hoje's Topo band the + is the round `ACCENT`. `ON_PRIMARY` sits on the Topo color and uses `onHeaderFill()`.

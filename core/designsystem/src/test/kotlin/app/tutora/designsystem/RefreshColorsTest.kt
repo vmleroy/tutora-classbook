@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.EarningsSummary
+import app.tutora.designsystem.components.Fab
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
@@ -102,17 +103,30 @@ class RefreshColorsTest {
     ) = assertEquals(Integer.toHexString(expected.toArgb()), Integer.toHexString(actual))
 
     @Test
-    fun `AC-016-6 Nova aula is a rounded square in the highlight color`() {
-        show { Box(Modifier.testTag("fab")) { IconButton(IconName.PLUS, "Nova aula", {}, variant = IconButtonVariant.ACCENT) } }
-        val bounds = compose.onNodeWithTag("fab").fetchSemanticsNode().size
+    fun `AC-016-6 Nova aula is in the highlight color, round on Hoje and a rounded square when it floats`() {
+        show {
+            Column {
+                Box(Modifier.testTag("fab")) { Fab({}) }
+                Box(Modifier.testTag("round")) { IconButton(IconName.PLUS, "Nova aula", {}, variant = IconButtonVariant.ACCENT) }
+            }
+        }
         val density =
             compose
                 .onRoot()
                 .fetchSemanticsNode()
                 .layoutInfo.density.density
-        assertEquals(Size.fab.value, bounds.width / density, 0.5f)
+        assertEquals(
+            Size.fab.value,
+            compose
+                .onNodeWithTag("fab")
+                .fetchSemanticsNode()
+                .size.width / density,
+            0.5f,
+        )
         // (8, 8) is outside a circle of that size but inside the rounded square.
         same(colors.accent, pixel("fab", 8.dp, 8.dp))
+        same(colors.background, pixel("round", 6.dp, 6.dp))
+        same(colors.accent, pixel("round", 10.dp, 24.dp))
     }
 
     @Test
@@ -188,7 +202,7 @@ class RefreshColorsTest {
             Column(Modifier.testTag("page").padding(16.dp)) {
                 EarningsSummary("Ganho hoje", 24_000)
                 Box(Modifier.testTag("btn")) { Button("Registrar pagamento", {}) }
-                Box(Modifier.testTag("fab")) { IconButton(IconName.PLUS, "Nova aula", {}, variant = IconButtonVariant.ACCENT) }
+                Box(Modifier.testTag("fab")) { Fab({}) }
                 Card(Modifier.testTag("card")) {
                     Row {
                         Box(Modifier.width(4.dp))

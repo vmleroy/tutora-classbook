@@ -1,14 +1,21 @@
 package app.tutora.ui.schedule
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,17 +28,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.BottomSheet
+import app.tutora.designsystem.components.Button
+import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DotTone
 import app.tutora.designsystem.components.EmptyState
-import app.tutora.designsystem.components.HeaderAction
+import app.tutora.designsystem.components.Fab
+import app.tutora.designsystem.components.Icon
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
@@ -41,10 +56,11 @@ import app.tutora.designsystem.components.MonthDay
 import app.tutora.designsystem.components.MonthGrid
 import app.tutora.designsystem.components.MonthPicker
 import app.tutora.designsystem.components.PickerMonth
-import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
+import app.tutora.designsystem.tokens.TutoraTokens.Radius
+import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.DayKind
 import app.tutora.domain.Lesson
@@ -129,75 +145,118 @@ fun AgendaScreen(nav: NavHostController) {
     val startHour = firstLesson?.let { localOf(it.startAt, zone).hour } ?: localOf(now, zone).hour
     val scroll = rememberScrollState()
     val title = monthYear(selected, language)
-    Column(
+    val c = TutoraTheme.colors
+    val pickLabel = stringResource(R.string.schedule_pickMonth, title)
+    Box(
         Modifier
             .fillMaxSize()
-            .background(TutoraTheme.colors.background)
-            .safeDrawingPadding()
+            .background(c.background)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .testTag("schedule-screen"),
     ) {
-        ScreenHeader(
-            title,
-            eyebrow = stringResource(R.string.tab_schedule),
-            onTitle = { picking = true },
-            titleLabel = stringResource(R.string.schedule_pickMonth, title),
-            actions =
-                listOf(
-                    HeaderAction(IconName.CALENDAR, stringResource(R.string.schedule_today), text = true) {
-                        selectedText = today.toString()
-                    },
-                    HeaderAction(IconName.PLUS, stringResource(R.string.lesson_new), IconButtonVariant.ACCENT) {
-                        nav.navigate(LessonNew(selected.toString()))
-                    },
-                ),
-        )
-        Column(Modifier.padding(horizontal = Spacing.s5), verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            SegmentedControl(
-                listOf(
-                    AgendaView.DAY to stringResource(R.string.schedule_day),
-                    AgendaView.WEEK to stringResource(R.string.schedule_week),
-                    AgendaView.MONTH to stringResource(R.string.schedule_month),
-                ),
-                view,
-                { viewName = it.name },
-                stringResource(R.string.tab_schedule),
-                size = ControlSize.SM,
-            )
-            if (view != AgendaView.MONTH) {
-                WeekPicker(selected, today, { selectedText = it.toString() }, byDay, horizon)
-                if (view == AgendaView.DAY) DayHeader(selected, today, dayLessons)
+        Column(Modifier.fillMaxSize()) {
+            // A white card on top holds the title, the month, the view switch and the week; its days
+            // sit right over the grid's columns (Victor, 28 Oct 2026).
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(bottomStart = Radius.x3xl, bottomEnd = Radius.x3xl))
+                    .background(c.surface)
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
+                    .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s4, bottom = Spacing.s3),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    // "Agenda" over the month and year, which opens the month picker (AC-016-13, 20).
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .testTag("header-title")
+                            .clip(RoundedCornerShape(Radius.lg))
+                            .clickable(role = Role.Button) { picking = true }
+                            .semantics(mergeDescendants = true) { contentDescription = pickLabel },
+                    ) {
+                        Text(
+                            stringResource(R.string.tab_schedule),
+                            style = TutoraTheme.type.titleXl,
+                            color = c.ink,
+                            modifier = Modifier.semantics { heading() },
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                            Text(title, style = TutoraTheme.type.bodyStrong, color = c.inkMuted)
+                            Icon(IconName.CHEVRON_DOWN, tint = c.inkMuted, size = Size.iconSm)
+                        }
+                    }
+                    Button(
+                        stringResource(R.string.schedule_today),
+                        { selectedText = today.toString() },
+                        variant = ButtonVariant.OUTLINE,
+                        size = ControlSize.SM,
+                    )
+                }
+                SegmentedControl(
+                    listOf(
+                        AgendaView.DAY to stringResource(R.string.schedule_day),
+                        AgendaView.WEEK to stringResource(R.string.schedule_week),
+                        AgendaView.MONTH to stringResource(R.string.schedule_month),
+                    ),
+                    view,
+                    { viewName = it.name },
+                    stringResource(R.string.tab_schedule),
+                    size = ControlSize.SM,
+                )
+                if (view != AgendaView.MONTH) WeekPicker(selected, today, { selectedText = it.toString() }, byDay, horizon)
+            }
+            if (view == AgendaView.DAY) {
+                Column(Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3)) { DayHeader(selected, today, dayLessons) }
+            }
+            when {
+                view == AgendaView.MONTH ->
+                    Column(
+                        Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Spacing.s5, vertical = Spacing.s3),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+                    ) {
+                        MonthView(
+                            month,
+                            cells,
+                            selected,
+                            today,
+                            byDay,
+                            { selectedText = it.toString() },
+                        ) { nav.navigate(LessonDetail(it.id)) }
+                    }
+                lessons.isEmpty() ->
+                    Column(Modifier.padding(horizontal = Spacing.s5)) {
+                        EmptyState(
+                            stringResource(R.string.empty_schedule_title),
+                            icon = IconName.CALENDAR,
+                            body = stringResource(R.string.empty_schedule_body),
+                        )
+                    }
+                else ->
+                    Column(Modifier.padding(horizontal = Spacing.s5, vertical = Spacing.s2)) {
+                        DayGrid(
+                            days =
+                                if (view ==
+                                    AgendaView.WEEK
+                                ) {
+                                    (0 until 7).map { monday.plus(DatePeriod(days = it)) }
+                                } else {
+                                    listOf(selected)
+                                },
+                            byDay = byDay,
+                            zone = zone,
+                            nextId = next?.id,
+                            compact = view == AgendaView.WEEK,
+                            startHour = startHour,
+                            scroll = scroll,
+                            onOpen = { nav.navigate(LessonDetail(it.id)) },
+                        )
+                    }
             }
         }
-        when {
-            view == AgendaView.MONTH ->
-                Column(
-                    Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Spacing.s5, vertical = Spacing.s3),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.s3),
-                ) {
-                    MonthView(month, cells, selected, today, byDay, { selectedText = it.toString() }) { nav.navigate(LessonDetail(it.id)) }
-                }
-            lessons.isEmpty() ->
-                Column(Modifier.padding(horizontal = Spacing.s5)) {
-                    EmptyState(
-                        stringResource(R.string.empty_schedule_title),
-                        icon = IconName.CALENDAR,
-                        body = stringResource(R.string.empty_schedule_body),
-                    )
-                }
-            else ->
-                Column(Modifier.padding(horizontal = Spacing.s5, vertical = Spacing.s2)) {
-                    DayGrid(
-                        days = if (view == AgendaView.WEEK) (0 until 7).map { monday.plus(DatePeriod(days = it)) } else listOf(selected),
-                        byDay = byDay,
-                        zone = zone,
-                        nextId = next?.id,
-                        compact = view == AgendaView.WEEK,
-                        startHour = startHour,
-                        scroll = scroll,
-                        onOpen = { nav.navigate(LessonDetail(it.id)) },
-                    )
-                }
-        }
+        // The + floats over the Agenda, as on the mockup (AC-005-1).
+        Fab({ nav.navigate(LessonNew(selected.toString())) }, Modifier.align(Alignment.BottomEnd).padding(Spacing.s5))
     }
     if (picking) {
         MonthPickerSheet(month, today, { picking = false }, onToday = {

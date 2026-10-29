@@ -9,5 +9,5 @@ Its content, and an optional `label` read aloud for the card. Inside it, `Summar
 - One per screen, near the top. Never a second Topo-colored surface.
 - Text on it is `onHeader` or `onHeaderMuted`; the headline amount is `Money` with `MoneyTone.ON_HEADER` (earnings-on-header, the highlight color when it holds 3:1).
 - `SummaryTone.OWED` sits in the red tile and `PAID` in the green, the same in every theme. `PLAIN` tiles use `onHeaderFill()`: the Topo color moved away from its text, so contrast only goes up.
-- A control on it (a progress bar, the first of `SplitButtons`, an `IconButton` `ON_PRIMARY`) uses the same `onHeaderFill()`.
+- A control on it (a progress bar, an `IconButton` `ON_PRIMARY`) uses the same `onHeaderFill()`. Tiles in a row share one height.
 - Corners 28, padding 16, no shadow.

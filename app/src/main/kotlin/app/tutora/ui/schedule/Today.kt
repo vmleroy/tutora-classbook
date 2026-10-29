@@ -1,8 +1,20 @@
 package app.tutora.ui.schedule
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -13,6 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import app.tutora.R
@@ -27,10 +41,10 @@ import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.LessonRow
-import app.tutora.designsystem.components.ListGroup
+import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SectionHeader
-import app.tutora.designsystem.components.SplitButtons
 import app.tutora.designsystem.components.currentLanguage
+import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Greeting
 import app.tutora.domain.Lesson
@@ -46,7 +60,6 @@ import app.tutora.domain.worth
 import app.tutora.state.LocalServices
 import app.tutora.ui.LessonDetail
 import app.tutora.ui.LessonNew
-import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.clockTime
 import app.tutora.ui.countText
 import app.tutora.ui.durationText
@@ -102,101 +115,154 @@ fun TodayScreen(nav: NavHostController) {
             Greeting.AFTERNOON -> R.string.home_greeting_afternoon
             Greeting.EVENING -> R.string.home_greeting_evening
         }
-    // The date over the greeting, on the background like every header (AC-005-22, AC-016-1).
-    ScreenScaffold(
-        stringResource(g),
-        "today-screen",
-        variant = HeaderVariant.HERO,
-        eyebrow = longDate(local.date, language),
-        actions =
-            listOf(
-                HeaderAction(IconName.PLUS, stringResource(R.string.lesson_new), IconButtonVariant.ACCENT) { nav.navigate(LessonNew()) },
-            ),
+    val c = TutoraTheme.colors
+    // The date and greeting on the Topo band, with the earnings card over its lower edge
+    // (AC-005-22, AC-016-1; Victor, 28 Oct 2026).
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(c.background)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+            .verticalScroll(rememberScrollState())
+            .testTag("today-screen"),
     ) {
-        LiveBanner(nav)
-        TodayEarnings(nav, lessons, local.date)
-        next?.let { n ->
-            Card(label = stringResource(R.string.home_next)) {
-                Text(
-                    "${stringResource(R.string.home_next)} · ${whenText(n)}",
-                    style = TutoraTheme.type.caption,
-                    color = TutoraTheme.colors.inkMuted,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3), verticalAlignment = Alignment.CenterVertically) {
-                    Avatar(initials(n.whoName), n.whoTag)
-                    Column(Modifier.weight(1f)) {
-                        Text(n.whoName, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
-                        Text(
-                            listOfNotNull(lessonSubtitle(n), rate(n)).joinToString(" · "),
-                            style = TutoraTheme.type.meta,
-                            color = TutoraTheme.colors.inkMuted,
-                        )
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .testTag("today-band")
+                .background(c.header)
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+        ) {
+            ScreenHeader(
+                stringResource(g),
+                variant = HeaderVariant.HERO,
+                eyebrow = longDate(local.date, language),
+                actions =
+                    listOf(
+                        HeaderAction(
+                            IconName.PLUS,
+                            stringResource(R.string.lesson_new),
+                            IconButtonVariant.ACCENT,
+                        ) { nav.navigate(LessonNew()) },
+                    ),
+            )
+        }
+        Box(
+            Modifier
+                .drawBehind {
+                    drawRect(
+                        c.header,
+                        size =
+                            androidx.compose.ui.geometry
+                                .Size(size.width, Size.touch.toPx()),
+                    )
+                }.padding(horizontal = Spacing.s5),
+        ) { TodayEarnings(nav, lessons, local.date) }
+        Column(
+            Modifier.padding(horizontal = Spacing.s5, vertical = Spacing.s4),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s4),
+        ) {
+            LiveBanner(nav)
+            next?.let { n ->
+                Card(label = stringResource(R.string.home_next)) {
+                    Text(
+                        "${stringResource(R.string.home_next)} · ${whenText(n)}",
+                        style = TutoraTheme.type.caption,
+                        color = TutoraTheme.colors.inkMuted,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3), verticalAlignment = Alignment.CenterVertically) {
+                        Avatar(initials(n.whoName), n.whoTag)
+                        Column(Modifier.weight(1f)) {
+                            Text(n.whoName, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
+                            Text(
+                                listOfNotNull(lessonSubtitle(n), rate(n)).joinToString(" · "),
+                                style = TutoraTheme.type.meta,
+                                color = TutoraTheme.colors.inkMuted,
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                clockTime(localOf(n.startAt, zone).time, language),
+                                style = TutoraTheme.type.section.copy(fontFeatureSettings = "tnum"),
+                                color = TutoraTheme.colors.ink,
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                            Text(durationText(n.plannedMin), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+                        }
                     }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            clockTime(localOf(n.startAt, zone).time, language),
-                            style = TutoraTheme.type.section.copy(fontFeatureSettings = "tnum"),
-                            color = TutoraTheme.colors.ink,
-                            maxLines = 1,
-                            softWrap = false,
-                        )
-                        Text(durationText(n.plannedMin), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+                    // Iniciar aula when the next class is today, while the timer is on (AC-007-1, 3); with
+                    // Marcar como dada antes do horário, Marcar como dada beside it (AC-006-25, AC-016-5).
+                    val canStart = localOf(n.startAt, zone).date == local.date && settings?.liveTimer != false
+                    val canMark = settings?.earlyDone == true
+                    when {
+                        canStart && canMark ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                                Button(
+                                    stringResource(R.string.lesson_markDone),
+                                    { marking = n },
+                                    Modifier.weight(1f),
+                                    variant = ButtonVariant.OUTLINE,
+                                    icon = IconName.CHECK,
+                                )
+                                Button(
+                                    stringResource(R.string.live_start),
+                                    { startLesson(n.id) },
+                                    Modifier.weight(1f),
+                                    variant = ButtonVariant.ACCENT,
+                                    icon = IconName.PLAY,
+                                )
+                            }
+                        canStart ->
+                            Button(
+                                stringResource(R.string.live_start),
+                                { startLesson(n.id) },
+                                fullWidth = true,
+                                variant = ButtonVariant.ACCENT,
+                                icon = IconName.PLAY,
+                            )
+                        canMark ->
+                            Button(
+                                stringResource(R.string.lesson_markDone),
+                                { marking = n },
+                                fullWidth = true,
+                                variant = ButtonVariant.OUTLINE,
+                            )
                     }
-                }
-                // Iniciar aula when the next class is today, while the timer is on (AC-007-1, 3); with
-                // Marcar como dada antes do horário it is joined to Marcar como dada (AC-006-25, AC-016-5).
-                val canStart = localOf(n.startAt, zone).date == local.date && settings?.liveTimer != false
-                val canMark = settings?.earlyDone == true
-                when {
-                    canStart && canMark ->
-                        SplitButtons(
-                            stringResource(R.string.lesson_markDone),
-                            { marking = n },
-                            stringResource(R.string.live_start),
-                            { startLesson(n.id) },
-                            secondIcon = IconName.PLAY,
-                        )
-                    canStart -> Button(stringResource(R.string.live_start), { startLesson(n.id) }, fullWidth = true, icon = IconName.PLAY)
-                    canMark ->
-                        Button(
-                            stringResource(R.string.lesson_markDone),
-                            { marking = n },
-                            fullWidth = true,
-                            variant = ButtonVariant.OUTLINE,
-                        )
                 }
             }
-        }
-        PendingAlert(nav)
-        if (lessons.isEmpty()) {
-            EmptyState(
-                stringResource(R.string.empty_today_title),
-                icon = IconName.CALENDAR,
-                body = stringResource(R.string.empty_today_body),
-            )
-        } else {
-            SectionHeader(
-                stringResource(R.string.home_lessonsToday),
-                aside = countText(R.string.schedule_count_zero, R.plurals.schedule_count, lessons.size),
-            )
-            ListGroup(
-                lessons.map<Lesson, @Composable () -> Unit> { l ->
-                    {
-                        // Done, cancelled and missed classes say so; a scheduled one shows its value (AC-006-15).
-                        val badge = statusBadge(l)
-                        LessonRow(
-                            clockTime(localOf(l.startAt, zone).time, language),
-                            l.whoTag,
-                            l.whoName,
-                            subtitle = "${lessonSubtitle(l)} · ${minutesText(l.plannedMin)}",
-                            status = badge?.let { it.first to it.second },
-                            trailing = worthText(l.worth()),
-                            onClick = { nav.navigate(LessonDetail(l.id)) },
-                            statusIcon = badge?.third,
-                        )
+            PendingAlert(nav)
+            if (lessons.isEmpty()) {
+                EmptyState(
+                    stringResource(R.string.empty_today_title),
+                    icon = IconName.CALENDAR,
+                    body = stringResource(R.string.empty_today_body),
+                )
+            } else {
+                SectionHeader(
+                    stringResource(R.string.home_lessonsToday),
+                    aside = countText(R.string.schedule_count_zero, R.plurals.schedule_count, lessons.size),
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    lessons.forEach { l ->
+                        run {
+                            // Done, cancelled and missed classes say so; a scheduled one shows its value (AC-006-15).
+                            val badge = statusBadge(l)
+                            LessonRow(
+                                clockTime(localOf(l.startAt, zone).time, language),
+                                l.whoTag,
+                                l.whoName,
+                                subtitle = "${lessonSubtitle(l)} · ${minutesText(l.plannedMin)}",
+                                status = badge?.let { it.first to it.second },
+                                trailing = worthText(l.worth()),
+                                onClick = { nav.navigate(LessonDetail(l.id)) },
+                                statusIcon = badge?.third,
+                                card = true,
+                            )
+                        }
                     }
-                },
-            )
+                }
+            }
         }
     }
     marking?.let { l ->

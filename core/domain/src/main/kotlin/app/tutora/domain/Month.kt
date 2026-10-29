@@ -54,7 +54,7 @@ fun Lesson.dayKind(): DayKind? =
     }
 
 /** Dots shown under one day; more than this reads "+N". */
-const val MAX_DAY_DOTS = 3
+const val MAX_DAY_DOTS = 2
 
 /** The dots of each day, in time order, after the horizon none (AC-016-17, 23). */
 fun dayDots(

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -231,8 +233,9 @@ data class EarningsStat(
 )
 
 /**
- * Earned vs expected with a bar and up to three compact stats (Hoje, Ganhos), on a
- * [SummaryCard]: owed stats sit in the red tile and paid ones in the green (spec 016).
+ * Earned vs expected with a bar and up to three compact stats. On Ganhos it sits on a
+ * [SummaryCard] with owed stats in the red tile and paid in the green; with [onCard] it is the
+ * white card of Hoje, over the Topo band, with the stats as plain columns (spec 016).
  */
 @Composable
 fun EarningsSummary(
@@ -247,29 +250,47 @@ fun EarningsSummary(
     receivedLabel: String = "",
     /** A line under the stats ("comissão dos locais: R$ 30,00"). */
     footnote: String? = null,
+    onCard: Boolean = false,
 ) {
     val c = TutoraTheme.colors
-    SummaryCard(modifier, label = title) {
+    val muted = if (onCard) c.inkMuted else c.onHeaderMuted
+    val body: @Composable ColumnScope.() -> Unit = {
         // The title and what was expected share a line, so the amount below has the full width.
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(title, style = TutoraTheme.type.bodyStrong, color = c.onHeaderMuted, modifier = Modifier.weight(1f))
+            Text(title, style = TutoraTheme.type.bodyStrong, color = muted, modifier = Modifier.weight(1f))
             if (expectedCents != null && expectedCents > 0 && expectedLabel != null) {
-                Text(expectedLabel, style = TutoraTheme.type.meta, color = c.onHeaderMuted)
+                Text(expectedLabel, style = TutoraTheme.type.meta, color = muted)
             }
         }
-        Money(earnedCents, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
+        Money(earnedCents, size = MoneySize.XL, tone = if (onCard) MoneyTone.EARNINGS else MoneyTone.ON_HEADER)
         if (expectedCents != null && expectedCents > 0) {
-            ProgressBar(earnedCents.toFloat() / expectedCents, expectedLabel ?: title, track = ProgressTrack.ON_HEADER)
+            ProgressBar(
+                earnedCents.toFloat() / expectedCents,
+                expectedLabel ?: title,
+                track = if (onCard) ProgressTrack.SUNKEN else ProgressTrack.ON_HEADER,
+            )
         }
         if (receivedShare != null) {
             ProgressBar(receivedShare, receivedLabel, tone = ProgressTone.SUCCESS, track = ProgressTrack.DANGER)
         }
-        if (stats.isNotEmpty()) {
+        if (stats.isNotEmpty() && onCard) {
+            Box(Modifier.fillMaxWidth().height(Size.border).background(c.lineSoft))
+            // Equal columns, so each label and amount starts at the same place (spec 016).
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                stats.forEach { s ->
+                    Column(Modifier.weight(1f).testTag("summary-stat")) {
+                        Text(s.label, style = TutoraTheme.type.meta, color = c.inkMuted, maxLines = 1)
+                        Money(s.cents, size = MoneySize.MD, tone = s.tone, compact = true)
+                    }
+                }
+            }
+        } else if (stats.isNotEmpty()) {
+            // Tiles share one height, whatever their labels wrap to.
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 stats.forEach { s ->
                     val tone =
                         when {
@@ -282,8 +303,9 @@ fun EarningsSummary(
                 }
             }
         }
-        if (footnote != null) Text(footnote, style = TutoraTheme.type.meta, color = c.onHeaderMuted)
+        if (footnote != null) Text(footnote, style = TutoraTheme.type.meta, color = muted)
     }
+    if (onCard) Card(modifier, label = title, content = body) else SummaryCard(modifier, label = title, content = body)
 }
 
 /** One month in [MonthBars]: its label, the bar's total and the part filled in. */

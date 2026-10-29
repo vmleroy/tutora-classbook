@@ -5,8 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -100,6 +99,7 @@ fun RowScope.SummaryTile(
     Column(
         Modifier
             .weight(1f)
+            .fillMaxHeight()
             .testTag("summary-tile-${tone.name.lowercase()}")
             .clip(RoundedCornerShape(Radius.xl))
             .background(bg)
@@ -115,73 +115,5 @@ fun RowScope.SummaryTile(
         // The label may wrap ("Alunos devem" in a third of the card); the amount never does.
         Text(label, style = TutoraTheme.type.meta, color = sub)
         Text(text, style = TutoraTheme.type.moneyMd, color = fg, maxLines = 1)
-    }
-}
-
-/**
- * Two actions that belong together, joined: [first] on a soft fill, [second] the main one in
- * the Botões principais color. On a [SummaryCard], [onSummary] tints the first with on-header.
- */
-@Composable
-fun SplitButtons(
-    first: String,
-    onFirst: () -> Unit,
-    second: String,
-    onSecond: () -> Unit,
-    modifier: Modifier = Modifier,
-    firstIcon: IconName? = null,
-    secondIcon: IconName? = null,
-    onSummary: Boolean = false,
-) {
-    val c = TutoraTheme.colors
-    val outer = Radius.x3xl
-    val inner = Radius.xs
-    val (firstBg, firstFg) = if (onSummary) onHeaderFill() to c.onHeader else c.primarySoft to c.ink
-
-    @Composable
-    fun RowScope.Half(
-        text: String,
-        icon: IconName?,
-        bg: Color,
-        fg: Color,
-        shape: RoundedCornerShape,
-        tag: String,
-        onClick: () -> Unit,
-    ) {
-        Row(
-            Modifier
-                .weight(1f)
-                .sizeIn(minHeight = Size.controlLg)
-                .testTag(tag)
-                .clip(shape)
-                .background(bg)
-                .clickable(role = Role.Button, onClick = onClick)
-                .padding(horizontal = Spacing.s3, vertical = Spacing.s2),
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s1_5, Alignment.CenterHorizontally),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (icon != null) Icon(icon, tint = fg, size = Size.iconSm)
-            Text(text, style = TutoraTheme.type.button, color = fg)
-        }
-    }
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-        Half(
-            first,
-            firstIcon,
-            firstBg,
-            firstFg,
-            RoundedCornerShape(topStart = outer, bottomStart = outer, topEnd = inner, bottomEnd = inner),
-            "split-first",
-            onFirst,
-        )
-        Half(
-            second,
-            secondIcon,
-            c.btnPrimary,
-            c.onBtnPrimary,
-            RoundedCornerShape(topStart = inner, bottomStart = inner, topEnd = outer, bottomEnd = outer),
-            "split-second",
-            onSecond,
-        )
     }
 }
