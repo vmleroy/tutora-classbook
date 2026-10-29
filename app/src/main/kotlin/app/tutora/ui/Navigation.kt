@@ -92,6 +92,9 @@ fun NavHostController.openTab(graph: Any) {
 /** Ajustes › Seus dados (spec 010). */
 @Serializable data object PersonalData
 
+/** Ajustes › Geral › Calendário (spec 012). */
+@Serializable data object CalendarHome
+
 /** Ajustes › Backup e planilha (spec 011); Hoje's backup alert opens it too. */
 @Serializable data object BackupHome
 
@@ -241,13 +244,18 @@ fun TutoraNav(
                             appInfo,
                             schemaVersion,
                             { nav.navigate(PersonalData) },
-                        ) { nav.navigate(BackupHome) }
+                            { nav.navigate(BackupHome) },
+                        ) { nav.navigate(CalendarHome) }
                     }
                     composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
                 }
                 composable<BackupHome> {
                     app.tutora.ui.backup
                         .BackupScreen(nav)
+                }
+                composable<CalendarHome> {
+                    app.tutora.ui.calendar
+                        .CalendarScreen(nav)
                 }
                 composable<PlaceDetail> { PlaceDetailScreen(nav, it.toRoute<PlaceDetail>().id) }
                 composable<PlaceEdit> { PlaceEditScreen(nav, it.toRoute<PlaceEdit>().id) }

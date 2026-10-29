@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.Dp
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.AgendaBlock
+import app.tutora.designsystem.components.BusyBlock
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
@@ -44,6 +45,7 @@ import app.tutora.domain.Who
 import app.tutora.domain.layoutDay
 import app.tutora.domain.localOf
 import app.tutora.domain.weekStart
+import app.tutora.ui.clockTime
 import app.tutora.ui.dayShortMonth
 import app.tutora.ui.hourMark
 import app.tutora.ui.placeName
@@ -51,6 +53,7 @@ import app.tutora.ui.tag
 import app.tutora.ui.weekdayShort
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
@@ -148,12 +151,34 @@ fun DayGrid(
     scroll: ScrollState,
     onOpen: (Lesson) -> Unit,
     chosen: LocalDate? = null,
+    /** Other appointments from the phone's calendars, behind the classes (AC-012-17, 18). */
+    busy: (LocalDate) -> app.tutora.domain.BusyDay? = { null },
 ) {
     val language = currentLanguage()
     val hour = Size.agendaHour
     val density = LocalDensity.current
     LaunchedEffect(startHour, days) { scroll.scrollTo(with(density) { (hour * (startHour - 1).coerceAtLeast(0)).roundToPx() }) }
     Column(Modifier.verticalScroll(scroll).testTag("day-grid")) {
+        // All-day appointments: a thin band at the top of each day (AC-012-18).
+        val bands = days.associateWith { busy(it)?.bands.orEmpty() }
+        if (bands.values.any { it.isNotEmpty() }) {
+            Row(Modifier.padding(start = LABEL_WIDTH, bottom = Spacing.s1)) {
+                days.forEach { d ->
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.s0_5)) {
+                        bands.getValue(d).forEach {
+                            BusyBlock(
+                                it,
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = Spacing.s0_5)
+                                    .testTag("busy-band"),
+                                band = true,
+                            )
+                        }
+                    }
+                }
+            }
+        }
         Row(Modifier.height(hour * 24)) {
             Box(Modifier.width(LABEL_WIDTH)) {
                 for (h in 0 until 24) {
@@ -204,6 +229,21 @@ fun DayGrid(
                                 .fillMaxWidth()
                                 .height(Size.border)
                                 .background(TutoraTheme.colors.lineSoft),
+                        )
+                    }
+                    // Busy time sits behind the classes and can't be opened (AC-012-17).
+                    busy(date)?.blocks?.forEach { (title, from, to) ->
+                        fun at(m: Int) =
+                            clockTime(LocalTime(m.coerceAtMost(23 * 60 + 59) / 60, m.coerceAtMost(23 * 60 + 59) % 60), language)
+                        BusyBlock(
+                            title,
+                            Modifier
+                                .offset(y = hour * from / 60)
+                                .fillMaxWidth()
+                                .padding(horizontal = Spacing.s0_5)
+                                .testTag("busy-block"),
+                            time = if (compact) null else "${at(from)} – ${at(to)}",
+                            height = (hour * (to - from) / 60).coerceAtLeast(Size.agendaMin / 2),
                         )
                     }
                     lessons.forEachIndexed { i, l ->

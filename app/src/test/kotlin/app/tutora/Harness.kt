@@ -26,6 +26,9 @@ class Harness(
 
     /** What the folder and file pickers answer (spec 011); null is a cancelled picker. */
     val picker = FakeBackupPicker()
+
+    /** What the calendar permission answers (spec 012). */
+    val calendarPermission = FakeCalendarPermission()
     lateinit var nav: NavHostController
 
     init {
@@ -44,6 +47,7 @@ class Harness(
                 LocalServices provides services,
                 app.tutora.adapters.export.LocalExports provides exports,
                 app.tutora.ui.backup.LocalBackupPicker provides picker,
+                app.tutora.ui.calendar.LocalCalendarPermission provides calendarPermission,
             ) { TutoraNav(AppInfo("1.1.0", "7"), services.schemaVersion, nav = nav) }
         }
     }
@@ -93,4 +97,15 @@ class FakeBackupPicker : app.tutora.ui.backup.BackupPicker {
     override fun folder(onPicked: (String?) -> Unit) = onPicked(folderAnswer)
 
     override fun file(onPicked: (String?) -> Unit) = onPicked(fileAnswer)
+}
+
+class FakeCalendarPermission : app.tutora.ui.calendar.CalendarPermission {
+    var answer = true
+    var settingsOpened = false
+
+    override fun request(onResult: (Boolean) -> Unit) = onResult(answer)
+
+    override fun openSettings() {
+        settingsOpened = true
+    }
 }

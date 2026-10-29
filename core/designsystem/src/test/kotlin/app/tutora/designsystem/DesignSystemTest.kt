@@ -115,8 +115,8 @@ class DesignSystemTest {
                 ) { Column(Modifier.verticalScroll(rememberScrollState())) { GallerySections() } }
             }
         }
-        // 30 from spec 002, plus MonthBars (spec 009) and four from spec 016.
-        assertEquals(35, galleryComponents.size)
+        // 30 from spec 002, plus MonthBars (spec 009), four from spec 016 and BusyBlock (spec 012).
+        assertEquals(36, galleryComponents.size)
         for (name in galleryComponents) compose.onNodeWithTag("section-$name").assertExists()
         isDark = true
         compose.waitForIdle()

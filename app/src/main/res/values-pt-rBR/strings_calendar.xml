@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 012: calendar sync, busy time and .ics. -->
+<resources>
+    <string name="cal_screen">Calendário</string>
+    <string name="cal_rowOn">%1$s · atualizado às %2$s</string>
+    <string name="cal_inUse">Em uso</string>
+    <string name="cal_off">Desligado</string>
+    <string name="cal_send">Enviar aulas para o calendário</string>
+    <plurals name="cal_status">
+        <item quantity="one">Atualizado às %1$s · %2$d aula nas próximas 8 semanas</item>
+        <item quantity="many">Atualizado às %1$s · %2$d aulas nas próximas 8 semanas</item>
+        <item quantity="other">Atualizado às %1$s · %2$d aulas nas próximas 8 semanas</item>
+    </plurals>
+    <string name="cal_updating">Atualizando…</string>
+    <string name="cal_noAccess">Sem acesso ao calendário. Permita nas configurações do celular.</string>
+    <string name="cal_openSettings">Abrir configurações</string>
+    <string name="cal_which">Em qual calendário?</string>
+    <string name="cal_own">Só neste aparelho</string>
+    <string name="cal_ownSub">Calendário “Tutora – Aulas”, sem conta</string>
+    <string name="cal_ownName">Tutora – Aulas</string>
+    <string name="cal_busy">Mostrar outros compromissos</string>
+    <string name="cal_busySub">Exibe horários ocupados na Agenda da Tutora</string>
+    <string name="cal_withValue">Incluir valor na descrição</string>
+    <string name="cal_withValueSub">Desligado: o evento mostra só aluno e matéria</string>
+    <string name="cal_note">As aulas vão para a agenda do celular. Para vê-las no Google Agenda ou no Outlook, escolha um calendário da sua conta; criar um chamado “Tutora – Aulas” uma vez em calendar.google.com ou outlook.com deixa as aulas separadas. A Tutora continua sem servidor.</string>
+    <string name="cal_ics">Exportar agenda como .ics</string>
+    <string name="cal_icsFile">Tutora aulas.ics</string>
+    <string name="cal_clean">Limpar eventos do Tutora</string>
+    <plurals name="cal_cleanTitle">
+        <item quantity="one">Apagar %d evento criado pelo Tutora?</item>
+        <item quantity="many">Apagar %d eventos criados pelo Tutora?</item>
+        <item quantity="other">Apagar %d eventos criados pelo Tutora?</item>
+    </plurals>
+    <string name="cal_cleanBody">Seus outros eventos não são tocados.</string>
+    <string name="cal_cleanNone">Nenhum evento do Tutora no celular.</string>
+    <string name="cal_delete">Apagar</string>
+    <string name="cal_cancelledPrefix">"Cancelada · "</string>
+    <string name="cal_missedPrefix">"Faltou · "</string>
+    <string name="cal_value">Valor: %1$s</string>
+    <string name="cal_footer">Criado pelo Tutora</string>
+</resources>
