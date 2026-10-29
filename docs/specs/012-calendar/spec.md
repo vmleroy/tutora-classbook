@@ -1,6 +1,6 @@
 # Spec 012: Calendar sync and .ics
 
-Status: draft
+Status: ready
 Depends on: 005 Schedule (classes 8 weeks ahead, the Agenda), 006 Lessons (done, cancelled and missed classes), 011 Backup (a restore replaces every class), 016 Visual refresh (the look of Ajustes and the Agenda)
 Mockups: docs/mockups/Calendar.dc.html, docs/mockups/Settings.dc.html (the "Sincronizar calendário" row)
 
@@ -76,7 +76,4 @@ The teacher already lives in Google Calendar or Outlook for the rest of their li
 
 Answered by Victor on 29 Oct 2026: cancelled and missed classes stay in the calendar, marked (AC-012-6); turning sync off removes Tutora's calendar (AC-012-13); the title is who and the subject (AC-012-6); busy time shows on Dia and Semana from all the phone's other calendars (AC-012-17).
 
-Still assumed, for Victor to confirm:
-
-- **Past classes:** only today onwards is sent, and past events are left alone. Should the first sync also send the past month?
-- **Where in Ajustes:** in Geral, as the product doc has it.
+Also confirmed by Victor on 29 Oct 2026: only classes from today onwards are sent, never past ones (AC-012-6, 9), and Calendário sits in Ajustes › Geral (AC-012-1).
