@@ -24,13 +24,13 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 ### A backup by hand
 
-- **AC-011-2.** "Backup completo (.json)" makes one file with every student, place, group, link, schedule, class, timer, payment, package and setting, and opens the phone's share sheet with it. The file is named with the date and time, "Tutora backup 2026-10-29 20-00.json".
+- **AC-011-2.** "Backup completo (.json)" makes one file with every student, place, group, link, schedule, class, timer, payment, package and setting, and puts it where the teacher can find it: with a backup folder chosen, it is saved there and the page says "Salvo em <pasta>", and "Compartilhar backup" still opens the share sheet; with none, it opens the share sheet (Victor, 29 Oct 2026). The file is named with the date and time, "Tutora backup 2026-10-29 20-00.json".
 - **AC-011-3.** A backup carries the app's name, the version of its data and when it was made, so a later Tutora can read an older backup.
 - **AC-011-4.** Making a backup changes nothing in the app's data except the date of the last backup.
 
 ### Automatic backup
 
-- **AC-011-5.** "Backup automático" is off at first. Turning it on asks for a folder with the phone's folder picker (which can be a Google Drive, OneDrive or phone folder); cancelling the picker leaves it off. The page then shows "Salvar em <folder>" with "Trocar".
+- **AC-011-5.** "Backup automático" is off at first. Turning it on asks for a folder with the phone's folder picker (which can be a Google Drive, OneDrive or phone folder); cancelling the picker leaves it off. The page then shows "Salvar em <folder>" with "Trocar". The folder row is always there, "Escolher pasta" until one is chosen, so the folder can be picked or changed with automatic backup on or off; turning it off keeps the folder (Victor, 29 Oct 2026).
 - **AC-011-6.** It runs Todo dia, Toda semana or Todo mês (Toda semana at first), in the evening, at 20:00. The line under the switch reads "Próximo: dom, 1 nov, 20:00 · último ontem", or "Desligado · só backup manual" when off.
 - **AC-011-7.** "Guardar os últimos N backups" (5 at first, from 1 to 30, with − and +) keeps only the newest N files Tutora wrote in that folder; older ones are deleted. Files Tutora didn't write there are never touched.
 - **AC-011-8.** If a run was missed (the phone was off, or the battery saver held it back), the backup is made the next time Tutora opens, once, not once per missed run.
@@ -42,7 +42,7 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 ### Recentes
 
-- **AC-011-11.** Recentes lists the last 5 backups, newest first, with the day and time, how it was made ("Automático · Google Drive" or "Manual · compartilhado") and its size; a failed automatic run shows in red with "Falhou". Tapping an automatic backup reads it back from its folder and asks with the same confirmation as Restaurar backup (AC-011-13); if the file is no longer there, the page says "Este backup não está mais na pasta." A shared backup can't be tapped: Tutora keeps no copy of it (Victor, 29 Oct 2026, replacing "a list only").
+- **AC-011-11.** Recentes lists the last 5 backups, newest first, with the day and time, how it was made ("Automático · Google Drive" or "Manual · compartilhado") and its size; a failed automatic run shows in red with "Falhou". Tapping a backup saved in the folder, automatic or by hand, reads it back from there and asks with the same confirmation as Restaurar backup (AC-011-13); if the file is no longer there, the page says "Este backup não está mais na pasta." A shared backup can't be tapped: Tutora keeps no copy of it (Victor, 29 Oct 2026, replacing "a list only").
 
 ### Restore
 

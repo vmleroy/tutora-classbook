@@ -112,6 +112,43 @@ class BackupScreensTest {
     }
 
     @Test
+    fun `AC-011-5 the folder can be chosen and changed with automatic backup off`() {
+        h.picker.folderAnswer = "content://tree/downloads"
+        h.show(compose)
+        h.go(compose, BackupHome)
+        click("Escolher pasta")
+        h.awaitDb(compose) {
+            h.services.backups
+                .state()
+                .folderUri
+                .isNotEmpty()
+        }
+        h.settle(compose)
+        exists("Salvar em Tutora backups")
+        exists("Desligado · só backup manual")
+    }
+
+    @Test
+    fun `AC-011-2 with a folder chosen, Backup completo saves the file there and says so`() {
+        runBlocking { h.services.backups.setFolder("content://tree/downloads", "Download") }
+        h.show(compose)
+        h.go(compose, BackupHome)
+        click("Backup completo (.json)")
+        h.awaitDb(compose) {
+            h.t.folder.files
+                .isNotEmpty()
+        }
+        h.settle(compose)
+        exists("Salvo em Download")
+        assertTrue(
+            h.t.folder.files.keys
+                .single()
+                .startsWith("Tutora backup 2026-10-26"),
+        )
+        assertTrue(h.exports.shared.isEmpty())
+    }
+
+    @Test
     fun `AC-011-6 the switch's line says when the next backup runs`() {
         runBlocking { h.services.backups.setAuto(true, BackupEvery.WEEK, 5, "content://tree/tutora", "Tutora backups") }
         h.show(compose)

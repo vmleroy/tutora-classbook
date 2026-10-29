@@ -183,24 +183,50 @@ class Backups(
         return name to bytes
     }
 
-    /** Writes a backup to the folder, keeps the newest N there, and plans the next run (AC-011-6, 7, 9). */
+    /** The automatic run: a backup in the folder, then the next run planned (AC-011-6, 7, 9). */
     suspend fun runAuto() {
         val s = store.load()
         if (!s.auto || s.folderUri.isEmpty()) return
+        toFolder(s, auto = true)
+        planNext()
+    }
+
+    /** Backup completo with a folder chosen: saved there, where the teacher can find it (AC-011-2). Null if it couldn't be written. */
+    suspend fun saveToFolder(): String? {
+        val s = store.load()
+        if (s.folderUri.isEmpty()) return null
+        return if (toFolder(s, auto = false)) s.folderName else null
+    }
+
+    /** Writes a backup to the folder and keeps the newest N files Tutora wrote there (AC-011-7, 9). */
+    private suspend fun toFolder(
+        s: BackupState,
+        auto: Boolean,
+    ): Boolean {
         val file = current()
         val bytes = encodeBackup(file).encodeToByteArray()
         val name = backupFileName(instantOf(file.exportedAt), ctx.zone(), BACKUP_NAME)
         val size = runCatching { ctx.backupFolder.write(s.folderUri, name, bytes) }.getOrNull()
         if (size == null) {
-            val failed = BackupLogEntry(file.exportedAt, auto = true, where = s.folderName, bytes = 0, ok = false)
+            val failed = BackupLogEntry(file.exportedAt, auto = auto, where = s.folderName, bytes = 0, ok = false)
             store.save(s.copy(failed = true, log = (listOf(failed) + s.log).take(BACKUP_LOG_SIZE)), ctx.now())
-        } else {
-            val written = (s.written - name) + name
-            val prune = filesToPrune(written, s.keep)
-            prune.forEach { runCatching { ctx.backupFolder.delete(s.folderUri, it) } }
-            store.save(s.copy(written = written - prune.toSet(), failed = false), ctx.now())
-            record(BackupLogEntry(file.exportedAt, auto = true, where = s.folderName, bytes = size, ok = true, name = name))
+            return false
         }
+        val written = (s.written - name) + name
+        val prune = filesToPrune(written, s.keep)
+        prune.forEach { runCatching { ctx.backupFolder.delete(s.folderUri, it) } }
+        store.save(s.copy(written = written - prune.toSet(), failed = false), ctx.now())
+        record(BackupLogEntry(file.exportedAt, auto = auto, where = s.folderName, bytes = size, ok = true, name = name))
+        return true
+    }
+
+    /** Escolher pasta / Trocar: the folder backups go to, with automatic backup on or off (AC-011-5). */
+    suspend fun setFolder(
+        uri: String,
+        name: String,
+    ) {
+        val s = store.load()
+        store.save(s.copy(folderUri = uri, folderName = name, failed = false), ctx.now())
         planNext()
     }
 
@@ -257,12 +283,12 @@ class Backups(
     }
 
     /**
-     * An automatic backup listed in Recentes, read back from the folder; null when the file was
+     * A backup Recentes lists in the folder, automatic or saved by hand, read back from it; null when the file was
      * deleted there or the folder can't be reached (AC-011-11).
      */
     suspend fun fromRecent(entry: BackupLogEntry): BackupRead? {
         val s = store.load()
-        if (!entry.auto || !entry.ok || entry.name.isEmpty() || s.folderUri.isEmpty()) return null
+        if (!entry.ok || entry.name.isEmpty() || s.folderUri.isEmpty()) return null
         return runCatching { ctx.backupFolder.read(s.folderUri, entry.name) }.getOrNull()?.let(::inspect)
     }
 

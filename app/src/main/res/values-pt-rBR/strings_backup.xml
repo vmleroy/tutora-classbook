@@ -30,6 +30,11 @@
     <string name="bk_everyWeek">Toda semana</string>
     <string name="bk_everyMonth">Todo mês</string>
     <string name="bk_saveTo">Salvar em %1$s</string>
+    <string name="bk_chooseFolder">Escolher pasta</string>
+    <string name="bk_chooseFolderHint">Onde os backups ficam, no celular ou na nuvem</string>
+    <string name="bk_savedIn">Salvo em %1$s</string>
+    <string name="bk_share">Compartilhar backup</string>
+    <string name="bk_recentManualIn">Manual · %1$s</string>
     <string name="bk_change">Trocar</string>
     <string name="bk_keep">Guardar os últimos</string>
     <plurals name="bk_keepValue">

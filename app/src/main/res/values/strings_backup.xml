@@ -28,6 +28,11 @@
     <string name="bk_everyWeek">Every week</string>
     <string name="bk_everyMonth">Every month</string>
     <string name="bk_saveTo">Save to %1$s</string>
+    <string name="bk_chooseFolder">Choose folder</string>
+    <string name="bk_chooseFolderHint">Where backups are kept, on the phone or in the cloud</string>
+    <string name="bk_savedIn">Saved to %1$s</string>
+    <string name="bk_share">Share backup</string>
+    <string name="bk_recentManualIn">Manual · %1$s</string>
     <string name="bk_change">Change</string>
     <string name="bk_keep">Keep the last</string>
     <plurals name="bk_keepValue">

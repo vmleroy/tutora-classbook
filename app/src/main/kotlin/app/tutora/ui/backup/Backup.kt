@@ -28,6 +28,7 @@ import app.tutora.adapters.export.Sheet
 import app.tutora.adapters.export.Xlsx
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.AlertBanner
+import app.tutora.designsystem.components.AlertTone
 import app.tutora.designsystem.components.BadgeTone
 import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
@@ -421,6 +422,7 @@ fun BackupScreen(nav: NavHostController) {
     var problem by rememberSaveable { mutableStateOf<Problem?>(null) }
     var confirming by remember { mutableStateOf<BackupFile?>(null) }
     var sheetOpen by rememberSaveable { mutableStateOf(false) }
+    var savedIn by rememberSaveable { mutableStateOf<String?>(null) }
     val words = rememberSheetWords()
     val sheetBase = stringResource(R.string.bk_sheetFile)
     val s = state ?: return
@@ -432,14 +434,24 @@ fun BackupScreen(nav: NavHostController) {
         }
 
     // Picking a folder turns automatic backup on; cancelling leaves it as it was (AC-011-5).
-    fun pickFolder() =
+    fun pickFolder(turnOn: Boolean = false) =
         picker.folder { uri ->
             if (uri != null) {
                 scope.launch {
                     val name = withContext(Dispatchers.IO) { runCatching { services.ctx.backupFolder.adopt(uri) }.getOrDefault("") }
-                    setAuto(s.copy(auto = true, folderUri = uri, folderName = name))
+                    if (turnOn) {
+                        setAuto(s.copy(auto = true, folderUri = uri, folderName = name))
+                    } else {
+                        withContext(Dispatchers.IO) { services.backups.setFolder(uri, name) }
+                    }
                 }
             }
+        }
+
+    fun share() =
+        scope.launch {
+            val (name, bytes) = withContext(Dispatchers.IO) { services.backups.makeBackup() }
+            exports.share(name, "application/json", bytes)
         }
 
     confirming?.let { file ->
@@ -501,8 +513,16 @@ fun BackupScreen(nav: NavHostController) {
                 Modifier.testTag("backup-problem"),
             )
         }
-        if (s.auto && s.failed) {
-            AlertBanner(stringResource(R.string.bk_folderFailed), Modifier.testTag("backup-failed"), onClick = ::pickFolder)
+        if (s.failed && s.folderUri.isNotEmpty()) {
+            AlertBanner(stringResource(R.string.bk_folderFailed), Modifier.testTag("backup-failed"), onClick = { pickFolder() })
+        }
+        savedIn?.let {
+            AlertBanner(
+                stringResource(R.string.bk_savedIn, it),
+                Modifier.testTag("backup-saved"),
+                tone = AlertTone.SUCCESS,
+                icon = IconName.CHECK,
+            )
         }
         // Backup automático (AC-011-5 to 7).
         val next = nextAutoBackup(instantOf(services.now()), s.every, services.zone)
@@ -523,20 +543,30 @@ fun BackupScreen(nav: NavHostController) {
                         icon = IconName.CLOUD,
                         trailing = RowTrailing.SWITCH,
                         switchValue = s.auto,
-                        onSwitchChange = { on -> if (on) pickFolder() else setAuto(s.copy(auto = false)) },
+                        onSwitchChange = { on ->
+                            if (on && s.folderUri.isEmpty()) pickFolder(turnOn = true) else setAuto(s.copy(auto = on))
+                        },
                     )
                 },
-                if (s.auto) {
-                    {
+                // The folder can be chosen or changed at any time, automatic backup on or off (AC-011-5).
+                {
+                    if (s.folderUri.isEmpty()) {
+                        ListRow(
+                            stringResource(R.string.bk_chooseFolder),
+                            Modifier.testTag("backup-folder"),
+                            subtitle = stringResource(R.string.bk_chooseFolderHint),
+                            icon = IconName.FILE,
+                            onClick = { pickFolder() },
+                        )
+                    } else {
                         ListRow(
                             stringResource(R.string.bk_saveTo, s.folderName),
+                            Modifier.testTag("backup-folder"),
                             subtitle = stringResource(R.string.bk_change),
                             icon = IconName.FILE,
-                            onClick = ::pickFolder,
+                            onClick = { pickFolder() },
                         )
                     }
-                } else {
-                    null
                 },
             ),
         )
@@ -566,17 +596,39 @@ fun BackupScreen(nav: NavHostController) {
                     format = { keepText },
                 )
             }
+        } else if (s.folderUri.isNotEmpty()) {
+            val keepText = pluralStringResource(R.plurals.bk_keepValue, s.keep, s.keep)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            ) {
+                Text(stringResource(R.string.bk_keep), style = TutoraTheme.type.body, color = TutoraTheme.colors.ink)
+                Stepper(
+                    s.keep.toLong(),
+                    { setAuto(s.copy(keep = it.toInt())) },
+                    step = 1,
+                    min = BACKUP_KEEP_MIN.toLong(),
+                    max = BACKUP_KEEP_MAX.toLong(),
+                    format = { keepText },
+                )
+            }
         }
         Text(stringResource(R.string.bk_hint), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
 
         // Fazer agora (AC-011-2, 12, 16, 19).
         Text(stringResource(R.string.bk_now), style = TutoraTheme.type.section, color = TutoraTheme.colors.inkMuted)
+        // With a folder, the backup is saved there, easy to find; without one, it goes to the share sheet (AC-011-2).
         Button(stringResource(R.string.bk_full), {
-            scope.launch {
-                val (name, bytes) = withContext(Dispatchers.IO) { services.backups.makeBackup() }
-                exports.share(name, "application/json", bytes)
+            savedIn = null
+            if (s.folderUri.isEmpty()) {
+                share()
+            } else {
+                scope.launch { savedIn = withContext(Dispatchers.IO) { services.backups.saveToFolder() } }
             }
         }, fullWidth = true, icon = IconName.CLOUD)
+        if (s.folderUri.isNotEmpty()) {
+            Button(stringResource(R.string.bk_share), { share() }, fullWidth = true, variant = ButtonVariant.GHOST)
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             Button(stringResource(R.string.bk_sheet), { sheetOpen = true }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
             Button(stringResource(R.string.bk_restore), {
@@ -615,7 +667,7 @@ fun BackupScreen(nav: NavHostController) {
                         @Composable {
                             RecentRow(
                                 e,
-                                if (e.auto && e.ok && e.name.isNotEmpty()) {
+                                if (e.ok && e.name.isNotEmpty()) {
                                     {
                                         problem = null
                                         scope.launch {
@@ -645,7 +697,12 @@ private fun RecentRow(
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
-    val how = if (e.auto) stringResource(R.string.bk_recentAuto, e.where) else stringResource(R.string.bk_recentManual)
+    val how =
+        when {
+            e.auto -> stringResource(R.string.bk_recentAuto, e.where)
+            e.where.isNotEmpty() -> stringResource(R.string.bk_recentManualIn, e.where)
+            else -> stringResource(R.string.bk_recentManual)
+        }
     val size = if (e.ok) " · ${(e.bytes / 1024).coerceAtLeast(1)} KB" else ""
     ListRow(
         recentText(localOf(e.at, services.zone), language),
