@@ -35,6 +35,11 @@ class Ctx(
     val live: LiveNotifier = LiveNotifier.None,
     /** The alarm that starts a class with the app closed (AC-007-22). */
     val alarm: AutoStartAlarm = AutoStartAlarm.None,
+    /** The folder automatic backups go to, and what wakes the app for them (spec 011). */
+    val backupFolder: BackupFolder = BackupFolder.None,
+    val backupScheduler: BackupScheduler = BackupScheduler.None,
+    /** The app's own storage, for the copy taken before a restore (AC-011-16). */
+    val privateDir: java.io.File = java.io.File(System.getProperty("java.io.tmpdir"), "tutora"),
 )
 
 sealed interface Result<out T> {

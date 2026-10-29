@@ -38,7 +38,11 @@ class AppViewModel(
             _state.value =
                 when (val r = startApp()) {
                     is StartResult.Ready -> {
-                        services = AppServices(r.db, r.ctx, r.schemaVersion)
+                        services =
+                            AppServices(r.db, r.ctx, r.schemaVersion).also { s ->
+                                // A missed automatic backup runs now, once, without holding up Hoje (AC-011-8).
+                                launch(kotlinx.coroutines.Dispatchers.IO) { runCatching { s.backups.runIfDue() } }
+                            }
                         AppState.Ready(r)
                     }
                     is StartResult.Failed -> AppState.Failed(r)
