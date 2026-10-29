@@ -23,6 +23,9 @@ class Harness(
 
     /** What reports shared and copied (spec 010). */
     val exports = FakeExports()
+
+    /** What the folder and file pickers answer (spec 011); null is a cancelled picker. */
+    val picker = FakeBackupPicker()
     lateinit var nav: NavHostController
 
     init {
@@ -40,6 +43,7 @@ class Harness(
             CompositionLocalProvider(
                 LocalServices provides services,
                 app.tutora.adapters.export.LocalExports provides exports,
+                app.tutora.ui.backup.LocalBackupPicker provides picker,
             ) { TutoraNav(AppInfo("1.1.0", "7"), services.schemaVersion, nav = nav) }
         }
     }
@@ -80,4 +84,13 @@ class Harness(
         compose.runOnIdle { nav.navigate(route) }
         settle(compose)
     }
+}
+
+class FakeBackupPicker : app.tutora.ui.backup.BackupPicker {
+    var folderAnswer: String? = null
+    var fileAnswer: String? = null
+
+    override fun folder(onPicked: (String?) -> Unit) = onPicked(folderAnswer)
+
+    override fun file(onPicked: (String?) -> Unit) = onPicked(fileAnswer)
 }

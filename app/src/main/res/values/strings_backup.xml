@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 011: backup, restore and the full spreadsheet. -->
+<resources>
+    <string name="bk_screen">Backup and spreadsheet</string>
+    <string name="bk_rowAuto">Automatic, %1$s · last %2$s</string>
+    <string name="bk_rowAutoNever">Automatic, %1$s · none yet</string>
+    <string name="bk_rowManual">Manual only · last %1$s</string>
+    <string name="bk_none">No backup yet</string>
+    <string name="bk_everyDayLower">every day</string>
+    <string name="bk_everyWeekLower">every week</string>
+    <string name="bk_everyMonthLower">every month</string>
+    <string name="bk_today">today</string>
+    <string name="bk_yesterday">yesterday</string>
+    <plurals name="bk_warnRow">
+        <item quantity="one">Last backup %d day ago</item>
+        <item quantity="other">Last backup %d days ago</item>
+    </plurals>
+    <plurals name="bk_warnHome">
+        <item quantity="one">No backup for %d day</item>
+        <item quantity="other">No backup for %d days</item>
+    </plurals>
+    <string name="bk_auto">Automatic backup</string>
+    <string name="bk_autoNext">Next: %1$s · last %2$s</string>
+    <string name="bk_autoNextFirst">Next: %1$s</string>
+    <string name="bk_autoOff">Off · manual backups only</string>
+    <string name="bk_every">How often</string>
+    <string name="bk_everyDay">Every day</string>
+    <string name="bk_everyWeek">Every week</string>
+    <string name="bk_everyMonth">Every month</string>
+    <string name="bk_saveTo">Save to %1$s</string>
+    <string name="bk_change">Change</string>
+    <string name="bk_keep">Keep the last</string>
+    <plurals name="bk_keepValue">
+        <item quantity="one">%d backup</item>
+        <item quantity="other">%d backups</item>
+    </plurals>
+    <string name="bk_hint">You choose the folder once. It can be in Google Drive, OneDrive or on the phone itself. If the phone is flat or off, the backup runs the next time you open the app.</string>
+    <string name="bk_folderFailed">Couldn\'t save to the folder. Choose the folder again.</string>
+    <string name="bk_now">Do it now</string>
+    <string name="bk_full">Full backup (.json)</string>
+    <string name="bk_sheet">Spreadsheet .xlsx</string>
+    <string name="bk_restore">Restore backup</string>
+    <string name="bk_undo">Undo restore</string>
+    <string name="bk_recent">Recent</string>
+    <string name="bk_recentAuto">Automatic · %1$s</string>
+    <string name="bk_recentManual">Manual · shared</string>
+    <string name="bk_failed">Failed</string>
+    <string name="bk_notTutora">This file isn\'t a Tutora backup</string>
+    <string name="bk_newer">This backup is from a newer version of Tutora. Update the app to restore it.</string>
+    <string name="bk_live">End the live class before restoring.</string>
+    <string name="bk_confirmTitle">Restore the backup from %1$s?</string>
+    <string name="bk_confirmBody">%1$s, %2$s, %3$s. The data on this phone now will be replaced.</string>
+    <plurals name="bk_students">
+        <item quantity="one">%s student</item>
+        <item quantity="other">%s students</item>
+    </plurals>
+    <plurals name="bk_lessons">
+        <item quantity="one">%s class</item>
+        <item quantity="other">%s classes</item>
+    </plurals>
+    <plurals name="bk_payments">
+        <item quantity="one">%s payment</item>
+        <item quantity="other">%s payments</item>
+    </plurals>
+    <string name="bk_studentsNone">no students</string>
+    <string name="bk_lessonsNone">no classes</string>
+    <string name="bk_paymentsNone">no payments</string>
+    <string name="bk_confirm">Restore</string>
+    <string name="bk_thisYear">This year</string>
+    <string name="bk_all">All</string>
+    <string name="bk_custom">Custom</string>
+    <string name="bk_generate">Create spreadsheet</string>
+    <string name="bk_sheetFile">Tutora spreadsheet</string>
+    <string name="bk_sheetStudents">Students</string>
+    <string name="bk_sheetPlaces">Places</string>
+    <string name="bk_who">Who</string>
+    <string name="bk_name">Name</string>
+    <string name="bk_subject">Subject</string>
+    <string name="bk_phone">Phone</string>
+    <string name="bk_archived">Archived</string>
+    <string name="bk_yes">Yes</string>
+    <string name="bk_kind">Type</string>
+    <string name="bk_month">Month</string>
+</resources>
