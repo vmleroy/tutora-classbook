@@ -35,3 +35,13 @@ Colors in the mockups are hex values from the Quadro-negro light theme. In the a
 | [Fees.dc.html](Fees.dc.html) | Ajustes › Cancelamentos e faltas |
 | [Setup.dc.html](Setup.dc.html) | Primeira abertura › Configuração inicial (4 passos) |
 | [Currency.dc.html](Currency.dc.html) | Out of v1 (reais only, constitution rule 9). The Moeda and Cotação rows in Settings.dc.html are out too |
+| [DirA.dc.html](DirA.dc.html) | 2026 look (spec 016) · Hoje |
+| [A_Agenda.dc.html](A_Agenda.dc.html) | 2026 look · Agenda, Dia |
+| [A_AgendaMes.dc.html](A_AgendaMes.dc.html) | 2026 look · Agenda › Mês |
+| [A_AgendaAno.dc.html](A_AgendaAno.dc.html) | 2026 look · Agenda › tocar no mês e ano › escolher mês |
+| [A_Aluno.dc.html](A_Aluno.dc.html) | 2026 look · Detalhe do aluno |
+| [A_Ganhos.dc.html](A_Ganhos.dc.html) | 2026 look · Ganhos |
+| [A_Ajustes.dc.html](A_Ajustes.dc.html) | 2026 look · Ajustes |
+| [A_Estilo.dc.html](A_Estilo.dc.html) | 2026 look · color roles, Suas cores parts, type, shapes |
+
+The 2026 boards take every color from CSS variables named after the theme tokens, with Tema and Modo tweaks, so they carry no hex in their markup.
