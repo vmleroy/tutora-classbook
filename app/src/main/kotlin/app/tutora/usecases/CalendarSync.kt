@@ -154,7 +154,7 @@ class CalendarSync(
     suspend fun turnOn(target: CalendarTarget): Boolean {
         if (!phone.hasPermission()) return false
         val s = store.load()
-        if (s.on && s.calendarId != 0L) phone.marked(s.calendarId).forEach { phone.delete(it.eventId) }
+        if (s.on && s.calendarId != 0L) phone.marked(s.calendarId).forEach { runCatching { phone.delete(it.eventId) } }
         val (id, name, own) =
             when (target) {
                 is CalendarTarget.Own -> Triple(phone.ownCalendar(target.name, target.color), target.name, true)
@@ -166,7 +166,7 @@ class CalendarSync(
                     )
             }
         // Leaving Tutora's own calendar for an account's: it goes, as it would when turned off.
-        if (s.own && !own) phone.deleteOwnCalendar()
+        if (s.own && !own) runCatching { phone.deleteOwnCalendar() }
         store.save(s.copy(on = true, calendarId = id, calendarName = name, own = own), ctx.now())
         sync()
         return true
@@ -200,7 +200,7 @@ class CalendarSync(
     suspend fun turnOff() {
         if (phone.hasPermission()) {
             phone.markedEverywhere().forEach { runCatching { phone.delete(it) } }
-            phone.deleteOwnCalendar()
+            runCatching { phone.deleteOwnCalendar() }
         }
         store.save(store.load().copy(on = false, calendarId = 0, calendarName = "", own = false, count = 0), ctx.now())
     }
@@ -235,7 +235,8 @@ class CalendarSync(
                     SettingsRepository(ctx.db).observe().map { it.language },
                 ) { lessons, setup, language -> Triple(lessons, setup, language) }
             }.debounce(SYNC_SETTLE_MS)
-            .map { sync() }
+            // One failed sync (the calendar gone, access taken away) never stops the next ones.
+            .map { runCatching { sync() } }
 
     /** Busy time for the Agenda, when Mostrar outros compromissos is on (AC-012-17). */
     @OptIn(ExperimentalCoroutinesApi::class)

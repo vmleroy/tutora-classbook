@@ -152,7 +152,7 @@ fun CalendarScreen(nav: NavHostController) {
     fun turnOn(id: Long?) =
         withAccess {
             scope.launch {
-                val ok = withContext(Dispatchers.IO) { services.calendar.turnOn(target(id)) }
+                val ok = withContext(Dispatchers.IO) { runCatching { services.calendar.turnOn(target(id)) }.getOrDefault(false) }
                 if (!ok) notice = Notice.NO_ACCESS
             }
         }
@@ -168,7 +168,7 @@ fun CalendarScreen(nav: NavHostController) {
                     { m ->
                         Button(stringResource(R.string.cal_delete), {
                             cleaning = null
-                            scope.launch { withContext(Dispatchers.IO) { services.calendar.clean() } }
+                            scope.launch { withContext(Dispatchers.IO) { runCatching { services.calendar.clean() } } }
                         }, m, variant = ButtonVariant.DANGER)
                     },
                 ),
@@ -209,7 +209,13 @@ fun CalendarScreen(nav: NavHostController) {
                     trailing = RowTrailing.SWITCH,
                     switchValue = s.on,
                     onSwitchChange = { on ->
-                        if (on) turnOn(pickedId) else scope.launch { withContext(Dispatchers.IO) { services.calendar.turnOff() } }
+                        if (on) {
+                            turnOn(
+                                pickedId,
+                            )
+                        } else {
+                            scope.launch { withContext(Dispatchers.IO) { runCatching { services.calendar.turnOff() } } }
+                        }
                     },
                 )
             },
@@ -261,7 +267,11 @@ fun CalendarScreen(nav: NavHostController) {
                         switchValue = s.showBusy,
                         onSwitchChange = { on ->
                             val save = {
-                                scope.launch { withContext(Dispatchers.IO) { services.calendar.setOptions(s.includeValue, on) } }
+                                scope.launch {
+                                    withContext(
+                                        Dispatchers.IO,
+                                    ) { runCatching { services.calendar.setOptions(s.includeValue, on) } }
+                                }
                             }
                             if (on) withAccess { save() } else save()
                         },
@@ -275,7 +285,7 @@ fun CalendarScreen(nav: NavHostController) {
                         trailing = RowTrailing.SWITCH,
                         switchValue = s.includeValue,
                         onSwitchChange = { on ->
-                            scope.launch { withContext(Dispatchers.IO) { services.calendar.setOptions(on, s.showBusy) } }
+                            scope.launch { withContext(Dispatchers.IO) { runCatching { services.calendar.setOptions(on, s.showBusy) } } }
                         },
                     )
                 },
@@ -285,7 +295,7 @@ fun CalendarScreen(nav: NavHostController) {
         // .ics, with sync on or off and no permission (AC-012-20).
         Button(stringResource(R.string.cal_ics), {
             scope.launch {
-                val text = withContext(Dispatchers.IO) { services.calendar.ics() }
+                val text = withContext(Dispatchers.IO) { runCatching { services.calendar.ics() }.getOrNull() } ?: return@launch
                 exports.share(icsName, "text/calendar", text.encodeToByteArray())
             }
         }, fullWidth = true, variant = ButtonVariant.OUTLINE, icon = IconName.FILE)
@@ -293,7 +303,7 @@ fun CalendarScreen(nav: NavHostController) {
         Button(stringResource(R.string.cal_clean), {
             withAccess {
                 scope.launch {
-                    val count = withContext(Dispatchers.IO) { services.calendar.cleanCount() }
+                    val count = withContext(Dispatchers.IO) { runCatching { services.calendar.cleanCount() }.getOrDefault(0) }
                     if (count == 0) notice = Notice.NONE_TO_CLEAN else cleaning = count
                 }
             }

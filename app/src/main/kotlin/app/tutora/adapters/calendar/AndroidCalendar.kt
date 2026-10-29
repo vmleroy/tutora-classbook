@@ -194,23 +194,20 @@ class AndroidPhoneCalendar(
         return ContentUris.parseId(checkNotNull(resolver.insert(CalendarContract.Events.CONTENT_URI, v)) { "Event refused" })
     }
 
-    private val onlyMarked = "${CalendarContract.Events.CUSTOM_APP_PACKAGE} = ?"
+    // The calendar store refuses a selection on one event's own uri, so the id and Tutora's mark
+    // are both in the selection on the events table: only a marked event is ever touched.
+    private val onlyMarked = "${CalendarContract.Events._ID} = ? AND ${CalendarContract.Events.CUSTOM_APP_PACKAGE} = ?"
 
     override fun update(
         eventId: Long,
         event: ClassEvent,
         zone: String,
     ) {
-        resolver.update(
-            ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId),
-            values(event, zone),
-            onlyMarked,
-            arrayOf(pkg),
-        )
+        resolver.update(CalendarContract.Events.CONTENT_URI, values(event, zone), onlyMarked, arrayOf(eventId.toString(), pkg))
     }
 
     override fun delete(eventId: Long) {
-        resolver.delete(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId), onlyMarked, arrayOf(pkg))
+        resolver.delete(CalendarContract.Events.CONTENT_URI, onlyMarked, arrayOf(eventId.toString(), pkg))
     }
 
     override fun deleteOwnCalendar() {
