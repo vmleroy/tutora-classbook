@@ -25,4 +25,4 @@ interface EarningsSummaryProps {
 ```
 
 ## 2026 look (spec 016)
-On Ganhos it is drawn on a `SummaryCard`: the headline in earnings-on-header, the expected bar on `onHeaderFill()`, and the stats as `SummaryTile`s of one height (owed in the red tile only when something is owed, paid in the green). With `onCard` it is Hoje's white `Card` over the Topo band: the amount in `earnings`, a hairline, and the stats as equal columns so every label and amount starts at the same place.
+On Ganhos it is drawn on a `SummaryCard`: the headline in earnings-on-header, the expected bar on `onHeaderFill()`, and the stats as `SummaryTile`s of one height (owed in the red tile only when something is owed, paid in the green). With `onCard` it is a white `Card` (Hoje, over the Topo band, and Ganhos): the amount in `earnings`, a hairline, and the stats as equal columns so every label and amount starts at the same place.

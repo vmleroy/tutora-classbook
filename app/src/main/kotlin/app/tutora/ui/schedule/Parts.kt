@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -145,6 +147,7 @@ fun DayGrid(
     startHour: Int,
     scroll: ScrollState,
     onOpen: (Lesson) -> Unit,
+    today: LocalDate? = null,
 ) {
     val language = currentLanguage()
     val hour = Size.agendaHour
@@ -176,7 +179,23 @@ fun DayGrid(
                         Span(l.id, t.hour * 60 + t.minute, t.hour * 60 + t.minute + l.plannedMin)
                     }
                 val slots = layoutDay(spans)
-                BoxWithConstraints(Modifier.weight(1f).height(hour * 24).background(TutoraTheme.colors.background)) {
+                // In Semana each day is its own column: a line before it, and today's on white (Victor, 29 Oct 2026).
+                val ground = if (compact && date == today) TutoraTheme.colors.surface else TutoraTheme.colors.background
+                BoxWithConstraints(
+                    Modifier
+                        .weight(1f)
+                        .height(hour * 24)
+                        .background(ground)
+                        .testTag("day-column-$date"),
+                ) {
+                    if (compact) {
+                        Box(
+                            Modifier
+                                .fillMaxHeight()
+                                .width(Size.border)
+                                .background(TutoraTheme.colors.line),
+                        )
+                    }
                     for (h in 0 until 24) {
                         Box(
                             Modifier
@@ -207,6 +226,8 @@ fun DayGrid(
                 }
             }
         }
+        // Room under 23:00 for the floating +.
+        Spacer(Modifier.height(Size.fab + Spacing.s5))
     }
 }
 

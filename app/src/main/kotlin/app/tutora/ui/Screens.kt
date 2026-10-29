@@ -36,6 +36,7 @@ fun ScreenScaffold(
     eyebrow: String? = null,
     actions: List<HeaderAction> = emptyList(),
     onBack: (() -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null,
     scroll: Boolean = true,
     bottomBar: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
@@ -47,7 +48,7 @@ fun ScreenScaffold(
             .safeDrawingPadding()
             .testTag(tag),
     ) {
-        ScreenHeader(title, variant = variant, eyebrow = eyebrow, actions = actions, onBack = onBack)
+        ScreenHeader(title, variant = variant, eyebrow = eyebrow, actions = actions, onBack = onBack, trailing = trailing)
         Column(
             Modifier
                 .then(if (bottomBar != null) Modifier.weight(1f) else Modifier)

@@ -213,7 +213,10 @@ fun AgendaScreen(nav: NavHostController) {
             when {
                 view == AgendaView.MONTH ->
                     Column(
-                        Modifier.verticalScroll(rememberScrollState()).padding(horizontal = Spacing.s5, vertical = Spacing.s3),
+                        // The last row stays clear of the floating +.
+                        Modifier
+                            .verticalScroll(rememberScrollState())
+                            .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3, bottom = Size.fab + Spacing.s7),
                         verticalArrangement = Arrangement.spacedBy(Spacing.s3),
                     ) {
                         MonthView(
@@ -251,6 +254,7 @@ fun AgendaScreen(nav: NavHostController) {
                             startHour = startHour,
                             scroll = scroll,
                             onOpen = { nav.navigate(LessonDetail(it.id)) },
+                            today = today,
                         )
                     }
             }

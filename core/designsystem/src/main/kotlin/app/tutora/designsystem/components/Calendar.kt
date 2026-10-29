@@ -86,7 +86,7 @@ fun MonthGrid(
             .testTag("month-grid")
             .clip(RoundedCornerShape(Radius.x3xl))
             .background(c.surface)
-            .padding(Spacing.s3),
+            .padding(horizontal = Spacing.s2, vertical = Spacing.s3),
         verticalArrangement = Arrangement.spacedBy(Spacing.s1),
     ) {
         Row(Modifier.fillMaxWidth().clearAndSetSemantics {}) {
@@ -102,10 +102,12 @@ fun MonthGrid(
         }
         Column(
             Modifier.semantics { contentDescription = label }.selectableGroup(),
-            verticalArrangement = Arrangement.spacedBy(Spacing.s0_5),
+            // Room between days, so each reads on its own on any phone (Victor, 29 Oct 2026).
+            verticalArrangement = Arrangement.spacedBy(Spacing.s1_5),
         ) {
             days.chunked(7).forEachIndexed { w, week ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s0_5)) {
+                // 4 dp across keeps a day 40 dp wide on a 360 dp phone with Large text.
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
                     week.forEachIndexed { i, d ->
                         val index = w * 7 + i
                         DayCell(d, index == selected, Modifier.weight(1f)) { onSelect(index) }
@@ -142,6 +144,7 @@ private fun DayCell(
         when {
             d.today -> c.btnPrimary
             selected -> c.primarySoft
+            d.inMonth -> c.surfaceSunken
             else -> Color.Transparent
         }
     val fg =

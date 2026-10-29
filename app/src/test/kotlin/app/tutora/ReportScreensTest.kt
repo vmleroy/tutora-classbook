@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
@@ -144,7 +145,7 @@ class ReportScreensTest {
     fun `AC-010-13 Ganhos' Relatorio uses the screen's period and type and shares the file`() {
         h.show(compose)
         h.go(compose, EarningsGraph)
-        compose.onNodeWithContentDescription("Relatório").performClick()
+        compose.onNodeWithText("Relatório").performClick()
         h.settle(compose)
         exists("Outubro 2026 · Tudo · usa os filtros da tela")
         listOf("Ganhos por aluno e por local", "Lista de aulas", "Pagamentos recebidos").forEach { exists(it) }

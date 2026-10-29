@@ -20,7 +20,7 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 ### The new look, everywhere
 
 - **AC-016-1.** No tab screen has a colored band at the top except Hoje: there the date, the greeting and the + sit on the Topo band, which runs under the top of the white earnings card (Victor, 28 Oct 2026). Every other screen's title sits on the background, with its actions beside it.
-- **AC-016-2.** Hoje's earnings sit on a white card with the amount, the expected bar and Semana, the month and Alunos devem in equal columns, owed in red. Every other main summary sits in one card painted with the Topo color (part "header" of Suas cores): the period on Ganhos, the balance on a student, group or place, and the live lesson; money on it uses the earnings-on-Topo color.
+- **AC-016-2.** Hoje's and Ganhos' earnings sit on a white card: the amount, its bar, and the figures under it in equal columns (Semana, the month and Alunos devem on Hoje; Recebido and A receber on Ganhos), owed in red (Victor, 28 and 29 Oct 2026). The balance on a student, group or place and the live lesson sit on the Topo color (part "header" of Suas cores); money there uses the earnings-on-Topo color.
 - **AC-016-3.** Owed amounts inside that card sit in the red tile and paid amounts in the green tile, the same in every theme.
 - **AC-016-4.** Lists of classes, students, places and settings are grouped cards with thin dividers between rows; a section title sits above each group.
 - **AC-016-5.** On Hoje's next class, Marcar como dada (outlined, with a check) sits beside Iniciar aula (in the Botão de destaque color), the same size (Victor, 28 Oct 2026). Registrar pagamento sits on the balance card in the Botão de destaque color; Relatório stays a round button in the header.
@@ -36,11 +36,11 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 
 - **AC-016-13.** The Agenda opens with a white card at the top: "Agenda" with the month and year of the day being shown under it ("Outubro 2026" / "October 2026"), updated as the teacher moves between weeks or months (Victor, 28 Oct 2026).
 - **AC-016-14.** A Hoje button next to the title brings the Agenda back to today in the current view.
-- **AC-016-15.** The view switch reads Dia, Semana and Mês. Dia and Semana work as before (spec 005), with the week strip under a "Semana de 26 out a 1 nov" line and ‹ › to move a week; each day of the strip sits right over its column of the grid.
+- **AC-016-15.** The view switch reads Dia, Semana and Mês. Dia and Semana work as before (spec 005), with the week strip under a "Semana de 26 out a 1 nov" line and ‹ › to move a week; each day of the strip sits right over its column of the grid, the days are filled pills, and in Semana a line separates the columns and today's is lighter (Victor, 29 Oct 2026).
 
 ### Agenda: the month view
 
-- **AC-016-16.** Mês shows the month as a grid of weeks from Monday to Sunday, with the days of the next and previous months greyed out; ‹ › move a month.
+- **AC-016-16.** Mês shows the month as a grid of weeks from Monday to Sunday, with the days of the next and previous months greyed out; ‹ › move a month. Days of the month are filled squares with room between them, so each reads on its own on any phone (Victor, 29 Oct 2026).
 - **AC-016-17.** Each day shows one dot per class that exists for it, up to two, colored by kind (school, done, private, group), with a legend under the grid; a day with more than two classes shows "+N" (Victor, 28 Oct 2026). A cancelled class has no dot (Victor, 28 Oct 2026).
 - **AC-016-18.** Today is filled in the Botões principais color; the chosen day is tinted. Tapping a day chooses it and lists its classes under the grid with their count and expected value ("2 aulas · R$ 300"); tapping a class opens it.
 - **AC-016-19.** Every day can be read aloud as "28 de outubro, 2 aulas".

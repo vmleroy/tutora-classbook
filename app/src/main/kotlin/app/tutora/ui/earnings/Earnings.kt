@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -18,19 +20,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
-import app.tutora.designsystem.components.Card
+import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.EarningsStat
 import app.tutora.designsystem.components.EarningsSummary
 import app.tutora.designsystem.components.EmptyState
-import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
+import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.MonthBar
@@ -104,7 +108,9 @@ fun EarningsScreen(nav: NavHostController) {
     ScreenScaffold(
         stringResource(R.string.tab_earnings),
         "earnings-screen",
-        actions = listOf(HeaderAction(IconName.FILE, stringResource(R.string.rep_screen)) { reporting = true }),
+        trailing = {
+            Button(stringResource(R.string.rep_screen), { reporting = true }, icon = IconName.FILE, size = ControlSize.SM)
+        },
     ) {
         SegmentedControl(
             listOf(
@@ -177,6 +183,8 @@ fun EarningsScreen(nav: NavHostController) {
                 ),
             receivedShare = if (s.earned > 0) s.received.toFloat() / s.earned else 0f,
             receivedLabel = stringResource(R.string.earn_received),
+            // A white card, as on Hoje (Victor, 29 Oct 2026).
+            onCard = true,
             footnote =
                 listOfNotNull(
                     s.commission.takeIf { it > 0 }?.let { stringResource(R.string.earn_commission, formatMoney(it, language)) },
@@ -195,30 +203,59 @@ fun EarningsScreen(nav: NavHostController) {
         // its detail (AC-009-13).
         if (v.sources.isNotEmpty()) {
             val total = v.sources.sumOf { it.cents }.coerceAtLeast(1)
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 SectionHeader(stringResource(R.string.earn_sources), aside = stringResource(R.string.earn_sourcesHint))
-                v.sources.forEach { src ->
-                    val owes = (balances[src.payer] ?: 0).takeIf { it > 0 }
-                    val share = src.cents.toFloat() / total
-                    val percent = stringResource(R.string.earn_share, Math.round(share * 100))
-                    Card(Modifier.clickable(role = Role.Button) { nav.navigate(payerRoute(src.payer)) }, label = src.name) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-                            Column(Modifier.weight(1f)) {
-                                Text(src.name, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
-                                owes?.let {
+                ListGroup(
+                    v.sources.map<app.tutora.domain.Source, @Composable () -> Unit> { src ->
+                        {
+                            val owes = (balances[src.payer] ?: 0).takeIf { it > 0 }
+                            val share = src.cents.toFloat() / total
+                            val percent = stringResource(R.string.earn_share, Math.round(share * 100))
+                            // One compact row: who, what they still owe, the amount and its share (AC-009-13).
+                            Column(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable(role = Role.Button) { nav.navigate(payerRoute(src.payer)) }
+                                    .semantics(mergeDescendants = true) {}
+                                    .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
+                                verticalArrangement = Arrangement.spacedBy(Spacing.s1_5),
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+                                ) {
                                     Text(
-                                        stringResource(R.string.earn_owes, formatMoney(it, language, compact = true)),
-                                        style = TutoraTheme.type.meta,
-                                        color = TutoraTheme.colors.dangerInk,
+                                        src.name,
+                                        style = TutoraTheme.type.bodyStrong,
+                                        color = TutoraTheme.colors.ink,
+                                        modifier = Modifier.weight(1f),
                                     )
+                                    owes?.let {
+                                        Text(
+                                            stringResource(R.string.earn_owes, formatMoney(it, language, compact = true)),
+                                            style = TutoraTheme.type.meta,
+                                            color = TutoraTheme.colors.dangerInk,
+                                        )
+                                    }
+                                    Money(src.cents, tone = MoneyTone.EARNINGS, compact = true)
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+                                ) {
+                                    ProgressBar(
+                                        share,
+                                        "${src.name}: $percent",
+                                        Modifier.weight(1f),
+                                        tone = ProgressTone.ACCENT,
+                                        thin = true,
+                                    )
+                                    Text(percent, style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
                                 }
                             }
-                            Money(src.cents, tone = MoneyTone.EARNINGS)
                         }
-                        ProgressBar(share, "${src.name}: $percent", tone = ProgressTone.ACCENT)
-                        Text(percent, style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
-                    }
-                }
+                    },
+                )
             }
         }
     }

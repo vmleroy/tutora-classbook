@@ -60,6 +60,8 @@ fun ScreenHeader(
     eyebrow: String? = null,
     actions: List<HeaderAction> = emptyList(),
     onBack: (() -> Unit)? = null,
+    /** A labelled action after the icon actions, such as Ganhos' Relatório button. */
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     val c = TutoraTheme.colors
     val big = variant == HeaderVariant.TAB || variant == HeaderVariant.HERO
@@ -95,6 +97,7 @@ fun ScreenHeader(
                 }
             IconButton(it.icon, it.label, it.onClick, variant = v)
         }
+        trailing?.invoke()
     }
 }
 
@@ -186,7 +189,7 @@ fun WeekStrip(
                         .padding(horizontal = AgendaBlockGap)
                         .height(Size.weekDay)
                         .clip(RoundedCornerShape(Radius.x2xl))
-                        .background(if (on) c.btnPrimary else c.surface)
+                        .background(if (on) c.btnPrimary else c.surfaceSunken)
                         .selectable(selected = on, role = Role.Tab, onClick = { onSelect(i) })
                         .semantics { contentDescription = d.a11y ?: "${d.weekday} ${d.day}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
