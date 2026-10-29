@@ -46,7 +46,7 @@ No new table and no migration: the schema stays at version 5. The new state is s
 ## Screens and components
 
 - **Backup e planilha** follows Backup.dc.html in the 016 look:
-  - `ListGroup` "Backup automático": a switch `ListRow` whose line is "Próximo: … · último …" or "Desligado · só backup manual". When it's on, the group adds a `SegmentedControl` (Todo dia / Toda semana / Todo mês), a `ListRow` "Salvar em <folder>" with "Trocar", and a `Stepper` (1–30). The hint text sits under the group.
+  - `ListGroup` "Backup automático": a switch `ListRow` whose line is "Próximo: … · último …" or "Desligado · só backup manual". When it's on, the group adds a `SegmentedControl` (Todo dia / Toda semana / Todo mês), a `ListRow` "Salvar em <folder>" with "Trocar", and a `Stepper` (1–5). The hint text sits under the group.
   - "Fazer agora": `Button` Backup completo (.json), then outlined Planilha .xlsx and Restaurar backup, plus "Desfazer restauração" when it's offered.
   - "Recentes": a `ListGroup` of up to 5 `ListRow`s with a `TagDot`, and a danger `Badge` "Falhou"; an automatic row restores its file from the folder (`Backups.fromRecent`) through the same confirmation.
   - Sheets (`BottomSheet`): the restore confirmation; the spreadsheet period (`Chip`s for Este mês, Mês passado, Este ano, Tudo and Personalizado, with `DateField` De / Até as on reports). Errors use `AlertBanner`.

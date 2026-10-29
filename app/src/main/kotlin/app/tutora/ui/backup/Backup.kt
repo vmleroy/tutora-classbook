@@ -423,6 +423,7 @@ fun BackupScreen(nav: NavHostController) {
     var confirming by remember { mutableStateOf<BackupFile?>(null) }
     var sheetOpen by rememberSaveable { mutableStateOf(false) }
     var savedIn by rememberSaveable { mutableStateOf<String?>(null) }
+    var removing by remember { mutableStateOf<BackupLogEntry?>(null) }
     val words = rememberSheetWords()
     val sheetBase = stringResource(R.string.bk_sheetFile)
     val s = state ?: return
@@ -453,6 +454,26 @@ fun BackupScreen(nav: NavHostController) {
             val (name, bytes) = withContext(Dispatchers.IO) { services.backups.makeBackup() }
             exports.share(name, "application/json", bytes)
         }
+
+    // Apagar a backup from Recentes, always confirmed (AC-011-11).
+    removing?.let { e ->
+        val inFolder = e.name.isNotEmpty() && s.folderUri.isNotEmpty()
+        BottomSheet(
+            stringResource(R.string.bk_removeTitle, recentText(localOf(e.at, services.zone), language)),
+            { removing = null },
+            subtitle = if (inFolder) stringResource(R.string.bk_removeFolder, s.folderName) else stringResource(R.string.bk_removeShared),
+            actions =
+                listOf(
+                    { m -> Button(stringResource(R.string.catalog_cancel), { removing = null }, m, variant = ButtonVariant.OUTLINE) },
+                    { m ->
+                        Button(stringResource(R.string.bk_remove), {
+                            removing = null
+                            scope.launch { withContext(Dispatchers.IO) { services.backups.remove(e) } }
+                        }, m, variant = ButtonVariant.DANGER)
+                    },
+                ),
+        )
+    }
 
     confirming?.let { file ->
         val sum = backupSummary(file)
@@ -682,6 +703,7 @@ fun BackupScreen(nav: NavHostController) {
                                 } else {
                                     null
                                 },
+                                onRemove = { removing = e },
                             )
                         }
                     },
@@ -694,6 +716,7 @@ fun BackupScreen(nav: NavHostController) {
 private fun RecentRow(
     e: BackupLogEntry,
     onRestore: (() -> Unit)?,
+    onRemove: () -> Unit,
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
@@ -710,9 +733,10 @@ private fun RecentRow(
         subtitle = how + size,
         icon = if (e.auto) IconName.CLOUD else IconName.FILE,
         iconTone = if (e.ok) TileTone.SUCCESS else TileTone.DANGER,
-        trailing = if (onRestore != null) RowTrailing.CHEVRON else RowTrailing.NONE,
+        trailing = RowTrailing.REMOVE,
         badge = if (e.ok) null else BadgeTone.DANGER to stringResource(R.string.bk_failed),
         onClick = onRestore,
+        onRemove = onRemove,
     )
 }
 

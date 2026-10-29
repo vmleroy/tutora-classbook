@@ -218,7 +218,9 @@ fun filesToPrune(
 ): List<String> = written.dropLast(keep.coerceIn(BACKUP_KEEP_MIN, BACKUP_KEEP_MAX))
 
 const val BACKUP_KEEP_MIN = 1
-const val BACKUP_KEEP_MAX = 30
+
+/** At most five backups in the folder, the same five Recentes lists (Victor, 29 Oct 2026). */
+const val BACKUP_KEEP_MAX = 5
 const val BACKUP_KEEP_DEFAULT = 5
 const val BACKUP_WARN_DAYS = 14
 

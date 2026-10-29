@@ -200,6 +200,30 @@ class BackupScreensTest {
     }
 
     @Test
+    fun `AC-011-11 a backup can be removed from Recentes, and its file from the folder, after confirming`() {
+        runBlocking {
+            h.services.backups.setAuto(true, BackupEvery.DAY, 5, "content://tree/tutora", "Google Drive")
+            h.services.backups.runAuto()
+        }
+        h.show(compose)
+        h.go(compose, BackupHome)
+        compose.onNodeWithContentDescription("Remover", substring = true).performScrollTo().performClick()
+        h.settle(compose)
+        compose.onNodeWithText("O arquivo será apagado de Google Drive.").assertExists()
+        compose.onAllNodesWithTextExact("Apagar").onFirst().performClick()
+        h.awaitDb(compose) {
+            h.services.backups
+                .state()
+                .log
+                .isEmpty()
+        }
+        assertTrue(
+            h.t.folder.files
+                .isEmpty(),
+        )
+    }
+
+    @Test
     fun `AC-011-13 picking a backup asks first, saying what it holds and what it replaces`() {
         h.t.folder.picked["content://file/b"] =
             runBlocking {

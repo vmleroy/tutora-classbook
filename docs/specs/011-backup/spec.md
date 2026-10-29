@@ -32,7 +32,7 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 - **AC-011-5.** "Backup automático" is off at first. Turning it on asks for a folder with the phone's folder picker (which can be a Google Drive, OneDrive or phone folder); cancelling the picker leaves it off. The page then shows "Salvar em <folder>" with "Trocar". The folder row is always there, "Escolher pasta" until one is chosen, so the folder can be picked or changed with automatic backup on or off; turning it off keeps the folder (Victor, 29 Oct 2026).
 - **AC-011-6.** It runs Todo dia, Toda semana or Todo mês (Toda semana at first), in the evening, at 20:00. The line under the switch reads "Próximo: dom, 1 nov, 20:00 · último ontem", or "Desligado · só backup manual" when off.
-- **AC-011-7.** "Guardar os últimos N backups" (5 at first, from 1 to 30, with − and +) keeps only the newest N files Tutora wrote in that folder; older ones are deleted. Files Tutora didn't write there are never touched.
+- **AC-011-7.** "Guardar os últimos N backups" (5 at first, from 1 to 5, with − and +: never more than five, the same five Recentes lists; Victor, 29 Oct 2026) keeps only the newest N files Tutora wrote in that folder; older ones are deleted. Files Tutora didn't write there are never touched.
 - **AC-011-8.** If a run was missed (the phone was off, or the battery saver held it back), the backup is made the next time Tutora opens, once, not once per missed run.
 - **AC-011-9.** If the folder can't be written (deleted, or its access withdrawn), the run fails without losing anything, and the page and the Ajustes row say "Não foi possível salvar na pasta. Escolha a pasta de novo." with "Trocar".
 
@@ -42,7 +42,7 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 ### Recentes
 
-- **AC-011-11.** Recentes lists the last 5 backups, newest first, with the day and time, how it was made ("Automático · Google Drive" or "Manual · compartilhado") and its size; a failed automatic run shows in red with "Falhou". Tapping a backup saved in the folder, automatic or by hand, reads it back from there and asks with the same confirmation as Restaurar backup (AC-011-13); if the file is no longer there, the page says "Este backup não está mais na pasta." A shared backup can't be tapped: Tutora keeps no copy of it (Victor, 29 Oct 2026, replacing "a list only").
+- **AC-011-11.** Recentes lists the last 5 backups, newest first, with the day and time, how it was made ("Automático · Google Drive" or "Manual · compartilhado") and its size; a failed automatic run shows in red with "Falhou". Tapping a backup saved in the folder, automatic or by hand, reads it back from there and asks with the same confirmation as Restaurar backup (AC-011-13); if the file is no longer there, the page says "Este backup não está mais na pasta." A shared backup can't be tapped: Tutora keeps no copy of it (Victor, 29 Oct 2026, replacing "a list only"). Each row has × to remove it, confirmed first: "Apagar o backup de …?" deletes the file from the folder, or for a shared one says it only leaves the list (Victor, 29 Oct 2026).
 
 ### Restore
 

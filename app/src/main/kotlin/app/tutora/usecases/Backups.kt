@@ -220,6 +220,16 @@ class Backups(
         return true
     }
 
+    /**
+     * Removes a backup from Recentes, after the teacher confirms (constitution rule 3). One in the
+     * folder is deleted there too; a shared one only leaves the list (AC-011-11).
+     */
+    suspend fun remove(entry: BackupLogEntry) {
+        val s = store.load()
+        if (entry.name.isNotEmpty() && s.folderUri.isNotEmpty()) runCatching { ctx.backupFolder.delete(s.folderUri, entry.name) }
+        store.save(s.copy(log = s.log - entry, written = s.written - entry.name), ctx.now())
+    }
+
     /** Escolher pasta / Trocar: the folder backups go to, with automatic backup on or off (AC-011-5). */
     suspend fun setFolder(
         uri: String,

@@ -77,6 +77,10 @@
     <string name="bk_lessonsNone">nenhuma aula</string>
     <string name="bk_paymentsNone">nenhum pagamento</string>
     <string name="bk_gone">Este backup não está mais na pasta.</string>
+    <string name="bk_removeTitle">Apagar o backup de %1$s?</string>
+    <string name="bk_removeFolder">O arquivo será apagado de %1$s.</string>
+    <string name="bk_removeShared">Sai só da lista. O arquivo que você compartilhou continua onde está.</string>
+    <string name="bk_remove">Apagar</string>
     <string name="bk_confirm">Restaurar</string>
     <string name="bk_thisYear">Este ano</string>
     <string name="bk_all">Tudo</string>

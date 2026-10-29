@@ -226,11 +226,11 @@ class BackupTest {
         runTest {
             backups.setAuto(true, BackupEvery.DAY, 3, "content://tree/other-phone", "Outro celular")
             val file = backupFile()
-            backups.setAuto(true, BackupEvery.MONTH, 7, folder, "Tutora backups")
+            backups.setAuto(true, BackupEvery.MONTH, 4, folder, "Tutora backups")
             backups.restore(file)
             val s = backups.state()
             assertEquals(listOf(folder, "Tutora backups"), listOf(s.folderUri, s.folderName))
-            assertEquals(BackupEvery.MONTH to 7, s.every to s.keep)
+            assertEquals(BackupEvery.MONTH to 4, s.every to s.keep)
         }
 
     @Test

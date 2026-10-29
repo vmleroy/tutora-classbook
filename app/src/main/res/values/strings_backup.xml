@@ -71,6 +71,10 @@
     <string name="bk_lessonsNone">no classes</string>
     <string name="bk_paymentsNone">no payments</string>
     <string name="bk_gone">This backup is no longer in the folder.</string>
+    <string name="bk_removeTitle">Delete the backup from %1$s?</string>
+    <string name="bk_removeFolder">The file will be deleted from %1$s.</string>
+    <string name="bk_removeShared">It only leaves this list. The file you shared stays where it is.</string>
+    <string name="bk_remove">Delete</string>
     <string name="bk_confirm">Restore</string>
     <string name="bk_thisYear">This year</string>
     <string name="bk_all">All</string>

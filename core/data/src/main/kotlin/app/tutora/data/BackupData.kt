@@ -10,6 +10,8 @@ import androidx.sqlite.SQLITE_DATA_INTEGER
 import androidx.sqlite.SQLITE_DATA_NULL
 import androidx.sqlite.SQLiteStatement
 import app.tutora.domain.BACKUP_KEEP_DEFAULT
+import app.tutora.domain.BACKUP_KEEP_MAX
+import app.tutora.domain.BACKUP_KEEP_MIN
 import app.tutora.domain.BackupEvery
 import app.tutora.domain.BackupLogEntry
 import app.tutora.domain.BackupRow
@@ -172,7 +174,7 @@ class BackupStore(
         return BackupState(
             auto = bool("backup_auto"),
             every = BackupEvery.fromKey(text("backup_every")),
-            keep = (v["backup_keep"] as? JsonPrimitive)?.intOrNull ?: BACKUP_KEEP_DEFAULT,
+            keep = ((v["backup_keep"] as? JsonPrimitive)?.intOrNull ?: BACKUP_KEEP_DEFAULT).coerceIn(BACKUP_KEEP_MIN, BACKUP_KEEP_MAX),
             folderUri = text("backup_folder_uri"),
             folderName = text("backup_folder_name"),
             enabledAt = text("backup_enabled_at"),
