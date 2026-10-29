@@ -215,5 +215,9 @@ class EarningsScreensTest {
         h.settle(compose)
         exists("Dom, 25 out")
         exists("Ganho no dia")
+        // The Hoje tab still opens Hoje: the card switched tabs, it did not stack Ganhos on Hoje.
+        compose.onNodeWithTag("tab-today").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("today-screen").assertExists()
     }
 }

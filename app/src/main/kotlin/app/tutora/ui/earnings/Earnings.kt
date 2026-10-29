@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -70,10 +71,13 @@ import app.tutora.domain.localOf
 import app.tutora.domain.monthCells
 import app.tutora.domain.weekStart
 import app.tutora.state.LocalServices
+import app.tutora.ui.EarningsGraph
 import app.tutora.ui.EarningsHome
+import app.tutora.ui.OPEN_PERIOD
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.dayMonthLong
 import app.tutora.ui.localeOf
+import app.tutora.ui.openTab
 import app.tutora.ui.payments.payerRoute
 import app.tutora.ui.reports.EarningsReportSheet
 import app.tutora.ui.shortDate
@@ -117,14 +121,23 @@ private fun rangeLabel(
 @Composable
 fun EarningsScreen(
     nav: NavHostController,
-    startKind: String? = null,
+    asked: String? = null,
+    onAsked: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
     val zone = services.zone
     val today = remember { localOf(services.now(), zone).date }
-    var kind by rememberSaveable { mutableStateOf(startKind?.let { PeriodKind.valueOf(it) } ?: PeriodKind.MONTH) }
+    var kind by rememberSaveable { mutableStateOf(PeriodKind.MONTH) }
     var anchor by rememberSaveable { mutableStateOf(today.toString()) }
+    // Opened from Hoje's card: today's Dia, once (AC-016-28).
+    LaunchedEffect(asked) {
+        asked?.let {
+            kind = PeriodKind.valueOf(it)
+            anchor = today.toString()
+            onAsked()
+        }
+    }
     var filter by rememberSaveable { mutableStateOf(TypeFilter.ALL) }
     val period = Period(kind, LocalDate.parse(anchor))
     val view by remember(period, filter) { services.earningsRepo.view(period, filter, today, zone) }.collectAsState(initial = null)
@@ -354,7 +367,10 @@ fun TodayEarnings(
         stringResource(R.string.earn_today),
         earnedToday,
         // It opens Ganhos on today, Dia (AC-016-28).
-        Modifier.testTag("today-earnings").clickable(role = Role.Button) { nav.navigate(EarningsHome(PeriodKind.DAY.name)) },
+        Modifier.testTag("today-earnings").clickable(role = Role.Button) {
+            nav.openTab(EarningsGraph)
+            nav.getBackStackEntry<EarningsHome>().savedStateHandle[OPEN_PERIOD] = PeriodKind.DAY.name
+        },
         expectedCents = expected,
         expectedLabel = stringResource(R.string.earn_expected, formatMoney(expected, language)),
         stats =

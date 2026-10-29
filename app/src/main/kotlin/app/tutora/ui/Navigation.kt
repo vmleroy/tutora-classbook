@@ -68,10 +68,22 @@ import kotlin.reflect.KClass
 
 @Serializable data object EarningsGraph
 
-/** Ganhos; [kind] opens it on a period kind, such as DAY from Hoje's card (AC-016-28). */
-@Serializable data class EarningsHome(
-    val kind: String? = null,
-)
+@Serializable data object EarningsHome
+
+/** The saved-state key that asks Ganhos to open on a period kind, such as DAY from Hoje's card (AC-016-28). */
+const val OPEN_PERIOD = "openPeriod"
+
+/**
+ * Switches to a tab as the tab bar does: each tab keeps its own stack, so going back to Hoje
+ * always finds its home page.
+ */
+fun NavHostController.openTab(graph: Any) {
+    navigate(graph) {
+        popUpTo(this@openTab.graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
 
 @Serializable data object SettingsGraph
 
@@ -195,12 +207,7 @@ fun TutoraNav(
                         tabs = Tab.entries.map { TabItem(it.key, stringResource(it.label), it.icon) },
                         active = activeTab.key,
                         onSelect = { key ->
-                            val tab = Tab.entries.first { it.key == key }
-                            nav.navigate(tab.graph) {
-                                popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+                            nav.openTab(Tab.entries.first { it.key == key }.graph)
                         },
                     )
                 }
@@ -219,8 +226,11 @@ fun TutoraNav(
                         RegistryScreen(nav, r.view, r.owing)
                     }
                 }
-                navigation<EarningsGraph>(startDestination = EarningsHome()) {
-                    composable<EarningsHome> { EarningsScreen(nav, it.toRoute<EarningsHome>().kind) }
+                navigation<EarningsGraph>(startDestination = EarningsHome) {
+                    composable<EarningsHome> { entry ->
+                        val asked by entry.savedStateHandle.getStateFlow<String?>(OPEN_PERIOD, null).collectAsState()
+                        EarningsScreen(nav, asked) { entry.savedStateHandle[OPEN_PERIOD] = null }
+                    }
                 }
                 navigation<SettingsGraph>(startDestination = SettingsHome) {
                     composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { nav.navigate(PersonalData) } }
