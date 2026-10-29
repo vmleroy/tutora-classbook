@@ -33,6 +33,7 @@
     <string name="places_earnings_private">Counts as Private lessons in Earnings</string>
     <string name="places_new">New place</string>
     <string name="places_edit">Edit place</string>
+    <string name="places_paysLabel">Pays</string>
     <string name="places_detail">Place</string>
     <string name="places_name">Name</string>
     <string name="places_namePlaceholder">E.g. Aprender+ tutoring</string>

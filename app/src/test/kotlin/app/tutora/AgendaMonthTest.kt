@@ -6,6 +6,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
@@ -88,6 +89,15 @@ class AgendaMonthTest {
         runCatching { node.performScrollTo() }
         node.performClick()
         h.settle(compose)
+    }
+
+    /** Waits for the node read as [description]: a new month's classes come from the database's own thread. */
+    private fun eventually(description: String) {
+        repeat(50) {
+            if (compose.onAllNodes(hasContentDescription(description)).fetchSemanticsNodes().isNotEmpty()) return
+            h.settle(compose)
+        }
+        compose.onNodeWithContentDescription(description).assertExists()
     }
 
     private fun agenda() {
@@ -228,7 +238,7 @@ class AgendaMonthTest {
         exists("Dezembro 2026")
         compose.onNodeWithContentDescription("Próximo mês").assertIsNotEnabled()
         // 21 Dec is the last day with classes; 28 Dec is past the horizon.
-        compose.onNodeWithContentDescription("21 de dezembro, 1 aula").assertExists()
+        eventually("21 de dezembro, 1 aula")
         compose.onNodeWithContentDescription("28 de dezembro, nenhuma aula").assertExists()
         compose.onNodeWithContentDescription("3 de janeiro, nenhuma aula").assertIsNotEnabled()
         tap("Dezembro 2026, escolher mês e ano")

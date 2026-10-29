@@ -18,6 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.components.Avatar
+import app.tutora.designsystem.components.AvatarSize
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Chip
@@ -29,6 +31,7 @@ import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.MoneyField
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.Stepper
+import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
@@ -68,6 +71,7 @@ import app.tutora.ui.payments.receiveLabel
 import app.tutora.ui.placeName
 import app.tutora.ui.placePriceText
 import app.tutora.ui.rateMoney
+import app.tutora.ui.rateText
 import app.tutora.ui.tag
 import app.tutora.ui.travelText
 import app.tutora.usecases.Kind
@@ -108,14 +112,8 @@ fun PlaceDetailScreen(
                 } else {
                     null
                 },
-                HeaderAction(IconName.FILE, stringResource(R.string.rep_screen)) { nav.navigate(app.tutora.ui.Report("PLACE", p.id)) },
-                HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) {
-                    nav.navigate(
-                        app.tutora.ui
-                            .PlaceEdit(p.id),
-                    )
-                },
             ),
+        trailing = { EditButton { nav.navigate(app.tutora.ui.PlaceEdit(id = p.id)) } },
     ) {
         if (p.archivedAt != null) {
             ArchiveActions(
@@ -132,16 +130,32 @@ fun PlaceDetailScreen(
                 removeBody = stringResource(R.string.catalog_removePlaceBody),
             )
         }
-        Card {
-            Text(placeName(p), style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
-            Text(
-                listOfNotNull(kindName(p.kind), p.address).joinToString(" · "),
-                style = TutoraTheme.type.meta,
-                color = TutoraTheme.colors.inkMuted,
-            )
+        // As on the PlaceDetail mockup: the place, three figures, then the actions (Victor, 29 Oct 2026).
+        DetailIdentity(placeName(p), listOfNotNull(kindName(p.kind), p.address).joinToString(" · ")) {
+            Avatar(initials(placeName(p)), Tag.VIOLET, size = AvatarSize.LG)
         }
+        val month = monthStat { l -> l.place.id == p.id }
+        val price =
+            DetailStat(
+                stringResource(if (p.payer == Payer.PLACE) R.string.places_paysLabel else R.string.pay_amount),
+                // Just the rate: the label already says who pays.
+                p.rateCents?.let { rateText(it, p.rateType) } ?: stringResource(R.string.places_noPrice),
+            )
+        val report = { nav.navigate(app.tutora.ui.Report("PLACE", p.id)) }
+        val newLesson = { nav.navigate(app.tutora.ui.LessonNew()) }
         // A place that pays the teacher has a balance and Receber da salinha, near the top (AC-008-14).
-        if (paysTeacher(p)) PayerBalance(PayerRef(PayerKind.PLACE, p.id), receiveLabel(p.kind), isPlace = true)
+        if (paysTeacher(p)) {
+            PayerBalance(
+                PayerRef(PayerKind.PLACE, p.id),
+                receiveLabel(p.kind),
+                isPlace = true,
+                stats = listOf(month, price),
+                onReport = report,
+                onNewLesson = newLesson,
+            )
+        } else {
+            DetailOverview(listOf(month, price), null, report, newLesson)
+        }
         Card(label = stringResource(R.string.places_model)) {
             Text(stringResource(R.string.places_model), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
             val who = stringResource(if (p.payer == Payer.PLACE) R.string.places_whoPlace else R.string.places_whoStudent)
@@ -166,7 +180,7 @@ fun PlaceDetailScreen(
                 minutesText(p.defaultDurationMin),
                 if (mode == PayMode.CHOOSE && p.payer == Payer.PLACE) cycle else null,
                 if (p.kind == PlaceKind.STUDENT_HOME) travelText(p) else null,
-            ).forEach { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.ink) }
+            ).joinToString(" · ").let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.ink) }
         }
         // Alunos and Turmas, managed as on every detail (AC-004-32, 34).
         val here = groups.filter { it.placeId == p.id }

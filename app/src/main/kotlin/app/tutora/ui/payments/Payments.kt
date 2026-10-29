@@ -1,6 +1,7 @@
 package app.tutora.ui.payments
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -47,10 +48,8 @@ import app.tutora.designsystem.components.ProgressTone
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
+import app.tutora.designsystem.components.StatTone
 import app.tutora.designsystem.components.Stepper
-import app.tutora.designsystem.components.SummaryCard
-import app.tutora.designsystem.components.SummaryTile
-import app.tutora.designsystem.components.SummaryTone
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
@@ -86,6 +85,8 @@ import app.tutora.ui.PaymentDetail
 import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
+import app.tutora.ui.catalog.DetailOverview
+import app.tutora.ui.catalog.DetailStat
 import app.tutora.ui.clockDuration
 import app.tutora.ui.localeOf
 import app.tutora.ui.minutesText
@@ -177,31 +178,29 @@ fun PayerBalance(
     payer: PayerRef,
     payLabel: String,
     isPlace: Boolean = false,
+    stats: List<DetailStat> = emptyList(),
+    onReport: () -> Unit = {},
+    onNewLesson: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
     val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
-    val settings by services.settings.collectAsState(initial = null)
     var sheet by rememberSaveable { mutableStateOf<String?>(null) }
     val l = ledger ?: return
-    val credits = settings?.credits == true
     val owes = l.owedCents
-    // On the Topo-colored summary card; what is owed sits in the red tile (AC-016-2, 3).
-    SummaryCard(Modifier.testTag("balance")) {
-        val label =
-            stringResource(
-                when {
-                    owes > 0 -> if (isPlace) R.string.pay_placeOwesLabel else R.string.pay_owesLabel
-                    else -> R.string.pay_settled
-                },
-            )
+    // What is owed is the first of the three figures, red while something is owed (AC-008-11, AC-016-2).
+    val owed =
         if (owes > 0) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) { SummaryTile(label, owes, SummaryTone.OWED, compact = false) }
+            DetailStat(
+                stringResource(if (isPlace) R.string.pay_placeOwesLabel else R.string.pay_owesLabel),
+                formatMoney(owes, language),
+                StatTone.OWED,
+            )
         } else {
-            Text(label, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.onHeaderMuted)
-            Money(owes, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
+            DetailStat(stringResource(R.string.pay_settled), formatMoney(0, language), StatTone.PAID)
         }
-        Button(payLabel, { sheet = "pay" }, icon = IconName.WALLET, fullWidth = true, variant = ButtonVariant.ACCENT)
+    Box(Modifier.testTag("balance")) {
+        DetailOverview(listOf(owed) + stats, payLabel to { sheet = "pay" }, onReport, onNewLesson)
     }
     if (sheet == "pay") PaymentSheet(payer, l, onDismiss = { sheet = null }, elsewhere = studentElsewhere(payer))
 }

@@ -117,3 +117,38 @@ fun RowScope.SummaryTile(
         Text(text, style = TutoraTheme.type.moneyMd, color = fg, maxLines = 1)
     }
 }
+
+/** PLAIN is a white tile; OWED and PAID keep their red and green in every theme. */
+enum class StatTone { PLAIN, OWED, PAID }
+
+/**
+ * One of the three figures at the top of a student, group or place: "Deve R$ 240,00",
+ * "Outubro 6 aulas", "Valor R$ 120/h". Tiles in a row share their width and height.
+ */
+@Composable
+fun RowScope.StatTile(
+    label: String,
+    value: String,
+    tone: StatTone = StatTone.PLAIN,
+) {
+    val c = TutoraTheme.colors
+    val (bg, fg, sub) =
+        when (tone) {
+            StatTone.PLAIN -> Triple(c.surface, c.ink, c.inkMuted)
+            StatTone.OWED -> Triple(c.dangerSoft, c.dangerInk, c.dangerInk)
+            StatTone.PAID -> Triple(c.successSoft, c.successInk, c.successInk)
+        }
+    Column(
+        Modifier
+            .weight(1f)
+            .fillMaxHeight()
+            .testTag("stat-tile-${tone.name.lowercase()}")
+            .clip(RoundedCornerShape(Radius.lg))
+            .background(bg)
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = Spacing.s3, vertical = Spacing.s2_5),
+    ) {
+        Text(label, style = TutoraTheme.type.meta, color = sub, maxLines = 1)
+        Text(value, style = TutoraTheme.type.moneyMd, color = fg)
+    }
+}

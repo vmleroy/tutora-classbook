@@ -204,8 +204,9 @@ class FeatureScreensTest {
         h.show(compose)
         h.go(compose, PlaceDetail(p))
         compose.onNodeWithText("Salinha · Rua das Flores, 120", useUnmergedTree = true).assertExists()
-        compose.onNodeWithText("Quem paga: o local", useUnmergedTree = true).assertExists()
-        compose.onNodeWithText("Mensal", useUnmergedTree = true).assertExists()
+        // The model reads as one line since spec 016.
+        compose.onNodeWithText("Quem paga: o local", substring = true, useUnmergedTree = true).assertExists()
+        compose.onNodeWithText("Mensal", substring = true, useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Alunos daqui · 1", useUnmergedTree = true).assertExists()
         compose.onNodeWithContentDescription("Adicionar aluno").assertExists()
         compose.onNodeWithText("Turma ENEM", useUnmergedTree = true).assertExists()
@@ -245,7 +246,8 @@ class FeatureScreensTest {
         h.show(compose)
         h.go(compose, StudentDetail(ana))
         // The rate shows on each place (AC-008-32 dropped the Valor card).
-        compose.onNode(hasPlainText("R$ 120/h"), useUnmergedTree = true).assertExists()
+        // On the Valor tile and on the place row.
+        compose.onAllNodes(hasPlainText("R$ 120/h"), useUnmergedTree = true).onFirst().assertExists()
         compose.onAllNodes(hasContentDescription("Casa do Aluno", substring = true)).onFirst().performClick()
         compose.waitForIdle()
         compose.onNodeWithTag("place-detail").assertExists()

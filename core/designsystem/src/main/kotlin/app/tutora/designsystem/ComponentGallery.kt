@@ -72,6 +72,8 @@ import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.SelectField
+import app.tutora.designsystem.components.StatTile
+import app.tutora.designsystem.components.StatTone
 import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.SummaryCard
 import app.tutora.designsystem.components.SummaryTile
@@ -128,6 +130,7 @@ val galleryComponents =
         "EmptyState",
         "TimerRing",
         "SummaryCard",
+        "StatTile",
         "MonthGrid",
         "MonthPicker",
     )
@@ -303,6 +306,17 @@ fun GallerySections() {
                 SummaryTile("Pago", 24_000, SummaryTone.PAID)
                 SummaryTile("Deve", 24_000, SummaryTone.OWED, onClick = {})
             }
+        }
+    }
+    Section("StatTile") {
+        Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            StatTile("Deve", "R$ 240,00", StatTone.OWED)
+            StatTile("Outubro", "6 aulas")
+            StatTile("Valor", "R$ 120/h")
+        }
+        Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            StatTile("Em dia", "R$ 0,00", StatTone.PAID)
+            StatTile("Outubro", "nenhuma aula")
         }
     }
     Section("MonthGrid") {
