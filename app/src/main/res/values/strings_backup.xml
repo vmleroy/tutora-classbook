@@ -75,6 +75,9 @@
     <string name="bk_removeFolder">The file will be deleted from %1$s.</string>
     <string name="bk_removeShared">It only leaves this list. The file you shared stays where it is.</string>
     <string name="bk_remove">Delete</string>
+    <string name="bk_shareThis">Share</string>
+    <string name="bk_detailShared">This backup was shared and Tutora kept no copy. To restore it, use Restore backup and pick the file where you saved it.</string>
+    <string name="bk_detailFailed">This attempt didn\'t save any file.</string>
     <string name="bk_confirm">Restore</string>
     <string name="bk_thisYear">This year</string>
     <string name="bk_all">All</string>

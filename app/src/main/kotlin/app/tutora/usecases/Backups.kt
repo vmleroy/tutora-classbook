@@ -296,10 +296,13 @@ class Backups(
      * A backup Recentes lists in the folder, automatic or saved by hand, read back from it; null when the file was
      * deleted there or the folder can't be reached (AC-011-11).
      */
-    suspend fun fromRecent(entry: BackupLogEntry): BackupRead? {
+    suspend fun fromRecent(entry: BackupLogEntry): BackupRead? = fileOf(entry)?.let(::inspect)
+
+    /** The bytes of a backup Recentes lists in the folder, to restore or share it; null when it isn't there. */
+    suspend fun fileOf(entry: BackupLogEntry): ByteArray? {
         val s = store.load()
         if (!entry.ok || entry.name.isEmpty() || s.folderUri.isEmpty()) return null
-        return runCatching { ctx.backupFolder.read(s.folderUri, entry.name) }.getOrNull()?.let(::inspect)
+        return runCatching { ctx.backupFolder.read(s.folderUri, entry.name) }.getOrNull()
     }
 
     /** Reads a picked file: a backup this app can restore, or why not (AC-011-12, 15, 20). */

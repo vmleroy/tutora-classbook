@@ -81,6 +81,9 @@
     <string name="bk_removeFolder">O arquivo será apagado de %1$s.</string>
     <string name="bk_removeShared">Sai só da lista. O arquivo que você compartilhou continua onde está.</string>
     <string name="bk_remove">Apagar</string>
+    <string name="bk_shareThis">Compartilhar</string>
+    <string name="bk_detailShared">Este backup foi compartilhado e o Tutora não guardou uma cópia. Para restaurá-lo, use Restaurar backup e escolha o arquivo onde você o salvou.</string>
+    <string name="bk_detailFailed">Esta tentativa não salvou nenhum arquivo.</string>
     <string name="bk_confirm">Restaurar</string>
     <string name="bk_thisYear">Este ano</string>
     <string name="bk_all">Tudo</string>

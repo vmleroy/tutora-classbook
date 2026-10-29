@@ -3,6 +3,7 @@ package app.tutora.ui.backup
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
@@ -424,6 +425,7 @@ fun BackupScreen(nav: NavHostController) {
     var sheetOpen by rememberSaveable { mutableStateOf(false) }
     var savedIn by rememberSaveable { mutableStateOf<String?>(null) }
     var removing by remember { mutableStateOf<BackupLogEntry?>(null) }
+    var opened by remember { mutableStateOf<BackupLogEntry?>(null) }
     val words = rememberSheetWords()
     val sheetBase = stringResource(R.string.bk_sheetFile)
     val s = state ?: return
@@ -449,11 +451,84 @@ fun BackupScreen(nav: NavHostController) {
             }
         }
 
+    fun restoreFromFile() {
+        problem = null
+        picker.file { uri ->
+            if (uri != null) {
+                scope.launch {
+                    val bytes = withContext(Dispatchers.IO) { services.ctx.backupFolder.read(uri) } ?: ByteArray(0)
+                    when (val read = services.backups.inspect(bytes)) {
+                        is BackupRead.Ok -> confirming = read.file
+                        is BackupRead.Newer -> problem = Problem.NEWER
+                        BackupRead.NotTutora -> problem = Problem.NOT_TUTORA
+                    }
+                }
+            }
+        }
+    }
+
+    fun restoreRecent(e: BackupLogEntry) {
+        problem = null
+        scope.launch {
+            when (val read = withContext(Dispatchers.IO) { services.backups.fromRecent(e) }) {
+                is BackupRead.Ok -> confirming = read.file
+                is BackupRead.Newer -> problem = Problem.NEWER
+                BackupRead.NotTutora -> problem = Problem.NOT_TUTORA
+                null -> problem = Problem.GONE
+            }
+        }
+    }
+
+    fun shareRecent(e: BackupLogEntry) {
+        problem = null
+        scope.launch {
+            val bytes = withContext(Dispatchers.IO) { services.backups.fileOf(e) }
+            if (bytes == null) problem = Problem.GONE else exports.share(e.name, "application/json", bytes)
+        }
+    }
+
     fun share() =
         scope.launch {
             val (name, bytes) = withContext(Dispatchers.IO) { services.backups.makeBackup() }
             exports.share(name, "application/json", bytes)
         }
+
+    // A backup from Recentes: what can be done with it (AC-011-11).
+    opened?.let { e ->
+        val inFolder = e.ok && e.name.isNotEmpty() && s.folderUri.isNotEmpty()
+        BottomSheet(
+            recentText(localOf(e.at, services.zone), language),
+            { opened = null },
+            subtitle =
+                when {
+                    !e.ok -> stringResource(R.string.bk_detailFailed)
+                    inFolder -> recentLine(e)
+                    else -> stringResource(R.string.bk_detailShared)
+                },
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                if (inFolder) {
+                    Button(stringResource(R.string.bk_confirm), {
+                        opened = null
+                        restoreRecent(e)
+                    }, fullWidth = true)
+                    Button(stringResource(R.string.bk_shareThis), {
+                        opened = null
+                        shareRecent(e)
+                    }, fullWidth = true, variant = ButtonVariant.OUTLINE)
+                } else if (e.ok) {
+                    Button(stringResource(R.string.bk_restore), {
+                        opened = null
+                        restoreFromFile()
+                    }, fullWidth = true, variant = ButtonVariant.OUTLINE)
+                }
+                Button(stringResource(R.string.bk_remove), {
+                    opened = null
+                    removing = e
+                }, fullWidth = true, variant = ButtonVariant.GHOST)
+            }
+        }
+    }
 
     // Apagar a backup from Recentes, always confirmed (AC-011-11).
     removing?.let { e ->
@@ -652,21 +727,7 @@ fun BackupScreen(nav: NavHostController) {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             Button(stringResource(R.string.bk_sheet), { sheetOpen = true }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
-            Button(stringResource(R.string.bk_restore), {
-                problem = null
-                picker.file { uri ->
-                    if (uri != null) {
-                        scope.launch {
-                            val bytes = withContext(Dispatchers.IO) { services.ctx.backupFolder.read(uri) } ?: ByteArray(0)
-                            when (val read = services.backups.inspect(bytes)) {
-                                is BackupRead.Ok -> confirming = read.file
-                                is BackupRead.Newer -> problem = Problem.NEWER
-                                BackupRead.NotTutora -> problem = Problem.NOT_TUTORA
-                            }
-                        }
-                    }
-                }
-            }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
+            Button(stringResource(R.string.bk_restore), ::restoreFromFile, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
         }
         if (s.restoreUndo) {
             Button(stringResource(R.string.bk_undo), {
@@ -679,64 +740,43 @@ fun BackupScreen(nav: NavHostController) {
             }, fullWidth = true, variant = ButtonVariant.GHOST)
         }
 
-        // Recentes: an automatic backup restores from its folder, with the same confirmation (AC-011-11).
+        // Recentes: every row opens what can be done with that backup (AC-011-11).
         if (s.log.isNotEmpty()) {
             ListGroup(
                 title = stringResource(R.string.bk_recent),
-                rows =
-                    s.log.map { e ->
-                        @Composable {
-                            RecentRow(
-                                e,
-                                if (e.ok && e.name.isNotEmpty()) {
-                                    {
-                                        problem = null
-                                        scope.launch {
-                                            when (val read = withContext(Dispatchers.IO) { services.backups.fromRecent(e) }) {
-                                                is BackupRead.Ok -> confirming = read.file
-                                                is BackupRead.Newer -> problem = Problem.NEWER
-                                                BackupRead.NotTutora -> problem = Problem.NOT_TUTORA
-                                                null -> problem = Problem.GONE
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    null
-                                },
-                                onRemove = { removing = e },
-                            )
-                        }
-                    },
+                rows = s.log.map { e -> @Composable { RecentRow(e) { opened = e } } },
             )
         }
     }
 }
 
+/** "Automático · Google Drive · 184 KB", "Manual · Download · 24 KB" or "Manual · compartilhado · 24 KB". */
 @Composable
-private fun RecentRow(
-    e: BackupLogEntry,
-    onRestore: (() -> Unit)?,
-    onRemove: () -> Unit,
-) {
-    val services = LocalServices.current
-    val language = currentLanguage()
+private fun recentLine(e: BackupLogEntry): String {
     val how =
         when {
             e.auto -> stringResource(R.string.bk_recentAuto, e.where)
             e.where.isNotEmpty() -> stringResource(R.string.bk_recentManualIn, e.where)
             else -> stringResource(R.string.bk_recentManual)
         }
-    val size = if (e.ok) " · ${(e.bytes / 1024).coerceAtLeast(1)} KB" else ""
+    return how + if (e.ok) " · ${(e.bytes / 1024).coerceAtLeast(1)} KB" else ""
+}
+
+@Composable
+private fun RecentRow(
+    e: BackupLogEntry,
+    onClick: () -> Unit,
+) {
+    val services = LocalServices.current
+    val language = currentLanguage()
     ListRow(
         recentText(localOf(e.at, services.zone), language),
         Modifier.testTag("backup-recent"),
-        subtitle = how + size,
+        subtitle = recentLine(e),
         icon = if (e.auto) IconName.CLOUD else IconName.FILE,
         iconTone = if (e.ok) TileTone.SUCCESS else TileTone.DANGER,
-        trailing = RowTrailing.REMOVE,
         badge = if (e.ok) null else BadgeTone.DANGER to stringResource(R.string.bk_failed),
-        onClick = onRestore,
-        onRemove = onRemove,
+        onClick = onClick,
     )
 }
 

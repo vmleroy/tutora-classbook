@@ -196,6 +196,8 @@ class BackupScreensTest {
         h.show(compose)
         h.go(compose, BackupHome)
         click("Automático · Google Drive")
+        compose.onAllNodesWithTextExact("Restaurar").onFirst().performClick()
+        h.settle(compose)
         compose.onNodeWithText("Restaurar o backup de 26/10/2026, 09:00?").assertExists()
     }
 
@@ -207,7 +209,8 @@ class BackupScreensTest {
         }
         h.show(compose)
         h.go(compose, BackupHome)
-        compose.onNodeWithContentDescription("Remover", substring = true).performScrollTo().performClick()
+        click("Automático · Google Drive")
+        compose.onAllNodesWithTextExact("Apagar").onFirst().performClick()
         h.settle(compose)
         compose.onNodeWithText("O arquivo será apagado de Google Drive.").assertExists()
         compose.onAllNodesWithTextExact("Apagar").onFirst().performClick()
@@ -221,6 +224,16 @@ class BackupScreensTest {
             h.t.folder.files
                 .isEmpty(),
         )
+    }
+
+    @Test
+    fun `AC-011-11 a shared backup in Recentes opens too, saying Tutora kept no copy`() {
+        runBlocking { h.services.backups.makeBackup() }
+        h.show(compose)
+        h.go(compose, BackupHome)
+        click("Manual · compartilhado")
+        compose.onNodeWithText("Este backup foi compartilhado", substring = true).assertExists()
+        compose.onAllNodesWithTextExact("Apagar").onFirst().assertExists()
     }
 
     @Test
