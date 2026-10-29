@@ -62,6 +62,7 @@ fun SettingsScreen(
     appInfo: AppInfo,
     schemaVersion: Int,
     onPersonal: () -> Unit = {},
+    onBackup: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val settings by services.settings.collectAsState(initial = null)
@@ -100,17 +101,24 @@ fun SettingsScreen(
     ScreenScaffold(stringResource(R.string.tab_settings), "settings-screen") {
         // Seus dados first, on its own page: name and Pix key for reports (AC-010-16).
         ListGroup(
-            listOf {
-                ListRow(
-                    stringResource(R.string.rep_personal),
-                    subtitle =
-                        listOf(s.teacherName, s.pixKey).filter { it.isNotBlank() }.joinToString(" · ").ifEmpty {
-                            stringResource(R.string.rep_personalHint)
-                        },
-                    icon = IconName.USERS,
-                    onClick = onPersonal,
-                )
-            },
+            listOf(
+                {
+                    ListRow(
+                        stringResource(R.string.rep_personal),
+                        subtitle =
+                            listOf(s.teacherName, s.pixKey).filter { it.isNotBlank() }.joinToString(" · ").ifEmpty {
+                                stringResource(R.string.rep_personalHint)
+                            },
+                        icon = IconName.USERS,
+                        onClick = onPersonal,
+                    )
+                },
+                // Backup e planilha, with its state or its warning (AC-011-1, 10).
+                {
+                    app.tutora.ui.backup
+                        .BackupSettingsRow(onBackup)
+                },
+            ),
         )
         ListGroup(
             title = stringResource(R.string.settings_general),

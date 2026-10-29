@@ -36,6 +36,21 @@ interface SettingsDao {
     suspend fun upsert(rows: List<SettingRow>)
 }
 
+/** What the backup page needs besides the dump (spec 011). */
+@Dao
+interface BackupDao {
+    /** When the first class was added: the 14-day warning counts from it while no backup exists (AC-011-10). */
+    @Query("SELECT MIN(created_at) FROM lesson")
+    suspend fun firstLessonAt(): String?
+
+    @Query("SELECT MIN(created_at) FROM lesson")
+    fun observeFirstLessonAt(): Flow<String?>
+
+    /** A class running now: no restore while one is (open question, Victor 29 Oct 2026). */
+    @Query("SELECT COUNT(*) FROM lesson_timer")
+    suspend fun liveCount(): Int
+}
+
 @Database(
     entities = [
         SettingRow::class, PlaceRow::class, StudentRow::class, LinkRow::class, GroupRow::class, MemberRow::class,
@@ -59,6 +74,8 @@ abstract class TutoraDatabase : RoomDatabase() {
     abstract fun payments(): PaymentDao
 
     abstract fun earnings(): EarningsDao
+
+    abstract fun backup(): BackupDao
 
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */

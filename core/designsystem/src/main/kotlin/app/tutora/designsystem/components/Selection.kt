@@ -231,18 +231,19 @@ fun Stepper(
 ) {
     val c = TutoraTheme.colors
     val shape = RoundedCornerShape(Radius.xl)
+    // One compact height for every stepper; [size] stays for callers (Victor, 29 Oct 2026).
     Row(
         modifier =
             modifier
                 .fillMaxWidth()
-                .height(if (size == ControlSize.SM) Size.controlMd else Size.controlLg)
+                .height(Size.controlMd)
                 .clip(shape)
                 .background(c.surface)
                 .border(Size.border, c.line, shape)
                 .padding(horizontal = Spacing.s1),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(IconName.MINUS, decrementLabel, { onChange((value - step).coerceIn(min, max)) }, enabled = value > min)
+        StepButton(IconName.MINUS, decrementLabel, { onChange((value - step).coerceIn(min, max)) }, enabled = value > min)
         Box(
             Modifier
                 .weight(1f)
@@ -258,8 +259,35 @@ fun Stepper(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(format(value), style = TutoraTheme.type.moneyMd, color = c.ink, maxLines = 1)
+            Text(format(value), style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"), color = c.ink, maxLines = 1)
         }
-        IconButton(IconName.PLUS, incrementLabel, { onChange((value + step).coerceIn(min, max)) }, enabled = value < max)
+        StepButton(IconName.PLUS, incrementLabel, { onChange((value + step).coerceIn(min, max)) }, enabled = value < max)
+    }
+}
+
+/** − or + of a Stepper: a small circle, with the full 48 dp to press around it (AC-016-8). */
+@Composable
+private fun StepButton(
+    icon: IconName,
+    label: String,
+    onClick: () -> Unit,
+    enabled: Boolean,
+) {
+    val c = TutoraTheme.colors
+    Box(
+        Modifier
+            .size(Size.touch)
+            .alpha(if (enabled) 1f else Opacity.disabled)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .size(Size.tile)
+                .clip(CircleShape)
+                .background(c.surfaceSunken),
+            contentAlignment = Alignment.Center,
+        ) { Icon(icon, tint = c.ink, size = Size.iconSm) }
     }
 }

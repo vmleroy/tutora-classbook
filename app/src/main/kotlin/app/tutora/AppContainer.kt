@@ -7,6 +7,7 @@ import app.tutora.domain.isoText
 import app.tutora.domain.uuidv7
 import app.tutora.live.AndroidAutoStartAlarm
 import app.tutora.live.AndroidLiveNotifier
+import app.tutora.usecases.Backups
 import app.tutora.usecases.Ctx
 import app.tutora.usecases.Live
 import app.tutora.usecases.StartApp
@@ -35,11 +36,35 @@ class AppContainer(
     /** The alarm that starts a class with the app closed (AC-007-22). */
     val alarm = AndroidAutoStartAlarm(context)
 
+    /** Where automatic backups go, and what wakes the app for them (spec 011). */
+    private val backupFolder =
+        app.tutora.adapters.backup
+            .AndroidBackupFolder(context)
+    private val backupScheduler =
+        app.tutora.adapters.backup
+            .WorkManagerBackupScheduler(context)
+
     // Opened once per process, so the notification's buttons use the same database as the screens.
     private val database by lazy { openTutoraDatabase(context) }
 
     /** The live timer for the notification's buttons, which run without the screens. */
-    val live by lazy { Live(Ctx(database.first, ::now, ::newId, live = notifier, alarm = alarm)) }
+    val live by lazy { Live(ctx) }
+
+    /** Automatic backups for the 20:00 work, which runs without the screens (AC-011-6). */
+    val backups by lazy { Backups(ctx) }
+
+    private val ctx by lazy {
+        Ctx(
+            database.first,
+            ::now,
+            ::newId,
+            live = notifier,
+            alarm = alarm,
+            backupFolder = backupFolder,
+            backupScheduler = backupScheduler,
+            privateDir = context.filesDir,
+        )
+    }
 
     val startApp =
         StartApp(
@@ -55,6 +80,9 @@ class AppContainer(
             newId = ::newId,
             notifier = notifier,
             alarm = alarm,
+            backupFolder = backupFolder,
+            backupScheduler = backupScheduler,
+            privateDir = context.filesDir,
         )
 }
 

@@ -220,6 +220,8 @@ fun TodayScreen(nav: NavHostController) {
                     }
                 }
                 PendingAlert(nav)
+                app.tutora.ui.backup
+                    .BackupAlert(nav)
                 if (lessons.isEmpty()) {
                     EmptyState(
                         stringResource(R.string.empty_today_title),

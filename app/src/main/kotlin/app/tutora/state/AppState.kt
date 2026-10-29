@@ -9,6 +9,7 @@ import app.tutora.data.ScheduleRepository
 import app.tutora.data.SettingsRepository
 import app.tutora.data.TutoraDatabase
 import app.tutora.domain.Settings
+import app.tutora.usecases.Backups
 import app.tutora.usecases.Catalog
 import app.tutora.usecases.Ctx
 import app.tutora.usecases.Lessons
@@ -41,6 +42,7 @@ class AppServices(
     val earningsRepo = EarningsRepository(db)
     val reportsRepo = ReportsRepository(db)
     val payments = Payments(ctx)
+    val backups = Backups(ctx)
 
     val settings: Flow<Settings> = settingsRepo.observe()
 

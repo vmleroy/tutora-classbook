@@ -34,6 +34,9 @@ class StartApp(
     private val newId: () -> String,
     private val notifier: LiveNotifier = LiveNotifier.None,
     private val alarm: AutoStartAlarm = AutoStartAlarm.None,
+    private val backupFolder: BackupFolder = BackupFolder.None,
+    private val backupScheduler: BackupScheduler = BackupScheduler.None,
+    private val privateDir: java.io.File = java.io.File(System.getProperty("java.io.tmpdir"), "tutora"),
 ) {
     suspend operator fun invoke(): StartResult {
         val phone = phoneTags()
@@ -44,7 +47,21 @@ class StartApp(
             // The first query runs Room's pending migrations.
             val repo = SettingsRepository(db)
             repo.ensureDefaults(firstRunLanguage(phone), now())
-            val ctx = Ctx(db, now, newId, live = notifier, alarm = alarm)
+            val ctx =
+                Ctx(
+                    db,
+                    now,
+                    newId,
+                    live = notifier,
+                    alarm = alarm,
+                    backupFolder = backupFolder,
+                    backupScheduler = backupScheduler,
+                    privateDir = privateDir,
+                )
+            // This phone's backup setup starts off (AC-011-5).
+            app.tutora.data
+                .BackupStore(db)
+                .ensureDefaults(now())
             Catalog(ctx).ensureBuiltinPlaces()
             // Classes given before payments existed get who owes them (spec 008).
             Payments(ctx).backfill()

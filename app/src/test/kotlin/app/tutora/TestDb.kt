@@ -19,12 +19,58 @@ class TestDb(
     val zone: String = "America/Sao_Paulo",
     val notifier: LiveNotifier = LiveNotifier.None,
     val alarm: AutoStartAlarm = AutoStartAlarm.None,
+    val folder: FakeBackupFolder = FakeBackupFolder(),
+    val scheduler: FakeBackupScheduler = FakeBackupScheduler(),
 ) {
     private var n = 0
     val db = openTutoraDatabase(ApplicationProvider.getApplicationContext(), File(dir, "tutora.db"), AndroidSQLiteDriver()).first
-    val ctx = Ctx(db, { now }, { "id-" + (++n).toString().padStart(5, '0') }, { zone }, notifier, alarm)
+    val ctx =
+        Ctx(db, { now }, { "id-" + (++n).toString().padStart(5, '0') }, { zone }, notifier, alarm, folder, scheduler, File(dir, "files"))
     val catalog = Catalog(ctx)
     val schedule = Schedule(ctx)
     val lessons = Lessons(ctx)
     val live = Live(ctx)
+}
+
+/** A backup folder in memory: what was written, and a switch to make writing fail (AC-011-9). */
+class FakeBackupFolder : app.tutora.usecases.BackupFolder {
+    val files = linkedMapOf<String, ByteArray>()
+
+    /** Files picked in Restaurar backup, by uri. */
+    val picked = mutableMapOf<String, ByteArray>()
+    var failing = false
+
+    override fun adopt(uri: String) = "Tutora backups"
+
+    override fun read(uri: String) = picked[uri]
+
+    override fun read(
+        uri: String,
+        name: String,
+    ) = files[name]
+
+    override fun write(
+        uri: String,
+        name: String,
+        bytes: ByteArray,
+    ): Long {
+        check(!failing) { "Folder gone" }
+        files[name] = bytes
+        return bytes.size.toLong()
+    }
+
+    override fun delete(
+        uri: String,
+        name: String,
+    ) {
+        files.remove(name)
+    }
+}
+
+class FakeBackupScheduler : app.tutora.usecases.BackupScheduler {
+    var planned: String? = null
+
+    override fun plan(at: String?) {
+        planned = at
+    }
 }

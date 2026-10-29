@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 011: backup, restore and the full spreadsheet. -->
+<resources>
+    <string name="bk_screen">Backup e planilha</string>
+    <string name="bk_rowAuto">Automático, %1$s · último %2$s</string>
+    <string name="bk_rowAutoNever">Automático, %1$s · nenhum ainda</string>
+    <string name="bk_rowManual">Só manual · último %1$s</string>
+    <string name="bk_none">Nenhum backup ainda</string>
+    <string name="bk_everyDayLower">todo dia</string>
+    <string name="bk_everyWeekLower">toda semana</string>
+    <string name="bk_everyMonthLower">todo mês</string>
+    <string name="bk_today">hoje</string>
+    <string name="bk_yesterday">ontem</string>
+    <plurals name="bk_warnRow">
+        <item quantity="one">Último backup há %d dia</item>
+        <item quantity="many">Último backup há %d dias</item>
+        <item quantity="other">Último backup há %d dias</item>
+    </plurals>
+    <plurals name="bk_warnHome">
+        <item quantity="one">Sem backup há %d dia</item>
+        <item quantity="many">Sem backup há %d dias</item>
+        <item quantity="other">Sem backup há %d dias</item>
+    </plurals>
+    <string name="bk_auto">Backup automático</string>
+    <string name="bk_autoNext">Próximo: %1$s · último %2$s</string>
+    <string name="bk_autoNextFirst">Próximo: %1$s</string>
+    <string name="bk_autoOff">Desligado · só backup manual</string>
+    <string name="bk_every">Frequência</string>
+    <string name="bk_everyDay">Todo dia</string>
+    <string name="bk_everyWeek">Toda semana</string>
+    <string name="bk_everyMonth">Todo mês</string>
+    <string name="bk_saveTo">Salvar em %1$s</string>
+    <string name="bk_chooseFolder">Escolher pasta</string>
+    <string name="bk_chooseFolderHint">Onde os backups ficam, no celular ou na nuvem</string>
+    <string name="bk_savedIn">Salvo em %1$s</string>
+    <string name="bk_recentManualIn">Manual · %1$s</string>
+    <string name="bk_change">Trocar</string>
+    <string name="bk_keep">Guardar os últimos</string>
+    <plurals name="bk_keepValue">
+        <item quantity="one">%d backup na pasta · os mais antigos são apagados</item>
+        <item quantity="many">%d backups na pasta · os mais antigos são apagados</item>
+        <item quantity="other">%d backups na pasta · os mais antigos são apagados</item>
+    </plurals>
+    <string name="bk_hint">Você escolhe a pasta uma vez. Pode ser no Google Drive, OneDrive ou no próprio celular. Se o celular estiver sem bateria ou desligado, o backup roda na próxima vez que abrir o app.</string>
+    <string name="bk_folderFailed">Não foi possível salvar na pasta. Escolha a pasta de novo.</string>
+    <string name="bk_now">Fazer agora</string>
+    <string name="bk_full">Backup completo (.json)</string>
+    <string name="bk_sheet">Planilha .xlsx</string>
+    <string name="bk_restore">Restaurar backup</string>
+    <string name="bk_undo">Desfazer restauração</string>
+    <string name="bk_recent">Recentes</string>
+    <string name="bk_recentAuto">Automático · %1$s</string>
+    <string name="bk_recentManual">Manual · compartilhado</string>
+    <string name="bk_failed">Falhou</string>
+    <string name="bk_notTutora">Este arquivo não é um backup do Tutora</string>
+    <string name="bk_newer">Este backup é de uma versão mais nova do Tutora. Atualize o app para restaurá-lo.</string>
+    <string name="bk_live">Encerre a aula ao vivo antes de restaurar.</string>
+    <string name="bk_confirmTitle">Restaurar o backup de %1$s?</string>
+    <string name="bk_confirmBody">%1$s, %2$s, %3$s. Os dados atuais deste celular serão substituídos.</string>
+    <plurals name="bk_students">
+        <item quantity="one">%s aluno</item>
+        <item quantity="many">%s alunos</item>
+        <item quantity="other">%s alunos</item>
+    </plurals>
+    <plurals name="bk_lessons">
+        <item quantity="one">%s aula</item>
+        <item quantity="many">%s aulas</item>
+        <item quantity="other">%s aulas</item>
+    </plurals>
+    <plurals name="bk_payments">
+        <item quantity="one">%s pagamento</item>
+        <item quantity="many">%s pagamentos</item>
+        <item quantity="other">%s pagamentos</item>
+    </plurals>
+    <string name="bk_studentsNone">nenhum aluno</string>
+    <string name="bk_lessonsNone">nenhuma aula</string>
+    <string name="bk_paymentsNone">nenhum pagamento</string>
+    <string name="bk_gone">Este backup não está mais na pasta.</string>
+    <string name="bk_removeTitle">Apagar o backup de %1$s?</string>
+    <string name="bk_removeFolder">O arquivo será apagado de %1$s.</string>
+    <string name="bk_removeShared">Sai da lista, e a cópia guardada no Tutora é apagada. O arquivo que você compartilhou continua onde está.</string>
+    <string name="bk_remove">Apagar</string>
+    <string name="bk_shareThis">Compartilhar</string>
+    <string name="bk_detailNoCopy">O Tutora não guardou uma cópia deste backup. Para restaurá-lo, procure o arquivo onde você o salvou.</string>
+    <string name="bk_findFile">Procurar o arquivo</string>
+    <string name="bk_detailFailed">Esta tentativa não salvou nenhum arquivo.</string>
+    <string name="bk_confirm">Restaurar</string>
+    <string name="bk_thisYear">Este ano</string>
+    <string name="bk_all">Tudo</string>
+    <string name="bk_custom">Personalizado</string>
+    <string name="bk_generate">Gerar planilha</string>
+    <string name="bk_sheetFile">Tutora planilha</string>
+    <string name="bk_sheetStudents">Alunos</string>
+    <string name="bk_sheetPlaces">Locais</string>
+    <string name="bk_who">Quem</string>
+    <string name="bk_name">Nome</string>
+    <string name="bk_subject">Matéria</string>
+    <string name="bk_phone">Telefone</string>
+    <string name="bk_archived">Arquivado</string>
+    <string name="bk_yes">Sim</string>
+    <string name="bk_kind">Tipo</string>
+    <string name="bk_month">Mês</string>
+</resources>

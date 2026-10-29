@@ -92,6 +92,9 @@ fun NavHostController.openTab(graph: Any) {
 /** Ajustes › Seus dados (spec 010). */
 @Serializable data object PersonalData
 
+/** Ajustes › Backup e planilha (spec 011); Hoje's backup alert opens it too. */
+@Serializable data object BackupHome
+
 // Details and forms sit above the tabs, so student and place links never cross tab stacks.
 @Serializable data class PlaceDetail(
     val id: String,
@@ -233,8 +236,18 @@ fun TutoraNav(
                     }
                 }
                 navigation<SettingsGraph>(startDestination = SettingsHome) {
-                    composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { nav.navigate(PersonalData) } }
+                    composable<SettingsHome> {
+                        SettingsScreen(
+                            appInfo,
+                            schemaVersion,
+                            { nav.navigate(PersonalData) },
+                        ) { nav.navigate(BackupHome) }
+                    }
                     composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
+                }
+                composable<BackupHome> {
+                    app.tutora.ui.backup
+                        .BackupScreen(nav)
                 }
                 composable<PlaceDetail> { PlaceDetailScreen(nav, it.toRoute<PlaceDetail>().id) }
                 composable<PlaceEdit> { PlaceEditScreen(nav, it.toRoute<PlaceEdit>().id) }
