@@ -6,7 +6,7 @@ Mockups: docs/mockups/Calendar.dc.html, docs/mockups/Settings.dc.html (the "Sinc
 
 ## Goal
 
-The teacher already lives in Google Calendar or Outlook for the rest of their life, and today Tutora's classes don't show up there. After this spec Tutora copies the classes of the next 8 weeks into a "Tutora – Aulas" calendar on the phone, and the phone's own account (Google, Microsoft, or none) carries it to the cloud, so Tutora itself still never touches the network (constitution rules 1 and 2). Any change in Tutora updates or removes the event. The other way round, the teacher can see their other appointments as grey busy time on Tutora's Agenda, so they don't book a class over a dentist appointment. For anyone who doesn't want sync, the classes can be exported once as an .ics file.
+The teacher already lives in Google Calendar or Outlook for the rest of their life, and today Tutora's classes don't show up there. After this spec Tutora copies the classes of the next 8 weeks into a calendar: one of the teacher's own calendars in the phone's Google or Microsoft account, which the account carries to the cloud, or a "Tutora – Aulas" calendar of its own kept only on the phone, so Tutora itself still never touches the network (constitution rules 1 and 2). Any change in Tutora updates or removes the event. The other way round, the teacher can see their other appointments as grey busy time on Tutora's Agenda, so they don't book a class over a dentist appointment. For anyone who doesn't want sync, the classes can be exported once as an .ics file.
 
 ## User stories
 
@@ -20,13 +20,13 @@ The teacher already lives in Google Calendar or Outlook for the rest of their li
 
 ### Where it lives
 
-- **AC-012-1.** Ajustes › Geral has "Calendário", whose line says the state: "Google Agenda · atualizado agora", or "Desligado". It opens the Calendário page as on its mockup: "Enviar aulas para o calendário" with its switch and status line, "Em qual calendário?", the two options, the note, and "Exportar agenda como .ics".
+- **AC-012-1.** Ajustes › Geral has "Calendário", whose line says the state: the chosen calendar and the last update ("Tutora – Aulas · victor@gmail.com · atualizado agora"), or "Desligado". It opens the Calendário page as on its mockup: "Enviar aulas para o calendário" with its switch and status line, "Em qual calendário?", the two options, the note, and "Exportar agenda como .ics".
 
 ### Turning it on
 
 - **AC-012-2.** "Enviar aulas para o calendário" is off at first. Turning it on asks for the phone's calendar permission once; refusing it leaves the switch off and says "Sem acesso ao calendário. Permita nas configurações do celular." with a way to open them.
-- **AC-012-3.** "Em qual calendário?" lists the accounts already on the phone (each Google and each Microsoft account by its address) and "Só neste aparelho", the first Google account chosen at first, or "Só neste aparelho" when there is none.
-- **AC-012-4.** Tutora puts its classes in a calendar of its own, "Tutora – Aulas", in the chosen account, in the Botões principais color, and never writes into any other calendar.
+- **AC-012-3.** "Em qual calendário?" offers both (Victor, 29 Oct 2026): "Só neste aparelho", chosen at first, and every calendar of the phone's accounts that can be written to, by its name and account ("Tutora – Aulas · victor@gmail.com", "Pessoal · victor@outlook.com"). The note under them says that to see the classes in Google Agenda or Outlook, the teacher picks one of their calendars, and that creating one called "Tutora – Aulas" once on calendar.google.com or outlook.com keeps the classes apart.
+- **AC-012-4.** With "Só neste aparelho", Tutora makes a calendar of its own on the phone, "Tutora – Aulas", in the Botões principais color. With an account's calendar, Tutora adds its events to it, next to the events already there, and the account takes them to the cloud. Either way Tutora writes into that one calendar only. (Android lets an app make a calendar only on the phone; one in a Google or Microsoft account has to be created there.)
 - **AC-012-5.** Every event Tutora makes carries Tutora's mark: a hidden tag the calendar apps don't show, and a last line "Criado pelo Tutora" in its description. Tutora only ever changes or deletes events with its mark (Victor, 29 Oct 2026).
 
 ### What goes in
@@ -40,29 +40,29 @@ The teacher already lives in Google Calendar or Outlook for the rest of their li
 
 ### Changing or stopping
 
-- **AC-012-12.** Choosing another account moves the events: they leave the old "Tutora – Aulas" and appear in the new one.
-- **AC-012-13.** Turning it off removes "Tutora – Aulas" and every event with Tutora's mark, and nothing else (Victor, 29 Oct 2026).
+- **AC-012-12.** Choosing another calendar moves the events: Tutora's leave the old calendar and appear in the new one; nothing else in either changes.
+- **AC-012-13.** Turning it off removes every event with Tutora's mark, and Tutora's own phone calendar if it made one, and nothing else: an account's calendar stays, with every event the teacher had in it (Victor, 29 Oct 2026).
 - **AC-012-14.** After a backup is restored (spec 011), the calendar shows the restored classes and none of the replaced ones.
 
 ### Cleaning up (Victor, 29 Oct 2026)
 
 - **AC-012-15.** The Calendário page has "Limpar eventos do Tutora", with sync on or off. It finds every event with Tutora's mark in any of the phone's calendars, including ones left from an earlier account or an earlier install, and asks first: "Apagar 24 eventos criados pelo Tutora? Seus outros eventos não são tocados." with "Apagar" and "Cancelar". With none, it says "Nenhum evento do Tutora no celular."
-- **AC-012-16.** Apagar deletes exactly those events, and an empty "Tutora – Aulas" calendar, and nothing else: an event without the mark stays, even if it has the same title, time or the words "Criado pelo Tutora" typed in by hand. With sync on, cleaning also turns it off, so the events don't come back at the next update.
+- **AC-012-16.** Apagar deletes exactly those events, and Tutora's own phone calendar once it is empty, and nothing else: an event without the mark stays, even if it has the same title, time or the words "Criado pelo Tutora" typed in by hand. With sync on, cleaning also turns it off, so the events don't come back at the next update.
 
 ### Busy time on the Agenda
 
 - **AC-012-17.** "Mostrar outros compromissos" is off at first. On, events from the phone's other calendars appear on the Agenda's Dia and Semana as grey blocks with their time and title, behind the classes; they can't be opened or edited from Tutora. Mês shows no busy time (Victor, 29 Oct 2026).
 - **AC-012-18.** An all-day event shows as a thin grey band at the top of its day, not as a block across the day.
-- **AC-012-19.** Tutora's own events never show as busy time (the classes are already there).
+- **AC-012-19.** Tutora's own events never show as busy time (the classes are already there), even in an account's calendar that holds other events too: there, only the events without Tutora's mark do.
 
 ### .ics export
 
-- **AC-012-20.** "Exportar agenda como .ics" opens the share sheet with "Tutora aulas.ics" holding the classes of the next 8 weeks as in AC-012-6 and 6, which Google Calendar, Outlook and Apple Calendar can import. It works with sync off and needs no permission.
+- **AC-012-20.** "Exportar agenda como .ics" opens the share sheet with "Tutora aulas.ics" holding the classes of the next 8 weeks as in AC-012-6 and 7, which Google Calendar, Outlook and Apple Calendar can import. It works with sync off and needs no permission.
 - **AC-012-21.** Importing the same file twice, or a newer one, updates the same events instead of doubling them.
 
 ### Language
 
-- **AC-012-22.** The page, its messages, the calendar's name ("Tutora – Aulas" / "Tutora – Classes") and the event texts follow the app language; times stay the class's times whatever the language.
+- **AC-012-22.** The page, its messages, the name of Tutora's own phone calendar ("Tutora – Aulas" / "Tutora – Classes") and the event texts follow the app language; times stay the class's times whatever the language.
 
 ## Out of scope
 
