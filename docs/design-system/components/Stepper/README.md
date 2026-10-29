@@ -9,6 +9,7 @@ Minus / value / plus control for durations (15-minute steps) and small money adj
 - Durations step by 5 minutes and read "90 min · 1h30"; with `onPressValue` the value opens hh:mm entry.
 - Prices step by R$ 5; with `onPressValue` the value is a button that opens a sheet with a money field for the exact amount.
 - The value uses tabular figures and announces changes politely to screen readers.
+- Compact everywhere (Victor, 29 Oct 2026): one height (`size-control-md`), − and + drawn as small circles (`size-tile`) while each still has the full `size-touch` to press; the value in `bodyStrong`. `size` is kept for callers but no longer changes the height.
 - Long-press repeats the step in the app (not in this preview).
 - Tapping the value opens a number pad for exact entry.
 
