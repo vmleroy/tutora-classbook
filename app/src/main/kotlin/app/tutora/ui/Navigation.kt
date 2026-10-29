@@ -68,7 +68,10 @@ import kotlin.reflect.KClass
 
 @Serializable data object EarningsGraph
 
-@Serializable data object EarningsHome
+/** Ganhos; [kind] opens it on a period kind, such as DAY from Hoje's card (AC-016-28). */
+@Serializable data class EarningsHome(
+    val kind: String? = null,
+)
 
 @Serializable data object SettingsGraph
 
@@ -216,8 +219,8 @@ fun TutoraNav(
                         RegistryScreen(nav, r.view, r.owing)
                     }
                 }
-                navigation<EarningsGraph>(startDestination = EarningsHome) {
-                    composable<EarningsHome> { EarningsScreen(nav) }
+                navigation<EarningsGraph>(startDestination = EarningsHome()) {
+                    composable<EarningsHome> { EarningsScreen(nav, it.toRoute<EarningsHome>().kind) }
                 }
                 navigation<SettingsGraph>(startDestination = SettingsHome) {
                     composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { nav.navigate(PersonalData) } }

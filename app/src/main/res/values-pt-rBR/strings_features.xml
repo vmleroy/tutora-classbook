@@ -435,6 +435,8 @@
     <string name="pay_leftShort">%1$s a receber</string>
     <string name="places_search">Buscar local</string>
     <string name="pay_toReceiveAmount">A receber %1$s</string>
+    <string name="earn_day">Dia</string>
+    <string name="earn_earnedDay">Ganho no dia</string>
     <string name="earn_month">Mês</string>
     <string name="earn_quarter">Trimestre</string>
     <string name="earn_year">Ano</string>

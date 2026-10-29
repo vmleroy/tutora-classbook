@@ -25,11 +25,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
+import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.EarningsStat
@@ -44,6 +46,8 @@ import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.MonthBar
 import app.tutora.designsystem.components.MonthBars
+import app.tutora.designsystem.components.MonthDay
+import app.tutora.designsystem.components.MonthGrid
 import app.tutora.designsystem.components.MonthPicker
 import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.ProgressBar
@@ -63,16 +67,22 @@ import app.tutora.domain.PeriodKind
 import app.tutora.domain.TypeFilter
 import app.tutora.domain.keptValue
 import app.tutora.domain.localOf
+import app.tutora.domain.monthCells
 import app.tutora.domain.weekStart
 import app.tutora.state.LocalServices
-import app.tutora.ui.EarningsGraph
+import app.tutora.ui.EarningsHome
 import app.tutora.ui.ScreenScaffold
+import app.tutora.ui.dayMonthLong
 import app.tutora.ui.localeOf
 import app.tutora.ui.payments.payerRoute
 import app.tutora.ui.reports.EarningsReportSheet
+import app.tutora.ui.shortDate
+import app.tutora.ui.weekdayNarrow
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.YearMonth
 import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
@@ -91,6 +101,8 @@ private fun rangeLabel(
 
     fun cap(s: String) = s.replaceFirstChar { it.uppercase() }
     return when (p.kind) {
+        // Short, so it fits beside the arrows with its ▾.
+        PeriodKind.DAY -> shortDate(p.anchor, language)
         PeriodKind.MONTH -> cap(DateTimeFormatter.ofPattern("LLLL yyyy", locale).format(p.firstMonth.toJavaLocalDate()))
         PeriodKind.QUARTER ->
             cap(shortMonth(p.firstMonth, language)) + " – " + cap(shortMonth(p.lastMonth, language)) + " " + p.lastMonth.year
@@ -103,12 +115,15 @@ private fun rangeLabel(
  * months, and where it came from (AC-009-9 to 14).
  */
 @Composable
-fun EarningsScreen(nav: NavHostController) {
+fun EarningsScreen(
+    nav: NavHostController,
+    startKind: String? = null,
+) {
     val services = LocalServices.current
     val language = currentLanguage()
     val zone = services.zone
     val today = remember { localOf(services.now(), zone).date }
-    var kind by rememberSaveable { mutableStateOf(PeriodKind.MONTH) }
+    var kind by rememberSaveable { mutableStateOf(startKind?.let { PeriodKind.valueOf(it) } ?: PeriodKind.MONTH) }
     var anchor by rememberSaveable { mutableStateOf(today.toString()) }
     var filter by rememberSaveable { mutableStateOf(TypeFilter.ALL) }
     val period = Period(kind, LocalDate.parse(anchor))
@@ -126,6 +141,7 @@ fun EarningsScreen(nav: NavHostController) {
     ) {
         SegmentedControl(
             listOf(
+                PeriodKind.DAY to stringResource(R.string.earn_day),
                 PeriodKind.MONTH to stringResource(R.string.earn_month),
                 PeriodKind.QUARTER to stringResource(R.string.earn_quarter),
                 PeriodKind.YEAR to stringResource(R.string.earn_year),
@@ -136,6 +152,8 @@ fun EarningsScreen(nav: NavHostController) {
                 anchor = today.toString()
             },
             stringResource(R.string.earn_period),
+            // Four options: the smaller size keeps "Trimestre" on one line.
+            size = ControlSize.SM,
         )
         // ‹ and › move by the period; › stops at the one holding today (AC-009-9).
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
@@ -200,7 +218,13 @@ fun EarningsScreen(nav: NavHostController) {
         }
         // Earned, received and to receive, with what commission and bonuses took (AC-009-11).
         EarningsSummary(
-            stringResource(R.string.earn_earned),
+            stringResource(
+                when {
+                    kind != PeriodKind.DAY -> R.string.earn_earned
+                    period.anchor == today -> R.string.earn_today
+                    else -> R.string.earn_earnedDay
+                },
+            ),
             s.earned,
             Modifier.testTag("earn-summary"),
             stats =
@@ -329,7 +353,8 @@ fun TodayEarnings(
     EarningsSummary(
         stringResource(R.string.earn_today),
         earnedToday,
-        Modifier.testTag("today-earnings").clickable(role = Role.Button) { nav.navigate(EarningsGraph) },
+        // It opens Ganhos on today, Dia (AC-016-28).
+        Modifier.testTag("today-earnings").clickable(role = Role.Button) { nav.navigate(EarningsHome(PeriodKind.DAY.name)) },
         expectedCents = expected,
         expectedLabel = stringResource(R.string.earn_expected, formatMoney(expected, language)),
         stats =
@@ -368,7 +393,9 @@ private fun PeriodPickerSheet(
     var page by rememberSaveable { mutableIntStateOf(period.anchor.year) }
     val years = period.kind == PeriodKind.YEAR
     BottomSheet(stringResource(R.string.earn_pickTitle), onDismiss) {
-        if (years) {
+        if (period.kind == PeriodKind.DAY) {
+            DayPicker(period.anchor, today, onPick)
+        } else if (years) {
             val list = (page - YEARS_SHOWN + 1..page).toList()
             MonthPicker(
                 "${list.first()} – ${list.last()}",
@@ -410,3 +437,56 @@ private fun PeriodPickerSheet(
 }
 
 private const val YEARS_SHOWN = 9
+
+/** Dia: a month of days with ‹ ›, today filled; later days cannot be chosen (AC-016-28). */
+@Composable
+private fun DayPicker(
+    chosen: LocalDate,
+    today: LocalDate,
+    onPick: (LocalDate) -> Unit,
+) {
+    val language = currentLanguage()
+    var shown by rememberSaveable { mutableStateOf(LocalDate(chosen.year, chosen.month, 1).toString()) }
+    val first = LocalDate.parse(shown)
+    val month = YearMonth(first.year, first.month)
+    val cells = monthCells(month)
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.schedule_prevMonth), {
+                shown = first.minus(DatePeriod(months = 1)).toString()
+            })
+            Text(
+                rangeLabel(Period(PeriodKind.MONTH, first), language),
+                Modifier.weight(1f),
+                style = TutoraTheme.type.bodyStrong,
+                color = TutoraTheme.colors.ink,
+                textAlign = TextAlign.Center,
+            )
+            IconButton(
+                IconName.CHEVRON_RIGHT,
+                stringResource(R.string.schedule_nextMonth),
+                { shown = first.plus(DatePeriod(months = 1)).toString() },
+                enabled = first.plus(DatePeriod(months = 1)) <= today,
+            )
+        }
+        MonthGrid(
+            cells.map { c ->
+                MonthDay(
+                    c.date.day,
+                    c.inMonth,
+                    emptyList(),
+                    0,
+                    dayMonthLong(c.date, language),
+                    today = c.date == today,
+                    enabled =
+                        c.inMonth && c.date <= today,
+                )
+            },
+            cells.indexOfFirst { it.date == chosen }.takeIf { it >= 0 },
+            { onPick(cells[it].date) },
+            cells.take(7).map { weekdayNarrow(it.date, language) },
+            rangeLabel(Period(PeriodKind.MONTH, first), language),
+        )
+        Button(stringResource(R.string.earn_backNow), { onPick(today) }, variant = ButtonVariant.OUTLINE, fullWidth = true)
+    }
+}

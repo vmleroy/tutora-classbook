@@ -201,4 +201,19 @@ class EarningsScreensTest {
         exists("R$ 200,00")
         exists("R$ 200")
     }
+
+    @Test
+    fun `AC-016-28 Hoje's card opens Ganhos on today's Dia, and the arrows move a day`() {
+        given(25)
+        given(26)
+        h.show(compose)
+        compose.onNodeWithTag("today-earnings").performClick()
+        h.settle(compose)
+        exists("Ganho hoje")
+        exists("Seg, 26 out")
+        compose.onNodeWithContentDescription("Período anterior").performClick()
+        h.settle(compose)
+        exists("Dom, 25 out")
+        exists("Ganho no dia")
+    }
 }

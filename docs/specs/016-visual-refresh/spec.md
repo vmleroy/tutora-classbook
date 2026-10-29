@@ -58,6 +58,7 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 - **AC-016-25.** The payment sheet shows where the payer stands, a tag "Em dia" or "Deve R$ 240,00", and Escolher aulas is a switch.
 - **AC-016-26.** On Ganhos, tapping the period's name ("Outubro 2026 ▾") opens a picker: the months of a year for Mês and Trimestre (each month ending a three-month period), or nine years for Ano, with nothing later than now and "Voltar para o atual".
 - **AC-016-27.** What a payment gives on top of the classes it pays counts as earned and received on the day it was paid, in Ganhos (the period, the six months and De onde veio, under its payer) and on Hoje's card (Victor, 30 Oct 2026). A payment that paid no class reads just its date and method ("29/10 · Pix"), never "como crédito".
+- **AC-016-28.** Ganhos has a Dia period before Mês, Trimestre and Ano: what was earned, received and is still owed on one day ("Ganho hoje", or "Ganho no dia" for another day), titled "Qui, 29 out", with ‹ › moving a day and the period picker showing a month of days up to today. Hoje's earnings card opens Ganhos on today's Dia (Victor, 30 Oct 2026).
 
 ## Out of scope
 
