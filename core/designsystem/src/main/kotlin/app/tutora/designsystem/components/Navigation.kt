@@ -292,3 +292,37 @@ fun AgendaBlock(
 
 /** For screens that need the padding the AgendaBlock reserves around itself. */
 val AgendaBlockGap = Spacing.s0_5
+
+/**
+ * Another appointment from the phone's calendars on the Agenda (spec 012): grey, behind the
+ * classes, and not pressable, since Tutora never opens or edits it. [band] is an all-day event: a
+ * thin bar at the top of its day.
+ */
+@Composable
+fun BusyBlock(
+    title: String,
+    modifier: Modifier = Modifier,
+    time: String? = null,
+    band: Boolean = false,
+    height: androidx.compose.ui.unit.Dp = Size.agendaMin,
+) {
+    val c = TutoraTheme.colors
+    val shape = RoundedCornerShape(if (band) Radius.sm else Radius.xl)
+    androidx.compose.foundation.layout.Column(
+        modifier
+            .then(if (band) Modifier else Modifier.height(height))
+            .clip(shape)
+            .background(c.surfaceSunken, shape)
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = Spacing.s2, vertical = if (band) Spacing.s0_5 else Spacing.s1),
+    ) {
+        Text(
+            title,
+            style = TutoraTheme.type.caption,
+            color = c.inkMuted,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+        )
+        if (!band && time != null) Text(time, style = TutoraTheme.type.caption, color = c.inkMuted, maxLines = 1)
+    }
+}

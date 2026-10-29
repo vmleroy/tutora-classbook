@@ -63,6 +63,7 @@ fun SettingsScreen(
     schemaVersion: Int,
     onPersonal: () -> Unit = {},
     onBackup: () -> Unit = {},
+    onCalendar: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val settings by services.settings.collectAsState(initial = null)
@@ -125,6 +126,11 @@ fun SettingsScreen(
             rows =
                 listOf(
                     { LanguageRow(s.language) { save(s.copy(language = it)) } },
+                    // Calendário: classes into a phone calendar (AC-012-1).
+                    {
+                        app.tutora.ui.calendar
+                            .CalendarSettingsRow(onCalendar)
+                    },
                     {
                         ListRow(
                             stringResource(R.string.settings_showDefaultPlaces),

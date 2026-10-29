@@ -45,6 +45,15 @@ val DEVICE_KEYS =
         "backup_failed",
         "last_backup_at",
         "restore_undo",
+        // Spec 012: a calendar id means nothing on another phone (AC-012-14).
+        "calendar_on",
+        "calendar_id",
+        "calendar_name",
+        "calendar_own",
+        "calendar_value",
+        "calendar_busy",
+        "calendar_synced_at",
+        "calendar_count",
     )
 
 /** How many backups Recentes lists (AC-011-11). */

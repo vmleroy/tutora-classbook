@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 012: calendar sync, busy time and .ics. -->
+<resources>
+    <string name="cal_screen">Calendar</string>
+    <string name="cal_rowOn">%1$s · updated at %2$s</string>
+    <string name="cal_inUse">In use</string>
+    <string name="cal_off">Off</string>
+    <string name="cal_send">Send classes to the calendar</string>
+    <plurals name="cal_status">
+        <item quantity="one">Updated at %1$s · %2$d class in the next 8 weeks</item>
+        <item quantity="other">Updated at %1$s · %2$d classes in the next 8 weeks</item>
+    </plurals>
+    <string name="cal_updating">Updating…</string>
+    <string name="cal_noAccess">No access to the calendar. Allow it in the phone\'s settings.</string>
+    <string name="cal_openSettings">Open settings</string>
+    <string name="cal_which">Which calendar?</string>
+    <string name="cal_own">This phone only</string>
+    <string name="cal_ownSub">“Tutora – Classes” calendar, no account</string>
+    <string name="cal_ownName">Tutora – Classes</string>
+    <string name="cal_busy">Show other appointments</string>
+    <string name="cal_busySub">Shows busy times on Tutora\'s Agenda</string>
+    <string name="cal_withValue">Include the value in the description</string>
+    <string name="cal_withValueSub">Off: the event shows only the student and subject</string>
+    <string name="cal_note">Classes go to the phone\'s calendar. To see them in Google Calendar or Outlook, pick one of your account\'s calendars; creating one called “Tutora – Classes” once on calendar.google.com or outlook.com keeps classes apart. Tutora still has no server.</string>
+    <string name="cal_ics">Export schedule as .ics</string>
+    <string name="cal_icsFile">Tutora classes.ics</string>
+    <string name="cal_clean">Clear Tutora\'s events</string>
+    <plurals name="cal_cleanTitle">
+        <item quantity="one">Delete %d event made by Tutora?</item>
+        <item quantity="other">Delete %d events made by Tutora?</item>
+    </plurals>
+    <string name="cal_cleanBody">Your other events aren\'t touched.</string>
+    <string name="cal_cleanNone">No Tutora events on this phone.</string>
+    <string name="cal_delete">Delete</string>
+    <string name="cal_cancelledPrefix">"Cancelled · "</string>
+    <string name="cal_missedPrefix">"No-show · "</string>
+    <string name="cal_value">Value: %1$s</string>
+    <string name="cal_footer">Made by Tutora</string>
+</resources>

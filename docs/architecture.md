@@ -99,7 +99,7 @@ The data model and its rules carry over from the first version: the product doc'
 | `lesson.is_detached` and `schedule_rule` split on "this and following" | Filling the next 8 weeks never overwrites a class changed by hand |
 | `archived_at` on place, student and group\_class; removal for good only once archived | Arquivar keeps history; nothing disappears by accident |
 | Built-in places have fixed ids, `builtin` set and no stored name; inserted at start-up when missing | Their names follow the app language |
-| `calendar_link` (lesson\_id, calendar\_id, event\_id) instead of a column | Sync cleans up exactly what Tutora created |
+| No link table for calendar sync (spec 012): each event carries Tutora's mark (its custom-app fields, `tutora://lesson/<id>`) | The phone's calendar is the only record, so nothing drifts after a restore, a reinstall or an edit in the calendar app; cleaning up deletes exactly what Tutora made |
 
 Lessons learned in the first version, kept:
 
@@ -145,7 +145,7 @@ Every v1 feature maps to a platform API or a maintained library that works offli
 | Reminders | `AlarmManager` (inexact) or WorkManager, `NotificationManager` | Next 8 weeks of lessons, rescheduled whenever lessons change; weekly "who owes you" | Inexact alarms can be minutes late; fine for reminders |
 | PDF reports | `android.graphics.pdf.PdfDocument` drawn with Canvas, or an HTML template printed through `WebView` | Themed tables and the 6-month trend | Pagination for long ranges; test a 12-month report |
 | XLSX export | A minimal hand-written XLSX writer (spec 010; no library) | Sheets per report; numbers as numbers, dates as dates | Check files open in Google Sheets and LibreOffice |
-| Calendar sync | `CalendarContract` provider | A "Tutora – Aulas" calendar on the chosen account; a use case diffs the next 8 weeks against `calendar_link` | Never read events back as Tutora data |
+| Calendar sync | `CalendarContract` provider | Tutora's own phone-only calendar, or a calendar of one of the phone's accounts (Android lets an app make a calendar only on the phone); a use case diffs the next 8 weeks against the events with Tutora's mark, a moment after any change | Never read events back as Tutora data |
 | .ics export | Hand-written (plain text) | One VEVENT per lesson, UID = lesson id | Times in UTC |
 | Backup and restore | `kotlinx.serialization`, Storage Access Framework, WorkManager periodic work | JSON to a folder picked once; keep the last N; catch up on open if a run was skipped | Whether Google Drive shows in the folder picker varies by device |
 | Charts | Compose `Canvas` | Hand-drawn bars for two charts | A chart library is not worth it |

@@ -32,6 +32,7 @@ import app.tutora.designsystem.components.Badge
 import app.tutora.designsystem.components.BadgeTone
 import app.tutora.designsystem.components.BlockState
 import app.tutora.designsystem.components.BottomSheet
+import app.tutora.designsystem.components.BusyBlock
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
@@ -126,6 +127,7 @@ val galleryComponents =
         "TabBar",
         "WeekStrip",
         "AgendaBlock",
+        "BusyBlock",
         "BottomSheet",
         "EmptyState",
         "TimerRing",
@@ -447,6 +449,10 @@ fun GallerySections() {
         BlockState.entries.forEach {
             AgendaBlock(Tag.GREEN, "Ana Souza", subtitle = "Matemática", state = it, height = Size.agendaHour, onClick = {})
         }
+    }
+    Section("BusyBlock") {
+        BusyBlock("Dentista", time = "14:00 – 15:00", height = Size.agendaHour)
+        BusyBlock("Feriado", band = true)
     }
     Section("BottomSheet") {
         Button("Abrir folha", { sheet = true }, variant = ButtonVariant.OUTLINE)

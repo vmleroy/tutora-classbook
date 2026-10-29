@@ -67,12 +67,14 @@ import app.tutora.domain.Lesson
 import app.tutora.domain.LessonStatus
 import app.tutora.domain.MAX_DAY_DOTS
 import app.tutora.domain.agendaHorizon
+import app.tutora.domain.busyFor
 import app.tutora.domain.canShowMonth
 import app.tutora.domain.counted
 import app.tutora.domain.dayDots
 import app.tutora.domain.dayKind
 import app.tutora.domain.dayRange
 import app.tutora.domain.expected
+import app.tutora.domain.instantOf
 import app.tutora.domain.localOf
 import app.tutora.domain.monthCells
 import app.tutora.domain.nextLesson
@@ -139,6 +141,14 @@ fun AgendaScreen(nav: NavHostController) {
     val range = remember(first, last) { dayRange(first, last, zone) }
     val lessons by remember(range) { services.scheduleRepo.between(range.first, range.second) }.collectAsState(initial = emptyList())
     val byDay = byLocalDay(lessons, zone)
+    // Other appointments, on Dia and Semana only (AC-012-17).
+    val busyEvents by remember(range, view) {
+        if (view == AgendaView.MONTH) {
+            kotlinx.coroutines.flow.flowOf(emptyList())
+        } else {
+            services.calendar.busy(instantOf(range.first).toEpochMilliseconds(), instantOf(range.second).toEpochMilliseconds())
+        }
+    }.collectAsState(initial = emptyList())
     val dayLessons = byDay[selected].orEmpty()
     val next = nextLesson(lessons.filter { it.status == LessonStatus.SCHEDULED }, now) { it.startAt }
     val firstLesson = (if (view == AgendaView.WEEK) lessons else dayLessons).firstOrNull()
@@ -228,7 +238,7 @@ fun AgendaScreen(nav: NavHostController) {
                             { selectedText = it.toString() },
                         ) { nav.navigate(LessonDetail(it.id)) }
                     }
-                lessons.isEmpty() ->
+                lessons.isEmpty() && busyEvents.none { !it.marked } ->
                     Column(Modifier.padding(horizontal = Spacing.s5)) {
                         EmptyState(
                             stringResource(R.string.empty_schedule_title),
@@ -255,6 +265,7 @@ fun AgendaScreen(nav: NavHostController) {
                             scroll = scroll,
                             onOpen = { nav.navigate(LessonDetail(it.id)) },
                             chosen = selected,
+                            busy = { d -> busyFor(busyEvents, d, zone) },
                         )
                     }
             }

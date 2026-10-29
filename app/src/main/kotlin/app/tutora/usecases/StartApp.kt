@@ -37,6 +37,8 @@ class StartApp(
     private val backupFolder: BackupFolder = BackupFolder.None,
     private val backupScheduler: BackupScheduler = BackupScheduler.None,
     private val privateDir: java.io.File = java.io.File(System.getProperty("java.io.tmpdir"), "tutora"),
+    private val calendar: PhoneCalendar = PhoneCalendar.None,
+    private val calendarWords: (Language) -> app.tutora.domain.CalendarWords = NO_CALENDAR_WORDS,
 ) {
     suspend operator fun invoke(): StartResult {
         val phone = phoneTags()
@@ -57,7 +59,13 @@ class StartApp(
                     backupFolder = backupFolder,
                     backupScheduler = backupScheduler,
                     privateDir = privateDir,
+                    calendar = calendar,
+                    calendarWords = calendarWords,
                 )
+            // This phone's calendar setup starts off (AC-012-2).
+            app.tutora.data
+                .CalendarStore(db)
+                .ensureDefaults(now())
             // This phone's backup setup starts off (AC-011-5).
             app.tutora.data
                 .BackupStore(db)
