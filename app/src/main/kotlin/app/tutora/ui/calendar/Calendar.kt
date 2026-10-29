@@ -236,7 +236,7 @@ fun CalendarScreen(nav: NavHostController) {
                         stringResource(R.string.cal_own),
                         Modifier.testTag("calendar-own"),
                         subtitle = stringResource(R.string.cal_ownSub),
-                        avatar = "Tutora" to Tag.GREEN,
+                        avatar = "T" to Tag.GREEN,
                         trailing = RowTrailing.NONE,
                         badge = if (inUse == OWN) BadgeTone.SUCCESS to inUseLabel else null,
                         onClick = { choose(null) },
@@ -248,7 +248,8 @@ fun CalendarScreen(nav: NavHostController) {
                                 cal.name,
                                 Modifier.testTag("calendar-${cal.id}"),
                                 subtitle = listOf(cal.provider, cal.account).filter { it.isNotBlank() }.joinToString(" · "),
-                                avatar = (cal.provider.ifBlank { cal.name }) to Tag.BLUE,
+                                // One letter, as on the mockup: G for Google, O for Outlook.
+                                avatar = cal.provider.ifBlank { cal.name }.take(1).uppercase() to Tag.BLUE,
                                 trailing = RowTrailing.NONE,
                                 badge = if (inUse == cal.id) BadgeTone.SUCCESS to inUseLabel else null,
                                 onClick = { if (calendars.isEmpty()) withAccess {} else choose(cal.id) },
