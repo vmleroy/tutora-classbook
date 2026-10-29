@@ -27,3 +27,6 @@ interface SegmentedControlProps<T extends string = string> {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Joined segments: round outside (20), small corners inside (6), 4 dp apart, on `surface-sunken`; the chosen one is filled with `btnPrimary` and its label is `onBtnPrimary`.

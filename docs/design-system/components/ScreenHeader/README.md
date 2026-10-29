@@ -26,3 +26,6 @@ interface ScreenHeaderProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+The header never paints a band itself. HERO is Hoje's date over the greeting in on-header colors, on the Topo band Hoje draws behind it and under the top of its earnings card; there its + is the round `ACCENT` and other actions are `ON_PRIMARY`.

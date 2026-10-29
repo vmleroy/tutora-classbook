@@ -20,3 +20,6 @@ interface AvatarProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+A rounded square (`radius-lg`), not a circle.

@@ -85,13 +85,18 @@ class PaymentRulesTest {
         )
     }
 
+    // AC-008-29 (credit waiting to be placed) is replaced by AC-016-24 (Victor, 29 Oct 2026).
     @Test
-    fun `AC-008-29 with credit held, a payment's leftover never pays a class given after it`() {
+    fun `AC-016-24 a payment's leftover never pays a class given after it and is a tip, not credit`() {
         val early = listOf(Owed("a", "2026-10-15T17:00:00.000Z", 12_000), Owed("later", "2026-10-30T17:00:00.000Z", 12_000))
-        val held = allocate(early, listOf(Paid("p", "2026-10-20T12:00:00.000Z", 20_000)), holdCredit = true)
-        assertEquals(12_000L, held.left["later"])
-        assertEquals(8_000L, held.credit)
-        assertEquals(4_000L, allocate(early, listOf(Paid("p", "2026-10-20T12:00:00.000Z", 20_000))).left["later"])
+        val a = allocate(early, listOf(Paid("p", "2026-10-20T12:00:00.000Z", 20_000)))
+        assertEquals(0L, a.left["a"])
+        assertEquals(12_000L, a.left["later"])
+        val owed = early.map { OwedClass(it.lessonId, it.startAt, 60, it.cents) }
+        val paid =
+            PaymentRecord("p", PayerRef(PayerKind.STUDENT, "s"), 20_000, PayMethod.PIX, "2026-10-20T12:00:00.000Z", null, null, emptyList())
+        val ledger = ledgerOf(owed, listOf(paid))
+        assertEquals(0L, ledger.creditCents)
     }
 
     @Test

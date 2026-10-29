@@ -4,7 +4,10 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
@@ -258,6 +261,17 @@ class PaymentScreensTest {
     }
 
     @Test
+    fun `AC-016-24 a class paid with more than it cost shows Em dia on its balance, never credit`() {
+        val id = given(22)
+        pay(20_000)
+        h.show(compose)
+        h.go(compose, LessonDetail(id))
+        exists("Em dia")
+        exists("nenhuma aula a receber")
+        compose.onAllNodes(matching("Crédito", part = true), useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    @Test
     fun `AC-008-16 a lesson's detail shows A receber and the payer's balance`() {
         val id = given(22)
         h.show(compose)
@@ -392,9 +406,9 @@ class PaymentScreensTest {
                 ).value.id
             }
         openAna()
-        exists("paga o local · R$ 120,00 a receber", part = true)
+        exists("o local te paga · R$ 120,00 a receber", part = true)
         exists("22/10 · Ventura")
-        exists("60 min · R$ 120,00 · paga o local")
+        exists("60 min · R$ 120,00 · o local te paga")
         h.go(compose, StudentDetail(pedro))
         click("Registrar pagamento")
         click("Escolher aulas", scroll = false)
@@ -420,25 +434,26 @@ class PaymentScreensTest {
 
     private fun creditsOn() = runBlocking { h.services.saveSettings(h.services.currentSettings().copy(credits = true)) }
 
+    // AC-008-28 and AC-008-29 (refusing overpayment, credit waiting) are replaced by AC-016-24 (Victor, 29 Oct 2026).
     @Test
-    fun `AC-008-28 with Creditos e bonus off, the sheet refuses more than is owed`() {
+    fun `AC-016-24 paying more than is owed only cautions, and a payment that pays no class says so`() {
         given(22)
         openAna()
         click("Registrar pagamento")
-        compose.onAllNodes(hasSetTextAction(), useUnmergedTree = true).onFirst().performTextReplacement("R$ 150,00")
+        val field = compose.onAllNodes(hasSetTextAction(), useUnmergedTree = true).onFirst()
+        field.performTextReplacement("R$ 150,00")
         h.settle(compose)
-        exists("Maior que o valor devido", part = true)
+        exists("R$ 30,00 a mais do que o devido")
+        compose.onAllNodes(matching("Registrar · R$ 150,00")).onFirst().assertIsEnabled()
     }
 
     @Test
-    fun `AC-008-29 with Creditos e bonus on, the detail shows the credit waiting`() {
-        creditsOn()
-        runBlocking { h.services.payments.record(PaymentDraft(anaRef, 5_000, PayMethod.PIX, LocalDate(2026, 10, 20))) }
+    fun `AC-016-25 the payment sheet says Em dia or Deve with how much, and Escolher aulas is a switch`() {
         given(22)
         openAna()
-        exists("Crédito: R$ 50,00")
-        exists("Usar crédito")
-        compose.onNodeWithContentDescription("Dar bônus").assertExists()
+        click("Registrar pagamento")
+        exists("Deve R$ 120,00")
+        compose.onNode(isToggleable() and hasContentDescription("Escolher aulas"), useUnmergedTree = true).assertExists()
     }
 
     @Test

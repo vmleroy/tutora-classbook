@@ -26,3 +26,6 @@ interface LessonRowProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+In a `ListGroup` it has no corners of its own; with `card` (Hoje's list) it is a card of its own, corners 20, 8 dp from the next.

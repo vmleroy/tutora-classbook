@@ -11,6 +11,8 @@ import kotlinx.datetime.plus
 enum class PeriodKind(
     val months: Int,
 ) {
+    /** One day, the anchor (Victor, 30 Oct 2026; AC-016-28). */
+    DAY(1),
     MONTH(1),
     QUARTER(3),
     YEAR(12),
@@ -20,8 +22,9 @@ enum class PeriodKind(
 fun monthOf(date: LocalDate): LocalDate = LocalDate(date.year, date.month.number, 1)
 
 /**
- * Mês, Trimestre or Ano around [anchor] (AC-009-9). A month is the calendar month; a quarter the
- * three months ending at the anchor's month; a year the calendar year.
+ * Dia, Mês, Trimestre or Ano around [anchor] (AC-009-9, AC-016-28). A day is the anchor itself;
+ * a month the calendar month; a quarter the three months ending at the anchor's month; a year
+ * the calendar year.
  */
 data class Period(
     val kind: PeriodKind,
@@ -31,7 +34,7 @@ data class Period(
     val firstMonth: LocalDate
         get() =
             when (kind) {
-                PeriodKind.MONTH -> monthOf(anchor)
+                PeriodKind.DAY, PeriodKind.MONTH -> monthOf(anchor)
                 PeriodKind.QUARTER -> monthOf(anchor).minus(DatePeriod(months = 2))
                 PeriodKind.YEAR -> LocalDate(anchor.year, 1, 1)
             }
@@ -40,20 +43,26 @@ data class Period(
     val lastMonth: LocalDate get() = firstMonth.plus(DatePeriod(months = kind.months - 1))
 
     /** First and last local day. */
-    val first: LocalDate get() = firstMonth
+    val first: LocalDate get() = if (kind == PeriodKind.DAY) anchor else firstMonth
 
-    val last: LocalDate get() = lastMonth.plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
+    val last: LocalDate get() = if (kind == PeriodKind.DAY) anchor else lastMonth.plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
 
-    fun previous() = copy(anchor = anchor.minus(DatePeriod(months = kind.months)))
+    private val step: DatePeriod get() = if (kind == PeriodKind.DAY) DatePeriod(days = 1) else DatePeriod(months = kind.months)
 
-    fun next() = copy(anchor = anchor.plus(DatePeriod(months = kind.months)))
+    fun previous() = copy(anchor = anchor.minus(step))
+
+    fun next() = copy(anchor = anchor.plus(step))
 
     /** › stops at the period holding today (AC-009-9). */
     fun isCurrent(today: LocalDate) = today in first..last
 
-    /** Each month of the period, up to [today]'s month. */
+    /** Each month of the period, up to [today]'s month; a day holds none, so a salary is not split into days. */
     fun months(today: LocalDate): List<LocalDate> =
-        (0 until kind.months).map { firstMonth.plus(DatePeriod(months = it)) }.filter { it <= monthOf(today) }
+        if (kind == PeriodKind.DAY) {
+            emptyList()
+        } else {
+            (0 until kind.months).map { firstMonth.plus(DatePeriod(months = it)) }.filter { it <= monthOf(today) }
+        }
 }
 
 /** Tudo, Particulares, Escola e emprego (AC-009-10). */
@@ -177,6 +186,15 @@ data class Received(
     val type: EarningsType,
 )
 
+/** What a payment gave on top of the classes it paid: earned and received on its day (AC-016-27). */
+data class Tip(
+    val day: LocalDate,
+    val cents: Cents,
+    val type: EarningsType,
+    val payer: PayerRef,
+    val payerName: String,
+)
+
 data class Summary(
     val earned: Cents,
     val received: Cents,
@@ -220,12 +238,15 @@ fun summarize(
     months: List<LocalDate>,
     left: Map<String, Cents>,
     filter: TypeFilter,
+    tips: List<Tip> = emptyList(),
 ): Summary {
     val shown = classes.filter { filter.matches(it.type) }
     val salary =
         if (filter.matches(EarningsType.JOB)) sum(salaries.map { s -> s.cents * salaryMonths(s, months).size }) else 0L
+    // A tip is earned as well as received (AC-016-27).
+    val tipped = sum(tips.filter { filter.matches(it.type) }.map { it.cents })
     return Summary(
-        earned = sum(shown.map { it.earned }) + salary,
+        earned = sum(shown.map { it.earned }) + salary + tipped,
         received = sum(received.filter { filter.matches(it.type) }.map { it.cents }) + salary,
         toReceive = sum(shown.map { left[it.lessonId] ?: 0 }),
         commission = sum(shown.map { it.commission }),
@@ -241,6 +262,7 @@ fun trend(
     salaries: List<Salary>,
     filter: TypeFilter,
     today: LocalDate,
+    tips: List<Tip> = emptyList(),
 ): List<MonthPoint> =
     (5 downTo 0).map { back ->
         val month = monthOf(last).minus(DatePeriod(months = back))
@@ -253,6 +275,7 @@ fun trend(
                 listOf(month).filter { it <= monthOf(today) },
                 emptyMap(),
                 filter,
+                tips.filter { inMonth(it.day) },
             )
         MonthPoint(month, s.earned, s.received)
     }
@@ -263,6 +286,7 @@ fun sources(
     salaries: List<Salary>,
     months: List<LocalDate>,
     filter: TypeFilter,
+    tips: List<Tip> = emptyList(),
 ): List<Source> {
     val byPayer =
         classes
@@ -275,7 +299,8 @@ fun sources(
         } else {
             emptyList()
         }
-    return (byPayer + schools)
+    val tipped = tips.filter { filter.matches(it.type) }.map { Source(it.payer, it.payerName, it.cents) }
+    return (byPayer + schools + tipped)
         .groupBy { it.payer }
         .map { (payer, list) -> Source(payer, list.first().name, sum(list.map { it.cents })) }
         .filter { it.cents > 0 }

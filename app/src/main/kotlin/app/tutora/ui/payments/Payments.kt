@@ -1,9 +1,12 @@
 package app.tutora.ui.payments
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +26,7 @@ import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.AlertBanner
+import app.tutora.designsystem.components.AlertTone
 import app.tutora.designsystem.components.Badge
 import app.tutora.designsystem.components.BadgeTone
 import app.tutora.designsystem.components.BottomSheet
@@ -47,7 +51,9 @@ import app.tutora.designsystem.components.ProgressTone
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
+import app.tutora.designsystem.components.StatTone
 import app.tutora.designsystem.components.Stepper
+import app.tutora.designsystem.components.Switch
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
@@ -83,6 +89,8 @@ import app.tutora.ui.PaymentDetail
 import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
+import app.tutora.ui.catalog.DetailOverview
+import app.tutora.ui.catalog.DetailStat
 import app.tutora.ui.clockDuration
 import app.tutora.ui.localeOf
 import app.tutora.ui.minutesText
@@ -174,28 +182,29 @@ fun PayerBalance(
     payer: PayerRef,
     payLabel: String,
     isPlace: Boolean = false,
+    stats: List<DetailStat> = emptyList(),
+    onReport: () -> Unit = {},
+    onNewLesson: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val language = currentLanguage()
     val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
-    val settings by services.settings.collectAsState(initial = null)
     var sheet by rememberSaveable { mutableStateOf<String?>(null) }
     val l = ledger ?: return
-    val credits = settings?.credits == true
     val owes = l.owedCents
-    Card(Modifier.testTag("balance")) {
-        Text(
-            stringResource(
-                when {
-                    owes > 0 -> if (isPlace) R.string.pay_placeOwesLabel else R.string.pay_owesLabel
-                    else -> R.string.pay_settled
-                },
-            ),
-            style = TutoraTheme.type.caption,
-            color = TutoraTheme.colors.inkMuted,
-        )
-        Money(owes, size = MoneySize.LG, tone = if (owes > 0) MoneyTone.OWED else MoneyTone.PAID)
-        Button(payLabel, { sheet = "pay" }, icon = IconName.WALLET, fullWidth = true)
+    // What is owed is the first of the three figures, red while something is owed (AC-008-11, AC-016-2).
+    val owed =
+        if (owes > 0) {
+            DetailStat(
+                stringResource(if (isPlace) R.string.pay_placeOwesLabel else R.string.pay_owesLabel),
+                formatMoney(owes, language),
+                StatTone.OWED,
+            )
+        } else {
+            DetailStat(stringResource(R.string.pay_settled), formatMoney(0, language), StatTone.PAID)
+        }
+    Box(Modifier.testTag("balance")) {
+        DetailOverview(listOf(owed) + stats, payLabel to { sheet = "pay" }, onReport, onNewLesson)
     }
     if (sheet == "pay") PaymentSheet(payer, l, onDismiss = { sheet = null }, elsewhere = studentElsewhere(payer))
 }
@@ -567,7 +576,7 @@ private fun BonusSheet(
     }
 }
 
-/** "16/10 · Pix · 4 aulas", or "· pacote" for a package's purchase (AC-008-11). */
+/** "16/10 · Pix · 4 aulas", "· pacote" for a package's purchase, or just "29/10 · Pix" when it paid no class (AC-008-11). */
 @Composable
 fun paymentLine(
     p: PaymentRecord,
@@ -579,15 +588,14 @@ fun paymentLine(
         ledger.allocation.paidBy[p.id]
             .orEmpty()
             .size
+    // A payment that paid no class says nothing more: the money is a tip, never credit (AC-016-24).
     val what =
-        if (p.packageId != null) {
-            stringResource(R.string.pay_packageBought)
-        } else if (count == 0) {
-            stringResource(R.string.pay_asCredit)
-        } else {
-            pluralStringResource(R.plurals.pay_lessonsCount, count, count)
+        when {
+            p.packageId != null -> stringResource(R.string.pay_packageBought)
+            count == 0 -> null
+            else -> pluralStringResource(R.plurals.pay_lessonsCount, count, count)
         }
-    return listOf(dayMonth(localOf(p.paidAt, zone).date, language), methodName(p.method), what).joinToString(" · ")
+    return listOfNotNull(dayMonth(localOf(p.paidAt, zone).date, language), methodName(p.method), what).joinToString(" · ")
 }
 
 /**
@@ -616,8 +624,6 @@ fun PaymentSheet(
     // Without the payment being edited, what each class still owes.
     val others = remember(ledger, editing) { ledger.with(null, without = editing?.id) }
     val owedNow = others.left.values.sum()
-    val settings by services.settings.collectAsState(initial = null)
-    val credits = settings?.credits == true
 
     fun leftOn(ids: List<String>) = ids.sumOf { others.left[it] ?: outside[it]?.left ?: 0 }
     var cents by rememberSaveable {
@@ -644,9 +650,9 @@ fun PaymentSheet(
             there + ledger.with(draft, without = editing?.id).paidBy["draft"].orEmpty()
         }
     val byId = ledger.owed.associateBy { it.lessonId } + elsewhere.associate { it.owed.lessonId to it.owed }
-    // With Créditos e bônus off, a payment can't be more than is owed here (AC-008-28).
-    val most = owedNow + chosen.sumOf { outside[it]?.left ?: 0 }
-    val overpaid = !credits && amount > most
+    // What the classes it pays still owe; anything above is extra, a tip, never credit (AC-016-24).
+    val covers = preview.sumOf { others.left[it] ?: outside[it]?.left ?: 0 }
+    val extra = (amount - covers).coerceAtLeast(0)
     val previewDates = preview.mapNotNull { byId[it]?.let { l -> dayMonth(localOf(l.startAt, zone).date, language) } }
     BottomSheet(
         stringResource(if (editing == null) R.string.pay_record else R.string.pay_edit),
@@ -663,38 +669,59 @@ fun PaymentSheet(
                         }
                     },
                     m,
-                    enabled = amount > 0 && !overpaid,
+                    enabled = amount > 0,
                 )
             },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            MoneyField(
-                stringResource(R.string.pay_amount),
-                cents,
-                { cents = it },
-                error = if (overpaid) stringResource(R.string.pay_overpaid) else null,
-            )
-            Text(
-                if (previewDates.isEmpty()) {
-                    stringResource(R.string.pay_previewCredit)
+            // Where the payer stands before this payment: Em dia, or Deve with how much (AC-016-25).
+            val owing = owedNow + elsewhere.sumOf { it.left }
+            Box(Modifier.testTag("pay-status")) {
+                if (owing > 0) {
+                    Badge(stringResource(R.string.pay_owesTotal, formatMoney(owing, language)), tone = BadgeTone.DANGER)
                 } else {
-                    pluralStringResource(R.plurals.pay_preview, previewDates.size, previewDates.size, joined(previewDates))
-                },
-                Modifier.testTag("pay-preview"),
-                style = TutoraTheme.type.meta,
-                color = TutoraTheme.colors.inkMuted,
-            )
+                    Badge(stringResource(R.string.pay_settled), tone = BadgeTone.SUCCESS)
+                }
+            }
+            MoneyField(stringResource(R.string.pay_amount), cents, { cents = it })
+            if (previewDates.isNotEmpty()) {
+                Text(
+                    pluralStringResource(R.plurals.pay_preview, previewDates.size, previewDates.size, joined(previewDates)),
+                    Modifier.testTag("pay-preview"),
+                    style = TutoraTheme.type.meta,
+                    color = TutoraTheme.colors.inkMuted,
+                )
+            }
+            // A caution, never a block: the payment pays no class, or is more than they owe (AC-016-24).
+            if (amount > 0 && previewDates.isEmpty()) {
+                AlertBanner(stringResource(R.string.pay_noClassPaid), Modifier.testTag("pay-caution"), tone = AlertTone.ACCENT)
+            } else if (extra > 0) {
+                AlertBanner(
+                    stringResource(R.string.pay_extra, formatMoney(extra, language)),
+                    Modifier.testTag("pay-caution"),
+                    tone = AlertTone.ACCENT,
+                )
+            }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 PayMethod.entries.forEach { mth -> Chip(methodName(mth), method == mth, { method = mth }) }
             }
             DateField(stringResource(R.string.lesson_date), dayMonth(picked, language), picked, { if (it <= today) date = it.toString() })
             TextField(stringResource(R.string.pay_note), note, { note = it })
-            Button(
-                stringResource(R.string.pay_choose),
-                { choosing = !choosing },
-                variant = ButtonVariant.GHOST,
-                icon = IconName.CHECK,
-            )
+            // Escolher aulas is a switch: off pays the oldest first, on lists the classes (Victor, 29 Oct 2026).
+            Row(
+                // The whole line flips it, words included.
+                Modifier.fillMaxWidth().clickable { choosing = !choosing },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+            ) {
+                Text(
+                    stringResource(R.string.pay_choose),
+                    style = TutoraTheme.type.bodyStrong,
+                    color = TutoraTheme.colors.ink,
+                    modifier = Modifier.weight(1f),
+                )
+                Switch(choosing, { choosing = it }, stringResource(R.string.pay_choose))
+            }
             // Newest first, with what is still owed on each (AC-008-7); a place's classes say so.
             val choosable =
                 (
@@ -897,11 +924,24 @@ fun SaldoRow(
     val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val l = ledger ?: return
     val count = l.owed.count { !l.allocation.isPaid(it.lessonId) }
-    val (tone, text) = balanceBadge(l.dueCents - l.paidCents)
+    val language = currentLanguage()
+    // The ledger's balance, as on the payer's page: what is owed, else bonus credit, else Em dia.
+    // A tip is never credit (AC-016-24).
+    val (tone, text) =
+        when (val b = l.balance) {
+            is Balance.Owes -> BadgeTone.DANGER to stringResource(R.string.pay_owes, formatMoney(b.cents, language, compact = true))
+            is Balance.Credit -> BadgeTone.SUCCESS to stringResource(R.string.pay_credit, formatMoney(b.cents, language, compact = true))
+            Balance.Settled -> BadgeTone.SUCCESS to stringResource(R.string.pay_settled)
+        }
     ListRow(
         title,
         Modifier.testTag("saldo"),
-        subtitle = pluralStringResource(R.plurals.pay_toReceiveCount, count, count),
+        subtitle =
+            if (count == 0) {
+                stringResource(R.string.pay_toReceiveNone)
+            } else {
+                pluralStringResource(R.plurals.pay_toReceiveCount, count, count)
+            },
         icon = IconName.WALLET,
         badge = tone to text,
         trailing = RowTrailing.CHEVRON,

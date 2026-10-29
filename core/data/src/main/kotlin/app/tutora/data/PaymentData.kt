@@ -243,7 +243,6 @@ fun ledgerOf(
     payments: List<PaymentRow>,
     chosen: List<PaymentLessonRow>,
     credits: List<CreditRow> = emptyList(),
-    holdCredit: Boolean = false,
 ): Ledger {
     val byPayment = chosen.groupBy({ it.paymentId }, { it.lessonId })
     return ledgerOf(
@@ -253,7 +252,6 @@ fun ledgerOf(
         credits.filter { it.kind == "use" && it.lessonId != null }.sortedBy { it.createdAt }.map {
             CreditUse(it.lessonId.orEmpty(), it.cents, it.minutes)
         },
-        holdCredit,
     )
 }
 
@@ -271,8 +269,7 @@ class PaymentRepository(
             dao.observeAllPayments(),
             dao.observeAllChosen(),
             dao.observeAllCredits(),
-            settings.observe(),
-        ) { owed, payments, chosen, credits, s ->
+        ) { owed, payments, chosen, credits ->
             val owedBy = owed.groupBy { it.payerRef() }
             val paidBy = payments.filter { it.packageId == null }.groupBy { it.payerRef() }
             val creditsBy = credits.groupBy { it.payerRef() }
@@ -284,7 +281,6 @@ class PaymentRepository(
                         paidBy[p].orEmpty(),
                         chosen.filter { it.paymentId in ids },
                         creditsBy[p].orEmpty(),
-                        s.credits,
                     )
                 }
             ledgers to owed.associate { it.lesson.id to it.lesson.placeId }
@@ -306,6 +302,10 @@ class PaymentRepository(
             }
         }
 
+    /** What each payment had left over after the classes it paid, by payment id: tips (AC-016-27). */
+    fun extras(): Flow<Map<String, Cents>> =
+        allLedgers().map { (ledgers, _) -> ledgers.values.flatMap { it.allocation.extra.entries }.associate { it.key to it.value } }
+
     /** What is still owed on each class, whoever owes it (spec 009, A receber). */
     fun leftByLesson(): Flow<Map<String, Cents>> =
         allLedgers().map { (ledgers, _) -> ledgers.values.flatMap { it.allocation.left.entries }.associate { it.key to it.value } }
@@ -325,8 +325,7 @@ class PaymentRepository(
             dao.observePayments(payer.kind.key, payer.id),
             dao.observeChosen(payer.kind.key, payer.id),
             dao.observeCredits(payer.kind.key, payer.id),
-            settings.observe(),
-        ) { owed, payments, chosen, credits, s -> ledgerOf(owed, payments, chosen, credits, s.credits) }
+        ) { owed, payments, chosen, credits -> ledgerOf(owed, payments, chosen, credits) }
 
     suspend fun ledgerNow(payer: PayerRef): Ledger =
         ledgerOf(
@@ -334,7 +333,6 @@ class PaymentRepository(
             dao.payments(payer.kind.key, payer.id),
             dao.chosen(payer.kind.key, payer.id),
             dao.credits(payer.kind.key, payer.id),
-            settings.load().credits,
         )
 
     fun payment(id: String): Flow<PaymentRecord?> = dao.observePayment(id).map { it?.toPayment(emptyList()) }

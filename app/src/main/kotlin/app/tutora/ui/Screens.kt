@@ -13,14 +13,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.components.Fab
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.ScreenHeader
+import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
 /**
@@ -36,35 +39,48 @@ fun ScreenScaffold(
     eyebrow: String? = null,
     actions: List<HeaderAction> = emptyList(),
     onBack: (() -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null,
+    /** The floating + in the bottom-right corner, read as [fabLabel] (Victor, 29 Oct 2026). */
+    fab: (() -> Unit)? = null,
+    fabLabel: String = "",
     scroll: Boolean = true,
     bottomBar: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(
+    Box(
         modifier
             .fillMaxSize()
             .background(TutoraTheme.colors.background)
             .safeDrawingPadding()
             .testTag(tag),
     ) {
-        ScreenHeader(title, variant = variant, eyebrow = eyebrow, actions = actions, onBack = onBack)
-        Column(
-            Modifier
-                .then(if (bottomBar != null) Modifier.weight(1f) else Modifier)
-                .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier)
-                .padding(horizontal = Spacing.s5, vertical = Spacing.s2),
-            verticalArrangement = Arrangement.spacedBy(Spacing.s4),
-            content = content,
-        )
-        // A form's main action stays in reach, above the keyboard, however long the form is.
-        if (bottomBar != null) {
-            Box(
+        Column(Modifier.fillMaxSize()) {
+            ScreenHeader(title, variant = variant, eyebrow = eyebrow, actions = actions, onBack = onBack, trailing = trailing)
+            Column(
                 Modifier
-                    .fillMaxWidth()
-                    .background(TutoraTheme.colors.surface)
-                    .padding(horizontal = Spacing.s5, vertical = Spacing.s3),
-            ) { bottomBar() }
+                    .then(if (bottomBar != null) Modifier.weight(1f) else Modifier)
+                    .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier)
+                    // The last item stays clear of the floating +.
+                    .padding(
+                        start = Spacing.s5,
+                        end = Spacing.s5,
+                        top = Spacing.s2,
+                        bottom = if (fab != null) Size.fab + Spacing.s7 else Spacing.s2,
+                    ),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s4),
+                content = content,
+            )
+            // A form's main action stays in reach, above the keyboard, however long the form is.
+            if (bottomBar != null) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(TutoraTheme.colors.surface)
+                        .padding(horizontal = Spacing.s5, vertical = Spacing.s3),
+                ) { bottomBar() }
+            }
         }
+        if (fab != null) Fab(fab, Modifier.align(Alignment.BottomEnd).padding(Spacing.s4), label = fabLabel)
     }
 }
 

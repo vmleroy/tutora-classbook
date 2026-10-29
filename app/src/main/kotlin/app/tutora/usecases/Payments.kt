@@ -63,7 +63,7 @@ data class PaymentDraft(
     val chosen: List<String> = emptyList(),
 )
 
-enum class PaymentError { NOT_FOUND, AMOUNT, FUTURE_DATE, NOT_OWED, NO_PACKAGE, OVERPAID, CREDITS_OFF, NO_CREDIT }
+enum class PaymentError { NOT_FOUND, AMOUNT, FUTURE_DATE, NOT_OWED, NO_PACKAGE, CREDITS_OFF, NO_CREDIT }
 
 sealed interface PaymentResult {
     data class Ok(
@@ -138,11 +138,7 @@ class Payments(
             val foreign = elsewhere.filter { it.owed.lessonId in draft.chosen && it.left > 0 }
             val own = draft.copy(chosen = draft.chosen - elsewhere.map { it.owed.lessonId }.toSet())
             checkChosen(own)?.let { return@inTransaction PaymentResult.Err(it) }
-            // With Créditos e bônus off there is no credit: a payment can't be more than is owed (AC-008-28).
-            if (!SettingsRepository(db).load().credits) {
-                val owedHere = PaymentRepository(db).ledgerNow(draft.payer).owedCents + foreign.sumOf { it.left }
-                if (draft.cents > owedHere) return@inTransaction PaymentResult.Err(PaymentError.OVERPAID)
-            }
+            // Paying more than is owed is allowed: the rest is a tip, kept as received, never credit (AC-016-24).
             var remaining = draft.cents
             var first: String? = null
             for ((payer, classes) in foreign.groupBy { it.payer }) {

@@ -149,6 +149,50 @@ fun monthYear(
     language: Language,
 ): String = DateTimeFormatter.ofPattern("LLLL yyyy", localeOf(language)).format(date.toJavaLocalDate()).capitalized()
 
+/** "28 de outubro" / "October 28". */
+fun dayMonthLong(
+    date: LocalDate,
+    language: Language,
+): String =
+    DateTimeFormatter
+        .ofPattern(
+            if (language ==
+                Language.PT_BR
+            ) {
+                "d 'de' MMMM"
+            } else {
+                "MMMM d"
+            },
+            localeOf(language),
+        ).format(date.toJavaLocalDate())
+
+/** "26 out" / "Oct 26". */
+fun dayShortMonth(
+    date: LocalDate,
+    language: Language,
+): String =
+    DateTimeFormatter
+        .ofPattern(if (language == Language.PT_BR) "d MMM" else "MMM d", localeOf(language))
+        .format(date.toJavaLocalDate())
+        .replace(".", "")
+
+/** "Out" / "Oct". */
+fun monthShort(
+    date: LocalDate,
+    language: Language,
+): String =
+    DateTimeFormatter
+        .ofPattern("LLL", localeOf(language))
+        .format(date.toJavaLocalDate())
+        .replace(".", "")
+        .capitalized()
+
+/** "S", "T", "Q" / "M", "T", "W": a weekday's initial, for the month grid. */
+fun weekdayNarrow(
+    date: LocalDate,
+    language: Language,
+): String = DateTimeFormatter.ofPattern("EEEEE", localeOf(language)).format(date.toJavaLocalDate()).uppercase()
+
 /** "Seg" / "Mon". */
 fun weekdayShort(
     date: LocalDate,

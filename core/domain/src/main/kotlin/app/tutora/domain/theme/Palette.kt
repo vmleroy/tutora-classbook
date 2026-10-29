@@ -114,7 +114,11 @@ fun resolvePalette(
     custom[CustomPart.HEADER]?.let {
         p["header"] = if (dark) mix(lift(it), base.getValue("background"), HEADER_DEPTH) else it
         p["on-header"] = textOn(p.getValue("header"))
-        p["on-header-muted"] = mix(p.getValue("on-header"), p.getValue("header"), 0.2)
+        // Muted text keeps 4.5:1 on the summary card: as close to the header as that allows (AC-016-9).
+        p["on-header-muted"] =
+            listOf(0.2, 0.15, 0.1, 0.05)
+                .map { mix(p.getValue("on-header"), p.getValue("header"), it) }
+                .firstOrNull { contrastRatio(it, p.getValue("header")) >= MIN_TEXT_CONTRAST } ?: p.getValue("on-header")
     }
     if (CustomPart.HEADER in custom || CustomPart.HIGHLIGHT_BTN in custom) {
         // Money on the header: accent when it holds 3:1 there (large text only), else on-header.

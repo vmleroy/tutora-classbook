@@ -57,6 +57,7 @@ import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.Stepper
+import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.TagDot
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
@@ -74,6 +75,7 @@ import app.tutora.domain.Price
 import app.tutora.domain.RateType
 import app.tutora.domain.Student
 import app.tutora.domain.TagColor
+import app.tutora.domain.Who
 import app.tutora.domain.initials
 import app.tutora.domain.randomTag
 import app.tutora.domain.resolvePrice
@@ -134,15 +136,8 @@ fun StudentDetailScreen(
                 } else {
                     null
                 },
-                // Relatório, beside the pencil (AC-010-1).
-                HeaderAction(IconName.FILE, stringResource(R.string.rep_screen)) { nav.navigate(app.tutora.ui.Report("STUDENT", id)) },
-                HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) {
-                    nav.navigate(
-                        app.tutora.ui
-                            .StudentEdit(id),
-                    )
-                },
             ),
+        trailing = { EditButton { nav.navigate(app.tutora.ui.StudentEdit(id)) } },
     ) {
         if (archived) {
             ArchiveActions(
@@ -158,28 +153,43 @@ fun StudentDetailScreen(
                 },
             )
         }
-        Card {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3), verticalAlignment = Alignment.CenterVertically) {
-                Avatar(initials(s.student.name), s.student.color.tag(), size = AvatarSize.LG)
-                Column {
-                    Text(s.student.name, style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
-                    Text(
-                        listOfNotNull(s.student.subject, s.student.phone).joinToString(" · "),
-                        style = TutoraTheme.type.meta,
-                        color = TutoraTheme.colors.inkMuted,
-                    )
+        // As on the StudentDetail mockup: who, three figures, then the actions (Victor, 29 Oct 2026).
+        DetailIdentity(s.student.name, listOfNotNull(s.student.subject, s.student.phone).joinToString(" · ")) {
+            Avatar(initials(s.student.name), s.student.color.tag(), size = AvatarSize.LG)
+        }
+        s.student.notes?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted) }
+        val defaultLink = s.links.firstOrNull { it.isDefault } ?: s.links.firstOrNull()
+        val rate =
+            defaultLink?.let { link ->
+                byId[link.placeId]?.place?.let { place ->
+                    when (val p = resolvePrice(place, s.student, link)) {
+                        is Price.Set -> rateText(p.cents, p.rateType)
+                        Price.Salary -> stringResource(R.string.groups_coveredBySalary)
+                        Price.Unset -> stringResource(R.string.places_noPrice)
+                    }
                 }
             }
-            s.student.notes?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted) }
-        }
-        // What the student owes and their package, near the top (spec 008).
-        PayerBalance(PayerRef(PayerKind.STUDENT, id), stringResource(R.string.pay_record))
+        // What the student owes, Registrar pagamento and Relatório, near the top (spec 008, AC-010-1).
+        PayerBalance(
+            PayerRef(PayerKind.STUDENT, id),
+            stringResource(R.string.pay_record),
+            stats =
+                listOfNotNull(
+                    monthStat { l ->
+                        (l.who as? Who.OfStudent)?.student?.id == id ||
+                            (l.who as? Who.OfGroup)?.group?.memberIds?.contains(id) == true
+                    },
+                    rate?.let { DetailStat(stringResource(R.string.pay_amount), it) },
+                ),
+            onReport = { nav.navigate(app.tutora.ui.Report("STUDENT", id)) },
+            onNewLesson = { nav.navigate(app.tutora.ui.LessonNew()) },
+        )
         if (s.student.rateType == RateType.PACKAGE) PackageCard(id, s.student.packagePriceCents ?: 0)
         CreditsSection(PayerRef(PayerKind.STUDENT, id))
         val elsewhere by remember(id) { services.paymentRepo.elsewhere(id) }.collectAsState(initial = emptyList())
         val language = currentLanguage()
         val placePays = stringResource(R.string.pay_byPlace)
-        val paidText = stringResource(R.string.pay_paid)
+        val paidText = stringResource(R.string.pay_allReceived)
         val salary = stringResource(R.string.groups_coveredBySalary)
         val unset = stringResource(R.string.places_noPrice)
         val name = s.student.name
@@ -564,9 +574,8 @@ fun GroupDetailScreen(
                 } else {
                     null
                 },
-                HeaderAction(IconName.FILE, stringResource(R.string.rep_screen)) { nav.navigate(app.tutora.ui.Report("GROUP", id)) },
-                HeaderAction(IconName.PENCIL, stringResource(R.string.catalog_edit)) { nav.navigate(GroupEdit(id = id)) },
             ),
+        trailing = { EditButton { nav.navigate(GroupEdit(id = id)) } },
     ) {
         if (archived) {
             ArchiveActions(
@@ -577,29 +586,34 @@ fun GroupDetailScreen(
                 onRemove = { scope.launch { services.catalog.removePermanently(Kind.GROUP, id).also { nav.popBackStack() } } },
             )
         }
-        Card {
-            Text(g.name, style = TutoraTheme.type.titleLg, color = TutoraTheme.colors.ink)
-            Text(
-                listOfNotNull(g.subject, place?.let { placeName(it) }).joinToString(" · "),
-                style = TutoraTheme.type.meta,
-                color = TutoraTheme.colors.inkMuted,
-            )
+        DetailIdentity(g.name, listOfNotNull(g.subject, place?.let { placeName(it) }).joinToString(" · ")) {
+            Avatar(initials(g.name), Tag.TEAL, size = AvatarSize.LG)
         }
-        Card(label = stringResource(R.string.groups_price)) {
-            Text(stringResource(R.string.groups_price), style = TutoraTheme.type.caption, color = TutoraTheme.colors.inkMuted)
-            Text(
+        val price =
+            DetailStat(
+                stringResource(R.string.pay_amount),
                 when {
                     place?.kind == PlaceKind.SCHOOL -> stringResource(R.string.groups_coveredBySalary)
                     g.rateCents != null -> stringResource(R.string.places_perLesson, rateMoney(g.rateCents ?: 0, language))
                     else -> stringResource(R.string.places_noPrice)
                 },
-                style = TutoraTheme.type.bodyStrong,
-                color = TutoraTheme.colors.ink,
             )
-        }
+        val month = monthStat { l -> (l.who as? Who.OfGroup)?.group?.id == id }
+        val report = { nav.navigate(app.tutora.ui.Report("GROUP", id)) }
+        val newLesson = { nav.navigate(app.tutora.ui.LessonNew()) }
         // A group owes as one, unless its place pays the teacher or a salary covers it (AC-008-1).
         val groupOwes = place?.let { it.payer == Payer.PLACE || it.kind == PlaceKind.SCHOOL } == false
-        if (groupOwes) PayerBalance(PayerRef(PayerKind.GROUP, id), stringResource(R.string.pay_record))
+        if (groupOwes) {
+            PayerBalance(
+                PayerRef(PayerKind.GROUP, id),
+                stringResource(R.string.pay_record),
+                stats = listOf(month, price),
+                onReport = report,
+                onNewLesson = newLesson,
+            )
+        } else {
+            DetailOverview(listOf(month, price), null, report, newLesson)
+        }
         if (groupOwes) CreditsSection(PayerRef(PayerKind.GROUP, id))
         // Local: one place, moved with Trocar local; Alunos: the members (AC-004-35).
         ConnectionSection(

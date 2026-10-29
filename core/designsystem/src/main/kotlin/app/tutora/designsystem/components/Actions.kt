@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -70,7 +69,8 @@ fun Button(
             ControlSize.MD -> Size.controlMd
             ControlSize.LG -> Size.controlLg
         }
-    val shape = RoundedCornerShape(Radius.lg)
+    // Buttons are pills (spec 016).
+    val shape = RoundedCornerShape(Radius.full)
     Row(
         modifier =
             modifier
@@ -94,9 +94,13 @@ fun Button(
     }
 }
 
-enum class IconButtonVariant { SUNKEN, PLAIN, ON_PRIMARY, ACCENT }
+enum class IconButtonVariant { SUNKEN, PLAIN, ON_PRIMARY, ACCENT, ACCENT_SQUARE }
 
-/** Icon-only action; the label is read aloud since nothing else names it. */
+/**
+ * Icon-only action; the label is read aloud since nothing else names it. Round, except
+ * ACCENT_SQUARE: an add button in a tab header, a 56 dp rounded square in the highlight color
+ * (spec 016).
+ */
 @Composable
 fun IconButton(
     icon: IconName,
@@ -111,25 +115,33 @@ fun IconButton(
         when (variant) {
             IconButtonVariant.SUNKEN -> c.surfaceSunken to c.ink
             IconButtonVariant.PLAIN -> Color.Transparent to c.ink
-            IconButtonVariant.ON_PRIMARY -> c.onPrimary.copy(alpha = 0.15f) to c.onPrimary
-            IconButtonVariant.ACCENT -> c.accent to c.onAccent
+            IconButtonVariant.ON_PRIMARY -> onHeaderFill() to c.onHeader
+            IconButtonVariant.ACCENT, IconButtonVariant.ACCENT_SQUARE -> c.accent to c.onAccent
         }
+    val square = variant == IconButtonVariant.ACCENT_SQUARE
+    val shape = if (square) RoundedCornerShape(Radius.x2xl) else CircleShape
     Box(
         modifier =
             modifier
-                .size(Size.touch)
-                .clip(CircleShape)
-                .background(bg, CircleShape)
+                .size(if (square) Size.fab else Size.touch)
+                .clip(shape)
+                .background(bg, shape)
                 .alpha(if (enabled) 1f else Opacity.disabled)
                 .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
                 .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, tint = fg)
+        Icon(icon, tint = fg, size = if (square) Size.iconLg else Size.icon)
     }
 }
 
-/** The floating + on Agenda: the only thing in the app that floats. */
+/** How far a tile or control on the summary card moves from the Topo color, away from its text. */
+const val ON_HEADER_FILL = 0.14f
+
+/**
+ * The floating + on the Agenda: the only thing in the app that floats. Small, in the bottom-right
+ * corner, its fill a little see-through so the classes behind it show (Victor, 29 Oct 2026).
+ */
 @Composable
 fun Fab(
     onClick: () -> Unit,
@@ -137,18 +149,17 @@ fun Fab(
     icon: IconName = IconName.PLUS,
     label: String = stringResource(R.string.ds_new_lesson),
 ) {
-    val shape = RoundedCornerShape(Radius.x2xl)
+    val shape = RoundedCornerShape(Radius.xl)
     Box(
         modifier =
             modifier
                 .size(Size.fab)
-                .shadow(Spacing.s2, shape)
                 .clip(shape)
-                .background(TutoraTheme.colors.accent, shape)
+                .background(TutoraTheme.colors.accent.copy(alpha = Opacity.floating), shape)
                 .clickable(role = Role.Button, onClick = onClick)
                 .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, tint = TutoraTheme.colors.onAccent, size = Size.iconLg)
+        Icon(icon, tint = TutoraTheme.colors.onAccent, size = Size.icon)
     }
 }

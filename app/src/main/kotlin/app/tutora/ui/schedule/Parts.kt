@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -42,8 +44,8 @@ import app.tutora.domain.Who
 import app.tutora.domain.layoutDay
 import app.tutora.domain.localOf
 import app.tutora.domain.weekStart
+import app.tutora.ui.dayShortMonth
 import app.tutora.ui.hourMark
-import app.tutora.ui.monthYear
 import app.tutora.ui.placeName
 import app.tutora.ui.tag
 import app.tutora.ui.weekdayShort
@@ -82,13 +84,17 @@ fun byLocalDay(
     zone: String,
 ): Map<LocalDate, List<Lesson>> = lessons.groupBy { localOf(it.startAt, zone).date }
 
-/** The month, ‹ › weeks and a Monday-to-Sunday strip; tapping a day picks it (AC-005-17). */
+/**
+ * ‹ "Semana de 26 out a 1 nov" › and a Monday-to-Sunday strip; tapping a day picks it. The
+ * month is the screen's title (AC-005-17, AC-016-13, 15); › stops at the [horizon] (AC-016-23).
+ */
 @Composable
 fun WeekPicker(
     selected: LocalDate,
     today: LocalDate,
     onSelect: (LocalDate) -> Unit,
     byDay: Map<LocalDate, List<Lesson>> = emptyMap(),
+    horizon: LocalDate? = null,
 ) {
     val language = currentLanguage()
     val monday = weekStart(selected)
@@ -99,18 +105,25 @@ fun WeekPicker(
                 onSelect(selected.minus(DatePeriod(days = 7)))
             }, variant = IconButtonVariant.PLAIN)
             Text(
-                monthYear(selected, language),
-                style = TutoraTheme.type.section,
+                stringResource(R.string.schedule_weekOf, dayShortMonth(monday, language), dayShortMonth(days.last(), language)),
+                style = TutoraTheme.type.bodyStrong,
                 color = TutoraTheme.colors.ink,
                 modifier = Modifier.weight(1f),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
-            IconButton(IconName.CHEVRON_RIGHT, stringResource(R.string.schedule_nextWeek), {
-                onSelect(selected.plus(DatePeriod(days = 7)))
-            }, variant = IconButtonVariant.PLAIN)
+            IconButton(
+                IconName.CHEVRON_RIGHT,
+                stringResource(R.string.schedule_nextWeek),
+                { onSelect(selected.plus(DatePeriod(days = 7))) },
+                variant = IconButtonVariant.PLAIN,
+                enabled = horizon == null || monday.plus(DatePeriod(days = 7)) <= horizon,
+            )
         }
+        // After a space as wide as the grid's hour labels, so each day sits over its column.
         WeekStrip(
-            days.map { d -> WeekDay(weekdayShort(d, language), d.day, byDay[d]?.firstOrNull()?.whoTag) },
+            modifier = Modifier.padding(start = LABEL_WIDTH),
+            days =
+                days.map { d -> WeekDay(weekdayShort(d, language), d.day, byDay[d]?.firstOrNull()?.whoTag) },
             selected = days.indexOf(selected),
             onSelect = { onSelect(days[it]) },
             today = days.indexOf(today).takeIf { it >= 0 },
@@ -134,6 +147,7 @@ fun DayGrid(
     startHour: Int,
     scroll: ScrollState,
     onOpen: (Lesson) -> Unit,
+    chosen: LocalDate? = null,
 ) {
     val language = currentLanguage()
     val hour = Size.agendaHour
@@ -165,7 +179,24 @@ fun DayGrid(
                         Span(l.id, t.hour * 60 + t.minute, t.hour * 60 + t.minute + l.plannedMin)
                     }
                 val slots = layoutDay(spans)
-                BoxWithConstraints(Modifier.weight(1f).height(hour * 24).background(TutoraTheme.colors.background)) {
+                // In Semana each day is its own column: a line before it, and the chosen day's on white
+                // (Victor, 29 Oct 2026).
+                val ground = if (compact && date == chosen) TutoraTheme.colors.surface else TutoraTheme.colors.background
+                BoxWithConstraints(
+                    Modifier
+                        .weight(1f)
+                        .height(hour * 24)
+                        .background(ground)
+                        .testTag("day-column-$date"),
+                ) {
+                    if (compact) {
+                        Box(
+                            Modifier
+                                .fillMaxHeight()
+                                .width(Size.border)
+                                .background(TutoraTheme.colors.line),
+                        )
+                    }
                     for (h in 0 until 24) {
                         Box(
                             Modifier
@@ -196,6 +227,8 @@ fun DayGrid(
                 }
             }
         }
+        // Room under 23:00 for the floating +.
+        Spacer(Modifier.height(Size.fab + Spacing.s5))
     }
 }
 

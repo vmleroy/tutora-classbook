@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -67,7 +69,7 @@ fun Badge(
 
 enum class AvatarSize { SM, MD, LG }
 
-/** A person's initials on their tag color; decorative, the name is read beside it. */
+/** A person's initials on their tag color, in a rounded square; decorative, the name is read beside it. */
 @Composable
 fun Avatar(
     initials: String,
@@ -86,7 +88,7 @@ fun Avatar(
         modifier =
             modifier
                 .size(box)
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(Radius.lg))
                 .background(t.soft),
         contentAlignment = Alignment.Center,
     ) {
@@ -147,7 +149,7 @@ fun Money(
 
 enum class ProgressTone { ACCENT, SUCCESS, PRIMARY, SECONDARY }
 
-enum class ProgressTrack { ACCENT, DANGER, SUNKEN }
+enum class ProgressTrack { ACCENT, DANGER, SUNKEN, ON_HEADER }
 
 /** A share of a whole (earned of expected); [value] is 0..1. */
 @Composable
@@ -172,6 +174,7 @@ fun ProgressBar(
             ProgressTrack.ACCENT -> c.accentSoft
             ProgressTrack.DANGER -> c.dangerSoft
             ProgressTrack.SUNKEN -> c.surfaceSunken
+            ProgressTrack.ON_HEADER -> onHeaderFill()
         }
     val v = value.coerceIn(0f, 1f)
     Box(
@@ -207,7 +210,7 @@ fun Card(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val c = TutoraTheme.colors
-    val shape = RoundedCornerShape(Radius.xl)
+    val shape = RoundedCornerShape(Radius.x3xl)
     Column(
         modifier =
             modifier
@@ -218,7 +221,7 @@ fun Card(
                 .then(if (elevation == CardElevation.OUTLINE) Modifier.border(Size.border, c.line, shape) else Modifier)
                 .then(if (label != null) Modifier.semantics { contentDescription = label } else Modifier)
                 .padding(Spacing.s4),
-        verticalArrangement = Arrangement.spacedBy(Spacing.s2),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s3),
         content = content,
     )
 }
@@ -229,7 +232,11 @@ data class EarningsStat(
     val tone: MoneyTone = MoneyTone.DEFAULT,
 )
 
-/** Earned vs expected with a bar and up to three compact stats (Hoje, Ganhos). */
+/**
+ * Earned vs expected with a bar and up to three compact stats. On Ganhos it sits on a
+ * [SummaryCard] with owed stats in the red tile and paid in the green; with [onCard] it is the
+ * white card of Hoje, over the Topo band, with the stats as plain columns (spec 016).
+ */
 @Composable
 fun EarningsSummary(
     title: String,
@@ -243,30 +250,62 @@ fun EarningsSummary(
     receivedLabel: String = "",
     /** A line under the stats ("comissão dos locais: R$ 30,00"). */
     footnote: String? = null,
+    onCard: Boolean = false,
 ) {
     val c = TutoraTheme.colors
-    Card(modifier, label = title) {
-        Text(title, style = TutoraTheme.type.caption, color = c.inkMuted)
-        Money(earnedCents, size = MoneySize.XL, tone = MoneyTone.EARNINGS)
+    val muted = if (onCard) c.inkMuted else c.onHeaderMuted
+    val body: @Composable ColumnScope.() -> Unit = {
+        // The title and what was expected share a line, so the amount below has the full width.
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(title, style = TutoraTheme.type.bodyStrong, color = muted, modifier = Modifier.weight(1f))
+            if (expectedCents != null && expectedCents > 0 && expectedLabel != null) {
+                Text(expectedLabel, style = TutoraTheme.type.meta, color = muted)
+            }
+        }
+        Money(earnedCents, size = MoneySize.XL, tone = if (onCard) MoneyTone.EARNINGS else MoneyTone.ON_HEADER)
         if (expectedCents != null && expectedCents > 0) {
-            if (expectedLabel != null) Text(expectedLabel, style = TutoraTheme.type.meta, color = c.inkMuted)
-            ProgressBar(earnedCents.toFloat() / expectedCents, expectedLabel ?: title)
+            ProgressBar(
+                earnedCents.toFloat() / expectedCents,
+                expectedLabel ?: title,
+                track = if (onCard) ProgressTrack.SUNKEN else ProgressTrack.ON_HEADER,
+            )
         }
         if (receivedShare != null) {
             ProgressBar(receivedShare, receivedLabel, tone = ProgressTone.SUCCESS, track = ProgressTrack.DANGER)
         }
-        if (stats.isNotEmpty()) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        if (stats.isNotEmpty() && onCard) {
+            Box(Modifier.fillMaxWidth().height(Size.border).background(c.lineSoft))
+            // Equal columns, so each label and amount starts at the same place (spec 016).
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                 stats.forEach { s ->
-                    Column {
-                        Text(s.label, style = TutoraTheme.type.meta, color = c.inkMuted)
+                    Column(Modifier.weight(1f).testTag("summary-stat")) {
+                        Text(s.label, style = TutoraTheme.type.meta, color = c.inkMuted, maxLines = 1)
                         Money(s.cents, size = MoneySize.MD, tone = s.tone, compact = true)
                     }
                 }
             }
+        } else if (stats.isNotEmpty()) {
+            // Tiles share one height, whatever their labels wrap to.
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                stats.forEach { s ->
+                    val tone =
+                        when {
+                            // Red only when something is owed.
+                            s.tone == MoneyTone.OWED && s.cents > 0 -> SummaryTone.OWED
+                            s.tone == MoneyTone.PAID -> SummaryTone.PAID
+                            else -> SummaryTone.PLAIN
+                        }
+                    SummaryTile(s.label, s.cents, tone)
+                }
+            }
         }
-        if (footnote != null) Text(footnote, style = TutoraTheme.type.meta, color = c.inkMuted)
+        if (footnote != null) Text(footnote, style = TutoraTheme.type.meta, color = muted)
     }
+    if (onCard) Card(modifier, label = title, content = body) else SummaryCard(modifier, label = title, content = body)
 }
 
 /** One month in [MonthBars]: its label, the bar's total and the part filled in. */

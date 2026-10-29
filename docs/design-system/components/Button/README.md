@@ -39,3 +39,6 @@ interface ButtonProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Every button is a pill (`radius-full`).

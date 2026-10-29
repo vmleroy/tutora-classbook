@@ -1,5 +1,7 @@
 package app.tutora.ui
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -67,6 +69,21 @@ import kotlin.reflect.KClass
 @Serializable data object EarningsGraph
 
 @Serializable data object EarningsHome
+
+/** The saved-state key that asks Ganhos to open on a period kind, such as DAY from Hoje's card (AC-016-28). */
+const val OPEN_PERIOD = "openPeriod"
+
+/**
+ * Switches to a tab as the tab bar does: each tab keeps its own stack, so going back to Hoje
+ * always finds its home page.
+ */
+fun NavHostController.openTab(graph: Any) {
+    navigate(graph) {
+        popUpTo(this@openTab.graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
 
 @Serializable data object SettingsGraph
 
@@ -180,6 +197,9 @@ fun TutoraNav(
         Scaffold(
             modifier = modifier,
             containerColor = TutoraTheme.colors.background,
+            // Screens pad for the system bars themselves, so Hoje's band reaches the top edge; the
+            // tab bar's height (with the navigation bar) is consumed here so it is not padded twice.
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 // The bar shows on the tabs; details and forms take the whole screen.
                 if (activeTab != null) {
@@ -187,18 +207,13 @@ fun TutoraNav(
                         tabs = Tab.entries.map { TabItem(it.key, stringResource(it.label), it.icon) },
                         active = activeTab.key,
                         onSelect = { key ->
-                            val tab = Tab.entries.first { it.key == key }
-                            nav.navigate(tab.graph) {
-                                popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+                            nav.openTab(Tab.entries.first { it.key == key }.graph)
                         },
                     )
                 }
             },
         ) { padding ->
-            NavHost(nav, startDestination = TodayGraph, modifier = Modifier.padding(padding)) {
+            NavHost(nav, startDestination = TodayGraph, modifier = Modifier.padding(padding).consumeWindowInsets(padding)) {
                 navigation<TodayGraph>(startDestination = TodayHome) {
                     composable<TodayHome> { TodayScreen(nav) }
                 }
@@ -212,7 +227,10 @@ fun TutoraNav(
                     }
                 }
                 navigation<EarningsGraph>(startDestination = EarningsHome) {
-                    composable<EarningsHome> { EarningsScreen(nav) }
+                    composable<EarningsHome> { entry ->
+                        val asked by entry.savedStateHandle.getStateFlow<String?>(OPEN_PERIOD, null).collectAsState()
+                        EarningsScreen(nav, asked) { entry.savedStateHandle[OPEN_PERIOD] = null }
+                    }
                 }
                 navigation<SettingsGraph>(startDestination = SettingsHome) {
                     composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { nav.navigate(PersonalData) } }

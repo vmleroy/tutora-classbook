@@ -21,3 +21,6 @@ interface WeekStripProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Days sit on `surface-sunken` pills (`radius-2xl`), the chosen one filled with `btnPrimary`. Each day is an equal column padded like an `AgendaBlock`, so on the Agenda, after a space as wide as the hour labels, each day sits over its column of the grid.

@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import app.tutora.designsystem.R
@@ -46,7 +47,11 @@ data class HeaderAction(
     val onClick: () -> Unit,
 )
 
-/** A screen's title bar: hero (on header color), tab, push (with back) or modal. */
+/**
+ * A screen's title bar. It never paints a band itself: HERO is Hoje's date over the greeting,
+ * in on-header colors for the Topo band the screen draws behind it (spec 016); TAB a tab title,
+ * PUSH a pushed screen with back, MODAL a sheet.
+ */
 @Composable
 fun ScreenHeader(
     title: String,
@@ -55,38 +60,44 @@ fun ScreenHeader(
     eyebrow: String? = null,
     actions: List<HeaderAction> = emptyList(),
     onBack: (() -> Unit)? = null,
+    /** A labelled action after the icon actions, such as Ganhos' Relatório button. */
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     val c = TutoraTheme.colors
+    val big = variant == HeaderVariant.TAB || variant == HeaderVariant.HERO
     val hero = variant == HeaderVariant.HERO
     Row(
         modifier =
             modifier
                 .fillMaxWidth()
-                .background(if (hero) c.header else Color.Transparent)
+                .testTag("screen-header")
                 .padding(horizontal = Spacing.s5, vertical = Spacing.s3),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (onBack != null) {
-            IconButton(
-                IconName.CHEVRON_LEFT,
-                stringResource(R.string.ds_back),
-                onBack,
-                variant = if (hero) IconButtonVariant.ON_PRIMARY else IconButtonVariant.SUNKEN,
-            )
-        }
+        if (onBack != null) IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.ds_back), onBack)
         Column(Modifier.weight(1f)) {
             if (eyebrow != null) Text(eyebrow, style = TutoraTheme.type.caption, color = if (hero) c.onHeaderMuted else c.inkMuted)
             Text(
                 title,
-                style = if (variant == HeaderVariant.TAB || hero) TutoraTheme.type.titleXl else TutoraTheme.type.titleLg,
+                style = if (big) TutoraTheme.type.titleXl else TutoraTheme.type.titleLg,
                 color = if (hero) c.onHeader else c.ink,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.semantics { heading() },
             )
         }
-        actions.forEach { IconButton(it.icon, it.label, it.onClick, variant = if (hero) IconButtonVariant.ON_PRIMARY else it.variant) }
+        actions.forEach {
+            // On Hoje's Topo band the + is round and the other actions are tinted for it.
+            val v =
+                when {
+                    !hero -> it.variant
+                    it.variant == IconButtonVariant.ACCENT || it.variant == IconButtonVariant.ACCENT_SQUARE -> IconButtonVariant.ACCENT
+                    else -> IconButtonVariant.ON_PRIMARY
+                }
+            IconButton(it.icon, it.label, it.onClick, variant = v)
+        }
+        trailing?.invoke()
     }
 }
 
@@ -96,7 +107,7 @@ data class TabItem(
     val icon: IconName,
 )
 
-/** The bottom bar: five tabs, labels always shown, the active one on a soft pill. */
+/** The bottom bar on the sunken tone: five tabs, labels always shown, the active one on a Menu ativo pill. */
 @Composable
 fun TabBar(
     tabs: List<TabItem>,
@@ -109,7 +120,8 @@ fun TabBar(
         modifier =
             modifier
                 .fillMaxWidth()
-                .background(c.surface)
+                .testTag("tab-bar")
+                .background(c.surfaceSunken)
                 .navigationBarsPadding()
                 .height(Size.tabbar)
                 .selectableGroup(),
@@ -135,7 +147,12 @@ fun TabBar(
                         .background(if (on) c.tabActiveSoft else Color.Transparent)
                         .padding(horizontal = Spacing.s4, vertical = Spacing.s1),
                 ) { Icon(tab.icon, tint = if (on) c.tabActive else c.inkMuted) }
-                Text(tab.label, style = TutoraTheme.type.tab, color = if (on) c.tabActive else c.inkMuted, maxLines = 1)
+                Text(
+                    tab.label,
+                    style = if (on) TutoraTheme.type.tab.copy(fontWeight = FontWeight.Black) else TutoraTheme.type.tab,
+                    color = if (on) c.ink else c.inkMuted,
+                    maxLines = 1,
+                )
             }
         }
     }
@@ -161,7 +178,6 @@ fun WeekStrip(
     val c = TutoraTheme.colors
     Row(
         modifier = modifier.fillMaxWidth().semantics { contentDescription = label }.selectableGroup(),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
     ) {
         days.forEachIndexed { i, d ->
             val on = i == selected
@@ -169,9 +185,11 @@ fun WeekStrip(
                 modifier =
                     Modifier
                         .weight(1f)
+                        // Equal columns padded like the Agenda's blocks, so each day sits over its column.
+                        .padding(horizontal = AgendaBlockGap)
                         .height(Size.weekDay)
-                        .clip(RoundedCornerShape(Radius.lg))
-                        .background(if (on) c.btnPrimary else Color.Transparent)
+                        .clip(RoundedCornerShape(Radius.x2xl))
+                        .background(if (on) c.btnPrimary else c.surfaceSunken)
                         .selectable(selected = on, role = Role.Tab, onClick = { onSelect(i) })
                         .semantics { contentDescription = d.a11y ?: "${d.weekday} ${d.day}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -228,7 +246,7 @@ fun AgendaBlock(
 ) {
     val t = tag.colors()
     val c = TutoraTheme.colors
-    val shape = RoundedCornerShape(Radius.md)
+    val shape = RoundedCornerShape(Radius.xl)
     val badge =
         when (state) {
             BlockState.NEXT -> stringResource(R.string.ds_next)

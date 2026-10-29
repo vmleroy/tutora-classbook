@@ -84,24 +84,23 @@ fun RegistryScreen(
                     stringResource(R.string.catalog_archived),
                     IconButtonVariant.PLAIN,
                 ) { nav.navigate(Archived) },
-                HeaderAction(
-                    IconName.PLUS,
-                    stringResource(
-                        when (view) {
-                            "places" -> R.string.places_new
-                            "groups" -> R.string.groups_new
-                            else -> R.string.students_new
-                        },
-                    ),
-                    IconButtonVariant.ACCENT,
-                ) {
-                    nav.navigate(
-                        when (view) {
-                            "places" -> PlaceEdit()
-                            "groups" -> GroupEdit()
-                            else -> StudentEdit()
-                        },
-                    )
+            ),
+        // Novo aluno, Nova turma or Novo local floats in the corner, as on the Agenda (Victor, 29 Oct 2026).
+        fab = {
+            nav.navigate(
+                when (view) {
+                    "places" -> PlaceEdit()
+                    "groups" -> GroupEdit()
+                    else -> StudentEdit()
+                },
+            )
+        },
+        fabLabel =
+            stringResource(
+                when (view) {
+                    "places" -> R.string.places_new
+                    "groups" -> R.string.groups_new
+                    else -> R.string.students_new
                 },
             ),
     ) {

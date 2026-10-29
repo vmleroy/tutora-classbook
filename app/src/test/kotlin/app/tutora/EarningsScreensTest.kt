@@ -168,4 +168,56 @@ class EarningsScreensTest {
         openEarnings()
         listOf("October 2026", "Earned in the period", "R$120.00", "Received", "Where it came from").forEach { exists(it) }
     }
+
+    @Test
+    fun `AC-016-26 the period's name opens a picker that jumps to any month`() {
+        given(5)
+        h.show(compose)
+        h.go(compose, EarningsGraph)
+        compose.onNodeWithContentDescription("Outubro 2026, escolher período").performClick()
+        h.settle(compose)
+        exists("Escolher período")
+        compose.onNodeWithContentDescription("Setembro 2026").performClick()
+        h.settle(compose)
+        exists("Setembro 2026")
+    }
+
+    @Test
+    fun `AC-016-27 what a payment gives on top of its classes counts as earned and received`() {
+        given(5)
+        runBlocking {
+            h.services.payments.record(
+                app.tutora.usecases.PaymentDraft(
+                    app.tutora.domain.PayerRef(app.tutora.domain.PayerKind.STUDENT, ana.id),
+                    20_000,
+                    app.tutora.domain.PayMethod.PIX,
+                    LocalDate(2026, 10, 26),
+                ),
+            )
+        }
+        h.show(compose)
+        h.go(compose, EarningsGraph)
+        // R$ 120,00 for the class and R$ 80,00 on top.
+        exists("R$ 200,00")
+        exists("R$ 200")
+    }
+
+    @Test
+    fun `AC-016-28 Hoje's card opens Ganhos on today's Dia, and the arrows move a day`() {
+        given(25)
+        given(26)
+        h.show(compose)
+        compose.onNodeWithTag("today-earnings").performClick()
+        h.settle(compose)
+        exists("Ganho hoje")
+        exists("Seg, 26 out")
+        compose.onNodeWithContentDescription("Período anterior").performClick()
+        h.settle(compose)
+        exists("Dom, 25 out")
+        exists("Ganho no dia")
+        // The Hoje tab still opens Hoje: the card switched tabs, it did not stack Ganhos on Hoje.
+        compose.onNodeWithTag("tab-today").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("today-screen").assertExists()
+    }
 }

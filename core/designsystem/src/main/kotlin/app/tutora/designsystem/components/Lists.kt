@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -88,7 +89,7 @@ fun SectionHeader(
     }
 }
 
-/** One lesson in a day list: time, tag, who and where, and its state or value. */
+/** One lesson in a day list: time, tag, who and where, and its state or value; in a [ListGroup], or a [card] of its own. */
 @Composable
 fun LessonRow(
     time: String,
@@ -100,6 +101,8 @@ fun LessonRow(
     trailing: String? = null,
     onClick: (() -> Unit)? = null,
     statusIcon: IconName? = null,
+    /** A card of its own (Hoje's list) instead of a row of a [ListGroup]. */
+    card: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     Row(
@@ -107,10 +110,10 @@ fun LessonRow(
             modifier
                 .fillMaxWidth()
                 .sizeIn(minHeight = Size.controlLg)
-                .clip(RoundedCornerShape(Radius.xl))
+                .then(if (card) Modifier.clip(RoundedCornerShape(Radius.x2xl)) else Modifier)
                 .background(c.surface)
                 .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
-                .padding(horizontal = Spacing.s3_5, vertical = Spacing.s3),
+                .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -138,7 +141,7 @@ fun LessonRow(
     }
 }
 
-/** A titled white block of rows separated by hairlines, as in Ajustes. */
+/** A titled card of rows separated by hairlines: every list in the app (spec 016). */
 @Composable
 fun ListGroup(
     rows: List<@Composable () -> Unit>,
@@ -161,12 +164,13 @@ fun ListGroup(
         if (title !=
             null
         ) {
-            Text(title, style = TutoraTheme.type.badge, color = c.inkMuted, modifier = Modifier.padding(horizontal = Spacing.s1))
+            Text(title, style = TutoraTheme.type.section, color = c.ink, modifier = Modifier.padding(horizontal = Spacing.s1))
         }
         Column(
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(Radius.xl))
+                .testTag("list-group")
+                .clip(RoundedCornerShape(Radius.x3xl))
                 .background(c.surface),
         ) {
             rows.forEachIndexed { i, row ->
@@ -238,7 +242,7 @@ fun ListRow(
             Box(
                 Modifier
                     .size(Size.tile)
-                    .clip(RoundedCornerShape(Radius.md))
+                    .clip(RoundedCornerShape(Radius.lg))
                     .background(tile),
                 contentAlignment = Alignment.Center,
             ) { Icon(icon, tint = tileInk, size = Size.iconSm) }

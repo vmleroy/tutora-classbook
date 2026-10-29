@@ -17,3 +17,6 @@ interface CardProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Corners `radius-3xl` (28), 12 dp between its children; flat.

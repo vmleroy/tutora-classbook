@@ -79,7 +79,8 @@ class DesignSystemTest {
                 .toSet()
         for (token in colorTokens) assertTrue(token, camel(token) in fields)
         assertEquals(16.dp, Spacing.s4)
-        assertEquals(44.dp, Size.touch)
+        // 48 since spec 016 (AC-016-8).
+        assertEquals(48.dp, Size.touch)
     }
 
     @Test
@@ -114,8 +115,8 @@ class DesignSystemTest {
                 ) { Column(Modifier.verticalScroll(rememberScrollState())) { GallerySections() } }
             }
         }
-        // 30 from spec 002, plus MonthBars (spec 009).
-        assertEquals(31, galleryComponents.size)
+        // 30 from spec 002, plus MonthBars (spec 009) and four from spec 016.
+        assertEquals(35, galleryComponents.size)
         for (name in galleryComponents) compose.onNodeWithTag("section-$name").assertExists()
         isDark = true
         compose.waitForIdle()
