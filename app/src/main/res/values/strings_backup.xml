@@ -31,13 +31,12 @@
     <string name="bk_chooseFolder">Choose folder</string>
     <string name="bk_chooseFolderHint">Where backups are kept, on the phone or in the cloud</string>
     <string name="bk_savedIn">Saved to %1$s</string>
-    <string name="bk_share">Share backup</string>
     <string name="bk_recentManualIn">Manual · %1$s</string>
     <string name="bk_change">Change</string>
     <string name="bk_keep">Keep the last</string>
     <plurals name="bk_keepValue">
-        <item quantity="one">%d backup</item>
-        <item quantity="other">%d backups</item>
+        <item quantity="one">%d backup in the folder · older ones are deleted</item>
+        <item quantity="other">%d backups in the folder · older ones are deleted</item>
     </plurals>
     <string name="bk_hint">You choose the folder once. It can be in Google Drive, OneDrive or on the phone itself. If the phone is flat or off, the backup runs the next time you open the app.</string>
     <string name="bk_folderFailed">Couldn\'t save to the folder. Choose the folder again.</string>

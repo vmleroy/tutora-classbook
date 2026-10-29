@@ -24,7 +24,7 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 ### A backup by hand
 
-- **AC-011-2.** "Backup completo (.json)" makes one file with every student, place, group, link, schedule, class, timer, payment, package and setting, and puts it where the teacher can find it: with a backup folder chosen, it is saved there and the page says "Salvo em <pasta>", and "Compartilhar backup" still opens the share sheet; with none, it opens the share sheet (Victor, 29 Oct 2026). The file is named with the date and time, "Tutora backup 2026-10-29 20-00.json".
+- **AC-011-2.** "Backup completo (.json)" makes one file with every student, place, group, link, schedule, class, timer, payment, package and setting, and puts it where the teacher can find it: with a backup folder chosen, it is saved there and the page says "Salvo em <pasta>", and to send it elsewhere, Compartilhar in its row of Recentes opens the share sheet; with none, it opens the share sheet (Victor, 29 Oct 2026). The file is named with the date and time, "Tutora backup 2026-10-29 20-00.json".
 - **AC-011-3.** A backup carries the app's name, the version of its data and when it was made, so a later Tutora can read an older backup.
 - **AC-011-4.** Making a backup changes nothing in the app's data except the date of the last backup.
 

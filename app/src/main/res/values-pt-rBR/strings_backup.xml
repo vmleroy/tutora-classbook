@@ -33,14 +33,13 @@
     <string name="bk_chooseFolder">Escolher pasta</string>
     <string name="bk_chooseFolderHint">Onde os backups ficam, no celular ou na nuvem</string>
     <string name="bk_savedIn">Salvo em %1$s</string>
-    <string name="bk_share">Compartilhar backup</string>
     <string name="bk_recentManualIn">Manual · %1$s</string>
     <string name="bk_change">Trocar</string>
     <string name="bk_keep">Guardar os últimos</string>
     <plurals name="bk_keepValue">
-        <item quantity="one">%d backup</item>
-        <item quantity="many">%d backups</item>
-        <item quantity="other">%d backups</item>
+        <item quantity="one">%d backup na pasta · os mais antigos são apagados</item>
+        <item quantity="many">%d backups na pasta · os mais antigos são apagados</item>
+        <item quantity="other">%d backups na pasta · os mais antigos são apagados</item>
     </plurals>
     <string name="bk_hint">Você escolhe a pasta uma vez. Pode ser no Google Drive, OneDrive ou no próprio celular. Se o celular estiver sem bateria ou desligado, o backup roda na próxima vez que abrir o app.</string>
     <string name="bk_folderFailed">Não foi possível salvar na pasta. Escolha a pasta de novo.</string>

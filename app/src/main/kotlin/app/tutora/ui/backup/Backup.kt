@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -665,6 +667,12 @@ fun BackupScreen(nav: NavHostController) {
                         )
                     }
                 },
+                // How many stay in the folder, at most five (AC-011-7).
+                if (s.folderUri.isNotEmpty()) {
+                    { KeepRow(s.keep) { setAuto(s.copy(keep = it)) } }
+                } else {
+                    null
+                },
             ),
         )
         if (s.auto) {
@@ -678,37 +686,6 @@ fun BackupScreen(nav: NavHostController) {
                 { setAuto(s.copy(every = it)) },
                 stringResource(R.string.bk_every),
             )
-            val keepText = pluralStringResource(R.plurals.bk_keepValue, s.keep, s.keep)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-            ) {
-                Text(stringResource(R.string.bk_keep), style = TutoraTheme.type.body, color = TutoraTheme.colors.ink)
-                Stepper(
-                    s.keep.toLong(),
-                    { setAuto(s.copy(keep = it.toInt())) },
-                    step = 1,
-                    min = BACKUP_KEEP_MIN.toLong(),
-                    max = BACKUP_KEEP_MAX.toLong(),
-                    format = { keepText },
-                )
-            }
-        } else if (s.folderUri.isNotEmpty()) {
-            val keepText = pluralStringResource(R.plurals.bk_keepValue, s.keep, s.keep)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-            ) {
-                Text(stringResource(R.string.bk_keep), style = TutoraTheme.type.body, color = TutoraTheme.colors.ink)
-                Stepper(
-                    s.keep.toLong(),
-                    { setAuto(s.copy(keep = it.toInt())) },
-                    step = 1,
-                    min = BACKUP_KEEP_MIN.toLong(),
-                    max = BACKUP_KEEP_MAX.toLong(),
-                    format = { keepText },
-                )
-            }
         }
         Text(stringResource(R.string.bk_hint), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
 
@@ -723,9 +700,6 @@ fun BackupScreen(nav: NavHostController) {
                 scope.launch { savedIn = withContext(Dispatchers.IO) { services.backups.saveToFolder() } }
             }
         }, fullWidth = true, icon = IconName.CLOUD)
-        if (s.folderUri.isNotEmpty()) {
-            Button(stringResource(R.string.bk_share), { share() }, fullWidth = true, variant = ButtonVariant.GHOST)
-        }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             Button(stringResource(R.string.bk_sheet), { sheetOpen = true }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
             Button(stringResource(R.string.bk_restore), ::restoreFromFile, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
@@ -748,6 +722,40 @@ fun BackupScreen(nav: NavHostController) {
                 rows = s.log.map { e -> @Composable { RecentRow(e) { opened = e } } },
             )
         }
+    }
+}
+
+/** Guardar os últimos N, as a row of the group: the title and its effect, a small stepper on the right. */
+@Composable
+private fun KeepRow(
+    keep: Int,
+    onChange: (Int) -> Unit,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Spacing.s4, vertical = Spacing.s2_5),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(stringResource(R.string.bk_keep), style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
+            Text(
+                pluralStringResource(R.plurals.bk_keepValue, keep, keep),
+                style = TutoraTheme.type.meta,
+                color = TutoraTheme.colors.inkMuted,
+            )
+        }
+        Stepper(
+            keep.toLong(),
+            { onChange(it.toInt()) },
+            Modifier.weight(0.8f),
+            step = 1,
+            min = BACKUP_KEEP_MIN.toLong(),
+            max = BACKUP_KEEP_MAX.toLong(),
+            valueLabel = stringResource(R.string.bk_keep),
+            size = app.tutora.designsystem.components.ControlSize.SM,
+        )
     }
 }
 
