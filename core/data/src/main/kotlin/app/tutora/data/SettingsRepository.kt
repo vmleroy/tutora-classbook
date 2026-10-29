@@ -2,6 +2,7 @@ package app.tutora.data
 
 import app.tutora.domain.AutoStart
 import app.tutora.domain.Language
+import app.tutora.domain.SavedTheme
 import app.tutora.domain.Settings
 import app.tutora.domain.ThemeMode
 import app.tutora.domain.theme.CustomPart
@@ -59,7 +60,30 @@ class SettingsRepository(
                 "clock_durations" to s.clockDurations.toString(),
                 "teacher_name" to org.json.JSONObject.quote(s.teacherName),
                 "pix_key" to org.json.JSONObject.quote(s.pixKey),
+                "saved_themes" to savedJson(s.savedThemes),
+                "saved_theme_id" to (s.savedThemeId?.let { org.json.JSONObject.quote(it) } ?: "null"),
             ).map { (k, v) -> SettingRow(k, v, now) }
+
+        /** Themes of the teacher's own (spec 013), as a JSON list. */
+        private fun savedJson(list: List<SavedTheme>): String =
+            org.json
+                .JSONArray(
+                    list.map {
+                        JSONObject()
+                            .put("id", it.id)
+                            .put("name", it.name)
+                            .put("theme", it.themeId)
+                            .put("colors", JSONObject(it.custom.mapKeys { (k, _) -> k.key }))
+                    },
+                ).toString()
+
+        private fun saved(json: String): List<SavedTheme> {
+            val a = runCatching { org.json.JSONArray(json) }.getOrNull() ?: return emptyList()
+            return (0 until a.length()).map { i ->
+                val o = a.getJSONObject(i)
+                SavedTheme(o.getString("id"), o.getString("name"), o.getString("theme"), customColors(o.getJSONObject("colors").toString()))
+            }
+        }
 
         private fun customColors(json: String): Map<CustomPart, String> {
             val o = JSONObject(json)
@@ -93,6 +117,8 @@ class SettingsRepository(
                 teacherName = v["teacher_name"]?.let(::text).orEmpty(),
                 pixKey = v["pix_key"]?.let(::text).orEmpty(),
                 customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
+                savedThemes = v["saved_themes"]?.let(::saved) ?: emptyList(),
+                savedThemeId = v["saved_theme_id"]?.takeIf { it != "null" }?.let(::text),
             )
         }
     }

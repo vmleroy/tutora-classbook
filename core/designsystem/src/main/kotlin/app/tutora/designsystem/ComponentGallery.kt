@@ -135,6 +135,9 @@ val galleryComponents =
         "StatTile",
         "MonthGrid",
         "MonthPicker",
+        "Swatch",
+        "ThemeCard",
+        "ColorSlider",
     )
 
 /**
@@ -449,6 +452,24 @@ fun GallerySections() {
         BlockState.entries.forEach {
             AgendaBlock(Tag.GREEN, "Ana Souza", subtitle = "Matemática", state = it, height = Size.agendaHour, onClick = {})
         }
+    }
+    Section("Swatch") {
+        androidx.compose.foundation.layout.Row {
+            app.tutora.designsystem.components
+                .Swatch(TutoraTheme.colors.btnPrimary, "Do tema", true, {}, kind = app.tutora.designsystem.components.SwatchKind.THEME)
+            app.tutora.designsystem.components
+                .Swatch(TutoraTheme.colors.accent, "Amarelo lápis", false, {})
+            app.tutora.designsystem.components
+                .Swatch(TutoraTheme.colors.surface, "Mais cores", false, {}, kind = app.tutora.designsystem.components.SwatchKind.ADD)
+        }
+    }
+    Section("ThemeCard") {
+        app.tutora.designsystem.components
+            .ThemeCard("Quadro-negro", TutoraTheme.colors.primary, TutoraTheme.colors.accent, true, {})
+    }
+    Section("ColorSlider") {
+        app.tutora.designsystem.components
+            .ColorSlider("Brilho", 40, {}, listOf(TutoraTheme.colors.ink, TutoraTheme.colors.surface))
     }
     Section("BusyBlock") {
         BusyBlock("Dentista", time = "14:00 – 15:00", height = Size.agendaHour)
