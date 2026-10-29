@@ -114,6 +114,10 @@ fun CalendarSettingsRow(onClick: () -> Unit) {
 
 private enum class Notice { NO_ACCESS, NONE_TO_CLEAN }
 
+// "Em uso" on Tutora's own calendar, or on none (sync off); real calendar ids are positive.
+private const val OWN = -1L
+private const val NONE = -2L
+
 @Composable
 fun CalendarScreen(nav: NavHostController) {
     val services = LocalServices.current
@@ -125,8 +129,6 @@ fun CalendarScreen(nav: NavHostController) {
     var calendars by remember { mutableStateOf<List<PhoneCalendarInfo>>(emptyList()) }
     var access by remember { mutableIntStateOf(0) }
     var cleaning by rememberSaveable { mutableStateOf<Int?>(null) }
-    // Before sync is on, the calendar chosen to start with: Tutora's own, or an account's (AC-012-3).
-    var pickedId by rememberSaveable { mutableStateOf<Long?>(null) }
     val ownName = stringResource(R.string.cal_ownName)
     val ownColor = TutoraTheme.colors.btnPrimary.toArgb()
     val icsName = stringResource(R.string.cal_icsFile)
@@ -210,9 +212,8 @@ fun CalendarScreen(nav: NavHostController) {
                     switchValue = s.on,
                     onSwitchChange = { on ->
                         if (on) {
-                            turnOn(
-                                pickedId,
-                            )
+                            // The switch alone sends the classes to Tutora's own phone calendar (AC-012-3).
+                            turnOn(null)
                         } else {
                             scope.launch { withContext(Dispatchers.IO) { runCatching { services.calendar.turnOff() } } }
                         }
@@ -221,12 +222,12 @@ fun CalendarScreen(nav: NavHostController) {
             },
         )
         // Em qual calendário? Tutora's own on the phone, or one of an account's (AC-012-3, 12).
-        val inUse = if (s.on) (if (s.own) null else s.calendarId) else pickedId
+        // Only a calendar sync is using says "Em uso"; with sync off none does, and tapping one
+        // turns sync on into it (Victor, 29 Oct 2026).
+        val inUse: Long? = if (s.on) (if (s.own) OWN else s.calendarId) else NONE
         val inUseLabel = stringResource(R.string.cal_inUse)
 
-        fun choose(id: Long?) {
-            if (s.on) turnOn(id) else pickedId = id
-        }
+        fun choose(id: Long?) = turnOn(id)
         ListGroup(
             title = stringResource(R.string.cal_which),
             rows =
@@ -237,7 +238,7 @@ fun CalendarScreen(nav: NavHostController) {
                         subtitle = stringResource(R.string.cal_ownSub),
                         avatar = "Tutora" to Tag.GREEN,
                         trailing = RowTrailing.NONE,
-                        badge = if (inUse == null) BadgeTone.SUCCESS to inUseLabel else null,
+                        badge = if (inUse == OWN) BadgeTone.SUCCESS to inUseLabel else null,
                         onClick = { choose(null) },
                     )
                 } +

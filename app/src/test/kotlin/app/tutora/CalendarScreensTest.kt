@@ -79,12 +79,17 @@ class CalendarScreensTest {
     }
 
     @Test
-    fun `AC-012-3 the choices are Tutora's own phone calendar, chosen at first, and each account calendar`() {
+    fun `AC-012-3 the choices are Tutora's own phone calendar and each account calendar, and Em uso only while on`() {
         page()
         exists("Só neste aparelho")
-        exists("Em uso")
         exists("Google · victor@gmail.com")
         exists("Outlook · victor@outlook.com")
+        compose.onNodeWithText("Em uso").assertDoesNotExist()
+        compose.onNodeWithText("Google · victor@gmail.com").performScrollTo().performClick()
+        h.awaitDb(compose) { CalendarStore(h.t.db).load().on }
+        h.settle(compose)
+        assertEquals(10L, runBlocking { CalendarStore(h.t.db).load().calendarId })
+        exists("Em uso")
     }
 
     @Test
