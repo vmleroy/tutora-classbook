@@ -40,6 +40,9 @@ class Ctx(
     val backupScheduler: BackupScheduler = BackupScheduler.None,
     /** The app's own storage, for the copy taken before a restore (AC-011-16). */
     val privateDir: java.io.File = java.io.File(System.getProperty("java.io.tmpdir"), "tutora"),
+    /** The phone's calendars, and the event texts in each language (spec 012). */
+    val calendar: PhoneCalendar = PhoneCalendar.None,
+    val calendarWords: (app.tutora.domain.Language) -> app.tutora.domain.CalendarWords = NO_CALENDAR_WORDS,
 )
 
 sealed interface Result<out T> {

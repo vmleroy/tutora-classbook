@@ -44,6 +44,14 @@ class AppContainer(
         app.tutora.adapters.backup
             .WorkManagerBackupScheduler(context)
 
+    /** The phone's calendars and the event texts (spec 012). */
+    private val calendar =
+        app.tutora.adapters.calendar
+            .AndroidPhoneCalendar(context)
+    private val calendarWords =
+        app.tutora.adapters.calendar
+            .androidCalendarWords(context)
+
     // Opened once per process, so the notification's buttons use the same database as the screens.
     private val database by lazy { openTutoraDatabase(context) }
 
@@ -63,6 +71,8 @@ class AppContainer(
             backupFolder = backupFolder,
             backupScheduler = backupScheduler,
             privateDir = context.filesDir,
+            calendar = calendar,
+            calendarWords = calendarWords,
         )
     }
 
@@ -83,6 +93,8 @@ class AppContainer(
             backupFolder = backupFolder,
             backupScheduler = backupScheduler,
             privateDir = context.filesDir,
+            calendar = calendar,
+            calendarWords = calendarWords,
         )
 }
 

@@ -21,11 +21,24 @@ class TestDb(
     val alarm: AutoStartAlarm = AutoStartAlarm.None,
     val folder: FakeBackupFolder = FakeBackupFolder(),
     val scheduler: FakeBackupScheduler = FakeBackupScheduler(),
+    val calendar: FakePhoneCalendar = FakePhoneCalendar(),
 ) {
     private var n = 0
     val db = openTutoraDatabase(ApplicationProvider.getApplicationContext(), File(dir, "tutora.db"), AndroidSQLiteDriver()).first
     val ctx =
-        Ctx(db, { now }, { "id-" + (++n).toString().padStart(5, '0') }, { zone }, notifier, alarm, folder, scheduler, File(dir, "files"))
+        Ctx(
+            db,
+            { now },
+            { "id-" + (++n).toString().padStart(5, '0') },
+            { zone },
+            notifier,
+            alarm,
+            folder,
+            scheduler,
+            File(dir, "files"),
+            calendar,
+            { TEST_CALENDAR_WORDS },
+        )
     val catalog = Catalog(ctx)
     val schedule = Schedule(ctx)
     val lessons = Lessons(ctx)
@@ -73,4 +86,97 @@ class FakeBackupScheduler : app.tutora.usecases.BackupScheduler {
     override fun plan(at: String?) {
         planned = at
     }
+}
+
+/** The event texts in Portuguese, as the app's resources have them. */
+val TEST_CALENDAR_WORDS =
+    app.tutora.domain.CalendarWords(
+        "Cancelada · ",
+        "Faltou · ",
+        "Valor: %1\$s",
+        "Criado pelo Tutora",
+        { if (it == app.tutora.domain.BuiltinPlace.ONLINE) "Online / Remoto" else "Casa do Aluno" },
+        { "R$ ${it / 100},${(it % 100).toString().padStart(2, '0')}" },
+    )
+
+/** The phone's calendars in memory: Tutora's events carry the mark, the teacher's own don't (spec 012). */
+class FakePhoneCalendar : app.tutora.usecases.PhoneCalendar {
+    data class Event(
+        val calendarId: Long,
+        val event: app.tutora.domain.ClassEvent,
+        val marked: Boolean,
+    )
+
+    var granted = true
+    val accounts =
+        mutableListOf(
+            app.tutora.usecases.PhoneCalendarInfo(10, "Tutora – Aulas", "victor@gmail.com", "Google"),
+            app.tutora.usecases.PhoneCalendarInfo(11, "Pessoal", "victor@outlook.com", "Outlook"),
+        )
+    var own: Long? = null
+    val events = linkedMapOf<Long, Event>()
+    private var next = 100L
+    val busy = kotlinx.coroutines.flow.MutableStateFlow<List<app.tutora.domain.BusyEvent>>(emptyList())
+
+    /** An event the teacher made: no mark. */
+    fun theirs(
+        calendarId: Long,
+        title: String,
+        startMs: Long = 0,
+    ): Long {
+        val id = next++
+        events[id] =
+            Event(calendarId, app.tutora.domain.ClassEvent("", startMs, startMs + 3_600_000, title, "", "Criado pelo Tutora"), false)
+        return id
+    }
+
+    fun inCalendar(id: Long?) = events.values.filter { it.calendarId == id }
+
+    override fun hasPermission() = granted
+
+    override fun calendars() =
+        accounts + listOfNotNull(own?.let { app.tutora.usecases.PhoneCalendarInfo(it, "Tutora – Aulas", "", "", own = true) })
+
+    override fun ownCalendar(
+        name: String,
+        color: Int,
+    ): Long = own ?: 1L.also { own = it }
+
+    override fun marked(calendarId: Long) =
+        events.filter { it.value.marked && it.value.calendarId == calendarId }.map { app.tutora.domain.MarkedEvent(it.key, it.value.event) }
+
+    override fun markedEverywhere() = events.filter { it.value.marked }.keys.toList()
+
+    override fun insert(
+        calendarId: Long,
+        event: app.tutora.domain.ClassEvent,
+        zone: String,
+    ): Long {
+        val id = next++
+        events[id] = Event(calendarId, event, true)
+        return id
+    }
+
+    override fun update(
+        eventId: Long,
+        event: app.tutora.domain.ClassEvent,
+        zone: String,
+    ) {
+        val e = events[eventId]?.takeIf { it.marked } ?: return
+        events[eventId] = e.copy(event = event)
+    }
+
+    override fun delete(eventId: Long) {
+        if (events[eventId]?.marked == true) events.remove(eventId)
+    }
+
+    override fun deleteOwnCalendar() {
+        val id = own ?: return
+        if (events.values.none { it.calendarId == id }) own = null
+    }
+
+    override fun busy(
+        fromMs: Long,
+        toMs: Long,
+    ) = busy
 }

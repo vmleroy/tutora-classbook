@@ -43,6 +43,7 @@ class AppServices(
     val reportsRepo = ReportsRepository(db)
     val payments = Payments(ctx)
     val backups = Backups(ctx)
+    val calendar = app.tutora.usecases.CalendarSync(ctx)
 
     val settings: Flow<Settings> = settingsRepo.observe()
 
