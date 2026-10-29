@@ -44,6 +44,11 @@ class FakeBackupFolder : app.tutora.usecases.BackupFolder {
 
     override fun read(uri: String) = picked[uri]
 
+    override fun read(
+        uri: String,
+        name: String,
+    ) = files[name]
+
     override fun write(
         uri: String,
         name: String,

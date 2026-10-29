@@ -46,6 +46,12 @@ interface BackupFolder {
         bytes: ByteArray,
     ): Long
 
+    /** The bytes of a backup Tutora wrote there, or null if it is gone (AC-011-11). */
+    fun read(
+        uri: String,
+        name: String,
+    ): ByteArray?
+
     /** Deletes a file Tutora wrote there, if it is still there (AC-011-7). */
     fun delete(
         uri: String,
@@ -62,6 +68,11 @@ interface BackupFolder {
         override fun adopt(uri: String) = ""
 
         override fun read(uri: String): ByteArray? = null
+
+        override fun read(
+            uri: String,
+            name: String,
+        ): ByteArray? = null
 
         override fun write(
             uri: String,
@@ -188,7 +199,7 @@ class Backups(
             val prune = filesToPrune(written, s.keep)
             prune.forEach { runCatching { ctx.backupFolder.delete(s.folderUri, it) } }
             store.save(s.copy(written = written - prune.toSet(), failed = false), ctx.now())
-            record(BackupLogEntry(file.exportedAt, auto = true, where = s.folderName, bytes = size, ok = true))
+            record(BackupLogEntry(file.exportedAt, auto = true, where = s.folderName, bytes = size, ok = true, name = name))
         }
         planNext()
     }
@@ -243,6 +254,16 @@ class Backups(
             ctx.now(),
         )
         undoFile.delete()
+    }
+
+    /**
+     * An automatic backup listed in Recentes, read back from the folder; null when the file was
+     * deleted there or the folder can't be reached (AC-011-11).
+     */
+    suspend fun fromRecent(entry: BackupLogEntry): BackupRead? {
+        val s = store.load()
+        if (!entry.auto || !entry.ok || entry.name.isEmpty() || s.folderUri.isEmpty()) return null
+        return runCatching { ctx.backupFolder.read(s.folderUri, entry.name) }.getOrNull()?.let(::inspect)
     }
 
     /** Reads a picked file: a backup this app can restore, or why not (AC-011-12, 15, 20). */

@@ -153,6 +153,7 @@ class BackupStore(
                                 "where" to JsonPrimitive(it.where),
                                 "bytes" to JsonPrimitive(it.bytes),
                                 "ok" to JsonPrimitive(it.ok),
+                                "name" to JsonPrimitive(it.name),
                             ),
                         )
                     },
@@ -186,6 +187,7 @@ class BackupStore(
                             o["where"]?.jsonPrimitive?.contentOrNull.orEmpty(),
                             o["bytes"]?.jsonPrimitive?.longOrNull ?: 0,
                             o["ok"]?.jsonPrimitive?.booleanOrNull ?: true,
+                            o["name"]?.jsonPrimitive?.contentOrNull.orEmpty(),
                         )
                     }.orEmpty(),
             failed = bool("backup_failed"),

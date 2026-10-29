@@ -65,6 +65,7 @@
     <string name="bk_studentsNone">no students</string>
     <string name="bk_lessonsNone">no classes</string>
     <string name="bk_paymentsNone">no payments</string>
+    <string name="bk_gone">This backup is no longer in the folder.</string>
     <string name="bk_confirm">Restore</string>
     <string name="bk_thisYear">This year</string>
     <string name="bk_all">All</string>

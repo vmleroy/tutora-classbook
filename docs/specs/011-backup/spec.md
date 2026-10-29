@@ -42,7 +42,7 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 ### Recentes
 
-- **AC-011-11.** Recentes lists the last 5 backups, newest first, with the day and time, how it was made ("Automático · Google Drive" or "Manual · compartilhado") and its size; a failed automatic run shows in red with "Falhou". It is a list only: tapping a row does nothing, and restoring always goes through Restaurar backup (Victor, 29 Oct 2026).
+- **AC-011-11.** Recentes lists the last 5 backups, newest first, with the day and time, how it was made ("Automático · Google Drive" or "Manual · compartilhado") and its size; a failed automatic run shows in red with "Falhou". Tapping an automatic backup reads it back from its folder and asks with the same confirmation as Restaurar backup (AC-011-13); if the file is no longer there, the page says "Este backup não está mais na pasta." A shared backup can't be tapped: Tutora keeps no copy of it (Victor, 29 Oct 2026, replacing "a list only").
 
 ### Restore
 
@@ -73,6 +73,6 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 ## Open questions
 
-Answered by Victor on 29 Oct 2026: the spreadsheet offers quick periods and Personalizado (AC-011-19); the 14-day warning is on the Ajustes row with an alert on Hoje (AC-011-10); Desfazer restauração lasts until the next backup or restore (AC-011-16); Recentes is a list only (AC-011-11).
+Answered by Victor on 29 Oct 2026: the spreadsheet offers quick periods and Personalizado (AC-011-19); the 14-day warning is on the Ajustes row with an alert on Hoje (AC-011-10); Desfazer restauração lasts until the next backup or restore (AC-011-16); Recentes restores an automatic backup when tapped (AC-011-11; first a list only, changed the same day).
 
 Also confirmed by Victor on 29 Oct 2026: restoring isn't allowed during a live class ("Encerre a aula ao vivo antes de restaurar"), and the automatic backup runs at 20:00, not at a time the teacher picks.

@@ -402,7 +402,7 @@ fun sheetFileName(
     return "$base $period.xlsx"
 }
 
-private enum class Problem { NOT_TUTORA, NEWER, LIVE }
+private enum class Problem { NOT_TUTORA, NEWER, LIVE, GONE }
 
 /** After a restore every screen's state belongs to the old data: start again on Hoje (AC-011-14). */
 private fun NavHostController.reopenOnToday() =
@@ -495,6 +495,7 @@ fun BackupScreen(nav: NavHostController) {
                         Problem.NOT_TUTORA -> R.string.bk_notTutora
                         Problem.NEWER -> R.string.bk_newer
                         Problem.LIVE -> R.string.bk_live
+                        Problem.GONE -> R.string.bk_gone
                     },
                 ),
                 Modifier.testTag("backup-problem"),
@@ -605,18 +606,43 @@ fun BackupScreen(nav: NavHostController) {
             }, fullWidth = true, variant = ButtonVariant.GHOST)
         }
 
-        // Recentes: a list only (AC-011-11).
+        // Recentes: an automatic backup restores from its folder, with the same confirmation (AC-011-11).
         if (s.log.isNotEmpty()) {
             ListGroup(
                 title = stringResource(R.string.bk_recent),
-                rows = s.log.map { e -> @Composable { RecentRow(e) } },
+                rows =
+                    s.log.map { e ->
+                        @Composable {
+                            RecentRow(
+                                e,
+                                if (e.auto && e.ok && e.name.isNotEmpty()) {
+                                    {
+                                        problem = null
+                                        scope.launch {
+                                            when (val read = withContext(Dispatchers.IO) { services.backups.fromRecent(e) }) {
+                                                is BackupRead.Ok -> confirming = read.file
+                                                is BackupRead.Newer -> problem = Problem.NEWER
+                                                BackupRead.NotTutora -> problem = Problem.NOT_TUTORA
+                                                null -> problem = Problem.GONE
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    null
+                                },
+                            )
+                        }
+                    },
             )
         }
     }
 }
 
 @Composable
-private fun RecentRow(e: BackupLogEntry) {
+private fun RecentRow(
+    e: BackupLogEntry,
+    onRestore: (() -> Unit)?,
+) {
     val services = LocalServices.current
     val language = currentLanguage()
     val how = if (e.auto) stringResource(R.string.bk_recentAuto, e.where) else stringResource(R.string.bk_recentManual)
@@ -627,8 +653,9 @@ private fun RecentRow(e: BackupLogEntry) {
         subtitle = how + size,
         icon = if (e.auto) IconName.CLOUD else IconName.FILE,
         iconTone = if (e.ok) TileTone.SUCCESS else TileTone.DANGER,
-        trailing = RowTrailing.NONE,
+        trailing = if (onRestore != null) RowTrailing.CHEVRON else RowTrailing.NONE,
         badge = if (e.ok) null else BadgeTone.DANGER to stringResource(R.string.bk_failed),
+        onClick = onRestore,
     )
 }
 

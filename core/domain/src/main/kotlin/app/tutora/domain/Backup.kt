@@ -138,6 +138,8 @@ data class BackupLogEntry(
     val where: String,
     val bytes: Long,
     val ok: Boolean,
+    /** The file's name in the folder, so Recentes can restore it (AC-011-11); empty for a shared one. */
+    val name: String = "",
 )
 
 /** This phone's backup setup and history: never written into a backup, kept through a restore (AC-011-17). */

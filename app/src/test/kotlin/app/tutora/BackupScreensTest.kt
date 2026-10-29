@@ -151,6 +151,18 @@ class BackupScreensTest {
     }
 
     @Test
+    fun `AC-011-11 tapping an automatic backup in Recentes asks to restore it`() {
+        runBlocking {
+            h.services.backups.setAuto(true, BackupEvery.DAY, 5, "content://tree/tutora", "Google Drive")
+            h.services.backups.runAuto()
+        }
+        h.show(compose)
+        h.go(compose, BackupHome)
+        click("Automático · Google Drive")
+        compose.onNodeWithText("Restaurar o backup de 26/10/2026, 09:00?").assertExists()
+    }
+
+    @Test
     fun `AC-011-13 picking a backup asks first, saying what it holds and what it replaces`() {
         h.t.folder.picked["content://file/b"] =
             runBlocking {

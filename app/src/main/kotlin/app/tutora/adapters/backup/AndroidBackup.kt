@@ -50,18 +50,31 @@ class AndroidBackupFolder(
         return bytes.size.toLong()
     }
 
-    override fun delete(
-        uri: String,
+    /** The document of the file called [name] in the folder, if it is there. */
+    private fun find(
+        tree: Uri,
         name: String,
-    ) {
-        val tree = uri.toUri()
+    ): Uri? {
         val children = DocumentsContract.buildChildDocumentsUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
         val columns = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, DocumentsContract.Document.COLUMN_DISPLAY_NAME)
         val id =
             resolver.query(children, columns, null, null, null)?.use { c ->
                 generateSequence { if (c.moveToNext()) c.getString(0) to c.getString(1) else null }.firstOrNull { it.second == name }?.first
-            } ?: return
-        DocumentsContract.deleteDocument(resolver, DocumentsContract.buildDocumentUriUsingTree(tree, id))
+            } ?: return null
+        return DocumentsContract.buildDocumentUriUsingTree(tree, id)
+    }
+
+    override fun read(
+        uri: String,
+        name: String,
+    ): ByteArray? = find(uri.toUri(), name)?.let { doc -> resolver.openInputStream(doc)?.use { it.readBytes() } }
+
+    override fun delete(
+        uri: String,
+        name: String,
+    ) {
+        val doc = find(uri.toUri(), name) ?: return
+        DocumentsContract.deleteDocument(resolver, doc)
     }
 }
 
