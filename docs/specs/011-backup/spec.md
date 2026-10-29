@@ -38,11 +38,11 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 ### Staying safe
 
-- **AC-011-10.** When there is data and no backup has been made for 14 days (or ever, 14 days after the first class was added), the Ajustes row shows in red "Último backup há 16 dias". The warning goes away with the next backup, manual or automatic.
+- **AC-011-10.** When there is data and no backup has been made for 14 days (or ever, 14 days after the first class was added), the Ajustes row shows in red "Último backup há 16 dias", and Hoje shows a short alert, "Sem backup há 16 dias", that opens the Backup e planilha page (Victor, 29 Oct 2026). Both go away with the next backup, manual or automatic.
 
 ### Recentes
 
-- **AC-011-11.** Recentes lists the latest backups, newest first, with the day and time, how it was made ("Automático · Google Drive" or "Manual · compartilhado") and its size; a failed automatic run shows in red with "Falhou".
+- **AC-011-11.** Recentes lists the last 5 backups, newest first, with the day and time, how it was made ("Automático · Google Drive" or "Manual · compartilhado") and its size; a failed automatic run shows in red with "Falhou". It is a list only: tapping a row does nothing, and restoring always goes through Restaurar backup (Victor, 29 Oct 2026).
 
 ### Restore
 
@@ -50,13 +50,13 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 - **AC-011-13.** Before restoring, a confirmation says what the backup holds and what it replaces: "Restaurar o backup de 25/10/2026, 20:00? 12 alunos, 340 aulas, 96 pagamentos. Os dados atuais deste celular serão substituídos." with "Restaurar" and "Cancelar". Cancelling changes nothing.
 - **AC-011-14.** Restoring replaces all the app's data with the backup's, all at once: if anything fails midway, the data stays exactly as it was before. Afterwards the app reopens on Hoje showing the restored data, in the backup's language and theme.
 - **AC-011-15.** A backup made by an older version of Tutora restores, brought up to date on the way. One made by a newer version than the installed app is refused: "Este backup é de uma versão mais nova do Tutora. Atualize o app para restaurá-lo."
-- **AC-011-16.** Before restoring, the current data is copied aside on the phone. Right after a restore, the page offers "Desfazer restauração" (until the next restore or backup), which brings back exactly what was there before.
+- **AC-011-16.** Before restoring, the current data is copied aside on the phone. Right after a restore, the page offers "Desfazer restauração" until the next restore or backup (Victor, 29 Oct 2026), which brings back exactly what was there before.
 - **AC-011-17.** Restoring keeps this phone's own backup setup (automatic on or off, the folder, how many to keep): a backup from another phone doesn't point at a folder this phone can't reach.
 - **AC-011-18.** After a restore every amount, balance and earning shows exactly as it did when the backup was made (same students, classes, payments, credit and totals for any period).
 
 ### Spreadsheet
 
-- **AC-011-19.** "Planilha .xlsx" asks for a period (Este mês, Mês passado, Este ano, Tudo) and opens the share sheet with "Tutora planilha outubro 2026.xlsx". It has the sheets Aulas, Pagamentos, Alunos, Locais and Resumo (one line per month: earned, received, to receive). Dates are dates and amounts are numbers in reais, so the spreadsheet can sum them.
+- **AC-011-19.** "Planilha .xlsx" asks for a period, with quick choices (Este mês, Mês passado, Este ano, Tudo) and Personalizado, which opens De and Até as on reports (Victor, 29 Oct 2026). Generating opens the share sheet with "Tutora planilha outubro 2026.xlsx". It has the sheets Aulas, Pagamentos, Alunos, Locais and Resumo (one line per month: earned, received, to receive). Dates are dates and amounts are numbers in reais, so the spreadsheet can sum them.
 - **AC-011-20.** The spreadsheet is for reading only: picking it in Restaurar backup is refused as in AC-011-12.
 
 ### Language
@@ -73,11 +73,9 @@ Everything Tutora knows lives only on the phone, so a lost, broken or replaced p
 
 ## Open questions
 
-For Victor. The assumptions above are marked here so they are easy to change.
+Answered by Victor on 29 Oct 2026: the spreadsheet offers quick periods and Personalizado (AC-011-19); the 14-day warning is on the Ajustes row with an alert on Hoje (AC-011-10); Desfazer restauração lasts until the next backup or restore (AC-011-16); Recentes is a list only (AC-011-11).
 
-- **Spreadsheet periods:** assumed Este mês, Mês passado, Este ano and Tudo. The same picker as reports (with De / Até) instead?
-- **The 14-day warning:** assumed only on the Ajustes row. Also a line on Hoje, so it's seen without opening Ajustes?
-- **Desfazer restauração:** assumed offered right after a restore, until the next restore or backup. Is that enough, or keep the copy taken before the last restore in Recentes for longer?
-- **Restoring during a live class:** assumed not allowed: "Encerre a aula ao vivo antes de restaurar."
-- **Time of the automatic backup:** assumed 20:00 as in the mockup, not something the teacher picks.
-- **Recentes:** assumed it shows the last 5 entries and tapping one does nothing. Should tapping an automatic one offer "Restaurar este"?
+Still assumed, for Victor to confirm:
+
+- **Restoring during a live class:** not allowed: "Encerre a aula ao vivo antes de restaurar."
+- **Time of the automatic backup:** 20:00, as in the mockup, not something the teacher picks.
