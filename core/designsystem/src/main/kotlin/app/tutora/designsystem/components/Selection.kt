@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -45,7 +44,11 @@ import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
-/** Two to four exclusive options; the selected one is a surface thumb that slides (AC-002-17). */
+/**
+ * Two to four exclusive options as joined segments (spec 016): the outer ends are round, the
+ * inner corners small, and the chosen one is filled with the main button color (AC-002-17
+ * fades it unless the phone asks for reduced motion).
+ */
 @Composable
 fun <T> SegmentedControl(
     options: List<Pair<T, String>>,
@@ -57,54 +60,51 @@ fun <T> SegmentedControl(
 ) {
     val c = TutoraTheme.colors
     val index = options.indexOfFirst { it.first == value }.coerceAtLeast(0)
-    val height = if (size == ControlSize.SM) Size.controlSm else Size.touch
-    // The thumb sits inside the 44 hit area, inset as much as a one-line segment is.
-    val inset = (Size.touch - height) / 2
-    BoxWithConstraints(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(Radius.md))
-                .background(c.surfaceSunken)
-                .padding(Spacing.s1)
-                .semantics { contentDescription = label }
-                .selectableGroup(),
+    val last = options.lastIndex
+    // A label too long for its segment wraps and every segment grows with it, so nothing is
+    // clipped (AC-002-16). Each segment's hit area is at least the touch size (AC-002-12).
+    Row(
+        modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .semantics { contentDescription = label }
+            .selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
     ) {
-        val segment = (maxWidth - Spacing.s1 * (options.size - 1)) / options.size
-        val x by animateDpAsState((segment + Spacing.s1) * index, motionSpec(TutoraTheme.reduceMotion), label = "thumb")
-        // Behind the segments, as tall as they are.
-        Box(Modifier.matchParentSize()) {
-            Box(
-                Modifier
-                    .offset { IntOffset(x.roundToPx(), 0) }
-                    .width(segment)
-                    .fillMaxHeight()
-                    .padding(vertical = inset)
-                    .clip(RoundedCornerShape(Radius.sm))
-                    .background(c.surface),
+        options.forEachIndexed { i, (v, text) ->
+            val on = i == index
+            val outer = Radius.x2xl
+            val inner = Radius.xs
+            val shape =
+                RoundedCornerShape(
+                    topStart = if (i == 0) outer else inner,
+                    bottomStart = if (i == 0) outer else inner,
+                    topEnd = if (i == last) outer else inner,
+                    bottomEnd = if (i == last) outer else inner,
+                )
+            val bg by animateColorAsState(
+                if (on) c.btnPrimary else c.surfaceSunken,
+                motionSpec(TutoraTheme.reduceMotion),
+                label = "segment",
             )
-        }
-        // A label too long for its segment wraps and every segment grows with it, so nothing is
-        // clipped (AC-002-16). Each segment's hit area is at least 44 (AC-002-12).
-        Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-            options.forEachIndexed { i, (v, text) ->
-                Box(
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .heightIn(min = Size.touch)
-                            .selectable(selected = i == index, role = Role.RadioButton, onClick = { onChange(v) })
-                            .padding(horizontal = Spacing.s2, vertical = inset + Spacing.s1),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text,
-                        style = if (size == ControlSize.SM) TutoraTheme.type.caption else TutoraTheme.type.rowTitle,
-                        color = if (i == index) c.btnPrimary else c.inkMuted,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+            Box(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .heightIn(min = Size.touch)
+                        .clip(shape)
+                        .background(bg)
+                        .selectable(selected = on, role = Role.RadioButton, onClick = { onChange(v) })
+                        .padding(horizontal = Spacing.s2, vertical = if (size == ControlSize.SM) Spacing.s2 else Spacing.s2_5),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text,
+                    style = if (size == ControlSize.SM) TutoraTheme.type.caption else TutoraTheme.type.rowTitle,
+                    color = if (on) c.onBtnPrimary else c.ink,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }

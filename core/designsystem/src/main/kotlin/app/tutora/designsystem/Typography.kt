@@ -17,8 +17,8 @@ private fun nunito(weight: Int) =
         variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
     )
 
-/** Nunito 400–800 from the variable font (AC-001-11). */
-val Nunito = FontFamily(nunito(400), nunito(600), nunito(700), nunito(800))
+/** Nunito 400–900 from the variable font (AC-001-11); headings and money are 900 (spec 016). */
+val Nunito = FontFamily(nunito(400), nunito(600), nunito(700), nunito(800), nunito(900))
 
 /** The type styles of the tokens, multiplied by the text scale (Large text, AC-002-16). */
 class TutoraTypography(

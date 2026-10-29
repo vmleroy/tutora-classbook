@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -37,6 +38,7 @@ import app.tutora.designsystem.components.Checkbox
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
+import app.tutora.designsystem.components.DotTone
 import app.tutora.designsystem.components.DurationField
 import app.tutora.designsystem.components.EarningsStat
 import app.tutora.designsystem.components.EarningsSummary
@@ -58,13 +60,21 @@ import app.tutora.designsystem.components.MoneySize
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.MonthBar
 import app.tutora.designsystem.components.MonthBars
+import app.tutora.designsystem.components.MonthDay
+import app.tutora.designsystem.components.MonthGrid
+import app.tutora.designsystem.components.MonthPicker
+import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.ProgressBar
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.SelectField
+import app.tutora.designsystem.components.SplitButtons
 import app.tutora.designsystem.components.Stepper
+import app.tutora.designsystem.components.SummaryCard
+import app.tutora.designsystem.components.SummaryTile
+import app.tutora.designsystem.components.SummaryTone
 import app.tutora.designsystem.components.Switch
 import app.tutora.designsystem.components.TabBar
 import app.tutora.designsystem.components.TabItem
@@ -116,6 +126,10 @@ val galleryComponents =
         "BottomSheet",
         "EmptyState",
         "TimerRing",
+        "SummaryCard",
+        "SplitButtons",
+        "MonthGrid",
+        "MonthPicker",
     )
 
 /**
@@ -270,6 +284,70 @@ fun GallerySections() {
                     EarningsStat("Outubro", 502_000),
                     EarningsStat("Alunos devem", 56_000, MoneyTone.OWED),
                 ),
+        )
+    }
+    Section("SummaryCard") {
+        SummaryCard(label = "Saldo de outubro") {
+            Text("Saldo de outubro", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.onHeaderMuted)
+            Money(48_000, size = MoneySize.XL, tone = MoneyTone.ON_HEADER)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                SummaryTile("Semana", 118_000)
+                SummaryTile("Pago", 24_000, SummaryTone.PAID)
+                SummaryTile("Deve", 24_000, SummaryTone.OWED, onClick = {})
+            }
+            SplitButtons(
+                "Relatório",
+                {},
+                "Registrar pagamento",
+                {},
+                firstIcon = IconName.FILE,
+                secondIcon = IconName.WALLET,
+                onSummary = true,
+            )
+        }
+    }
+    Section("SplitButtons") {
+        SplitButtons("Marcar como dada", {}, "Iniciar aula", {}, secondIcon = IconName.PLAY)
+    }
+    Section("MonthGrid") {
+        var day by remember { mutableIntStateOf(30) }
+        val tones = listOf(DotTone.SECONDARY, DotTone.SUCCESS, DotTone.ACCENT, DotTone.VIOLET)
+        val days =
+            (28..30).map { MonthDay(it, false, emptyList(), 0, "$it de setembro") } +
+                (1..31).map { d ->
+                    val dots = if (d % 7 == 5) emptyList() else tones.take(1 + d % 3).let { if (d == 26) tones else it }
+                    MonthDay(d, true, dots.take(3), (dots.size - 3).coerceAtLeast(0), "$d de outubro, ${dots.size} aulas", today = d == 26)
+                } + MonthDay(1, false, emptyList(), 0, "1 de novembro")
+        MonthGrid(
+            days,
+            day,
+            { day = it },
+            listOf("S", "T", "Q", "Q", "S", "S", "D"),
+            "Outubro 2026",
+            legend =
+                listOf(
+                    DotTone.SECONDARY to "Escola",
+                    DotTone.SUCCESS to "Dada",
+                    DotTone.ACCENT to "Particular",
+                    DotTone.VIOLET to "Turma",
+                ),
+        )
+    }
+    Section("MonthPicker") {
+        var month by remember { mutableIntStateOf(9) }
+        val names = listOf("Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez")
+        MonthPicker(
+            "2026",
+            names.mapIndexed { i, n -> PickerMonth(n, "${i * 2} aulas", "$n, ${i * 2} aulas") },
+            month,
+            { month = it },
+            "Ano anterior",
+            {},
+            "Próximo ano",
+            {},
+            "Voltar para hoje",
+            {},
+            nextEnabled = false,
         )
     }
     Section("SectionHeader") {

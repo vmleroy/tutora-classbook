@@ -29,6 +29,7 @@ enum class IconName(
     CLOSE(R.drawable.ic_close),
     CHEVRON_LEFT(R.drawable.ic_chevron_left),
     CHEVRON_RIGHT(R.drawable.ic_chevron_right),
+    CHEVRON_DOWN(R.drawable.ic_chevron_down),
     HOME(R.drawable.ic_home),
     CALENDAR(R.drawable.ic_calendar),
     USERS(R.drawable.ic_users),

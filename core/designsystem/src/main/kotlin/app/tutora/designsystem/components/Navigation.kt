@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import app.tutora.designsystem.R
@@ -39,14 +40,19 @@ import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
 enum class HeaderVariant { HERO, TAB, PUSH, MODAL }
 
+/** An icon button in a header, or with [text] a small pill that shows its label ("Hoje"). */
 data class HeaderAction(
     val icon: IconName,
     val label: String,
     val variant: IconButtonVariant = IconButtonVariant.SUNKEN,
+    val text: Boolean = false,
     val onClick: () -> Unit,
 )
 
-/** A screen's title bar: hero (on header color), tab, push (with back) or modal. */
+/**
+ * A screen's title bar, always on the background (spec 016: no colored band): HERO is Hoje's
+ * date over the greeting, TAB a tab title, PUSH a pushed screen with back, MODAL a sheet.
+ */
 @Composable
 fun ScreenHeader(
     title: String,
@@ -55,14 +61,17 @@ fun ScreenHeader(
     eyebrow: String? = null,
     actions: List<HeaderAction> = emptyList(),
     onBack: (() -> Unit)? = null,
+    /** Makes the title a button with a ▾, read as [titleLabel] (the Agenda's month and year). */
+    onTitle: (() -> Unit)? = null,
+    titleLabel: String? = null,
 ) {
     val c = TutoraTheme.colors
-    val hero = variant == HeaderVariant.HERO
+    val big = variant == HeaderVariant.TAB || variant == HeaderVariant.HERO
     Row(
         modifier =
             modifier
                 .fillMaxWidth()
-                .background(if (hero) c.header else Color.Transparent)
+                .testTag("screen-header")
                 .padding(horizontal = Spacing.s5, vertical = Spacing.s3),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
         verticalAlignment = Alignment.CenterVertically,
@@ -72,21 +81,52 @@ fun ScreenHeader(
                 IconName.CHEVRON_LEFT,
                 stringResource(R.string.ds_back),
                 onBack,
-                variant = if (hero) IconButtonVariant.ON_PRIMARY else IconButtonVariant.SUNKEN,
             )
         }
-        Column(Modifier.weight(1f)) {
-            if (eyebrow != null) Text(eyebrow, style = TutoraTheme.type.caption, color = if (hero) c.onHeaderMuted else c.inkMuted)
-            Text(
-                title,
-                style = if (variant == HeaderVariant.TAB || hero) TutoraTheme.type.titleXl else TutoraTheme.type.titleLg,
-                color = if (hero) c.onHeader else c.ink,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.semantics { heading() },
-            )
+        Column(
+            Modifier
+                .weight(1f)
+                .then(
+                    if (onTitle != null) {
+                        Modifier
+                            .testTag("header-title")
+                            .sizeIn(minHeight = Size.touch)
+                            .clip(RoundedCornerShape(Radius.lg))
+                            .clickable(role = Role.Button, onClick = onTitle)
+                            .semantics(mergeDescendants = true) { contentDescription = titleLabel ?: title }
+                    } else {
+                        Modifier
+                    },
+                ),
+        ) {
+            if (eyebrow != null) Text(eyebrow, style = TutoraTheme.type.caption, color = c.inkMuted)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                Text(
+                    title,
+                    style = if (big) TutoraTheme.type.titleXl else TutoraTheme.type.titleLg,
+                    color = c.ink,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false).semantics { heading() },
+                )
+                if (onTitle != null) Icon(IconName.CHEVRON_DOWN, tint = c.ink)
+            }
         }
-        actions.forEach { IconButton(it.icon, it.label, it.onClick, variant = if (hero) IconButtonVariant.ON_PRIMARY else it.variant) }
+        actions.forEach {
+            if (it.text) {
+                Box(
+                    Modifier
+                        .sizeIn(minWidth = Size.touch, minHeight = Size.touch)
+                        .clip(RoundedCornerShape(Radius.full))
+                        .background(c.surfaceSunken)
+                        .clickable(role = Role.Button, onClick = it.onClick)
+                        .padding(horizontal = Spacing.s4),
+                    contentAlignment = Alignment.Center,
+                ) { Text(it.label, style = TutoraTheme.type.button, color = c.ink, maxLines = 1) }
+            } else {
+                IconButton(it.icon, it.label, it.onClick, variant = it.variant)
+            }
+        }
     }
 }
 
@@ -96,7 +136,7 @@ data class TabItem(
     val icon: IconName,
 )
 
-/** The bottom bar: five tabs, labels always shown, the active one on a soft pill. */
+/** The bottom bar on the sunken tone: five tabs, labels always shown, the active one on a Menu ativo pill. */
 @Composable
 fun TabBar(
     tabs: List<TabItem>,
@@ -109,7 +149,8 @@ fun TabBar(
         modifier =
             modifier
                 .fillMaxWidth()
-                .background(c.surface)
+                .testTag("tab-bar")
+                .background(c.surfaceSunken)
                 .navigationBarsPadding()
                 .height(Size.tabbar)
                 .selectableGroup(),
@@ -135,7 +176,12 @@ fun TabBar(
                         .background(if (on) c.tabActiveSoft else Color.Transparent)
                         .padding(horizontal = Spacing.s4, vertical = Spacing.s1),
                 ) { Icon(tab.icon, tint = if (on) c.tabActive else c.inkMuted) }
-                Text(tab.label, style = TutoraTheme.type.tab, color = if (on) c.tabActive else c.inkMuted, maxLines = 1)
+                Text(
+                    tab.label,
+                    style = if (on) TutoraTheme.type.tab.copy(fontWeight = FontWeight.Black) else TutoraTheme.type.tab,
+                    color = if (on) c.ink else c.inkMuted,
+                    maxLines = 1,
+                )
             }
         }
     }
@@ -170,8 +216,8 @@ fun WeekStrip(
                     Modifier
                         .weight(1f)
                         .height(Size.weekDay)
-                        .clip(RoundedCornerShape(Radius.lg))
-                        .background(if (on) c.btnPrimary else Color.Transparent)
+                        .clip(RoundedCornerShape(Radius.x2xl))
+                        .background(if (on) c.btnPrimary else c.surface)
                         .selectable(selected = on, role = Role.Tab, onClick = { onSelect(i) })
                         .semantics { contentDescription = d.a11y ?: "${d.weekday} ${d.day}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -228,7 +274,7 @@ fun AgendaBlock(
 ) {
     val t = tag.colors()
     val c = TutoraTheme.colors
-    val shape = RoundedCornerShape(Radius.md)
+    val shape = RoundedCornerShape(Radius.xl)
     val badge =
         when (state) {
             BlockState.NEXT -> stringResource(R.string.ds_next)
