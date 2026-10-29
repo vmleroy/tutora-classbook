@@ -27,6 +27,7 @@ The teacher already lives in Google Calendar or Outlook for the rest of their li
 - **AC-012-2.** "Enviar aulas para o calendário" is off at first. Turning it on asks for the phone's calendar permission once; refusing it leaves the switch off and says "Sem acesso ao calendário. Permita nas configurações do celular." with a way to open them.
 - **AC-012-3.** "Em qual calendário?" lists the accounts already on the phone (each Google and each Microsoft account by its address) and "Só neste aparelho", the first Google account chosen at first, or "Só neste aparelho" when there is none.
 - **AC-012-4.** Tutora puts its classes in a calendar of its own, "Tutora – Aulas", in the chosen account, in the Botões principais color, and never writes into any other calendar.
+- **AC-012-4b.** Every event Tutora makes carries Tutora's mark: a hidden tag the calendar apps don't show, and a last line "Criado pelo Tutora" in its description. Tutora only ever changes or deletes events with its mark (Victor, 29 Oct 2026).
 
 ### What goes in
 
@@ -40,8 +41,13 @@ The teacher already lives in Google Calendar or Outlook for the rest of their li
 ### Changing or stopping
 
 - **AC-012-11.** Choosing another account moves the events: they leave the old "Tutora – Aulas" and appear in the new one.
-- **AC-012-12.** Turning it off removes "Tutora – Aulas" and every event Tutora made, and nothing else (Victor, 29 Oct 2026).
+- **AC-012-12.** Turning it off removes "Tutora – Aulas" and every event with Tutora's mark, and nothing else (Victor, 29 Oct 2026).
 - **AC-012-13.** After a backup is restored (spec 011), the calendar shows the restored classes and none of the replaced ones.
+
+### Cleaning up (Victor, 29 Oct 2026)
+
+- **AC-012-20.** The Calendário page has "Limpar eventos do Tutora", with sync on or off. It finds every event with Tutora's mark in any of the phone's calendars, including ones left from an earlier account or an earlier install, and asks first: "Apagar 24 eventos criados pelo Tutora? Seus outros eventos não são tocados." with "Apagar" and "Cancelar". With none, it says "Nenhum evento do Tutora no celular."
+- **AC-012-21.** Apagar deletes exactly those events, and an empty "Tutora – Aulas" calendar, and nothing else: an event without the mark stays, even if it has the same title, time or the words "Criado pelo Tutora" typed in by hand. With sync on, cleaning also turns it off, so the events don't come back at the next update.
 
 ### Busy time on the Agenda
 
