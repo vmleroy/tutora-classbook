@@ -1,6 +1,6 @@
 # Spec 012: Calendar sync and .ics
 
-Status: ready
+Status: in progress
 Depends on: 005 Schedule (classes 8 weeks ahead, the Agenda), 006 Lessons (done, cancelled and missed classes), 011 Backup (a restore replaces every class), 016 Visual refresh (the look of Ajustes and the Agenda)
 Mockups: docs/mockups/Calendar.dc.html, docs/mockups/Settings.dc.html (the "Sincronizar calendário" row)
 
