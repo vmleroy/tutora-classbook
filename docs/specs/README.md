@@ -22,6 +22,6 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 012 | Calendar sync and .ics | not written | Calendar |
 | 013 | Appearance screens: theme picker, Suas cores, text size | not written | Theme, ColorPicker |
 | 014 | Reminders and first-run setup | not written | Setup |
-| 016 | [Visual refresh 2026](016-visual-refresh/spec.md): the "Quadro refinado" look on every screen, built only from theme colors; Agenda titled by month and year, a Mês view and a month/year picker | draft | DirA, A_Agenda, A_AgendaMes, A_AgendaAno, A_Aluno, A_Ganhos, A_Ajustes, A_Estilo |
+| 016 | [Visual refresh 2026](016-visual-refresh/spec.md): the "Quadro refinado" look on every screen, built only from theme colors; Agenda titled by month and year, a Mês view and a month/year picker | done | DirA, A_Agenda, A_AgendaMes, A_AgendaAno, A_Aluno, A_Ganhos, A_Ajustes, A_Estilo |
 
 Status moves draft → ready → in progress → done. Update this table in the same PR that changes a status.

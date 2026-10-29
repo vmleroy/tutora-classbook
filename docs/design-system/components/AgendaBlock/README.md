@@ -24,3 +24,6 @@ interface AgendaBlockProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Corners `radius-xl` (16); at least 48 dp tall.

@@ -21,3 +21,6 @@ interface WeekStripProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Days sit on `surface` pills (`radius-2xl`), the chosen one filled with `btnPrimary`.

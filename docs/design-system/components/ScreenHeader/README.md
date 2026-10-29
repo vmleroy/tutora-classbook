@@ -26,3 +26,6 @@ interface ScreenHeaderProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+No variant draws a colored band any more: HERO is Hoje's date over the greeting, on the background like TAB. `onTitle` makes the title a button with a ▾ (the Agenda's month and year, read as `titleLabel`); a `HeaderAction` with `text` shows its label in a sunken pill ("Hoje").

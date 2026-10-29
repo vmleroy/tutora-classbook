@@ -1,6 +1,6 @@
 # Spec 016: Visual refresh 2026 and the month calendar
 
-Status: draft
+Status: done
 Depends on: 002 Design system, 005 Schedule, 010 Reports
 Mockups: docs/mockups/DirA.dc.html (Hoje), A_Agenda.dc.html, A_AgendaMes.dc.html, A_AgendaAno.dc.html, A_Aluno.dc.html, A_Ganhos.dc.html, A_Ajustes.dc.html, A_Estilo.dc.html
 
@@ -23,7 +23,7 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 - **AC-016-2.** Each screen's main summary sits in one card painted with the Topo color (part "header" of Suas cores): today's earnings on Hoje, the period on Ganhos, the month's balance on a student, group or place, and the live lesson. Money on it uses the earnings-on-Topo color.
 - **AC-016-3.** Owed amounts inside that card sit in the red tile and paid amounts in the green tile, the same in every theme.
 - **AC-016-4.** Lists of classes, students, places and settings are grouped cards with thin dividers between rows; a section title sits above each group.
-- **AC-016-5.** A pair of actions that belong together (Marcar como dada with Iniciar aula; Relatório with Registrar pagamento) is shown as two joined buttons, the main one in the Botões principais color.
+- **AC-016-5.** A pair of actions that belong together (Marcar como dada with Iniciar aula) is shown as two joined buttons, the main one in the Botões principais color. Registrar pagamento sits on the balance card in the Botão de destaque color; Relatório stays a round button in the header.
 - **AC-016-6.** The Nova aula button is a rounded square in the Botão de destaque color, in the Hoje and Agenda headers.
 - **AC-016-7.** The tab bar sits on the sunken card tone; the active tab shows a pill in the Menu ativo color behind its icon, and its label in bold.
 - **AC-016-8.** Back, Editar and Relatório on detail screens are round icon buttons; every tappable thing is at least 48 dp.

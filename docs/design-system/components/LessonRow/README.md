@@ -26,3 +26,6 @@ interface LessonRowProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+It no longer has corners of its own: lists put it in a `ListGroup`.

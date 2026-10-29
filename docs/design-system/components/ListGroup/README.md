@@ -16,3 +16,6 @@ interface ListGroupProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Every list is a ListGroup: one `surface` card with corners 28 and hairlines between rows, its title above it in the `section` style. Lists of classes put their `LessonRow`s in one.

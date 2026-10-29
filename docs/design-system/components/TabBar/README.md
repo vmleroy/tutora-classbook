@@ -18,3 +18,6 @@ interface TabBarProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+The bar sits on `surface-sunken`, 80 dp tall; the active tab has its icon on a `tab-active-soft` pill and its label in ink, weight 900.

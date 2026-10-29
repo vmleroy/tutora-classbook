@@ -25,3 +25,6 @@ interface IconButtonProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Round, at least 48 dp. `ACCENT` is the Nova aula button: a 56 dp rounded square (`radius-2xl`) in the highlight color. `ON_PRIMARY` sits on a `SummaryCard` and uses `onHeaderFill()`.

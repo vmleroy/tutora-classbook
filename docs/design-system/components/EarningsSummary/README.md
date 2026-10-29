@@ -23,3 +23,6 @@ interface EarningsSummaryProps {
   className?: string;
 }
 ```
+
+## 2026 look (spec 016)
+Drawn on a `SummaryCard`: the headline in earnings-on-header, the expected bar on `onHeaderFill()`, and the stats as `SummaryTile`s (owed in the red tile, paid in the green).

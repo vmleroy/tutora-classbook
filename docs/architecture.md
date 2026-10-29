@@ -45,7 +45,7 @@ flowchart TD
     U --> D["Domain · :core:domain (plain Kotlin)"]
     U --> R["Repositories · :core:data (Room)"]
     U --> A["Adapters · :app adapters/ (calendar, files, print, notify)"]
-    S --> UI["Design system · :core:designsystem (tokens, 30 components)"]
+    S --> UI["Design system · :core:designsystem (tokens, 35 components)"]
 ```
 
 A use case is the only place that writes: it loads rows through repositories, asks the domain what the new state is, writes it in one Room transaction, then calls adapters. Room's Flow queries emit again after the write, so every screen showing that data updates by itself; there is no invalidation map to maintain. Adapters sit behind small interfaces so tests swap them for fakes.
