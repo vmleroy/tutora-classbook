@@ -23,6 +23,7 @@ import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -237,5 +238,26 @@ class DesignSystemTest {
     fun `AC-002-17 with reduce motion, components change state without animation`() {
         assertTrue(motionSpec<Float>(reduceMotion = true) is SnapSpec)
         assertTrue(motionSpec<Float>(reduceMotion = false) !is SnapSpec)
+    }
+
+    @Test
+    fun `AC-002-16 with Large text the live clock stays on one line inside its ring`() {
+        compose.setContent {
+            TutoraTheme(
+                largeText = true,
+            ) {
+                app.tutora.designsystem.components
+                    .TimerRing("00:00:04", 0.1f, caption = "de 01:00 planejados")
+            }
+        }
+        val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+        compose
+            .onNodeWithText("00:00:04")
+            .fetchSemanticsNode()
+            .config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult]
+            .action
+            ?.invoke(results)
+        assertEquals(1, results.first().lineCount)
+        assertTrue(!results.first().hasVisualOverflow)
     }
 }
