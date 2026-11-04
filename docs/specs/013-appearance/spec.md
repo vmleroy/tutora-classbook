@@ -1,6 +1,6 @@
 # Spec 013: Appearance
 
-Status: done
+Status: in progress
 Depends on: 002 Design system (4 themes × light and dark, the seven Suas cores parts, Large text, contrast rules), 016 Visual refresh (the look and the part names: Topo, Botões principais, Botão de destaque, Números de ganhos, Fundo, Cartões, Menu ativo)
 Mockups: docs/mockups/Theme.dc.html (Aparência), docs/mockups/ColorPicker.dc.html (Suas cores), docs/mockups/Settings.dc.html (the "Aparência" row)
 
@@ -52,6 +52,11 @@ Everything Tutora needs to repaint itself already exists since spec 002: four th
 - **AC-013-15.** Each change shows at once, in the preview and in the app (Victor, 29 Oct 2026). Leaving Suas cores with any part below 4,5:1 asks first: "Algum texto pode ficar difícil de ler. Salvar assim?" with "Salvar" and "Ajustar" (AC-002-8).
 - **AC-013-16.** "Restaurar" in Suas cores takes every part back to the theme's colors.
 - **AC-013-17.** Red and green for owed and paid never change, whatever the colors chosen (AC-002-6).
+
+### More themes and the background (Victor, 4 Nov 2026)
+
+- **AC-013-19.** Tema also offers Floresta (forest green and honey), Oceano (sea blue and apricot), Lavanda (purple and pink) and Terracota (clay and mustard), after the four. Each has a light and a dark look, and in both every text on its colors reads at 4.5:1 or better (3:1 for big money figures), as for the first four (AC-002-2).
+- **AC-013-20.** Personalizar has "Cor de fundo": "Do tema", six light tones (Papel creme, Branco, Areia, Cinza claro, Menta clara, Lavanda clara) and a + that opens Suas cores on Fundo. Every tone keeps text at 4.5:1 or better; in dark mode the background stays dark with only a hint of the tone (as spec 002 decided).
 
 ### Language
 

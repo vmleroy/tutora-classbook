@@ -53,6 +53,50 @@ fun themeDots(
     theme: String,
     scheme: Scheme,
 ): Pair<String, String> {
-    val set = colorSets.getValue("$theme-${scheme.name.lowercase()}")
-    return set.getValue("primary") to set.getValue("accent")
+    val p = resolvePalette(theme, scheme)
+    return p.getValue("btn-primary") to p.getValue("accent")
 }
+
+/** A theme made of one of the four and fixed colors (Victor, 4 Nov 2026; AC-013-19). */
+data class ExtraTheme(
+    val base: String,
+    val colors: CustomColors,
+)
+
+private fun painted(
+    main: String,
+    highlight: String,
+    background: String,
+): CustomColors =
+    mapOf(
+        CustomPart.HEADER to main,
+        CustomPart.PRIMARY_BTN to main,
+        CustomPart.ACTIVE_TAB to main,
+        CustomPart.EARNINGS to main,
+        CustomPart.HIGHLIGHT_BTN to highlight,
+        CustomPart.BACKGROUND to background,
+    )
+
+val extraThemes: Map<String, ExtraTheme> =
+    linkedMapOf(
+        "floresta" to ExtraTheme("quadro", painted("#2f6b3f", "#e8b04a", "#f1f6f0")),
+        "oceano" to ExtraTheme("caderno", painted("#1f5f7a", "#f2a65a", "#f2f6f9")),
+        "lavanda" to ExtraTheme("giz", painted("#5b4a8b", "#e58fb5", "#f5f2fa")),
+        "terracota" to ExtraTheme("biblioteca", painted("#a0522d", "#f2b33d", "#f8f1e8")),
+    )
+
+/** Every theme Tema offers: the four, then the four made of colors. */
+val allThemeIds: List<String> = themeIds + extraThemes.keys
+
+/** Cor de fundo's light tones (AC-013-20). */
+val backgroundPresets =
+    listOf(
+        Preset("creme", "#FAF7F0"),
+        Preset("branco", "#FFFFFF"),
+        Preset("areia", "#F3EBDD"),
+        Preset("cinza_claro", "#F1F2F4"),
+        Preset("menta_clara", "#EEF6F1"),
+        Preset("lavanda_clara", "#F2F0F8"),
+    )
+
+val quickBackground = listOf(CustomPart.BACKGROUND)

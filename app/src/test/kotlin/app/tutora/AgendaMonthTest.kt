@@ -216,6 +216,15 @@ class AgendaMonthTest {
     fun `AC-016-21 choosing a month opens Mes on it`() {
         agenda()
         tap("Outubro 2026, escolher mês e ano")
+        // The sheet counts each month's classes from the database; wait for November's.
+        compose.waitUntil(5_000) {
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasContentDescription("Novembro 2026, 5 aulas"),
+                ).fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         compose.onNodeWithContentDescription("Novembro 2026, 5 aulas").performClick()
         h.settle(compose)
         exists("Novembro 2026")

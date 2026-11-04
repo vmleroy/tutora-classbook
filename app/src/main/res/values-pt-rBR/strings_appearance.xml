@@ -73,4 +73,15 @@
     <string name="cc_leaveTitle">Algum texto pode ficar difícil de ler. Salvar assim?</string>
     <string name="cc_adjust">Ajustar</string>
     <string name="ap_previewLesson">Salvar aula</string>
+    <string name="ap_theme_floresta">Floresta</string>
+    <string name="ap_theme_oceano">Oceano</string>
+    <string name="ap_theme_lavanda">Lavanda</string>
+    <string name="ap_theme_terracota">Terracota</string>
+    <string name="ap_background">Cor de fundo</string>
+    <string name="ap_p_creme">Papel creme</string>
+    <string name="ap_p_branco">Branco</string>
+    <string name="ap_p_areia">Areia</string>
+    <string name="ap_p_cinza_claro">Cinza claro</string>
+    <string name="ap_p_menta_clara">Menta clara</string>
+    <string name="ap_p_lavanda_clara">Lavanda clara</string>
 </resources>

@@ -80,4 +80,39 @@ class AppearanceRulesTest {
             assertEquals(it, base[it], painted[it])
         }
     }
+
+    @Test
+    fun `AC-013-19 the four new themes read well in light and dark`() {
+        for ((id, theme) in app.tutora.domain.theme.extraThemes) {
+            for (scheme in Scheme.entries) {
+                assertEquals("$id $scheme", emptyList<CustomPart>(), lowContrastParts(theme.base, scheme, theme.colors))
+                val p = resolvePalette(id, scheme)
+                assertTrue(
+                    "$id $scheme ink",
+                    app.tutora.domain.theme
+                        .contrastRatio(p.getValue("ink"), p.getValue("background")) >= 4.5,
+                )
+            }
+        }
+        assertEquals(8, app.tutora.domain.theme.allThemeIds.size)
+    }
+
+    @Test
+    fun `AC-013-20 every background tone keeps text readable`() {
+        for (tone in app.tutora.domain.theme.backgroundPresets) {
+            for (scheme in Scheme.entries) {
+                assertEquals(
+                    "${tone.key} $scheme",
+                    emptyList<CustomPart>(),
+                    lowContrastParts(
+                        "quadro",
+                        scheme,
+                        mapOf(
+                            CustomPart.BACKGROUND to tone.hex,
+                        ),
+                    ),
+                )
+            }
+        }
+    }
 }

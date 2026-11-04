@@ -72,6 +72,9 @@ fun resolvePalette(
     scheme: Scheme,
     custom: CustomColors = emptyMap(),
 ): Palette {
+    // Floresta, Oceano, Lavanda and Terracota are a base theme with fixed colors; the teacher's own
+    // colors go over theirs, through the same lightening and contrast rules (AC-013-19).
+    extraThemes[theme]?.let { return resolvePalette(it.base, scheme, it.colors + custom) }
     val base = colorSets.getValue("$theme-${scheme.name.lowercase()}")
     val p = base.toMutableMap()
     p["btn-primary"] = base.getValue("primary")

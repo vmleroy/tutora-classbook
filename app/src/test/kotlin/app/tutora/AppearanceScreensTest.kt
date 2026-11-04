@@ -191,6 +191,34 @@ class AppearanceScreensTest {
     }
 
     @Test
+    fun `AC-013-19 Tema offers Floresta, Oceano, Lavanda and Terracota, and choosing one paints the app`() {
+        page()
+        listOf("Floresta", "Oceano", "Lavanda", "Terracota").forEach(::exists)
+        click("Oceano")
+        h.awaitDb(compose) { settings().themeId == "oceano" }
+        h.settle(compose)
+        compose.onNodeWithTag("appearance-preview-oceano-0").assertExists()
+    }
+
+    @Test
+    fun `AC-013-20 Cor de fundo has the light tones and a plus to Suas cores on Fundo`() {
+        page()
+        exists("Cor de fundo")
+        compose.onNodeWithContentDescription("Areia").performScrollTo().performClick()
+        h.awaitDb(compose) { settings().customColors.isNotEmpty() }
+        assertEquals("#f3ebdd", settings().customColors[CustomPart.BACKGROUND])
+        compose
+            .onAllNodes(
+                androidx.compose.ui.test
+                    .hasContentDescription("Mais cores"),
+            )[2]
+            .performScrollTo()
+            .performClick()
+        h.settle(compose)
+        exists("Fundo · código HEX")
+    }
+
+    @Test
     @Config(qualifiers = "en-w411dp-h2400dp")
     fun `AC-013-18 both pages follow the app language`() {
         page()

@@ -65,11 +65,14 @@ import app.tutora.domain.theme.CustomPart
 import app.tutora.domain.theme.Hsl
 import app.tutora.domain.theme.Preset
 import app.tutora.domain.theme.Scheme
+import app.tutora.domain.theme.allThemeIds
+import app.tutora.domain.theme.backgroundPresets
 import app.tutora.domain.theme.highlightPresets
 import app.tutora.domain.theme.hslOf
 import app.tutora.domain.theme.lowContrastParts
 import app.tutora.domain.theme.mainPresets
 import app.tutora.domain.theme.partContrast
+import app.tutora.domain.theme.quickBackground
 import app.tutora.domain.theme.quickHighlight
 import app.tutora.domain.theme.quickMain
 import app.tutora.domain.theme.quickValue
@@ -77,7 +80,6 @@ import app.tutora.domain.theme.readHex
 import app.tutora.domain.theme.resolvePalette
 import app.tutora.domain.theme.resolveScheme
 import app.tutora.domain.theme.themeDots
-import app.tutora.domain.theme.themeIds
 import app.tutora.domain.theme.toHex
 import app.tutora.domain.unsavedColors
 import app.tutora.state.LocalServices
@@ -96,6 +98,10 @@ fun themeName(id: String): String =
             "caderno" -> R.string.ap_theme_caderno
             "biblioteca" -> R.string.ap_theme_biblioteca
             "giz" -> R.string.ap_theme_giz
+            "floresta" -> R.string.ap_theme_floresta
+            "oceano" -> R.string.ap_theme_oceano
+            "lavanda" -> R.string.ap_theme_lavanda
+            "terracota" -> R.string.ap_theme_terracota
             else -> R.string.ap_theme_quadro
         },
     )
@@ -117,6 +123,12 @@ private fun presetName(p: Preset): String =
             "rosa" -> R.string.ap_p_rosa
             "azul_claro" -> R.string.ap_p_azul_claro
             "dourado" -> R.string.ap_p_dourado
+            "creme" -> R.string.ap_p_creme
+            "branco" -> R.string.ap_p_branco
+            "areia" -> R.string.ap_p_areia
+            "cinza_claro" -> R.string.ap_p_cinza_claro
+            "menta_clara" -> R.string.ap_p_menta_clara
+            "lavanda_clara" -> R.string.ap_p_lavanda_clara
             else -> R.string.ap_p_verde_quadro
         },
     )
@@ -363,20 +375,26 @@ fun AppearanceScreen(nav: NavHostController) {
             { m -> scope.launch { a.setMode(m) } },
             stringResource(R.string.ap_mode),
         )
-        // Tema: the four, then the teacher's own (AC-013-4, 5).
+        // Tema: the eight in an even grid of two (AC-013-4, 19), then the teacher's own (AC-013-5).
         SectionHeader(stringResource(R.string.ap_theme))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            themeIds.forEach { id ->
-                val (main, hi) = themeDots(id, scheme)
-                ThemeCard(
-                    themeName(id),
-                    hexColor(main),
-                    hexColor(hi),
-                    selected = id == s.themeId && s.savedThemeId == null && s.customColors.isEmpty(),
-                    onClick = { choose(Pending.Builtin(id)) },
-                    modifier = Modifier.testTag("theme-$id"),
-                )
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            allThemeIds.chunked(2).forEach { pair ->
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    pair.forEach { id ->
+                        val (main, hi) = themeDots(id, scheme)
+                        ThemeCard(
+                            themeName(id),
+                            hexColor(main),
+                            hexColor(hi),
+                            selected = id == s.themeId && s.savedThemeId == null && s.customColors.isEmpty(),
+                            onClick = { choose(Pending.Builtin(id)) },
+                            modifier = Modifier.weight(1f).testTag("theme-$id"),
+                        )
+                    }
+                }
             }
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             s.savedThemes.forEach { t ->
                 val palette = resolvePalette(t.themeId, scheme, t.custom)
                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -412,10 +430,19 @@ fun AppearanceScreen(nav: NavHostController) {
         listOf(
             Triple(R.string.ap_main, quickMain, mainPresets),
             Triple(R.string.ap_highlight, quickHighlight, highlightPresets),
+            // Cor de fundo: light tones, or any color through Suas cores (AC-013-20).
+            Triple(R.string.ap_background, quickBackground, backgroundPresets),
         ).forEach { (label, parts, presets) ->
             Text(stringResource(label), style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
             val current = quickValue(s.customColors, parts)
-            val themeColor = resolvePalette(s.themeId, scheme).getValue(if (parts == quickMain) "btn-primary" else "accent")
+            val themeColor =
+                resolvePalette(s.themeId, scheme).getValue(
+                    when (parts) {
+                        quickMain -> "btn-primary"
+                        quickBackground -> "background"
+                        else -> "accent"
+                    },
+                )
             FlowRow {
                 Swatch(
                     hexColor(themeColor),

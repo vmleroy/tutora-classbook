@@ -8,7 +8,9 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 4. Design system: `Swatch`, `ThemeCard`, `ColorSlider`, each with its README and gallery entry (39 components). Test: `core/designsystem/src/test/kotlin/app/tutora/designsystem/DesignSystemTest.kt`. (AC-013-4, AC-013-7, AC-013-11)
 - [x] 5. Strings in `strings_appearance.xml` (English and Portuguese); `AppearancePreview`; the Aparência page and the Ajustes row in Geral. Test: `app/src/test/kotlin/app/tutora/AppearanceScreensTest.kt`. (AC-013-1, AC-013-2, AC-013-4, AC-013-6, AC-013-7, AC-013-10, AC-013-18)
 - [x] 6. Suas cores: parts, hex field, sliders, contrast line, dark-mode note, Restaurar, "Salvar assim?" on leaving. Test: `AppearanceScreensTest.kt`. (AC-013-11, AC-013-12, AC-013-14, AC-013-15)
-- [x] 7. `./gradlew check`, update the roadmap status, and list the device checks as pending in the PR.
+- [x] 7. More themes and Cor de fundo (Victor, 4 Nov 2026): `extraThemes` as a base theme plus fixed colors, resolved by `resolvePalette`; `backgroundPresets`; the Tema cards and the Cor de fundo row. Test: `AppearanceRulesTest.kt`, `AppearanceScreensTest.kt`. (AC-013-19, AC-013-20)
+- [x] 8. Live clock on one line with Large text (found in review). Test: `core/designsystem/src/test/kotlin/app/tutora/designsystem/DesignSystemTest.kt`. (AC-002-16)
+- [x] 9. `./gradlew check`, update the roadmap status, and list the device checks as pending in the PR.
 
 ## Pending on a device
 

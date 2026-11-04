@@ -46,6 +46,13 @@ Spec 002 built everything that paints: `resolvePalette(theme, scheme, custom)`, 
 
   A row of swatches is a `FlowRow` of `Swatch`es in the screen. Theme and preset hex values live in the domain as data the teacher chooses from. Screens turn them into colors at the edge, and never write a color literal (rule 13).
 
+**Added after review (Victor, 4 Nov 2026).**
+
+- **Four more themes:** Floresta, Oceano, Lavanda and Terracota. Each is an `ExtraTheme`: one of the four plus fixed colors for Topo, buttons, active tab, earnings figures, highlight and background. `resolvePalette` resolves them through the base theme, so dark-mode lightening and the contrast rules cover them, and a test checks every part in light and dark.
+- **"Cor de fundo":** six light tones plus a + to Suas cores on Fundo.
+- **Tema:** the cards now sit in an even grid of two.
+- **Live clock:** it stays on one line with Large text and shrinks to fit inside its ring.
+
 ## Data
 
 No table and no migration. Two new settings keys, `saved_themes` and `saved_theme_id`, are inserted with defaults (an empty list and nothing) and go into backups like the other settings.
