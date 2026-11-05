@@ -1,5 +1,7 @@
 # Plan 017: Landscape
 
+> **Revised 5 Nov 2026** after Victor tried the first version on the emulator: fixed two columns looked strange and cramped. Every screen now keeps its upright structure at the readable width, and what is tapped opens in a side panel (option B of the "Tutora sideways" board). The live class takes layout L1, improved. The sections below are updated; `TwoPane`, `size-pane-min` and `MonthGrid`'s height fitting are gone.
+
 Architecture reference: docs/architecture.md (layers, state, the design system). Mockups: none; the layouts are built from the design system's components (the spec's answers, 4 Nov 2026).
 
 This spec builds on spec 014. Its branch, `spec/017-landscape`, starts from `spec/014-reminders-setup` while PR #20 is open.
@@ -12,28 +14,21 @@ This spec builds on spec 014. Its branch, `spec/017-landscape`, starts from `spe
   - No XML layouts or `-land` resources exist, so nothing needs the recreation.
 - **One rule for "sideways":** `TutoraTheme.landscape` is true when the window is wider than tall and shorter than 600 dp. It's read from `LocalConfiguration` in `TutoraTheme`, so tablets stay out (out of scope) and no window-size library is added. Screens branch on it; nothing else measures the screen.
 - **Design system first:**
-  - **Tokens:** `size-content-max` (600 dp, the readable width), `size-pane-min` (300 dp) and `size-rail` (88 dp).
+  - **Tokens:** `size-content-max` (600 dp, the readable width) and `size-rail` (88 dp).
   - **`NavRail` (new):** the five `TabItem`s in a column on the left, with the same icons, labels, active pill and count. It pads for the start, top and bottom safe-drawing insets (AC-017-2, 5).
-  - **`TwoPane` (new):** two columns side by side, each scrolling on its own, with a `startWeight` (Hoje 0.45, Ganhos 0.45, Mês 0.5, Cadastro 0.4, live class 0.5) and the 20 dp gutter. Each pane keeps the readable width.
+  - **`SidePanel` (new):** a panel over the right side (at most 55% and 600 dp) on a scrim, sliding in; the screen under it doesn't move.
   - **`Modifier.readableWidth()`:** `widthIn(max = Size.contentMax)`, centered. `ScreenScaffold`'s column uses it, so cards and forms never stretch (AC-017-4, 14).
   - **`BottomSheet`:** `sheetMaxWidth = Size.contentMax` and its content already scrolls (AC-017-15).
-  - **`MonthGrid`:** in landscape the tile is the smaller of width ÷ 7 and the available height ÷ 6, so the six weeks fit a 360 dp tall phone (AC-017-10).
-  - Components: 45 (`NavRail`, `TwoPane`), each with a guideline and a gallery entry.
+  - **`MonthGrid` and `WeekStrip`:** sideways their days are `size-month-day` and touch-high rows instead of squares; the strip carries the weekday inside the tile.
+  - **`TimerRing`:** `fill` grows it to the height of its place.
+  - Components: 45 (`NavRail`, `SidePanel`), each with a guideline and a gallery entry.
 - **Screens:**
   - **Shell (`TutoraNav`):** in landscape a `Row(NavRail, NavHost)` and no bottom bar. Details and forms take the whole width, as upright.
   - **`ScreenScaffold`:** readable width; `safeDrawingPadding` already keeps cut-outs and side navigation buttons clear (AC-017-5). Forms keep `imePadding` and bring the focused field into view (AC-017-14).
-  - **Hoje (AC-017-6):** `TwoPane`. Left: the band, the earnings card and the next class. Right: `LiveBanner`, the alerts (confirm, owed, backup) and today's classes. The + stays floating at the bottom end.
-  - **Ganhos (AC-017-7):** left: period, filters and the summary card. Right: the period's bars and "De onde veio".
-  - **Agenda (AC-017-8 to 10):**
-    - In landscape the header becomes one row: title and month, Dia / Semana / Mês, Hoje and the bell. That leaves the height to the content.
-    - Dia: `DayGrid` at full width under the strip, scrolled to the first class or the current hour as upright.
-    - Semana: `WeekList` at the readable width.
-    - Mês: `TwoPane`, the fitted `MonthGrid` on the left and the day's classes on the right.
-  - **Cadastro (AC-017-11):**
-    - `RegistryScreen` keeps a `selected` (`"student:<id>"`, `"group:<id>"` or `"place:<id>"`, saveable). In landscape, tapping a row sets it instead of navigating, and the right pane shows `StudentDetailScreen`, `GroupDetailScreen` or `PlaceDetailScreen`.
-    - Those screens gain an `onBack` parameter: in the pane it clears `selected`. A `BackHandler(enabled = selected != null)` makes Back close the pane first.
-    - Anything the detail opens (edit, report, payments) goes full screen as upright.
-  - **Live class (AC-017-12, 13):** `TwoPane`, with the clock and value on the left and the note with Pausar and Encerrar on the right. `LiveScreen` sets `LocalView.current.keepScreenOn = true` in a `DisposableEffect` and clears it on dispose, upright or sideways.
+  - **The panel (AC-017-6, 7, 10, 11):** `app/ui/Panel.kt` holds one `DetailPanel` for the app. Screens open a page with `rememberOpenPage(nav)`: upright it navigates, sideways it fills the panel (student, group, place, a class, a day of Mês). `DetailPanelHost` in the shell draws it over the tab's screen (never the rail), only over the screen it was opened from, closes it on Back first, and opens its page full screen when the phone turns upright. Screens never check the orientation for this.
+  - **Hoje, Ganhos, Cadastro:** their upright structure at the readable width; rows open in the panel.
+  - **Agenda:** the header is one row sideways and its title row slides away on scroll (the strip stays). Dia full width, Semana and Mês at the readable width; a Mês day opens its classes in the panel (`AgendaDay`, a panel-only page).
+  - **Live class (AC-017-12, 13):** its parts (`LiveParts`) laid out by `LiveUpright` or `LiveSideways`, picked in one line. Sideways (L1): the left side on the main color with back, the status and Descartar (an icon) above a ring as tall as fits; the right side with who, the value and its rate, the note, and Pausar and Encerrar at the bottom. `keepScreenOn` while the screen is open.
   - Every other screen gets landscape through `ScreenScaffold`'s readable width; nothing else changes.
 - **Language (AC-017-16):** no new strings. The rail reads the tabs' strings.
 
@@ -51,7 +46,7 @@ None. Nothing is written; only layouts change.
 
 ## Screens and components
 
-- **New design-system components:** `NavRail` and `TwoPane`, plus the `readableWidth` modifier and the three size tokens.
+- **New design-system components:** `NavRail` and `SidePanel`, plus the `readableWidth` modifier and the two size tokens.
 - **Changed:** `BottomSheet` (maximum width), `MonthGrid` (fits the height), `ScreenScaffold` (readable width).
 - **Screens with their own landscape layout:** shell, Hoje, Ganhos, Agenda (Dia, Semana, Mês), Cadastro with its details, the live class.
 

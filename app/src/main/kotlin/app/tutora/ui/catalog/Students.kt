@@ -111,6 +111,7 @@ fun StudentDetailScreen(
     /** Back, or closing Cadastro's right side when the phone is sideways (AC-017-11). */
     onBack: () -> Unit = { nav.popBackStack() },
 ) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val item by remember(id) { services.catalogRepo.student(id) }.collectAsState(initial = null)
@@ -228,7 +229,7 @@ fun StudentDetailScreen(
             stringResource(R.string.connections_noPlaces),
             if (archived) null else stringResource(R.string.connections_addPlace),
             { picking = "places" },
-            { nav.navigate(PlaceDetail(it.id)) },
+            { openPage(PlaceDetail(it.id)) },
             { c -> scope.launch { services.catalog.unlinkStudentFromPlace(id, c.id) } },
         ) { c -> unlinkConfirm(name, c.title, myGroups.filter { it.placeId == c.id }.map { it.name }) }
         // Turmas: joining one at another place links the student to it.
@@ -240,7 +241,7 @@ fun StudentDetailScreen(
             stringResource(R.string.connections_noGroups),
             if (archived) null else stringResource(R.string.connections_addGroup),
             { picking = "groups" },
-            { nav.navigate(GroupDetail(it.id)) },
+            { openPage(GroupDetail(it.id)) },
             { c -> scope.launch { services.catalog.removeMember(c.id, id) } },
         ) { c -> RemoveConfirm(stringResource(R.string.connections_leaveGroupTitle, name, c.title)) }
         PayerHistory(nav, PayerRef(PayerKind.STUDENT, id))
@@ -550,6 +551,7 @@ fun GroupDetailScreen(
     /** Back, or closing Cadastro's right side when the phone is sideways (AC-017-11). */
     onBack: () -> Unit = { nav.popBackStack() },
 ) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val language = currentLanguage()
@@ -624,7 +626,7 @@ fun GroupDetailScreen(
             stringResource(R.string.connections_noPlaces),
             if (archived) null else stringResource(R.string.connections_changePlace),
             { picking = "place" },
-            { nav.navigate(PlaceDetail(it.id)) },
+            { openPage(PlaceDetail(it.id)) },
             {},
         ) { RemoveConfirm(it.title) }
         ConnectionSection(
@@ -633,7 +635,7 @@ fun GroupDetailScreen(
             stringResource(R.string.groups_noMembers),
             if (archived) null else stringResource(R.string.groups_addStudent),
             { picking = "students" },
-            { nav.navigate(StudentDetail(it.id)) },
+            { openPage(StudentDetail(it.id)) },
             { c -> scope.launch { services.catalog.removeMember(id, c.id) } },
         ) { c -> RemoveConfirm(stringResource(R.string.connections_leaveGroupTitle, c.title, g.name)) }
         if (groupOwes) PayerHistory(nav, PayerRef(PayerKind.GROUP, id))

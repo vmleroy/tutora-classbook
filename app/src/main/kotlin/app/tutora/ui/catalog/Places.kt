@@ -90,6 +90,7 @@ fun PlaceDetailScreen(
     /** Back, or closing Cadastro's right side when the phone is sideways (AC-017-11). */
     onBack: () -> Unit = { nav.popBackStack() },
 ) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val place by remember(id) { services.catalogRepo.place(id) }.collectAsState(initial = null)
@@ -196,7 +197,7 @@ fun PlaceDetailScreen(
             stringResource(R.string.connections_noStudents),
             if (archived) null else stringResource(R.string.groups_addStudent),
             { picking = "students" },
-            { nav.navigate(StudentDetail(it.id)) },
+            { openPage(StudentDetail(it.id)) },
             { c -> scope.launch { services.catalog.unlinkStudentFromPlace(c.id, p.id) } },
         ) { c -> unlinkConfirm(c.title, placeName(p), here.filter { c.id in it.memberIds }.map { it.name }) }
         // A group always has a place: × here archives it; adding moves one in or creates one.
@@ -214,7 +215,7 @@ fun PlaceDetailScreen(
             stringResource(R.string.connections_noGroups),
             if (archived) null else stringResource(R.string.connections_addGroup),
             { picking = "groups" },
-            { nav.navigate(GroupDetail(it.id)) },
+            { openPage(GroupDetail(it.id)) },
             { c -> scope.launch { services.catalog.archive(Kind.GROUP, c.id) } },
         ) { c ->
             RemoveConfirm(

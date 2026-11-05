@@ -25,24 +25,24 @@ Tutora is built for a phone held upright. When the teacher turns it sideways (on
 - **AC-017-4.** Text, cards and forms never stretch wider than is comfortable to read: content that would be wider sits centered at a readable width, with the background on both sides.
 - **AC-017-5.** The parts of the phone's screen that are not for apps (a camera cut-out, the navigation buttons on the side) never cover anything.
 
-### Hoje and Ganhos
+### The panel, Hoje and Ganhos
 
-- **AC-017-6.** Hoje sideways shows two columns: the earnings card and the next class on the left, today's classes and the alerts on the right (Victor, 4 Nov 2026).
-- **AC-017-7.** Ganhos sideways shows the period's card on the left, and the period's bars and "De onde veio" on the right. *(The bars replaced the six months in spec 014, AC-014-30.)*
+- **AC-017-6.** Hoje sideways keeps its upright order in one column at a readable width. Tapping a class opens its page in a panel over the right side of the screen, Hoje staying under it (Victor, 5 Nov 2026).
+- **AC-017-7.** Ganhos sideways keeps its upright order in one column at a readable width. Tapping someone in "De onde veio" opens their page in the panel.
 
 ### Agenda
 
 - **AC-017-8.** Dia sideways shows the day's hours with the week strip above, using the width for the blocks; the first class (or the current hour) is still where it opens.
 - **AC-017-9.** Semana sideways shows the list of days (AC-016-31) at a readable width, the strip above it following the scroll.
-- **AC-017-10.** Mês sideways shows the month grid on the left and the chosen day's classes on the right, both in view without scrolling the page.
+- **AC-017-10.** Mês sideways shows the month grid at a readable width; tapping a day opens its classes, with their count and value, in the panel, and a class there opens its page in the same panel.
 
 ### Cadastro and details
 
-- **AC-017-11.** Cadastro sideways shows the list on the left and, after tapping a student, group or place, its page on the right; the list stays where it was. Back closes the right side first (Victor, 4 Nov 2026).
+- **AC-017-11.** Cadastro sideways shows its list in one column at a readable width. Tapping a student, group or place opens its page in a panel over the right side, on a dimmed list that stays where it was. Back, ✕ or a tap on the dimmed side closes the panel first; turning the phone upright with a panel open shows that page full screen (Victor, 5 Nov 2026).
 
 ### The live class
 
-- **AC-017-12.** The live class sideways shows the clock and the value on the left and the note and the Pausar and Encerrar buttons on the right, all in view without scrolling.
+- **AC-017-12.** The live class sideways gives the clock the whole left side on the main color: the ring as tall as the phone allows, the time inside it, with the status and the way back above. The right side holds who, what was earned so far with its rate, the note, and Pausar and Encerrar at the bottom, all in view without scrolling (Victor, 5 Nov 2026).
 - **AC-017-13.** While the live class screen is open, upright or sideways, the phone doesn't dim or lock by itself; leaving the screen gives the phone its own timeout back (Victor, 4 Nov 2026).
 
 ### Forms and sheets
@@ -62,4 +62,6 @@ Tutora is built for a phone held upright. When the teacher turns it sideways (on
 
 ## Open questions
 
-Answered by Victor on 4 Nov 2026: Cadastro shows the list and the page side by side; Hoje puts the money and the next class on the left and today's classes on the right; the screen stays on during a live class; no landscape boards, the plan goes straight from this spec.
+Answered by Victor on 4 Nov 2026: the screen stays on during a live class; no landscape boards, the plan goes straight from this spec.
+
+Changed by Victor on 5 Nov 2026 after trying it on the emulator: two fixed columns on Hoje, Ganhos, Mês and Cadastro looked strange and cramped. Every screen keeps its upright structure, and the extra width is used only when something is tapped, as a panel over the right side (option B of the "Tutora sideways" board). The live class takes the "big ring on the left" layout (L1), improved.

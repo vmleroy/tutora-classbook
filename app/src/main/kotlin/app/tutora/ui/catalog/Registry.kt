@@ -5,16 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -30,7 +26,6 @@ import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.TextField
-import app.tutora.designsystem.components.TwoPane
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Cents
@@ -78,60 +73,6 @@ fun RegistryScreen(
     nav: NavHostController,
     view: String,
     owing: Boolean = false,
-) {
-    // Sideways, a tapped student, group or place opens on the right, the list staying where it
-    // was; Back closes the right side first (AC-017-11; Victor, 4 Nov 2026).
-    var selected by rememberSaveable { mutableStateOf<String?>(null) }
-    val landscape = TutoraTheme.landscape
-    androidx.activity.compose.BackHandler(enabled = landscape && selected != null) { selected = null }
-    // The list moves into the left pane when the phone turns, keeping its search, chips and
-    // scroll (AC-017-1).
-    val list = remember(nav) { movableContentOf { v: String, o: Boolean -> RegistryList(nav, v, o) } }
-    if (!landscape) {
-        list(view, owing)
-        return
-    }
-    val open: (Any) -> Unit = { route ->
-        val key =
-            when (route) {
-                is StudentDetail -> "student:${route.id}"
-                is GroupDetail -> "group:${route.id}"
-                is PlaceDetail -> "place:${route.id}"
-                else -> null
-            }
-        if (key != null) selected = key else nav.navigate(route)
-    }
-    TwoPane(
-        start = { CompositionLocalProvider(LocalRegistryOpen provides open) { list(view, owing) } },
-        end = {
-            val shown = selected ?: return@TwoPane
-            val (kind, id) = shown.split(":", limit = 2)
-            val close = { selected = null }
-            key(shown) {
-                when (kind) {
-                    "student" -> StudentDetailScreen(nav, id, onBack = close)
-                    "group" -> GroupDetailScreen(nav, id, onBack = close)
-                    else -> PlaceDetailScreen(nav, id, onBack = close)
-                }
-            }
-        },
-        startWeight = 0.4f,
-        scrollStart = false,
-        scrollEnd = false,
-    )
-}
-
-/** Where a row of Cadastro opens: its own screen, or Cadastro's right side when sideways (AC-017-11). */
-private val LocalRegistryOpen = staticCompositionLocalOf<((Any) -> Unit)?> { null }
-
-@Composable
-private fun rememberRegistryOpen(nav: NavHostController): (Any) -> Unit = LocalRegistryOpen.current ?: { nav.navigate(it) }
-
-@Composable
-private fun RegistryList(
-    nav: NavHostController,
-    view: String,
-    owing: Boolean,
 ) {
     ScreenScaffold(
         stringResource(R.string.tab_registry),
@@ -186,7 +127,7 @@ private fun StudentsPane(
     nav: NavHostController,
     owingFirst: Boolean,
 ) {
-    val open = rememberRegistryOpen(nav)
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val students by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
     val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
@@ -249,7 +190,7 @@ private fun StudentsPane(
                     subtitle = listOfNotNull(subtitle, pkg?.let { packageUseText(it) }).joinToString(" · "),
                     avatar = initials(s.student.name) to s.student.color.tag(),
                     badge = balanceBadge(balances[PayerRef(PayerKind.STUDENT, s.student.id)] ?: 0),
-                    onClick = { open(StudentDetail(s.student.id)) },
+                    onClick = { openPage(StudentDetail(s.student.id)) },
                 )
             }
         }
@@ -273,7 +214,7 @@ private fun StudentsPane(
 /** Turmas: active groups with search, each with its subject, place, size and price (AC-004-31). */
 @Composable
 private fun GroupsPane(nav: NavHostController) {
-    val open = rememberRegistryOpen(nav)
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
@@ -320,7 +261,7 @@ private fun GroupsPane(nav: NavHostController) {
                     subtitle = subtitle,
                     icon = IconName.USERS,
                     badge = balanceBadge(balances[PayerRef(PayerKind.GROUP, g.id)] ?: 0),
-                    onClick = { open(GroupDetail(g.id)) },
+                    onClick = { openPage(GroupDetail(g.id)) },
                 )
             }
         }
@@ -337,7 +278,7 @@ private fun GroupsPane(nav: NavHostController) {
 
 @Composable
 private fun PlacesPane(nav: NavHostController) {
-    val open = rememberRegistryOpen(nav)
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
@@ -377,7 +318,7 @@ private fun PlacesPane(nav: NavHostController) {
                 subtitle = summary,
                 icon = IconName.PIN,
                 badge = badge,
-                onClick = { open(PlaceDetail(p.place.id)) },
+                onClick = { openPage(PlaceDetail(p.place.id)) },
             )
         }
     }
@@ -409,6 +350,7 @@ private fun PlacesPane(nav: NavHostController) {
 /** Arquivados: everything hidden, each opening its form to restore or remove it (AC-004-23). */
 @Composable
 fun ArchivedScreen(nav: NavHostController) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val places by remember { services.catalogRepo.places(archived = true) }.collectAsState(initial = emptyList())
     val students by remember { services.catalogRepo.students(archived = true) }.collectAsState(initial = emptyList())
@@ -424,7 +366,7 @@ fun ArchivedScreen(nav: NavHostController) {
                         ListRow(
                             s.student.name,
                             avatar = initials(s.student.name) to s.student.color.tag(),
-                            onClick = { nav.navigate(StudentDetail(s.student.id)) },
+                            onClick = { openPage(StudentDetail(s.student.id)) },
                         )
                     }
                 },
@@ -434,7 +376,7 @@ fun ArchivedScreen(nav: NavHostController) {
         if (groups.isNotEmpty()) {
             ListGroup(
                 groups.map { g ->
-                    { ListRow(g.name, onClick = { nav.navigate(GroupDetail(g.id)) }) }
+                    { ListRow(g.name, onClick = { openPage(GroupDetail(g.id)) }) }
                 },
                 title = stringResource(R.string.places_groups),
             )
@@ -442,7 +384,7 @@ fun ArchivedScreen(nav: NavHostController) {
         if (places.isNotEmpty()) {
             ListGroup(
                 places.map { p ->
-                    { ListRow(placeName(p.place), onClick = { nav.navigate(PlaceDetail(p.place.id)) }) }
+                    { ListRow(placeName(p.place), onClick = { openPage(PlaceDetail(p.place.id)) }) }
                 },
                 title = stringResource(R.string.tab_places),
             )

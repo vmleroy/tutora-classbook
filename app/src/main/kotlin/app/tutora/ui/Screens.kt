@@ -45,8 +45,6 @@ fun ScreenScaffold(
     fab: (() -> Unit)? = null,
     fabLabel: String = "",
     scroll: Boolean = true,
-    /** False for a body that lays out its own columns sideways, such as a TwoPane (spec 017). */
-    readable: Boolean = true,
     bottomBar: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -58,7 +56,16 @@ fun ScreenScaffold(
             .testTag(tag),
     ) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader(title, variant = variant, eyebrow = eyebrow, actions = actions, onBack = onBack, trailing = trailing)
+            // The title lines up with the body at the readable width.
+            ScreenHeader(
+                title,
+                Modifier.readableWidth(),
+                variant = variant,
+                eyebrow = eyebrow,
+                actions = actions,
+                onBack = onBack,
+                trailing = trailing,
+            )
             // The body keeps the readable width; past it the background shows on both sides (AC-017-4).
             Box(
                 Modifier
@@ -69,7 +76,7 @@ fun ScreenScaffold(
             ) {
                 Column(
                     Modifier
-                        .then(if (readable) Modifier.readableWidth() else Modifier.fillMaxWidth())
+                        .readableWidth()
                         // The last item stays clear of the floating +.
                         .padding(
                             start = Spacing.s5,

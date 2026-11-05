@@ -61,7 +61,6 @@ import app.tutora.designsystem.components.MonthGrid
 import app.tutora.designsystem.components.MonthPicker
 import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.SegmentedControl
-import app.tutora.designsystem.components.TwoPane
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.components.readableWidth
@@ -143,8 +142,11 @@ fun AgendaScreen(nav: NavHostController) {
     var forecast by remember { mutableStateOf<Lesson?>(null) }
     val scope = rememberCoroutineScope()
 
+    // Sideways a class opens in the panel over the Agenda (AC-017-10).
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
+
     fun open(l: Lesson) {
-        if (l.forecast) forecast = l else nav.navigate(LessonDetail(l.id))
+        if (l.forecast) forecast = l else openPage(LessonDetail(l.id))
     }
     forecast?.let { l ->
         BottomSheet(
@@ -275,32 +277,22 @@ fun AgendaScreen(nav: NavHostController) {
                 Column(Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3)) { DayHeader(selected, today, dayLessons) }
             }
             when {
-                view == AgendaView.MONTH && landscape ->
-                    // Sideways: the fitted grid on the left, the chosen day's classes on the right,
-                    // both in view without scrolling the page (AC-017-10).
-                    TwoPane(
-                        start = {
-                            MonthView(month, cells, selected, today, byDay, { selectedText = it.toString() }, fill = true)
-                        },
-                        end = {
-                            Column(
-                                Modifier.padding(bottom = Size.fab + Spacing.s7),
-                                verticalArrangement = Arrangement.spacedBy(Spacing.s3),
-                            ) { MonthDayList(selected, today, byDay) { open(it) } }
-                        },
-                        modifier = Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s2),
-                        scrollStart = false,
-                    )
                 view == AgendaView.MONTH ->
-                    Column(
-                        // The last row stays clear of the floating +.
-                        Modifier
-                            .verticalScroll(rememberScrollState())
-                            .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3, bottom = Size.fab + Spacing.s7),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.s3),
-                    ) {
-                        MonthView(month, cells, selected, today, byDay, { selectedText = it.toString() })
-                        MonthDayList(selected, today, byDay) { open(it) }
+                    Box(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
+                        Column(
+                            // The last row stays clear of the floating +; sideways at the readable width.
+                            Modifier
+                                .readableWidth()
+                                .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3, bottom = Size.fab + Spacing.s7),
+                            verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+                        ) {
+                            MonthView(month, cells, selected, today, byDay, { day ->
+                                selectedText = day.toString()
+                                // Sideways a tapped day opens its classes in the panel (AC-017-10).
+                                if (landscape) openPage(app.tutora.ui.AgendaDay(day.toString()))
+                            })
+                            MonthDayList(selected, today, byDay) { open(it) }
+                        }
                     }
                 // Semana: one endless list of days, like Teams' agenda in Tutora's look (Victor, 4 Nov 2026).
                 view == AgendaView.WEEK ->
@@ -407,15 +399,13 @@ private fun DayHeader(
  * (AC-016-16 to 19, 23).
  */
 @Composable
-private fun androidx.compose.foundation.layout.ColumnScope.MonthView(
+private fun MonthView(
     month: YearMonth,
     cells: List<app.tutora.domain.MonthCell>,
     selected: LocalDate,
     today: LocalDate,
     byDay: Map<LocalDate, List<Lesson>>,
     onSelect: (LocalDate) -> Unit,
-    /** Sideways the grid fills the height it is given, its days as large as fit (AC-017-10). */
-    fill: Boolean = false,
 ) {
     val language = currentLanguage()
     val pending = rememberToConfirm()
@@ -467,7 +457,6 @@ private fun androidx.compose.foundation.layout.ColumnScope.MonthView(
         monthYear(month.firstDay, language),
         // Swiping changes month, within the same limits as ‹ › (AC-016-23; Victor, 4 Nov 2026).
         page = month.year * 12 + month.month.ordinal,
-        modifier = if (fill) Modifier.weight(1f) else Modifier,
         swipeLabels = stringResource(R.string.schedule_prevMonth) to stringResource(R.string.schedule_nextMonth),
         onSwipe = { step ->
             val target = if (step > 0) month.plusMonth() else month.minusMonth()
@@ -480,8 +469,29 @@ private fun androidx.compose.foundation.layout.ColumnScope.MonthView(
                 DotTone.ACCENT to stringResource(R.string.schedule_kindPrivate),
                 DotTone.VIOLET to stringResource(R.string.schedule_kindGroup),
             ),
-        fill = fill,
     )
+}
+
+/** A day of Mês in the panel when the phone is sideways: its classes, count and value (AC-017-10). */
+@Composable
+fun AgendaDayScreen(
+    nav: NavHostController,
+    date: LocalDate,
+    onBack: () -> Unit,
+) {
+    val services = LocalServices.current
+    val language = currentLanguage()
+    val today = remember { localOf(services.now(), services.zone).date }
+    val lessons by remember(date) { services.agendaBetween(date, date) }.collectAsState(initial = emptyList())
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
+    app.tutora.ui.ScreenScaffold(
+        dayMonthLong(date, language),
+        "agenda-day",
+        variant = app.tutora.designsystem.components.HeaderVariant.PUSH,
+        onBack = onBack,
+    ) {
+        MonthDayList(date, today, byLocalDay(lessons, services.zone)) { l -> if (!l.forecast) openPage(LessonDetail(l.id)) }
+    }
 }
 
 /** The chosen day's classes, cancelled ones included, with their count and expected value. */

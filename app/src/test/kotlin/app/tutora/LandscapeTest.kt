@@ -8,21 +8,28 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.toSize
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.designsystem.tokens.TutoraTokens.Size
+import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.PlaceLink
 import app.tutora.domain.RateType
@@ -100,6 +107,12 @@ class LandscapeTest {
             .fetchSemanticsNode()
             .boundsInRoot
 
+    /** Unclipped, so a node below the fold counts too. */
+    private fun full(tag: String): Rect =
+        compose.onAllNodesWithTag(tag, useUnmergedTree = true).onFirst().fetchSemanticsNode().let {
+            Rect(it.positionInRoot, it.size.toSize())
+        }
+
     private fun textBounds(text: String): Rect =
         compose
             .onAllNodes(
@@ -119,6 +132,23 @@ class LandscapeTest {
             .boundsInRoot
 
     private val dp get() = compose.density.density
+
+    /** At most the readable width and centered in the screen beside the rail (AC-017-4). */
+    private fun assertReadable(tag: String) {
+        val b = bounds(tag)
+        assertTrue("$tag is ${b.width / dp} dp wide", b.width / dp <= Size.contentMax.value + 1f)
+        val rail = bounds("nav-rail")
+        val left = b.left - rail.right
+        val right = root().right - b.right
+        assertTrue("$tag is centered ($left, $right)", kotlin.math.abs(left - right) <= Spacing.s5.value * dp * 2 + 2f)
+    }
+
+    /** [tag]'s page is open in the panel over the right side, the screen still under it. */
+    private fun assertInPanel(tag: String) {
+        val panel = bounds("side-panel")
+        assertTrue("the panel is on the right", panel.right >= root().right - 1f && panel.left > root().width / 3)
+        compose.onNode(hasTestTag(tag) and hasAnyAncestor(hasTestTag("side-panel"))).assertExists()
+    }
 
     private fun tab(key: String) {
         compose.onNodeWithTag("tab-$key").performClick()
@@ -189,29 +219,30 @@ class LandscapeTest {
     }
 
     @Test
-    fun `AC-017-6 Hoje sideways has the money and the next class on the left, today's classes and alerts on the right`() {
+    fun `AC-017-6 Hoje sideways keeps one column at a readable width, and a class opens in the panel over it`() {
         h.show(compose)
-        val start = bounds("pane-start")
-        val end = bounds("pane-end")
-        assertTrue(start.right <= end.left)
-        val earnings = bounds("today-earnings")
-        val next = textBounds("Próxima aula · em 5h")
-        val list = textBounds("Aulas de hoje")
-        assertTrue("the earnings card is on the left", earnings.right <= start.right + 0.5f)
-        assertTrue("the next class is on the left", next.right <= start.right + 0.5f)
-        assertTrue("today's classes are on the right", list.left >= end.left - 0.5f)
+        assertReadable("today-earnings")
+        compose.onNodeWithTag("side-panel").assertDoesNotExist()
+        compose
+            .onAllNodes(hasText("Ana Souza") and hasClickAction())
+            .onLast()
+            .performScrollTo()
+            .performClick()
+        h.settle(compose)
+        assertInPanel("lesson-detail")
+        compose.onNodeWithTag("today-screen").assertExists()
     }
 
     @Test
-    fun `AC-017-7 Ganhos sideways has the period's card on the left, its bars and De onde veio on the right`() {
+    fun `AC-017-7 Ganhos sideways keeps one column at a readable width, and a source opens in the panel`() {
         h.show(compose)
         tab("earnings")
-        val summary = bounds("earn-summary")
-        val bars = bounds("earn-bars")
-        val sources = textBounds("De onde veio")
-        assertTrue("the card is left of the bars", summary.right <= bars.left)
-        assertTrue("De onde veio is on the right", sources.left >= bars.left - 0.5f)
-        assertTrue("De onde veio is under the bars", sources.top >= bars.bottom)
+        assertReadable("earn-summary")
+        assertTrue("the bars are under the card", full("earn-bars").top >= full("earn-summary").bottom)
+        compose.onNode(hasText("Ana Souza") and hasClickAction()).performScrollTo().performClick()
+        h.settle(compose)
+        assertInPanel("student-detail")
+        compose.onNodeWithTag("earnings-screen").assertExists()
     }
 
     @Test
@@ -247,53 +278,64 @@ class LandscapeTest {
     }
 
     @Test
-    fun `AC-017-10 Mes sideways shows the grid on the left and the day's classes on the right, both in view`() {
+    fun `AC-017-10 Mes sideways keeps the grid at a readable width, and a day opens its classes in the panel`() {
         h.show(compose)
         tab("schedule")
         compose.onNodeWithText("Mês").performClick()
         h.settle(compose)
-        val grid = bounds("month-grid")
-        val total = bounds("month-day-total")
-        assertTrue("the six weeks fit the height", grid.bottom <= root().bottom + 0.5f)
-        assertTrue("the day's classes are on the right", total.left >= grid.right)
-        assertTrue(total.bottom <= root().bottom)
-        compose.onNodeWithTag("month-grid").assertIsDisplayed()
+        assertReadable("month-grid")
+        compose.onNodeWithContentDescription("26 de outubro, 1 aula").performScrollTo().performClick()
+        h.settle(compose)
+        assertInPanel("agenda-day")
+        compose.onNode(hasText("Ana Souza") and hasAnyAncestor(hasTestTag("side-panel")), useUnmergedTree = true).assertExists()
+        compose.onNode(hasText("Ana Souza") and hasClickAction() and hasAnyAncestor(hasTestTag("side-panel"))).performClick()
+        h.settle(compose)
+        assertInPanel("lesson-detail")
     }
 
     @Test
-    fun `AC-017-11 Cadastro sideways opens a student on the right, the list kept, and Back closes the right side first`() {
+    fun `AC-017-11 Cadastro sideways opens a student in the panel over the list, Back closes it first, upright shows it full screen`() {
         h.show(compose)
         tab("registry")
+        assertReadable("students-screen")
         compose.onNodeWithText("Ana Souza").performClick()
         h.settle(compose)
-        val list = bounds("registry-screen")
-        val detail = bounds("student-detail")
-        assertTrue("the page is right of the list", detail.left >= list.right)
-        compose.onNodeWithTag("students-screen").assertExists()
+        assertInPanel("student-detail")
+        compose.onNodeWithTag("side-panel-scrim").assertExists()
+        compose.onNodeWithTag("registry-screen").assertExists()
         Espresso.pressBack()
         h.settle(compose)
-        compose.onNodeWithTag("student-detail").assertDoesNotExist()
+        compose.onNodeWithTag("side-panel").assertDoesNotExist()
         compose.onNodeWithTag("registry-screen").assertExists()
         compose.onNodeWithTag("tab-registry").assertIsSelected()
+        // Turned upright with the panel open, the page shows full screen.
+        compose.onNodeWithText("Ana Souza").performClick()
+        h.settle(compose)
+        h.landscape = false
+        h.settle(compose)
+        compose.onNodeWithTag("side-panel").assertDoesNotExist()
+        compose.onNodeWithTag("student-detail").assertExists()
+        compose.onNodeWithTag("registry-screen").assertDoesNotExist()
     }
 
     @Test
-    fun `AC-017-12 the live class sideways shows the clock and value on the left, the note and its buttons on the right, all in view`() {
+    fun `AC-017-12 the live class sideways gives the clock the left side and keeps who, the value, the note and its buttons in view`() {
         runBlocking { h.t.live.start(today) }
         h.t.now = "2026-10-26T12:20:00.000Z"
         h.show(compose)
         h.go(compose, LiveLesson(today))
-        val start = bounds("pane-start")
-        val end = bounds("pane-end")
-        val clock = textBounds("00:20:00")
-        assertTrue("the clock is on the left", clock.right <= start.right)
-        listOf("Pausar", "Encerrar aula", "Anotação rápida").forEach {
+        val clockSide = bounds("live-clock-side")
+        val info = bounds("live-info-side")
+        assertTrue("the clock side is on the left", clockSide.right <= info.left + 0.5f)
+        assertEquals("the clock side runs the phone's height", root().height, clockSide.height, 1f)
+        val time = textBounds("00:20:00")
+        assertTrue("the time is on the clock side", time.right <= clockSide.right)
+        listOf("Ana Souza", "Ganho até agora", "Anotação rápida", "Pausar", "Encerrar aula").forEach {
             val b = textBounds(it)
-            assertTrue("$it is on the right", b.left >= end.left - 0.5f)
+            assertTrue("$it is on the right", b.left >= info.left - 0.5f)
             assertTrue("$it is in view", b.bottom <= root().bottom + 0.5f)
         }
-        val value = textBounds("Ganho até agora")
-        assertTrue("the value is on the left and in view", value.right <= start.right && value.bottom <= root().bottom)
+        compose.onNodeWithText("Ao vivo").assertExists()
     }
 
     @Test
@@ -323,20 +365,15 @@ class LandscapeTest {
     @Test
     @Config(qualifiers = "en-w800dp-h360dp-land")
     fun `AC-017-16 the landscape layouts read the same in English`() {
-        runBlocking {
-            h.services.saveSettings(
-                h.services.currentSettings().copy(
-                    language =
-                        app.tutora.domain.Language.EN,
-                ),
-            )
-        }
+        runBlocking { h.services.saveSettings(h.services.currentSettings().copy(language = app.tutora.domain.Language.EN)) }
         h.show(compose)
         compose.onNodeWithTag("nav-rail").assertExists()
-        assertTrue(textBounds("Today's lessons").left >= bounds("pane-end").left - 0.5f)
         compose.assertFitsSideways("Today")
         tab("registry")
         textBounds("Directory")
-        compose.assertFitsSideways("Directory")
+        compose.onNodeWithText("Ana Souza").performClick()
+        h.settle(compose)
+        assertInPanel("student-detail")
+        compose.assertFitsSideways("Directory with a student open")
     }
 }

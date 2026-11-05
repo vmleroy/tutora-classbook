@@ -1,21 +1,28 @@
 package app.tutora.designsystem.components
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
+import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
@@ -31,57 +38,55 @@ fun Modifier.readableWidth(): Modifier =
         .fillMaxWidth()
 
 /**
- * Two columns side by side for a phone held sideways (spec 017): [start] takes [startWeight] of
- * the width, [end] the rest, a `space-5` gutter between. Each scrolls on its own unless told not
- * to (a pane holding its own list or a fitted grid), and neither grows past the readable width.
- * Too narrow for two `size-pane-min` columns, panes that scroll stack in one scrolling column.
+ * A panel over the right side of the screen for a phone held sideways (spec 017): what was tapped
+ * opens in it while the screen stays under a scrim. A tap on the scrim calls [onDismiss]; Back is
+ * the host's. It is at most `size-content-max` wide and never more than [WIDTH_SHARE] of the
+ * screen, clears the cut-out and system bars on its side, and slides in unless motion is reduced.
  */
 @Composable
-fun TwoPane(
-    start: @Composable ColumnScope.() -> Unit,
-    end: @Composable ColumnScope.() -> Unit,
+fun SidePanel(
+    visible: Boolean,
+    onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    startWeight: Float = 0.5f,
-    scrollStart: Boolean = true,
-    scrollEnd: Boolean = true,
-    gap: androidx.compose.ui.unit.Dp = Spacing.s3,
+    content: @Composable () -> Unit,
 ) {
-    androidx.compose.foundation.layout.BoxWithConstraints(modifier.fillMaxSize().testTag("two-pane")) {
-        val narrowest = (maxWidth - Spacing.s5) * minOf(startWeight, 1f - startWeight)
-        if (narrowest < Size.paneMin && scrollStart && scrollEnd) {
-            Column(
-                Modifier.readableWidth().fillMaxHeight().verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(gap),
-            ) {
-                start()
-                end()
-            }
-        } else {
-            Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(Spacing.s5)) {
-                Pane("pane-start", startWeight, scrollStart, gap, start)
-                Pane("pane-end", 1f - startWeight, scrollEnd, gap, end)
-            }
+    val c = TutoraTheme.colors
+    val motion = TutoraTheme.reduceMotion
+    val dismiss = rememberUpdatedState(onDismiss)
+    Box(modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible,
+            enter = if (motion) EnterTransition.None else fadeIn(),
+            exit = if (motion) ExitTransition.None else fadeOut(),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(c.scrim)
+                    .testTag("side-panel-scrim")
+                    // A tap outside closes it; screen readers close it with Back, so the scrim
+                    // is not a control of its own.
+                    .pointerInput(Unit) { detectTapGestures { dismiss.value() } },
+            )
+        }
+        AnimatedVisibility(
+            visible,
+            modifier = Modifier.align(Alignment.CenterEnd),
+            enter = if (motion) EnterTransition.None else slideInHorizontally { it },
+            exit = if (motion) ExitTransition.None else slideOutHorizontally { it },
+        ) {
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(WIDTH_SHARE)
+                    .widthIn(max = Size.contentMax)
+                    .shadow(Spacing.s4)
+                    .background(c.background)
+                    .testTag("side-panel"),
+            ) { content() }
         }
     }
 }
 
-@Composable
-private fun androidx.compose.foundation.layout.RowScope.Pane(
-    tag: String,
-    weight: Float,
-    scroll: Boolean,
-    gap: androidx.compose.ui.unit.Dp,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    Box(Modifier.weight(weight).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
-        Column(
-            Modifier
-                .widthIn(max = Size.contentMax)
-                .fillMaxSize()
-                .testTag(tag)
-                .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier),
-            verticalArrangement = Arrangement.spacedBy(gap),
-            content = content,
-        )
-    }
-}
+/** The most of the screen's width a [SidePanel] takes. */
+const val WIDTH_SHARE = 0.55f

@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -98,11 +98,6 @@ fun MonthGrid(
     onSwipe: ((Int) -> Unit)? = null,
     /** What screen readers call the two swipes ("Mês anterior", "Próximo mês"): a swipe has no other way in. */
     swipeLabels: Pair<String, String>? = null,
-    /**
-     * Fill the height the grid is given (a phone sideways, spec 017): each day is as large a
-     * square as both its column and a sixth of the weeks' height allow, so six weeks fit.
-     */
-    fill: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     val reduceMotion = TutoraTheme.reduceMotion
@@ -169,7 +164,7 @@ fun MonthGrid(
             }
         androidx.compose.animation.AnimatedContent(
             targetState = Triple(page, days, selected),
-            modifier = if (fill) swipe.weight(1f) else swipe,
+            modifier = swipe,
             transitionSpec = {
                 val forward = targetState.first > initialState.first
                 if (reduceMotion || targetState.first == initialState.first) {
@@ -183,29 +178,16 @@ fun MonthGrid(
             label = "month",
         ) { (_, shown, chosen) ->
             Column(
-                Modifier
-                    .semantics { contentDescription = label }
-                    .selectableGroup()
-                    .then(if (fill) Modifier.fillMaxHeight() else Modifier),
+                Modifier.semantics { contentDescription = label }.selectableGroup(),
                 // 8 dp between weeks (Victor, 4 Nov 2026).
-                verticalArrangement = Arrangement.spacedBy(if (fill) Spacing.s1 else Spacing.s2),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s2),
             ) {
                 shown.chunked(7).forEachIndexed { w, week ->
                     // 4 dp across keeps a day 40 dp wide on a 360 dp phone with Large text (AC-016-11).
-                    Row(
-                        Modifier.fillMaxWidth().then(if (fill) Modifier.weight(1f) else Modifier),
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.s1),
-                    ) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
                         week.forEachIndexed { i, d ->
                             val index = w * 7 + i
-                            if (fill) {
-                                // The square's side is the smaller of the column and the week's height.
-                                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                                    DayCell(d, index == chosen, Modifier) { onSelect(index) }
-                                }
-                            } else {
-                                DayCell(d, index == chosen, Modifier.weight(1f)) { onSelect(index) }
-                            }
+                            DayCell(d, index == chosen, Modifier.weight(1f)) { onSelect(index) }
                         }
                     }
                 }
@@ -252,7 +234,8 @@ private fun DayCell(
     Column(
         // Square tiles with small corners, not tall capsules (Victor, 4 Nov 2026).
         modifier
-            .aspectRatio(1f)
+            // Sideways a square would be too tall for six weeks: a `size-month-day` row (spec 017).
+            .then(if (TutoraTheme.landscape) Modifier.height(Size.monthDay) else Modifier.aspectRatio(1f))
             .clip(RoundedCornerShape(Radius.sm))
             .background(bg)
             .then(

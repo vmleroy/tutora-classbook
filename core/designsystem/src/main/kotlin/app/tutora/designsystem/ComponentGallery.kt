@@ -75,6 +75,7 @@ import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.SelectField
+import app.tutora.designsystem.components.SidePanel
 import app.tutora.designsystem.components.StatTile
 import app.tutora.designsystem.components.StatTone
 import app.tutora.designsystem.components.Stepper
@@ -91,7 +92,6 @@ import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.TileTone
 import app.tutora.designsystem.components.TimeField
 import app.tutora.designsystem.components.TimerRing
-import app.tutora.designsystem.components.TwoPane
 import app.tutora.designsystem.components.WeekDay
 import app.tutora.designsystem.components.WeekStrip
 import app.tutora.designsystem.tokens.TutoraTokens.Size
@@ -130,7 +130,7 @@ val galleryComponents =
         "ScreenHeader",
         "TabBar",
         "NavRail",
-        "TwoPane",
+        "SidePanel",
         "WeekStrip",
         "AgendaBlock",
         "BusyBlock",
@@ -502,12 +502,12 @@ fun GallerySections() {
             )
         }
     }
-    Section("TwoPane") {
+    Section("SidePanel") {
         Box(Modifier.height(Size.rail * 2)) {
-            TwoPane(
-                start = { Card { Text("Hoje", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink) } },
-                end = { Card { Text("Aulas de hoje", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink) } },
-            )
+            Card { Text("Cadastro", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink) }
+            SidePanel(visible = true, onDismiss = {}) {
+                Card { Text("Ana Souza", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink) }
+            }
         }
     }
     Section("WeekStrip") {
