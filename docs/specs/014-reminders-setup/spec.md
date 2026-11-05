@@ -1,6 +1,6 @@
 # Spec 014: Reminders, confirming classes and first-run setup
 
-Status: done
+Status: in progress
 Depends on: 005 Schedule (series filled ahead), 006 Lessons (mark done, cancel, missed), 007 Live timer (notifications), 008 Payments (who owes), 011 Backup (the folder), 016 Visual refresh (Hoje, the Agenda, AgendaCard)
 Mockups: docs/mockups/Setup.dc.html (first-run setup), docs/mockups/Settings.dc.html. The confirm list and the reminders follow the design system.
 Takes in: the draft spec 018 (Confirm classes), whose criteria and answers are here (Victor, 4 Nov 2026).
@@ -59,6 +59,28 @@ Three things that keep Tutora in step with the teacher's real week. **Reminders*
 - **AC-014-21.** Step 3, "Seus preços padrão": Online / Remoto and Casa do Aluno per hour (R$ 100 and R$ 120 at first, with − and +), and Deslocamento (Varia por aula, Fixo or Não cobro, each with its line of explanation). These become the two built-in places' prices.
 - **AC-014-22.** Step 4, "Seus dados, seguros": Backup automático with "Escolher pasta" (spec 011) and "Aviso antes da aula" (AC-014-12), each on or off.
 - **AC-014-23.** The end shows a summary of the choices and two ways out: "Cadastrar meu primeiro aluno" (opening a new student) and "Ir para Hoje". Skipping keeps the defaults of every step not seen.
+
+### After the device checks (Victor, 5 Nov 2026)
+
+- **AC-014-25.** In the setup's Deslocamento, "Fixo" shows an amount the teacher types, R$ 20,00 at first; it becomes Casa do Aluno's fixed travel (AC-014-21).
+- **AC-014-26.** In Lembretes, Quem te deve's day is one row of short day names (Seg Ter Qua Qui Sex Sáb Dom, Mon … Sun in English), and each hour can be typed (AC-014-29).
+- **AC-014-27.** The reminder before class comes on time:
+  - A flag in the build chooses how. With the flag on (at first), Tutora uses the exact-alarm permission given at install (`USE_EXACT_ALARM`), and the teacher does nothing.
+  - With the flag off, Tutora asks for exact alarms (`SCHEDULE_EXACT_ALARM`). Until the teacher allows them, Lembretes shows "Lembrete na hora certa" with "Ativar", which opens the phone's page for it in one tap. Meanwhile reminders still come, up to an hour late.
+  - "Quem te deve" and "Aulas para confirmar" stay inexact; a few minutes late doesn't matter for them.
+- **AC-014-28.** Ajustes lists only its pages, each with a line of what is set: Seus dados, Backup e planilha, Geral, Aulas, Lembretes, Pagamentos and Sobre.
+  - **Geral:** Idioma, Aparência, Calendário, Como você dá aula, Locais padrão and Durações em HH:MM.
+  - **Aulas:** Aula ao vivo, Início automático, Aulas passadas, Pedir confirmação and Marcar como dada antes do horário.
+  - **Pagamentos:** Créditos e bônus.
+  - **Sobre:** the version and the database's.
+  - Every setting keeps working as before; only where it lives changes.
+- **AC-014-29.** The value of every − / + stepper in the app can be typed: tapping it turns it into a field with the number keyboard. Money is typed like any amount (AC-003), minutes and hours as numbers. A value out of range becomes the nearest allowed one when the field is left, and − and + still work.
+- **AC-014-30.** Ganhos' bars follow the period chosen, and never show another period's earnings (this replaces AC-009-12):
+  - Dia has no bars. Mês has one bar per week of the month, Trimestre its three months, and Ano its twelve months.
+  - The bars scroll sideways when they don't fit. They follow the type filter, with the received part filled in as before.
+  - A period with nothing earned shows its empty state, with no bars.
+- **AC-014-31.** "Evolução", from Ganhos, shows earned and received month by month for a range: 6 meses (at first), 12 meses, or a chosen year. It follows the type filter, and the bars scroll sideways.
+  - Tapping two months compares them: each one's earned and received, and the difference in reais and percent ("Outubro R$ 3.200 · Setembro R$ 2.800 · +R$ 400 (+14%)").
 
 ### Language
 

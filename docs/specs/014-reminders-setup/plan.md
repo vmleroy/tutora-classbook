@@ -65,8 +65,36 @@ Lean, one test per criterion, `./gradlew check` once.
 - **Screens** (`ConfirmScreensTest`, `SetupScreensTest`): AC-014-3, 4, 5, 9, 16, 18, 24.
 - **Device checks pending:** notifications arriving with the app closed and after a reboot, "Marcar todas" from the notification, and the setup on a fresh install.
 
+## After the device checks (AC-014-25 to 31)
+
+- **Exact reminders (AC-014-27):**
+  - A Gradle property `tutora.exactAlarm` (`use`, the default, or `schedule`) sets `BuildConfig.EXACT_ALARM`.
+  - The main manifest declares `SCHEDULE_EXACT_ALARM` (`maxSdkVersion` none) and `USE_EXACT_ALARM`. A `schedule` build drops `USE_EXACT_ALARM` through a small manifest overlay (`tools:node="remove"`), so Play never sees it in that build.
+  - `AndroidReminderAlarm` uses `setExactAndAllowWhileIdle` for the class reminder when `canScheduleExactAlarms()`, and otherwise the inexact alarm as today. The weekly and daily alarms stay inexact.
+  - `ExactAlarmPermission` (like `NotificationPermission`, faked in tests) opens `ACTION_REQUEST_SCHEDULE_EXACT_ALARM`. Lembretes shows its row only when exact alarms aren't allowed.
+- **Fixed travel (AC-014-25):** `SetupChoices.travelCents`, a `MoneyField` under the chips when Fixo is chosen, R$ 20,00 at first.
+- **Typable steppers (AC-014-29):**
+  - `Stepper` gains `input: StepperInput` (`NUMBER` or `MONEY`). Tapping the value swaps it for an inline field with the number keyboard; Done or leaving the field commits, clamped to `min`..`max`.
+  - Money uses `MoneyField`'s cents entry (fills from the right). Callers that pass `onPressValue` (the duration) keep it.
+  - The rule lives in the design system, so every stepper gets it. The guideline and gallery entry are updated.
+- **Lembretes' days (AC-014-26):** a `SegmentedControl` of seven short day names (`dayShort`), size SM.
+- **Ajustes in pages (AC-014-28):**
+  - `SettingsScreen` becomes a list of rows with summaries. New routes: `SettingsGeneral`, `SettingsLessons` and `SettingsPayments`; Lembretes keeps `RemindersHome`.
+  - Each page moves its existing rows unchanged. Tests that reached a row on Ajustes go through its page.
+- **Ganhos' bars (AC-014-30):**
+  - Domain: `periodBars(period, …)` returns the bars of the period: weeks of the month (Monday to Sunday, clipped to the month), the quarter's months or the year's months, each with earned and received.
+  - `MonthBars` gets a horizontal scroll when the bars don't fit its width, with a minimum bar width token (`size-bar-min`).
+  - `trend` is removed; the earnings report keeps its own six months (spec 010 doesn't change).
+- **Evolução (AC-014-31):**
+  - A route `Evolution` from a "Ver evolução" row under the bars.
+  - Range chips: 6 meses, 12 meses, Ano (with ‹ ›). The type filter as in Ganhos. Scrollable `MonthBars`.
+  - Tapping a bar selects it; a second bar compares. A card shows both months and the difference, from a domain `compareMonths(a, b)` (cents, and percent rounded half away from zero; no percent when the first is zero).
+
 ## Risks
 
 - **Inexact alarms** can be minutes late. That's fine for reminders (the architecture doc accepts it).
 - **"Marcar como dadas sozinhas" with the app closed** marks classes at the next open or at the 20:00 alarm, not at the exact minute. The page says "Dada sozinha" either way.
 - **Hiding parts by teaching kind** must never hide data that exists. `shown` always checks existing places and classes first.
+- **Play and `USE_EXACT_ALARM`**: if review refuses it, build with `-Ptutora.exactAlarm=schedule`; nothing else changes.
+- **Moving Ajustes' rows** touches many screen tests that open Ajustes; they are updated to open the page first.
+

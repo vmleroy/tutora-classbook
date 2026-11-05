@@ -11,6 +11,13 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 7. First-run setup: the four steps, summary and ways out; `setupDone` for teachers with data; hiding by teaching kind. Test: `app/src/test/kotlin/app/tutora/SetupScreensTest.kt`, `SetupTest.kt`. (AC-014-17, AC-014-18, AC-014-19, AC-014-20, AC-014-21, AC-014-22, AC-014-23)
 - [x] 8. `./gradlew check`, roadmap status, device checks pending in the PR.
 
+- [ ] 9. Domain: `periodBars`, `compareMonths`; `SetupChoices.travelCents`. Test: `EarningsRulesTest.kt` (AC-014-30, AC-014-31), `SetupTest.kt` (AC-014-25).
+- [ ] 10. Design system: typable `Stepper` (`StepperInput`), scrolling `MonthBars`, `size-bar-min`; guidelines and gallery. Test: `DesignSystemTest.kt` (AC-014-29).
+- [ ] 11. Exact reminders: build flag, manifest overlay, `setExactAndAllowWhileIdle`, `ExactAlarmPermission` and the Lembretes row; days as one row. Test: `RemindersTest.kt` (AC-014-26, AC-014-27).
+- [ ] 12. Ajustes in pages: Geral, Aulas, Lembretes, Pagamentos and Sobre, with their summaries; update the screen tests that open Ajustes. Test: `SettingsPagesTest.kt` (AC-014-28).
+- [ ] 13. Ganhos: bars by period, Evolução with ranges and the comparison; update AC-009-12's test. Test: `EarningsScreensTest.kt` (AC-014-30, AC-014-31).
+- [ ] 14. Setup's fixed travel amount; `./gradlew check`; the new screens on the emulator (Ajustes pages, Evolução, typing in steppers, an exact reminder).
+
 ## Checked on a device (5 Nov 2026, emulator, Android 16)
 
 The app's data was copied aside first and put back afterwards. Clock jumps used root on the emulator.
