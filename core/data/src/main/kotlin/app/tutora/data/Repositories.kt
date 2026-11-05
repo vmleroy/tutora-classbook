@@ -15,6 +15,7 @@ import app.tutora.domain.Student
 import app.tutora.domain.Who
 import app.tutora.domain.isoText
 import app.tutora.domain.localToInstant
+import app.tutora.domain.teaching
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -133,6 +134,16 @@ class ScheduleRepository(
 
     fun lesson(id: String): Flow<Lesson?> = db.schedule().observeOne(id).map { it?.let { r -> assemble(r) } }
 
+    /** Scheduled classes that started before [before], oldest first; which are to confirm is the domain's rule (AC-014-1). */
+    fun scheduledBefore(before: String): Flow<List<Lesson>> =
+        db.schedule().observeScheduledBefore(before).map { rows -> rows.mapNotNull { assemble(it) } }
+
+    /** The kinds of teaching the teacher already has places or classes of (AC-014-20). */
+    fun teachingInUse(): Flow<Set<app.tutora.domain.Teaching>> =
+        db.schedule().observeKindsInUse().map { kinds ->
+            kinds.mapNotNull { k -> app.tutora.domain.PlaceKind.entries.firstOrNull { it.key == k }?.teaching() }.toSet()
+        }
+
     /** The live class, if any (spec 007). */
     fun live(): Flow<Lesson?> = db.schedule().observeLive().map { it?.let { r -> assemble(r) } }
 
@@ -185,6 +196,7 @@ class ScheduleRepository(
             feeCents = l.feeCents,
             cancelReason = CancelReason.fromKey(l.cancelReason),
             cancelNote = l.cancelNote,
+            autoDone = l.autoDone,
         )
     }
 }

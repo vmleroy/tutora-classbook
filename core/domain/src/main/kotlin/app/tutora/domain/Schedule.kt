@@ -42,6 +42,8 @@ data class Lesson(
      * class as the horizon reaches it (Victor, 4 Nov 2026; AC-016-35).
      */
     val forecast: Boolean = false,
+    /** "Dada sozinha": marked done by itself (AC-014-2). */
+    val autoDone: Boolean = false,
 )
 
 /** The travel fee a class adds: only at Casa do Aluno. */

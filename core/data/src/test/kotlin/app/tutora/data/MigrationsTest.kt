@@ -144,4 +144,26 @@ class MigrationsTest {
             assertEquals(1, db.payments().credits("student", "s").size)
             db.close()
         }
+
+    @Test
+    fun `AC-014-2 migration 5 to 6 keeps a done class, not marked as done by itself`() =
+        runTest {
+            val file = File(tmp.root, "tutora.db")
+            val t = "'2026-10-26T12:00:00.000Z'"
+            createAt(
+                5,
+                file,
+                listOf(
+                    "INSERT INTO place VALUES ('p', 'ONLINE', NULL, NULL, 'online', 'STUDENT', 'HOUR', 12000, 0, 'LESSON', NULL, 60, 'NONE', 0, NULL, $t, $t)",
+                    "INSERT INTO student (id, name, color, rate_type, created_at, updated_at) VALUES ('s', 'Ana', 'AMBER', 'HOUR', $t, $t)",
+                    "INSERT INTO lesson (id, student_id, place_id, start_at, planned_min, status, is_detached, created_at, updated_at) " +
+                        "VALUES ('l', 's', 'p', $t, 60, 'done', 0, $t, $t)",
+                ),
+            )
+            val (db, _) = openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver())
+            val lesson = db.schedule().lesson("l")
+            assertEquals("done", lesson?.status)
+            assertEquals(false, lesson?.autoDone)
+            db.close()
+        }
 }

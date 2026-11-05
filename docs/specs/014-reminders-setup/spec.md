@@ -1,6 +1,6 @@
 # Spec 014: Reminders, confirming classes and first-run setup
 
-Status: ready
+Status: in progress
 Depends on: 005 Schedule (series filled ahead), 006 Lessons (mark done, cancel, missed), 007 Live timer (notifications), 008 Payments (who owes), 011 Backup (the folder), 016 Visual refresh (Hoje, the Agenda, AgendaCard)
 Mockups: docs/mockups/Setup.dc.html (first-run setup), docs/mockups/Settings.dc.html. The confirm list and the reminders follow the design system.
 Takes in: the draft spec 018 (Confirm classes), whose criteria and answers are here (Victor, 4 Nov 2026).

@@ -95,6 +95,8 @@ val backupUpgrades: Map<Int, (Map<String, List<BackupRow>>) -> Map<String, List<
         },
         // 008: bonuses and credit.
         4 to { t -> t + ("credit" to t["credit"].orEmpty()) },
+        // 014: "Dada sozinha", a column with a default of 0.
+        5 to { t -> t },
     )
 
 fun upgradeBackup(

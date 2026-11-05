@@ -40,6 +40,21 @@ data class Settings(
     val savedThemes: List<SavedTheme> = emptyList(),
     /** The saved theme the current colors came from, if they still match it. */
     val savedThemeId: String? = null,
+    /** Ajustes › Aulas › Pedir confirmação (AC-014-1). */
+    val confirmWhen: ConfirmWhen = ConfirmWhen.END,
+    /** Ajustes › Aulas › Aulas passadas (AC-014-2). */
+    val pastClasses: PastClasses = PastClasses.ASK,
+    /** Aviso antes da aula, in minutes; 0 = Desligado (AC-014-12). Off until the setup or Ajustes turns it on. */
+    val remindBefore: Int = 0,
+    /** Quem te deve, weekly (AC-014-13): on from the start, Monday 08:00. */
+    val owedWeekly: Boolean = true,
+    val owedDay: kotlinx.datetime.DayOfWeek = kotlinx.datetime.DayOfWeek.MONDAY,
+    val owedHour: Int = 8,
+    /** Aulas para confirmar, daily (AC-014-14): on, 20:00. */
+    val confirmDaily: Boolean = true,
+    val confirmHour: Int = 20,
+    /** Como você dá aula (AC-014-19); all three for teachers from before spec 014. */
+    val teaching: Set<Teaching> = Teaching.entries.toSet(),
 )
 
 data class SavedTheme(

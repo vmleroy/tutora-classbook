@@ -79,10 +79,10 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 5
+        const val VERSION = 6
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
     }
 }
 
@@ -165,5 +165,13 @@ val MIGRATION_4_5 =
                 "CREATE INDEX IF NOT EXISTS `index_credit_place_id` ON `credit` (`place_id`)",
                 "CREATE INDEX IF NOT EXISTS `index_credit_lesson_id` ON `credit` (`lesson_id`)",
             ).forEach { connection.execSQL(it) }
+        }
+    }
+
+/** Spec 014: "Dada sozinha", a class marked done by itself (AC-014-2). */
+val MIGRATION_5_6 =
+    object : Migration(5, 6) {
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("ALTER TABLE lesson ADD COLUMN auto_done INTEGER NOT NULL DEFAULT 0")
         }
     }
