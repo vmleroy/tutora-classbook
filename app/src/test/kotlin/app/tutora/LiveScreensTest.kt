@@ -225,4 +225,22 @@ class LiveScreensTest {
         h.go(compose, LiveLesson(id))
         listOf("Live", "00:23:00", "of 60 min planned", "Earned so far", "R$46.00", "Pause", "End lesson").forEach { exists(it) }
     }
+
+    @Test
+    fun `AC-017-13 the live class keeps the screen on while open and gives the phone its timeout back after`() {
+        val id = liveFor(10)
+        var view: android.view.View? = null
+        compose.setContent {
+            view = androidx.compose.ui.platform.LocalView.current
+            h.Content()
+        }
+        h.settle(compose)
+        assertTrue(view?.keepScreenOn == false)
+        h.go(compose, LiveLesson(id))
+        compose.onNodeWithTag("live-screen").assertExists()
+        assertTrue("on while the class is open", view?.keepScreenOn == true)
+        compose.runOnIdle { h.nav.popBackStack() }
+        h.settle(compose)
+        assertTrue("the phone's own timeout is back", view?.keepScreenOn == false)
+    }
 }

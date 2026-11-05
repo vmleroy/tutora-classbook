@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -37,6 +39,13 @@ class Harness(
     val exactAlarm = FakeExactAlarm()
     lateinit var nav: NavHostController
 
+    /**
+     * Turns the "phone" in the middle of a test (spec 017): true sideways, false upright, null
+     * the window's own shape. The activity is never recreated on turning (configChanges), so a
+     * new window size reaching the same composition is what a real turn does.
+     */
+    var landscape by androidx.compose.runtime.mutableStateOf<Boolean?>(null)
+
     init {
         runBlocking {
             t.catalog.ensureBuiltinPlaces()
@@ -46,6 +55,35 @@ class Harness(
 
     @Composable
     fun Content() {
+        val base = androidx.compose.ui.platform.LocalWindowInfo.current
+        val side = landscape
+        val turned =
+            if (side == null) {
+                base
+            } else {
+                object : androidx.compose.ui.platform.WindowInfo by base {
+                    override val containerSize: androidx.compose.ui.unit.IntSize
+                        get() {
+                            val s = base.containerSize
+                            val long = maxOf(s.width, s.height)
+                            val short = minOf(s.width, s.height)
+                            return if (side) {
+                                androidx.compose.ui.unit.IntSize(
+                                    long,
+                                    short,
+                                )
+                            } else {
+                                androidx.compose.ui.unit
+                                    .IntSize(short, long)
+                            }
+                        }
+                }
+            }
+        CompositionLocalProvider(androidx.compose.ui.platform.LocalWindowInfo provides turned) { Themed() }
+    }
+
+    @Composable
+    private fun Themed() {
         nav = rememberNavController()
         val settings by services.settings.collectAsState(initial = Settings(language = Language.PT_BR))
         TutoraTheme(
@@ -155,5 +193,37 @@ class FakeExactAlarm : app.tutora.ui.reminders.ExactAlarmPermission {
 
     override fun open() {
         opened = true
+    }
+}
+
+/**
+ * Sideways nothing is cut off (AC-017-3): no text reaches past the window's left or right edge,
+ * measured unclipped, unless it sits in a row that scrolls sideways.
+ */
+fun ComposeContentTestRule.assertFitsSideways(screen: String) {
+    val root =
+        onAllNodes(
+            androidx.compose.ui.test
+                .isRoot(),
+        ).fetchSemanticsNodes().first().boundsInRoot
+    val texts =
+        onAllNodes(
+            androidx.compose.ui.test.SemanticsMatcher
+                .keyIsDefined(androidx.compose.ui.semantics.SemanticsProperties.Text),
+            useUnmergedTree = true,
+        ).fetchSemanticsNodes()
+    check(texts.isNotEmpty()) { "$screen shows no text" }
+
+    fun scrollsSideways(n: androidx.compose.ui.semantics.SemanticsNode): Boolean =
+        generateSequence(n.parent) { it.parent }.any {
+            it.config.contains(androidx.compose.ui.semantics.SemanticsProperties.HorizontalScrollAxisRange)
+        }
+    texts.forEach { n ->
+        if (n.size.width <= 0 || scrollsSideways(n)) return@forEach
+        val left = n.positionInRoot.x
+        val right = left + n.size.width
+        val label = n.config.getOrNull(androidx.compose.ui.semantics.SemanticsProperties.Text)?.joinToString()
+        org.junit.Assert.assertTrue("$screen: '$label' ends past the right edge ($right > ${root.right})", right <= root.right + 1f)
+        org.junit.Assert.assertTrue("$screen: '$label' starts before the left edge ($left)", left >= root.left - 1f)
     }
 }
