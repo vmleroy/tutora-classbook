@@ -122,9 +122,7 @@ fun WeekPicker(
                 enabled = horizon == null || monday.plus(DatePeriod(days = 7)) <= horizon,
             )
         }
-        // After a space as wide as the grid's hour labels, so each day sits over its column.
         WeekStrip(
-            modifier = Modifier.padding(start = LABEL_WIDTH),
             days =
                 days.map { d -> WeekDay(weekdayShort(d, language), d.day, byDay[d]?.firstOrNull()?.whoTag) },
             selected = days.indexOf(selected),

@@ -18,6 +18,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.CancelReason
@@ -160,6 +162,35 @@ class AgendaMonthTest {
         h.settle(compose)
         compose.onNodeWithTag("week-day-2026-11-01").assertIsDisplayed()
         exists("Sem aulas")
+    }
+
+    @Test
+    fun `AC-016-31 Semana never ends, loading the next weeks up to the horizon`() {
+        agenda()
+        compose.onNodeWithText("Semana").performClick()
+        h.settle(compose)
+        // Today is 26 Oct and the horizon 21 Dec: scrolling down loads week after week to it.
+        repeat(30) {
+            compose.onNodeWithTag("week-list").performTouchInput { swipeUp() }
+            compose.waitForIdle()
+        }
+        h.settle(compose)
+        compose.onNodeWithTag("week-end").assertExists()
+        exists("A agenda vai até 21 dez")
+        // The strip followed the list: it no longer shows the first week.
+        compose.onNodeWithText("Semana de 26 out a 1 nov").assertDoesNotExist()
+    }
+
+    @Test
+    fun `AC-016-32 the shown day is filled on the strip and highlighted in the list, today outlined`() {
+        agenda()
+        compose.onNodeWithText("Semana").performClick()
+        h.settle(compose)
+        compose.onNodeWithContentDescription("Seg 26").assertIsSelected()
+        compose.onNodeWithContentDescription("Qua 28").performClick()
+        h.settle(compose)
+        compose.onNodeWithContentDescription("Qua 28").assertIsSelected()
+        compose.onNodeWithTag("week-day-2026-10-28").assertIsDisplayed()
     }
 
     @Test

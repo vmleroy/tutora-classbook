@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -167,7 +168,10 @@ data class WeekDay(
     val a11y: String? = null,
 )
 
-/** Seven days; the selected one is filled, today's number is primary, a dot marks days with lessons. */
+/**
+ * Seven days, each its weekday over a square tile like the month's (Victor, 4 Nov 2026): the day
+ * being shown is filled, today is outlined, and a dot under the tile marks days with classes.
+ */
 @Composable
 fun WeekStrip(
     days: List<WeekDay>,
@@ -180,51 +184,45 @@ fun WeekStrip(
     val c = TutoraTheme.colors
     Row(
         modifier = modifier.fillMaxWidth().semantics { contentDescription = label }.selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s1_5),
     ) {
         days.forEachIndexed { i, d ->
             val on = i == selected
+            val isToday = i == today
+            val shape = RoundedCornerShape(Radius.sm)
             Column(
                 modifier =
                     Modifier
                         .weight(1f)
-                        // Equal columns padded like the Agenda's blocks, so each day sits over its column.
-                        .padding(horizontal = AgendaBlockGap)
-                        .height(Size.weekDay)
-                        // Small corners like the month's tiles, not a capsule (Victor, 4 Nov 2026).
-                        .clip(RoundedCornerShape(Radius.md))
-                        .background(if (on) c.btnPrimary else c.surfaceSunken)
                         .selectable(selected = on, role = Role.Tab, onClick = { onSelect(i) })
                         .semantics { contentDescription = d.a11y ?: "${d.weekday} ${d.day}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Spacing.s0_5, Alignment.CenterVertically),
+                verticalArrangement = Arrangement.spacedBy(Spacing.s1),
             ) {
-                Text(d.weekday, style = TutoraTheme.type.badge, color = if (on) c.onPrimaryMuted else c.inkMuted)
-                Text(
-                    d.day.toString(),
-                    style = TutoraTheme.type.section.copy(fontFeatureSettings = "tnum"),
-                    color =
-                        if (on) {
-                            c.onBtnPrimary
-                        } else if (i == today) {
-                            c.primary
-                        } else {
-                            c.ink
-                        },
-                )
+                Text(d.weekday, style = TutoraTheme.type.badge, color = if (on || isToday) c.btnPrimary else c.inkMuted)
                 Box(
                     Modifier
-                        .size(Size.weekDot)
-                        .clip(CircleShape)
-                        .background(
-                            if (d.dot == null) {
-                                Color.Transparent
-                            } else if (on) {
-                                c.accent
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(shape)
+                        .background(if (on) c.btnPrimary else c.surfaceSunken)
+                        .then(if (isToday && !on) Modifier.border(Size.borderStrong, c.btnPrimary, shape) else Modifier),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        d.day.toString(),
+                        style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
+                        color =
+                            if (on) {
+                                c.onBtnPrimary
+                            } else if (isToday) {
+                                c.btnPrimary
                             } else {
-                                d.dot.colors().fill
+                                c.ink
                             },
-                        ),
-                )
+                    )
+                }
+                Box(Modifier.size(Size.weekDot).clip(CircleShape).background(d.dot?.colors()?.fill ?: Color.Transparent))
             }
         }
     }
@@ -440,8 +438,11 @@ fun DayHeading(
     modifier: Modifier = Modifier,
     aside: String? = null,
     today: Boolean = false,
+    /** The day being read, at the top of the list: filled tile and title in the main color, like the strip. */
+    current: Boolean = false,
 ) {
     val c = TutoraTheme.colors
+    val tile = RoundedCornerShape(Radius.sm)
     androidx.compose.foundation.layout.Row(
         modifier
             .fillMaxWidth()
@@ -451,20 +452,35 @@ fun DayHeading(
         horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // Today is outlined; the day being read is filled, as on the strip (Victor, 4 Nov 2026).
         Box(
             Modifier
                 .size(Size.tile)
-                .clip(RoundedCornerShape(Radius.sm))
-                .background(if (today) c.btnPrimary else c.surfaceSunken),
+                .clip(tile)
+                .background(if (current) c.btnPrimary else c.surfaceSunken)
+                .then(if (today && !current) Modifier.border(Size.borderStrong, c.btnPrimary, tile) else Modifier),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 day.toString(),
                 style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
-                color = if (today) c.onBtnPrimary else c.ink,
+                color =
+                    if (current) {
+                        c.onBtnPrimary
+                    } else if (today) {
+                        c.btnPrimary
+                    } else {
+                        c.ink
+                    },
             )
         }
-        Text(title, style = TutoraTheme.type.section, color = c.ink, modifier = Modifier.weight(1f), maxLines = 1)
+        Text(
+            title,
+            style = TutoraTheme.type.section,
+            color = if (current) c.btnPrimary else c.ink,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+        )
         aside?.let { Text(it, style = TutoraTheme.type.caption.copy(fontFeatureSettings = "tnum"), color = c.inkMuted, maxLines = 1) }
     }
 }

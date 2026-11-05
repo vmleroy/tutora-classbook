@@ -152,6 +152,7 @@
     <string name="schedule_plusSchool">+ school</string>
     <string name="schedule_prevWeek">Previous week</string>
     <string name="schedule_noClassesDay">No classes</string>
+    <string name="schedule_listEnd">The schedule goes up to %1$s</string>
     <string name="schedule_nextWeek">Next week</string>
     <string name="schedule_month">Month</string>
     <string name="schedule_weekOf">Week of %1$s to %2$s</string>

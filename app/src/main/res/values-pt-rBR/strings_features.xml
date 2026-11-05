@@ -152,6 +152,7 @@
     <string name="schedule_plusSchool">+ escola</string>
     <string name="schedule_prevWeek">Semana anterior</string>
     <string name="schedule_noClassesDay">Sem aulas</string>
+    <string name="schedule_listEnd">A agenda vai até %1$s</string>
     <string name="schedule_nextWeek">Próxima semana</string>
     <string name="schedule_month">Mês</string>
     <string name="schedule_weekOf">Semana de %1$s a %2$s</string>
