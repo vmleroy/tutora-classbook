@@ -52,12 +52,15 @@ class MonthRulesTest {
     }
 
     @Test
-    fun `AC-016-23 the Agenda looks 8 weeks ahead and no further, any month back`() {
-        assertEquals(LocalDate(2026, 12, 21), agendaHorizon(today))
+    fun `AC-016-23 the Agenda looks 8 weeks ahead to the end of that month, no further, any month back`() {
+        // 26 Oct + 8 weeks is 21 Dec: the Agenda goes on to 31 Dec; from 4 Nov too; from 1 Dec to 31 Jan.
+        assertEquals(LocalDate(2026, 12, 31), agendaHorizon(today))
+        assertEquals(LocalDate(2026, 12, 31), agendaHorizon(LocalDate(2026, 11, 4)))
+        assertEquals(LocalDate(2027, 1, 31), agendaHorizon(LocalDate(2026, 12, 1)))
         assertTrue(canShowMonth(YearMonth(2026, Month.DECEMBER), today))
         assertFalse(canShowMonth(YearMonth(2027, Month.JANUARY), today))
         assertTrue(canShowMonth(YearMonth(2020, Month.MARCH), today))
-        val late = LocalDate(2026, 12, 28)
+        val late = LocalDate(2027, 1, 4)
         assertEquals(emptyMap<LocalDate, List<DayKind>>(), dayDots(mapOf(late to listOf(lesson())), today))
     }
 }

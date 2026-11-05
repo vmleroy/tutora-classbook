@@ -545,7 +545,7 @@ class FeatureScreensTest {
     }
 
     @Test
-    fun `AC-005-1 Nova aula schedules a weekly class that fills 8 weeks`() {
+    fun `AC-005-1 Nova aula schedules a weekly class that fills 8 weeks to the end of that month`() {
         student("Ana Souza", "Matemática", listOf(PlaceLink(online, true, 12_000)))
         h.show(compose)
         h.go(compose, LessonNew("2026-10-26"))
@@ -567,6 +567,6 @@ class FeatureScreensTest {
                     .first()
                     .size
             }
-        assertEquals(9, count)
+        assertEquals(10, count)
     }
 }

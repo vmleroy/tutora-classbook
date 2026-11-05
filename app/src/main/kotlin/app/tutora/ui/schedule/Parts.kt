@@ -117,14 +117,17 @@ fun WeekPicker(
             IconButton(
                 IconName.CHEVRON_RIGHT,
                 stringResource(R.string.schedule_nextWeek),
-                { onSelect(selected.plus(DatePeriod(days = 7))) },
+                { onSelect(selected.plus(DatePeriod(days = 7)).let { if (horizon != null && it > horizon) horizon else it }) },
                 variant = IconButtonVariant.PLAIN,
                 enabled = horizon == null || monday.plus(DatePeriod(days = 7)) <= horizon,
             )
         }
         WeekStrip(
             days =
-                days.map { d -> WeekDay(weekdayShort(d, language), d.day, byDay[d]?.firstOrNull()?.whoTag) },
+                days.map { d ->
+                    // Days past the horizon are greyed: nothing is planned there (Victor, 4 Nov 2026).
+                    WeekDay(weekdayShort(d, language), d.day, byDay[d]?.firstOrNull()?.whoTag, enabled = horizon == null || d <= horizon)
+                },
             selected = days.indexOf(selected),
             onSelect = { onSelect(days[it]) },
             today = days.indexOf(today).takeIf { it >= 0 },

@@ -111,6 +111,9 @@ fun WeekList(
 ) {
     val language = currentLanguage()
     val state = rememberLazyListState()
+
+    @Suppress("NAME_SHADOWING")
+    val selected = if (selected > horizon) horizon else selected
     // The days loaded, whole weeks from Monday; grows at either end (saved across rotation).
     var fromText by rememberSaveable { mutableStateOf(weekStart(selected).toString()) }
     var toText by rememberSaveable { mutableStateOf(minOf(weekStart(selected).plus(DatePeriod(days = 6)), horizon).toString()) }

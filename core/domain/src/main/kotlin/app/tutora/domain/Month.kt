@@ -3,12 +3,13 @@ package app.tutora.domain
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
+import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
 // The Agenda's month view (spec 016): the grid of a month, how far ahead it may look, and the
 // dot each class puts under its day.
 
-/** How far ahead the schedule is kept filled (AC-005-8), and so how far the Agenda looks. */
+/** At least how far ahead the schedule is kept filled (AC-005-8), and so how far the Agenda looks. */
 const val HORIZON_WEEKS = 8
 
 /** One square of the month grid; [inMonth] is false for the neighbors' days that fill its weeks. */
@@ -31,8 +32,14 @@ fun monthCells(month: YearMonth): List<MonthCell> {
         .toList()
 }
 
-/** The last day the Agenda shows: 8 weeks from today (AC-016-23). */
-fun agendaHorizon(today: LocalDate): LocalDate = today.plus(DatePeriod(days = HORIZON_WEEKS * 7))
+/**
+ * The last day classes are filled and the Agenda shows: 8 weeks from today, then on to the end of
+ * that month, so the calendar and the lists end on a whole month (Victor, 4 Nov 2026; AC-016-23).
+ */
+fun agendaHorizon(today: LocalDate): LocalDate {
+    val eight = today.plus(DatePeriod(days = HORIZON_WEEKS * 7))
+    return LocalDate(eight.year, eight.month, 1).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
+}
 
 /** Whether [month] may be shown: any month up to the one that holds the horizon (AC-016-23). */
 fun canShowMonth(

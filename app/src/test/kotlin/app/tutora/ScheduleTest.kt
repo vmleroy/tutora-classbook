@@ -113,17 +113,17 @@ class ScheduleTest {
         }
 
     @Test
-    fun `AC-005-8 filling keeps 8 weeks ahead and never duplicates`() =
+    fun `AC-005-8 filling keeps 8 weeks ahead to the end of that month, and never duplicates`() =
         runTest {
             t.schedule.scheduleLesson(draft())
-            assertEquals(9, all().size) // 26/10 to 21/12
+            assertEquals(10, all().size) // Mondays from 26/10 to 28/12: 8 weeks run to 21/12, the month to 31/12
             t.schedule.fillSchedule()
             t.schedule.fillSchedule()
-            assertEquals(9, all().size)
-            later(7)
-            t.schedule.fillSchedule()
-            assertEquals("2026-12-28", dates().last())
             assertEquals(10, all().size)
+            later(35) // 30/11: 8 weeks run to 25/1, the month to 31/1
+            t.schedule.fillSchedule()
+            assertEquals("2027-01-25", dates().last())
+            assertEquals(14, all().size)
         }
 
     @Test

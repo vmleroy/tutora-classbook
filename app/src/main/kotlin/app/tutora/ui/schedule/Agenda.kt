@@ -132,7 +132,9 @@ fun AgendaScreen(nav: NavHostController) {
     var viewName by rememberSaveable { mutableStateOf(AgendaView.DAY.name) }
     var picking by rememberSaveable { mutableStateOf(false) }
     val view = AgendaView.valueOf(viewName)
-    val selected = LocalDate.parse(selectedText)
+    // Never past the horizon, whichever way a date got here (a week's last days, a saved state):
+    // Mês, Dia and Semana always show days that are planned (Victor, 4 Nov 2026).
+    val selected = LocalDate.parse(selectedText).let { if (it > horizon) horizon else it }
     val month = YearMonth(selected.year, selected.month)
     val cells = remember(month) { monthCells(month) }
     val monday = weekStart(selected)

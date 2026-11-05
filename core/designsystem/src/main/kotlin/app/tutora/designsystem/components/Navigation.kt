@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import app.tutora.designsystem.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.tokens.TutoraTokens.Opacity
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -166,6 +168,8 @@ data class WeekDay(
     val day: Int,
     val dot: Tag? = null,
     val a11y: String? = null,
+    /** False past the Agenda's horizon: greyed and not pressable (Victor, 4 Nov 2026). */
+    val enabled: Boolean = true,
 )
 
 /**
@@ -194,7 +198,8 @@ fun WeekStrip(
                 modifier =
                     Modifier
                         .weight(1f)
-                        .selectable(selected = on, role = Role.Tab, onClick = { onSelect(i) })
+                        .alpha(if (d.enabled) 1f else Opacity.disabled)
+                        .selectable(selected = on, enabled = d.enabled, role = Role.Tab, onClick = { onSelect(i) })
                         .semantics { contentDescription = d.a11y ?: "${d.weekday} ${d.day}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Spacing.s1),

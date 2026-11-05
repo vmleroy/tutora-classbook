@@ -29,7 +29,7 @@ The teacher puts their week into Tutora once: recurring classes (weekly or every
 
 ### Keeping 8 weeks ahead
 
-- **AC-005-8.** Whenever the app opens on a new day, every repeating series is filled up to 8 weeks from today. Opening it again the same day, or twice, never creates a duplicate.
+- **AC-005-8.** Whenever the app opens on a new day, every repeating series is filled up to 8 weeks from today and on to the end of that month (since 4 Nov 2026, so the Agenda ends on a whole month). Opening it again the same day, or twice, never creates a duplicate.
 - **AC-005-9.** A recurring class stays at the same local clock time on every date, whatever the time zone rules of the day.
 
 ### Editing and removing

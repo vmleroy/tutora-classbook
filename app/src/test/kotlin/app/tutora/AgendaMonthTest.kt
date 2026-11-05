@@ -169,7 +169,7 @@ class AgendaMonthTest {
         agenda()
         compose.onNodeWithText("Semana").performClick()
         h.settle(compose)
-        // Today is 26 Oct and the horizon 21 Dec: scrolling down loads week after week to it.
+        // Today is 26 Oct and the horizon 31 Dec: scrolling down loads week after week to it.
         repeat(30) {
             compose.onNodeWithTag("week-list").performTouchInput { swipeUp() }
             compose.waitForIdle()
@@ -179,7 +179,7 @@ class AgendaMonthTest {
         // Each day carries its month, like a calendar page.
         compose.onNodeWithTag("week-day-2026-12-21").assertExists()
         compose.onAllNodesWithText("Dez", useUnmergedTree = true).onFirst().assertExists()
-        exists("A agenda vai até 21 dez")
+        exists("A agenda vai até 31 dez")
         // The strip followed the list: it no longer shows the first week.
         compose.onNodeWithText("26 out – 1 nov de 2026").assertDoesNotExist()
     }
@@ -194,6 +194,26 @@ class AgendaMonthTest {
         assertEquals("Dec 28, 2026 – Jan 3, 2027", app.tutora.ui.weekRange(LocalDate(2026, 12, 28), LocalDate(2027, 1, 3), en))
         agenda()
         exists("26 out – 1 nov de 2026")
+    }
+
+    @Test
+    fun `AC-016-34 days past the horizon can't be chosen, and every view stays within it`() {
+        agenda()
+        // Today is 26 Oct; the horizon is 31 Dec. › walks the weeks and stops on the last one.
+        repeat(12) {
+            compose.onNodeWithContentDescription("Próxima semana").performClick()
+            h.settle(compose)
+        }
+        exists("28 dez 2026 – 3 jan 2027")
+        compose.onNodeWithContentDescription("Sex 1").assertIsNotEnabled()
+        compose.onNodeWithContentDescription("Qui 31").assertIsEnabled()
+        // Semana and Mês still show the planned days, never an empty or later page.
+        compose.onNodeWithText("Semana").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("week-day-2026-12-31").assertExists()
+        compose.onNodeWithText("Mês").performClick()
+        h.settle(compose)
+        exists("Dezembro 2026")
     }
 
     @Test
@@ -298,15 +318,15 @@ class AgendaMonthTest {
     }
 
     @Test
-    fun `AC-016-23 the Agenda looks 8 weeks ahead and no further`() {
+    fun `AC-016-23 the Agenda looks 8 weeks ahead to the end of that month and no further`() {
         month()
         tap("Próximo mês")
         tap("Próximo mês")
         exists("Dezembro 2026")
         compose.onNodeWithContentDescription("Próximo mês").assertIsNotEnabled()
-        // 21 Dec is the last day with classes; 28 Dec is past the horizon.
+        // 8 weeks reach 21 Dec and the month runs to 31 Dec: 28 Dec has its class too; January is past it.
         eventually("21 de dezembro, 1 aula")
-        compose.onNodeWithContentDescription("28 de dezembro, nenhuma aula").assertExists()
+        eventually("28 de dezembro, 1 aula")
         compose.onNodeWithContentDescription("3 de janeiro, nenhuma aula").assertIsNotEnabled()
         tap("Dezembro 2026, escolher mês e ano")
         compose.onNodeWithContentDescription("Próximo ano").assertIsNotEnabled()
