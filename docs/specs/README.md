@@ -23,6 +23,6 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 013 | [Appearance](013-appearance/spec.md): Aparência with a live preview, mode, theme, quick main and highlight colors, text size; Suas cores for the seven parts with hex, sliders and contrast | in progress | Theme, ColorPicker, Settings |
 | 014 | Reminders and first-run setup | not written | Setup |
 | 016 | [Visual refresh 2026](016-visual-refresh/spec.md): the "Quadro refinado" look on every screen, built only from theme colors; Agenda titled by month and year, a Mês view and a month/year picker | done | DirA, A_Agenda, A_AgendaMes, A_AgendaAno, A_Aluno, A_Ganhos, A_Ajustes, A_Estilo |
-| 017 | [Landscape](017-landscape/spec.md): every screen sideways; tabs on the side, two columns on Hoje, Ganhos, Mês, Cadastro and the live class; readable widths; nothing lost when turning | draft | none yet |
+| 017 | [Landscape](017-landscape/spec.md): every screen sideways; tabs on the side, two columns on Hoje, Ganhos, Mês, Cadastro and the live class; readable widths; nothing lost when turning; screen on during a live class | ready | none yet |
 
 Status moves draft → ready → in progress → done. Update this table in the same PR that changes a status.

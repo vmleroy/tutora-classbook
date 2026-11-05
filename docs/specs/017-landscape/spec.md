@@ -1,6 +1,6 @@
 # Spec 017: Landscape
 
-Status: draft
+Status: ready
 Depends on: 016 Visual refresh (the look, the Agenda's Dia, Semana and Mês), 007 Live timer, 013 Appearance (text and interface sizes)
 Mockups: none yet. The landscape layouts follow the design system's components; a board per main screen can be added to the canvas before `/plan`.
 
@@ -27,7 +27,7 @@ Tutora is built for a phone held upright. When the teacher turns it sideways (on
 
 ### Hoje and Ganhos
 
-- **AC-017-6.** Hoje sideways shows two columns: the earnings card and the next class on the left, today's classes and the alerts on the right.
+- **AC-017-6.** Hoje sideways shows two columns: the earnings card and the next class on the left, today's classes and the alerts on the right (Victor, 4 Nov 2026).
 - **AC-017-7.** Ganhos sideways shows the period's card on the left, and the six months and "De onde veio" on the right.
 
 ### Agenda
@@ -38,20 +38,21 @@ Tutora is built for a phone held upright. When the teacher turns it sideways (on
 
 ### Cadastro and details
 
-- **AC-017-11.** Cadastro sideways shows the list on the left and, after tapping a student, group or place, its page on the right; the list stays where it was. Back closes the right side first.
+- **AC-017-11.** Cadastro sideways shows the list on the left and, after tapping a student, group or place, its page on the right; the list stays where it was. Back closes the right side first (Victor, 4 Nov 2026).
 
 ### The live class
 
 - **AC-017-12.** The live class sideways shows the clock and the value on the left and the note and the Pausar and Encerrar buttons on the right, all in view without scrolling.
+- **AC-017-13.** While the live class screen is open, upright or sideways, the phone doesn't dim or lock by itself; leaving the screen gives the phone its own timeout back (Victor, 4 Nov 2026).
 
 ### Forms and sheets
 
-- **AC-017-13.** Forms (Nova aula, a student, a place, a payment) keep one column at a readable width, and the field being typed in stays in view above the keyboard.
-- **AC-017-14.** Bottom sheets sideways open at a readable width, centered, and scroll when their content is taller than the phone.
+- **AC-017-14.** Forms (Nova aula, a student, a place, a payment) keep one column at a readable width, and the field being typed in stays in view above the keyboard.
+- **AC-017-15.** Bottom sheets sideways open at a readable width, centered, and scroll when their content is taller than the phone.
 
 ### Language
 
-- **AC-017-15.** Every landscape layout reads the same in Português and English; nothing new is written.
+- **AC-017-16.** Every landscape layout reads the same in Português and English; nothing new is written.
 
 ## Out of scope
 
@@ -61,9 +62,4 @@ Tutora is built for a phone held upright. When the teacher turns it sideways (on
 
 ## Open questions
 
-For Victor.
-
-- **Two panes in Cadastro (AC-017-11):** list and detail side by side, as assumed, or just the list wider, opening details full screen as today?
-- **Hoje's two columns (AC-017-6):** is the split right (money and next class left, today's classes right)?
-- **The live class sideways (AC-017-12):** a common use on a stand. Should the screen also stay on while a class is live?
-- **Mockups:** do you want landscape boards on the canvas before `/plan`, or go straight from this spec?
+Answered by Victor on 4 Nov 2026: Cadastro shows the list and the page side by side; Hoje puts the money and the next class on the left and today's classes on the right; the screen stays on during a live class; no landscape boards, the plan goes straight from this spec.
