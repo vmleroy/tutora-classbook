@@ -1,7 +1,7 @@
 # Spec 017: Landscape
 
 Status: ready
-Depends on: 016 Visual refresh (the look, the Agenda's Dia, Semana and Mês), 007 Live timer, 013 Appearance (text and interface sizes)
+Depends on: 016 Visual refresh (the look, the Agenda's Dia, Semana and Mês), 007 Live timer, 013 Appearance (text and interface sizes), 014 (Ajustes in pages, Ganhos' bars, Notificações)
 Mockups: none yet. The landscape layouts follow the design system's components; a board per main screen can be added to the canvas before `/plan`.
 
 ## Goal
@@ -28,7 +28,7 @@ Tutora is built for a phone held upright. When the teacher turns it sideways (on
 ### Hoje and Ganhos
 
 - **AC-017-6.** Hoje sideways shows two columns: the earnings card and the next class on the left, today's classes and the alerts on the right (Victor, 4 Nov 2026).
-- **AC-017-7.** Ganhos sideways shows the period's card on the left, and the six months and "De onde veio" on the right.
+- **AC-017-7.** Ganhos sideways shows the period's card on the left, and the period's bars and "De onde veio" on the right. *(The bars replaced the six months in spec 014, AC-014-30.)*
 
 ### Agenda
 

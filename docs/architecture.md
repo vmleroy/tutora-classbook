@@ -79,6 +79,8 @@ SQLite is the single source of truth; nothing in memory is authoritative except 
 | App settings | `settings` table, exposed as one `Flow<Settings>` | Language, theme, custom colors, default places | Written by a use case; theme and language follow at once |
 | Screen state | `ViewModel` `StateFlow`, `rememberSaveable` | Form drafts, open sheet, selected week | Local; survives rotation and process death where it matters |
 
+Turning the phone doesn't recreate the activity (`configChanges` includes orientation and size, spec 017), so every remembered state survives it; `rememberSaveable` is for process death.
+
 Rules the specs assume:
 
 1. **Aggregates in SQL.** Balances, earned vs expected and the 6-month trend come from SQL views and `GROUP BY` queries.
