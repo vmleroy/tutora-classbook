@@ -24,10 +24,10 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 18. Evolução: place kind and payer on earnings, filters, month details, paired bars. Test: `EarningsRulesTest.kt` (AC-014-34, 35), `EarningsScreensTest.kt` (AC-014-34, 35).
 - [x] 19. `./gradlew check`; the new screens on the emulator.
 
-- [ ] 20. Aviso as a switch with choices and an inline Outro field. Test: `RemindersTest.kt` (AC-014-38).
-- [ ] 21. Notices: domain, table and migration 6→7, backup step, `Notices` use case recorded by `Reminders.fire`. Test: `MigrationsTest.kt`, `RemindersTest.kt` (AC-014-40).
-- [ ] 22. Notificações page with Agora and Recentes, the cogwheel, the bell's unseen count; `IconButton.count`. Test: `NoticesScreensTest.kt` (AC-014-39, AC-014-40); update AC-014-32's test.
-- [ ] 23. `./gradlew check`; the emulator.
+- [x] 20. Aviso as a switch with choices and an inline Outro field. Test: `RemindersTest.kt` (AC-014-38).
+- [x] 21. Notices: domain, table and migration 6→7, backup step, `Notices` use case recorded by `Reminders.fire`. Test: `MigrationsTest.kt`, `RemindersTest.kt` (AC-014-40).
+- [x] 22. Notificações page with Agora and Recentes, the cogwheel, the bell's unseen count; `IconButton.count`. Test: `NoticesScreensTest.kt` (AC-014-39, AC-014-40); update AC-014-32's test.
+- [x] 23. `./gradlew check`; the emulator.
 
 ## Checked on a device (5 Nov 2026, emulator, Android 16)
 
@@ -63,6 +63,11 @@ Fixed along the way: small segments wrapped "Seg" to "Se g" (now 4 dp a side), a
 - [x] The bell on Hoje's band; Ganhos' header shows the chart and report icons.
 - [x] Evolução: filters by type, who and place kind; earned and received side by side with their legend; a row per month with its totals, classes, hours and change.
 - [x] The class form reads as one family: date picker, time picker, duration typed with − and + inside, money.
+
+## Checked on a device, fourth round (5 Nov 2026)
+
+- [x] The bell opens Notificações (Agora shows "2 aulas para confirmar"; Recentes fills as reminders are sent), and its cogwheel opens Lembretes. Migration 6→7 ran on real data.
+- [x] Aviso antes da aula: a switch, 5 / 15 / 30 / 60 min / Outro under it, Outro opening its hh:mm field in place.
 
 ## Decided
 
