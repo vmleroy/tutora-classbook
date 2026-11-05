@@ -27,3 +27,6 @@ interface AgendaBlockProps {
 
 ## 2026 look (spec 016)
 Corners `radius-xl` (16); at least 48 dp tall.
+
+## To confirm (spec 014)
+`BlockState.TO_CONFIRM` is a class that ended still scheduled: `opacity-pending` (0.6) and a `SECONDARY` badge "A confirmar" (AC-014-3), apart from classes ahead (full) and forecast ones (`opacity-disabled`, "Prevista").

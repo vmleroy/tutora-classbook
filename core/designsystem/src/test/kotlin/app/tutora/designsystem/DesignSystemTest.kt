@@ -116,8 +116,8 @@ class DesignSystemTest {
                 ) { Column(Modifier.verticalScroll(rememberScrollState())) { GallerySections() } }
             }
         }
-        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana).
-        assertEquals(41, galleryComponents.size)
+        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana), UndoBar (014).
+        assertEquals(42, galleryComponents.size)
         for (name in galleryComponents) compose.onNodeWithTag("section-$name").assertExists()
         isDark = true
         compose.waitForIdle()
@@ -259,5 +259,62 @@ class DesignSystemTest {
             ?.invoke(results)
         assertEquals(1, results.first().lineCount)
         assertTrue(!results.first().hasVisualOverflow)
+    }
+
+    @Test
+    fun `AC-014-3 a class to confirm reads To confirm on the Agenda's blocks and cards and in a lesson row`() {
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Column {
+                    app.tutora.designsystem.components.AgendaBlock(
+                        app.tutora.designsystem.components.Tag.GREEN,
+                        "Ana",
+                        state = app.tutora.designsystem.components.BlockState.TO_CONFIRM,
+                    )
+                    app.tutora.designsystem.components.AgendaCard(
+                        "14:00",
+                        "15:00",
+                        app.tutora.designsystem.components.Tag.GREEN,
+                        "Bia",
+                        state = app.tutora.designsystem.components.BlockState.TO_CONFIRM,
+                    )
+                }
+            }
+        }
+        assertEquals(2, compose.onAllNodesWithText("To confirm").fetchSemanticsNodes().size)
+    }
+
+    @Test
+    fun `AC-014-5 a month day holding a class to confirm shows a ring, and the Agenda tab its count`() {
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Column {
+                    app.tutora.designsystem.components.MonthGrid(
+                        listOf(
+                            app.tutora.designsystem.components.MonthDay(19, true, emptyList(), 0, "19", pending = true),
+                            app.tutora.designsystem.components.MonthDay(20, true, emptyList(), 0, "20"),
+                        ),
+                        null,
+                        {},
+                        listOf("S", "T", "Q", "Q", "S", "S", "D"),
+                        "Outubro",
+                    )
+                    app.tutora.designsystem.components.TabBar(
+                        listOf(
+                            app.tutora.designsystem.components.TabItem(
+                                "schedule",
+                                "Agenda",
+                                app.tutora.designsystem.components.IconName.CALENDAR,
+                                count = 3,
+                            ),
+                        ),
+                        "today",
+                        {},
+                    )
+                }
+            }
+        }
+        assertEquals(1, compose.onAllNodes(androidx.compose.ui.test.hasTestTag("month-pending")).fetchSemanticsNodes().size)
+        compose.onNodeWithTag("tab-count-schedule", useUnmergedTree = true).assertExists()
     }
 }

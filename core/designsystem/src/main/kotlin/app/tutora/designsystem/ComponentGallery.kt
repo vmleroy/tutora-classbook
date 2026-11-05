@@ -140,6 +140,7 @@ val galleryComponents =
         "Swatch",
         "ThemeCard",
         "ColorSlider",
+        "UndoBar",
     )
 
 /**
@@ -333,7 +334,15 @@ fun GallerySections() {
             (28..30).map { MonthDay(it, false, emptyList(), 0, "$it de setembro") } +
                 (1..31).map { d ->
                     val dots = if (d % 7 == 5) emptyList() else tones.take(1 + d % 3).let { if (d == 26) tones else it }
-                    MonthDay(d, true, dots.take(2), (dots.size - 2).coerceAtLeast(0), "$d de outubro, ${dots.size} aulas", today = d == 26)
+                    MonthDay(
+                        d,
+                        true,
+                        dots.take(2),
+                        (dots.size - 2).coerceAtLeast(0),
+                        "$d de outubro, ${dots.size} aulas",
+                        today = d == 26,
+                        pending = d in 19..23 && dots.isNotEmpty(),
+                    )
                 } + MonthDay(1, false, emptyList(), 0, "1 de novembro")
         MonthGrid(
             days,
@@ -375,6 +384,15 @@ fun GallerySections() {
     Section("LessonRow") {
         LessonRow("10:00", Tag.GREEN, "Pedro Lima", subtitle = "Física · Presencial", trailing = "+ R$ 120", onClick = {})
         LessonRow("08:00", Tag.BLUE, "9º ano B", subtitle = "Colégio Santa Clara", status = BadgeTone.SUCCESS to "Concluída", onClick = {})
+        LessonRow(
+            "14:00",
+            Tag.AMBER,
+            "Ana Souza",
+            subtitle = "Matemática · Online",
+            status = BadgeTone.SECONDARY to "A confirmar",
+            pending = true,
+            onClick = {},
+        )
     }
     Section("ListGroup") {
         ListGroup(
@@ -421,7 +439,7 @@ fun GallerySections() {
         TabBar(
             listOf(
                 TabItem("today", "Hoje", IconName.HOME),
-                TabItem("schedule", "Agenda", IconName.CALENDAR),
+                TabItem("schedule", "Agenda", IconName.CALENDAR, count = 3),
                 TabItem("registry", "Cadastro", IconName.USERS),
                 TabItem("earnings", "Ganhos", IconName.WALLET),
                 TabItem("settings", "Ajustes", IconName.GEAR),
@@ -492,6 +510,10 @@ fun GallerySections() {
             .DayHeading(4, "Hoje", aside = "1 aula · R$ 80", today = true)
         app.tutora.designsystem.components
             .DayHeading(5, "Quinta", aside = "Sem aulas")
+    }
+    Section("UndoBar") {
+        app.tutora.designsystem.components
+            .UndoBar("6 aulas marcadas como dadas", "Desfazer", {}, {}, durationMs = Long.MAX_VALUE)
     }
     Section("BusyBlock") {
         BusyBlock("Dentista", time = "14:00 – 15:00", height = Size.agendaHour)

@@ -74,6 +74,8 @@ data class MonthDay(
     val a11y: String,
     val today: Boolean = false,
     val enabled: Boolean = true,
+    /** A class on this day is waiting to be confirmed: a ring around the tile (AC-014-5). */
+    val pending: Boolean = false,
 )
 
 /**
@@ -234,7 +236,15 @@ private fun DayCell(
             .aspectRatio(1f)
             .clip(RoundedCornerShape(Radius.sm))
             .background(bg)
-            .then(if (d.enabled) Modifier.selectable(selected = selected, role = Role.Tab, onClick = onClick) else Modifier)
+            .then(
+                if (d.pending) {
+                    Modifier
+                        .testTag("month-pending")
+                        .border(Size.borderStrong, c.secondary, RoundedCornerShape(Radius.sm))
+                } else {
+                    Modifier
+                },
+            ).then(if (d.enabled) Modifier.selectable(selected = selected, role = Role.Tab, onClick = onClick) else Modifier)
             .clearAndSetSemantics {
                 contentDescription = d.a11y
                 this.selected = selected

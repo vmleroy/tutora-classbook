@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import app.tutora.designsystem.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.tokens.TutoraTokens.Opacity
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -103,12 +105,15 @@ fun LessonRow(
     statusIcon: IconName? = null,
     /** A card of its own (Hoje's list) instead of a row of a [ListGroup]. */
     card: Boolean = false,
+    /** A class waiting to be confirmed: dimmed, its status badge saying so (AC-014-3). */
+    pending: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     Row(
         modifier =
             modifier
                 .fillMaxWidth()
+                .alpha(if (pending) Opacity.pending else 1f)
                 .sizeIn(minHeight = Size.controlLg)
                 .then(if (card) Modifier.clip(RoundedCornerShape(Radius.x2xl)) else Modifier)
                 .background(c.surface)

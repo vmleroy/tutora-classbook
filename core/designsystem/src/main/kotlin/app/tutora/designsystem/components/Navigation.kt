@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -110,7 +111,11 @@ data class TabItem(
     val key: String,
     val label: String,
     val icon: IconName,
+    /** A number on the icon, such as the Agenda's classes to confirm (AC-014-4); 0 shows none. */
+    val count: Int = 0,
 )
+
+private const val MAX_TAB_COUNT = 99
 
 /** The bottom bar on the sunken tone: five tabs, labels always shown, the active one on a Menu ativo pill. */
 @Composable
@@ -141,7 +146,7 @@ fun TabBar(
                         .sizeIn(minHeight = Size.touch)
                         .testTag("tab-${tab.key}")
                         .selectable(selected = on, role = Role.Tab, onClick = { onSelect(tab.key) })
-                        .semantics { contentDescription = tab.label },
+                        .semantics { contentDescription = if (tab.count > 0) "${tab.label}, ${tab.count}" else tab.label },
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Spacing.s1),
             ) {
@@ -151,7 +156,25 @@ fun TabBar(
                         .clip(RoundedCornerShape(Radius.full))
                         .background(if (on) c.tabActiveSoft else Color.Transparent)
                         .padding(horizontal = Spacing.s4, vertical = Spacing.s1),
-                ) { Icon(tab.icon, tint = if (on) c.tabActive else c.inkMuted) }
+                ) {
+                    Icon(tab.icon, tint = if (on) c.tabActive else c.inkMuted)
+                    if (tab.count > 0) {
+                        Text(
+                            if (tab.count > MAX_TAB_COUNT) "$MAX_TAB_COUNT+" else tab.count.toString(),
+                            style = TutoraTheme.type.badge.copy(fontFeatureSettings = "tnum"),
+                            color = c.surface,
+                            maxLines = 1,
+                            modifier =
+                                Modifier
+                                    .testTag("tab-count-${tab.key}")
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = Spacing.s3, y = -Spacing.s0_5)
+                                    .clip(RoundedCornerShape(Radius.full))
+                                    .background(c.danger)
+                                    .padding(horizontal = Spacing.s1),
+                        )
+                    }
+                }
                 Text(
                     tab.label,
                     style = if (on) TutoraTheme.type.tab.copy(fontWeight = FontWeight.Black) else TutoraTheme.type.tab,
@@ -246,6 +269,9 @@ enum class BlockState {
 
     /** A class worked out from its series past the planned days: lighter, marked "Prevista" (AC-016-35). */
     FORECAST,
+
+    /** A class that ended still scheduled: dimmed, marked "A confirmar" (AC-014-3). */
+    TO_CONFIRM,
 }
 
 /** A lesson on the Agenda grid, sized by its duration; the screen places it. */
@@ -270,21 +296,28 @@ fun AgendaBlock(
         }
     val muted = state == BlockState.MUTED
     val forecast = state == BlockState.FORECAST
+    val pending = state == BlockState.TO_CONFIRM
+    val pendingWord = stringResource(R.string.ds_toConfirm)
     val ink = if (muted) c.inkMuted else t.ink
     Column(
         modifier =
             modifier
                 .fillMaxWidth()
                 .height(maxOf(height, Size.agendaMin))
-                .alpha(if (forecast) Opacity.disabled else 1f)
-                .clip(shape)
+                .alpha(
+                    when {
+                        forecast -> Opacity.disabled
+                        pending -> Opacity.pending
+                        else -> 1f
+                    },
+                ).clip(shape)
                 .background(if (muted) c.surfaceSunken else t.soft)
                 .then(if (badge != null) Modifier.border(Size.borderStrong, c.accent, shape) else Modifier)
                 .then(
                     if (onClick != null) {
                         Modifier.clickable(role = Role.Button, onClick = onClick).semantics {
                             contentDescription =
-                                listOfNotNull(title, subtitle, badge).joinToString(", ")
+                                listOfNotNull(title, subtitle, badge, pendingWord.takeIf { pending }).joinToString(", ")
                         }
                     } else {
                         Modifier
@@ -303,6 +336,7 @@ fun AgendaBlock(
             )
             if (badge != null) Badge(badge, tone = BadgeTone.ACCENT)
             if (forecast) Badge(stringResource(R.string.ds_forecast), tone = BadgeTone.NEUTRAL)
+            if (pending) Badge(pendingWord, tone = BadgeTone.SECONDARY)
         }
         if (subtitle != null) Text(subtitle, style = TutoraTheme.type.meta, color = ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
@@ -373,12 +407,19 @@ fun AgendaCard(
             BlockState.NEXT -> stringResource(R.string.ds_next)
             BlockState.LIVE -> stringResource(R.string.ds_live)
             BlockState.FORECAST -> stringResource(R.string.ds_forecast)
+            BlockState.TO_CONFIRM -> stringResource(R.string.ds_toConfirm)
             else -> null
         }
     androidx.compose.foundation.layout.Row(
         modifier
             .fillMaxWidth()
-            .alpha(if (forecast) Opacity.disabled else 1f)
+            .alpha(
+                when (state) {
+                    BlockState.FORECAST -> Opacity.disabled
+                    BlockState.TO_CONFIRM -> Opacity.pending
+                    else -> 1f
+                },
+            )
             .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
             .clip(shape)
             .background(c.surface, shape)

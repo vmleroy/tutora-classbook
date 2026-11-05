@@ -16,3 +16,6 @@ Uses `BlockState`: `default`; `next` and `live` outlined in `accent` (`size-bord
 ```kotlin
 AgendaCard(start: String, end: String, tag: Tag, title: String, modifier: Modifier = Modifier, subtitle: String? = null, trailing: String? = null, status: Pair<BadgeTone, String>? = null, state: BlockState = BlockState.DEFAULT, onClick: (() -> Unit)? = null)
 ```
+
+## To confirm (spec 014)
+`BlockState.TO_CONFIRM`: `opacity-pending` (0.6) and the flag "A confirmar" over the title (AC-014-3).

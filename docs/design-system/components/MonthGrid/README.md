@@ -14,3 +14,6 @@ A month as weeks of seven days, with a dot per class: the Agenda's Mês view (sp
 
 ## Sizes since 4 Nov 2026
 Days are square tiles with `radius-sm` corners and `spacing-2` between them both ways (Victor, 4 Nov 2026).
+
+## Classes to confirm (spec 014)
+`MonthDay.pending` puts a `secondary` ring (`border-strong`) around a day that holds a class waiting to be confirmed (AC-014-5), so a forgotten week stands out. It sits with today's fill and the selected tint.

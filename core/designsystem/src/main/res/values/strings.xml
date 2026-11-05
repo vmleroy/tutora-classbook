@@ -17,5 +17,6 @@
     <string name="ds_required">required</string>
     <string name="ds_remove">Remove %1$s</string>
     <string name="ds_forecast">Forecast</string>
+    <string name="ds_toConfirm">To confirm</string>
     <string name="ds_live">Live</string>
 </resources>

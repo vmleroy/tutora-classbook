@@ -29,3 +29,6 @@ interface LessonRowProps {
 
 ## 2026 look (spec 016)
 In a `ListGroup` it has no corners of its own; with `card` (Hoje's list) it is a card of its own, corners 20, 8 dp from the next.
+
+## To confirm (spec 014)
+`pending` dims the row to `opacity-pending` (0.6); pass the status `SECONDARY to "A confirmar"` with it (AC-014-3).
