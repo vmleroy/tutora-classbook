@@ -105,6 +105,11 @@
     <string name="evo_monthTotals">Ganho %1$s · recebido %2$s · a receber %3$s</string>
     <string name="evo_monthClasses">%1$s · %2$s</string>
     <string name="evo_change">%1$s · %2$s%%</string>
+    <!-- Spec 019 -->
+    <string name="evo_custom">Personalizado</string>
+    <string name="evo_tooLong">O período vai até 5 anos.</string>
+    <string name="evo_type">Tipo</string>
+    <string name="evo_place">Local</string>
     <string name="ntf_title">Notificações</string>
     <string name="ntf_now">Agora</string>
     <string name="ntf_recent">Recentes</string>

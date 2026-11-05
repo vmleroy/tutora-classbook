@@ -27,6 +27,7 @@ import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
@@ -50,21 +51,23 @@ import app.tutora.domain.PlaceKind
 import app.tutora.domain.TypeFilter
 import app.tutora.domain.compareBars
 import app.tutora.domain.dateOf
+import app.tutora.domain.evolutionPeriodOk
 import app.tutora.domain.instantOf
 import app.tutora.domain.monthOf
 import app.tutora.state.LocalServices
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.countText
 import app.tutora.ui.durationText
-import app.tutora.ui.kindName
 import app.tutora.ui.monthYear
 import app.tutora.ui.placeName
+import app.tutora.ui.reports.pattern
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 
-/** Evolução's ranges: the last 6 or 12 months, or a calendar year (AC-014-31). */
-enum class EvolutionRange { SIX, TWELVE, YEAR }
+/** Evolução's ranges: the last 6 or 12 months, a calendar year, or any gap of dates (AC-014-31, AC-019-1). */
+enum class EvolutionRange { SIX, TWELVE, YEAR, CUSTOM }
 
 private const val MONTHS_IN_YEAR = 12
 private const val SHORT_RANGE = 6
@@ -85,20 +88,40 @@ fun EvolutionScreen(nav: NavHostController) {
     var payerKey by rememberSaveable { mutableStateOf<String?>(null) }
     var kind by rememberSaveable { mutableStateOf<PlaceKind?>(null) }
     var choosingWho by rememberSaveable { mutableStateOf(false) }
+    // Personalizado's De and Até, kept through a turn of the phone (AC-019-6).
+    var customFrom by rememberSaveable { mutableStateOf(today.toString()) }
+    var customTo by rememberSaveable { mutableStateOf(today.toString()) }
+    var tooLong by rememberSaveable { mutableStateOf(false) }
     var picked by rememberSaveable { mutableStateOf(listOf<Int>()) }
     val payer =
         payerKey?.let { k ->
             PayerKind.entries.firstOrNull { k.startsWith(it.key + ":") }?.let { PayerRef(it, k.substringAfter(":")) }
         }
     val payers = rememberPayers()
-    val (first, count) =
+    val endOfMonth = monthOf(today).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
+    val (from, to) =
         when (range) {
-            EvolutionRange.SIX -> monthOf(today).minus(DatePeriod(months = SHORT_RANGE - 1)) to SHORT_RANGE
-            EvolutionRange.TWELVE -> monthOf(today).minus(DatePeriod(months = MONTHS_IN_YEAR - 1)) to MONTHS_IN_YEAR
-            EvolutionRange.YEAR -> LocalDate(year, 1, 1) to MONTHS_IN_YEAR
+            EvolutionRange.SIX -> monthOf(today).minus(DatePeriod(months = SHORT_RANGE - 1)) to endOfMonth
+            EvolutionRange.TWELVE -> monthOf(today).minus(DatePeriod(months = MONTHS_IN_YEAR - 1)) to endOfMonth
+            EvolutionRange.YEAR -> LocalDate(year, 1, 1) to LocalDate(year, MONTHS_IN_YEAR, 31)
+            EvolutionRange.CUSTOM -> LocalDate.parse(customFrom) to LocalDate.parse(customTo)
         }
-    val months by remember(first, count, filter, payer, kind) {
-        services.earningsRepo.evolution(first, count, EvolutionFilter(filter, payer, kind), today, zone)
+
+    // A pick that breaks the rules keeps the last valid period (AC-019-2).
+    fun pick(
+        newFrom: LocalDate,
+        newTo: LocalDate,
+    ) {
+        val start = minOf(newFrom, today)
+        val end = maxOf(minOf(newTo, today), start)
+        tooLong = !evolutionPeriodOk(start, end, today)
+        if (tooLong) return
+        customFrom = start.toString()
+        customTo = end.toString()
+        picked = emptyList()
+    }
+    val months by remember(from, to, filter, payer, kind) {
+        services.earningsRepo.evolution(from, to, EvolutionFilter(filter, payer, kind), today, zone)
     }.collectAsState(initial = emptyList())
     val bars = months.map { it.bar }
     ScreenScaffold(
@@ -112,11 +135,45 @@ fun EvolutionScreen(nav: NavHostController) {
                 EvolutionRange.SIX to R.string.evo_six,
                 EvolutionRange.TWELVE to R.string.evo_twelve,
                 EvolutionRange.YEAR to R.string.evo_year,
+                EvolutionRange.CUSTOM to R.string.evo_custom,
             ).forEach { (r, label) ->
                 Chip(stringResource(label), range == r, {
+                    // Personalizado starts from the period on screen (AC-019-1).
+                    if (r == EvolutionRange.CUSTOM && range != r) {
+                        customFrom = from.toString()
+                        customTo = minOf(to, today).toString()
+                    }
                     range = r
+                    tooLong = false
                     picked = emptyList()
                 })
+            }
+        }
+        // Any gap of dates, from De to Até, as in the reports' Outro… (AC-019-1, AC-010-3).
+        if (range == EvolutionRange.CUSTOM) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+                DateField(
+                    stringResource(R.string.rep_from),
+                    pattern("dd/MM/yyyy", language, from),
+                    from,
+                    { pick(it, maxOf(it, to)) },
+                    Modifier.weight(1f).testTag("evo-from"),
+                )
+                DateField(
+                    stringResource(R.string.rep_to),
+                    pattern("dd/MM/yyyy", language, to),
+                    to,
+                    { pick(minOf(from, it), it) },
+                    Modifier.weight(1f).testTag("evo-to"),
+                )
+            }
+            if (tooLong) {
+                Text(
+                    stringResource(R.string.evo_tooLong),
+                    Modifier.testTag("evo-too-long"),
+                    style = TutoraTheme.type.meta,
+                    color = TutoraTheme.colors.dangerInk,
+                )
             }
         }
         // A year goes back and forth with ‹ ›, never past this one.
@@ -139,14 +196,11 @@ fun EvolutionScreen(nav: NavHostController) {
                 }, variant = IconButtonVariant.PLAIN, enabled = year < today.year)
             }
         }
-        // Type, who and place kind combine (AC-014-35).
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            listOf(
-                TypeFilter.ALL to R.string.earn_all,
-                TypeFilter.PRIVATE to R.string.earn_private,
-                TypeFilter.JOB to R.string.earn_job,
-            ).forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
-        }
+        // Tipo, Quem and Local, one dropdown each, combine (AC-014-35, AC-019-7 to 9).
+        TypeFilterField(rememberTypeFilters(), filter, {
+            filter = it
+            picked = emptyList()
+        })
         SelectField(
             payers.firstOrNull { it.first == payer }?.second ?: stringResource(R.string.evo_everyone),
             { choosingWho = true },
@@ -154,11 +208,13 @@ fun EvolutionScreen(nav: NavHostController) {
             label = stringResource(R.string.evo_who),
             icon = IconName.USERS,
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            Chip(stringResource(R.string.evo_allPlaces), kind == null, { kind = null })
-            EVOLUTION_KINDS.forEach { k -> Chip(kindName(k), kind == k, { kind = if (kind == k) null else k }) }
-        }
-        val labels = bars.map { barLabel(it, PeriodKind.YEAR, language) }
+        PlaceKindField(kind, {
+            kind = it
+            picked = emptyList()
+        })
+        // Over more than one year a bar names its year too ("out 25").
+        val years = bars.map { it.first.year }.distinct().size > 1
+        val labels = bars.map { b -> barLabel(b, PeriodKind.YEAR, language).let { if (years) "$it ${b.first.year % 100}" else it } }
         MonthBars(
             bars.mapIndexed { i, b -> MonthBar(labels[i], b.earned, b.received) },
             barsDescription(bars, labels, language),
@@ -202,10 +258,6 @@ fun EvolutionScreen(nav: NavHostController) {
         }
     }
 }
-
-/** The kinds of place Evolução filters by (AC-014-35). */
-private val EVOLUTION_KINDS =
-    listOf(PlaceKind.ONLINE, PlaceKind.STUDENT_HOME, PlaceKind.SCHOOL, PlaceKind.SALINHA, PlaceKind.COURSE, PlaceKind.PRIVATE)
 
 /** Everyone who can pay, by name: students, groups and places (AC-014-35). */
 @Composable

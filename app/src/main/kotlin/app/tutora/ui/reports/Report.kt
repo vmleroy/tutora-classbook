@@ -66,7 +66,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
-private fun pattern(
+/** A date in [p], such as "dd/MM/yyyy", in the app language (reports and Evolução). */
+internal fun pattern(
     p: String,
     language: Language,
     d: LocalDate,

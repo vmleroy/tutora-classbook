@@ -99,6 +99,11 @@
     <string name="evo_monthTotals">Earned %1$s · received %2$s · to receive %3$s</string>
     <string name="evo_monthClasses">%1$s · %2$s</string>
     <string name="evo_change">%1$s · %2$s%%</string>
+    <!-- Spec 019 -->
+    <string name="evo_custom">Custom</string>
+    <string name="evo_tooLong">A period can be at most 5 years.</string>
+    <string name="evo_type">Type</string>
+    <string name="evo_place">Place</string>
     <string name="ntf_title">Notifications</string>
     <string name="ntf_now">Now</string>
     <string name="ntf_recent">Recent</string>
