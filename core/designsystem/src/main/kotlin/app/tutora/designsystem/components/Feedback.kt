@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -61,6 +63,8 @@ fun BottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = state,
+        // Never wider than the readable width, centered when the phone is sideways (AC-017-15).
+        sheetMaxWidth = Size.contentMax,
         modifier = modifier.semantics { contentDescription = title },
         containerColor = c.surface,
         scrimColor = c.scrim,
@@ -128,16 +132,18 @@ fun TimerRing(
     val c = TutoraTheme.colors
     val stroke = with(LocalDensity.current) { Size.timerStroke.toPx() }
     val p = progress.coerceIn(0f, 1f)
+    // At most `size-timer-ring`; smaller when its parent has less room, as a live class sideways (spec 017).
     Box(
         modifier
-            .size(Size.timerRing)
+            .sizeIn(maxWidth = Size.timerRing, maxHeight = Size.timerRing)
+            .aspectRatio(1f)
             .semantics {
                 contentDescription = label ?: elapsed
                 progressBarRangeInfo = ProgressBarRangeInfo(p, 0f..1f)
             },
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(Modifier.size(Size.timerRing)) {
+        Canvas(Modifier.fillMaxSize()) {
             val inset = stroke / 2
             val arc =
                 androidx.compose.ui.geometry

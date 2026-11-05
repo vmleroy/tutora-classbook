@@ -25,6 +25,18 @@ private val LocalTutoraColors = staticCompositionLocalOf<TutoraColors> { error("
 private val LocalTutoraType = staticCompositionLocalOf { TutoraTypography(1f) }
 private val LocalReduceMotion = staticCompositionLocalOf { false }
 private val LocalScheme = staticCompositionLocalOf { Scheme.LIGHT }
+private val LocalLandscape = staticCompositionLocalOf { false }
+
+/** Below this height a wide window is a phone turned sideways; taller ones are tablets (out of spec 017). */
+private const val PHONE_MAX_HEIGHT_DP = 600
+
+/** A phone turned sideways: wider than tall and shorter than 600 dp (spec 017). */
+@Composable
+fun isLandscapePhone(): Boolean {
+    val size = androidx.compose.ui.platform.LocalWindowInfo.current.containerSize
+    val height = with(androidx.compose.ui.platform.LocalDensity.current) { size.height.toDp() }
+    return size.width > size.height && height.value < PHONE_MAX_HEIGHT_DP
+}
 
 /** Large text scales every type style by 1.15; spacing never changes (spec 002). */
 const val LARGE_TEXT_SCALE = 1.15f
@@ -62,6 +74,7 @@ fun TutoraTheme(
     val colors = remember(themeId, scheme, custom) { TutoraColors.fromPalette(resolvePalette(themeId, scheme, custom)) }
     val factor = textScale ?: if (largeText) LARGE_TEXT_SCALE else 1f
     val type = remember(factor) { TutoraTypography(factor) }
+    val landscape = isLandscapePhone()
     val phone = androidx.compose.ui.platform.LocalDensity.current
     val density =
         remember(phone, uiScale) {
@@ -98,6 +111,7 @@ fun TutoraTheme(
         LocalTutoraType provides type,
         LocalReduceMotion provides reduceMotion,
         LocalScheme provides scheme,
+        LocalLandscape provides landscape,
     ) {
         MaterialTheme(colorScheme = material, typography = type.material, content = content)
     }
@@ -119,6 +133,11 @@ object TutoraTheme {
     val reduceMotion: Boolean
         @Composable @ReadOnlyComposable
         get() = LocalReduceMotion.current
+
+    /** The phone is sideways: screens branch on this and nothing else measures the screen (spec 017). */
+    val landscape: Boolean
+        @Composable @ReadOnlyComposable
+        get() = LocalLandscape.current
 }
 
 /** The motion every component uses: a short tween, or none when the phone asks (AC-002-17). */

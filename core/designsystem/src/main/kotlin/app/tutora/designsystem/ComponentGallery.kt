@@ -2,6 +2,7 @@ package app.tutora.designsystem
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
@@ -66,6 +67,7 @@ import app.tutora.designsystem.components.MonthBars
 import app.tutora.designsystem.components.MonthDay
 import app.tutora.designsystem.components.MonthGrid
 import app.tutora.designsystem.components.MonthPicker
+import app.tutora.designsystem.components.NavRail
 import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.ProgressBar
 import app.tutora.designsystem.components.RowTrailing
@@ -89,6 +91,7 @@ import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.TileTone
 import app.tutora.designsystem.components.TimeField
 import app.tutora.designsystem.components.TimerRing
+import app.tutora.designsystem.components.TwoPane
 import app.tutora.designsystem.components.WeekDay
 import app.tutora.designsystem.components.WeekStrip
 import app.tutora.designsystem.tokens.TutoraTokens.Size
@@ -97,7 +100,7 @@ import app.tutora.domain.ThemeMode
 import app.tutora.domain.theme.themeIds
 import kotlinx.datetime.LocalDate
 
-/** The 30 components, in a section each. */
+/** The 45 components, in a section each. */
 val galleryComponents =
     listOf(
         "Icon",
@@ -126,6 +129,8 @@ val galleryComponents =
         "AlertBanner",
         "ScreenHeader",
         "TabBar",
+        "NavRail",
+        "TwoPane",
         "WeekStrip",
         "AgendaBlock",
         "BusyBlock",
@@ -481,6 +486,29 @@ fun GallerySections() {
             active = "today",
             onSelect = {},
         )
+    }
+    Section("NavRail") {
+        Box(Modifier.height(Size.rail * 5)) {
+            NavRail(
+                listOf(
+                    TabItem("today", "Hoje", IconName.HOME),
+                    TabItem("schedule", "Agenda", IconName.CALENDAR, count = 3),
+                    TabItem("registry", "Cadastro", IconName.USERS),
+                    TabItem("earnings", "Ganhos", IconName.WALLET),
+                    TabItem("settings", "Ajustes", IconName.GEAR),
+                ),
+                active = "schedule",
+                onSelect = {},
+            )
+        }
+    }
+    Section("TwoPane") {
+        Box(Modifier.height(Size.rail * 2)) {
+            TwoPane(
+                start = { Card { Text("Hoje", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink) } },
+                end = { Card { Text("Aulas de hoje", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink) } },
+            )
+        }
     }
     Section("WeekStrip") {
         WeekStrip(

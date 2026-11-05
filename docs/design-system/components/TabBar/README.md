@@ -24,3 +24,6 @@ The bar sits on `surface-sunken`, 80 dp tall; the active tab has its icon on a `
 
 ## Count (spec 014)
 A tab can carry a number on its icon (`TabItem.count`), such as the Agenda's classes to confirm (AC-014-4): a `danger` pill with `surface` text at the icon's top end, "99+" past 99, and read with the label ("Agenda, 3"). 0 shows nothing.
+
+## Sideways (spec 017)
+When the phone is sideways the tabs move to `NavRail`, a column on the left with the same pieces.
