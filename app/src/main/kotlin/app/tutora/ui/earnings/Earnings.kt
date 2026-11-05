@@ -149,11 +149,17 @@ fun EarningsScreen(
         "earnings-screen",
         // Evolução and Relatório as icons, side by side (AC-014-33).
         trailing = {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            Row {
                 IconButton(IconName.CHART, stringResource(R.string.earn_evolution), {
                     nav.navigate(app.tutora.ui.Evolution)
-                }, Modifier.testTag("see-evolution"))
-                IconButton(IconName.FILE, stringResource(R.string.rep_screen), { reporting = true }, Modifier.testTag("open-report"))
+                }, Modifier.testTag("see-evolution"), size = ControlSize.SM)
+                IconButton(
+                    IconName.FILE,
+                    stringResource(R.string.rep_screen),
+                    { reporting = true },
+                    Modifier.testTag("open-report"),
+                    size = ControlSize.SM,
+                )
             }
         },
     ) {

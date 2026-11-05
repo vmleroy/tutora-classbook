@@ -81,7 +81,8 @@ fun ScreenHeader(
         horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (onBack != null) IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.ds_back), onBack)
+        // Header buttons are drawn small, each still answering on 48 dp (Victor, 5 Nov 2026).
+        if (onBack != null) IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.ds_back), onBack, size = ControlSize.SM)
         Column(Modifier.weight(1f)) {
             if (eyebrow != null) Text(eyebrow, style = TutoraTheme.type.caption, color = if (hero) c.onHeaderMuted else c.inkMuted)
             Text(
@@ -101,7 +102,7 @@ fun ScreenHeader(
                     it.variant == IconButtonVariant.ACCENT || it.variant == IconButtonVariant.ACCENT_SQUARE -> IconButtonVariant.ACCENT
                     else -> IconButtonVariant.ON_PRIMARY
                 }
-            IconButton(it.icon, it.label, it.onClick, variant = v)
+            IconButton(it.icon, it.label, it.onClick, variant = v, size = ControlSize.SM)
         }
         trailing?.invoke()
     }

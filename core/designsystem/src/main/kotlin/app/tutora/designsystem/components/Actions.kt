@@ -141,6 +141,8 @@ fun IconButton(
     enabled: Boolean = true,
     /** A small red dot at the top end: something there needs a look (the bell, AC-014-32). */
     dot: Boolean = false,
+    /** SM draws a 36 dp circle with a smaller icon, for headers; it still answers on 48 dp. */
+    size: ControlSize = ControlSize.MD,
 ) {
     val c = TutoraTheme.colors
     val (bg, fg) =
@@ -151,24 +153,51 @@ fun IconButton(
             IconButtonVariant.ACCENT, IconButtonVariant.ACCENT_SQUARE -> c.accent to c.onAccent
         }
     val square = variant == IconButtonVariant.ACCENT_SQUARE
+    val small = size == ControlSize.SM && !square
     val shape = if (square) RoundedCornerShape(Radius.x2xl) else CircleShape
+    // The press area is always at least the touch size; the drawn circle may be smaller.
     Box(
         modifier =
             modifier
                 .size(if (square) Size.fab else Size.touch)
-                .clip(shape)
-                .background(bg, shape)
                 .alpha(if (enabled) 1f else Opacity.disabled)
+                .clip(shape)
                 .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
                 .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, tint = fg, size = if (square) Size.iconLg else Size.icon)
+        Box(
+            Modifier
+                .size(
+                    if (square) {
+                        Size.fab
+                    } else if (small) {
+                        Size.controlSm
+                    } else {
+                        Size.touch
+                    },
+                ).clip(shape)
+                .background(bg, shape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                icon,
+                tint = fg,
+                size =
+                    if (square) {
+                        Size.iconLg
+                    } else if (small) {
+                        Size.iconSm
+                    } else {
+                        Size.icon
+                    },
+            )
+        }
         if (dot) {
             Box(
                 Modifier
                     .align(Alignment.TopEnd)
-                    .padding(Spacing.s2_5)
+                    .padding(if (small) Spacing.s1_5 else Spacing.s2_5)
                     .size(Size.dot)
                     .clip(CircleShape)
                     .background(c.danger)

@@ -153,6 +153,7 @@ fun ReminderBell(
         Modifier.testTag("bell"),
         variant = variant,
         dot = !allowed,
+        size = app.tutora.designsystem.components.ControlSize.SM,
     )
 }
 

@@ -31,3 +31,6 @@ Round, at least 48 dp. `ACCENT_SQUARE` is an add button in a tab header (Cadastr
 
 ## Dot (spec 014)
 `dot` puts a small `danger` circle at the top end: the bell on Hoje and the Agenda shows it while notifications are off on the phone (AC-014-32).
+
+## Small (Victor, 5 Nov 2026)
+`size = SM` draws a 36 dp (`size-control-sm`) circle with a 20 dp icon, still answering on 48 dp. Every header button uses it: back, the header actions, the bell on Hoje and the Agenda, and Ganhos' Evolução and Relatório.
