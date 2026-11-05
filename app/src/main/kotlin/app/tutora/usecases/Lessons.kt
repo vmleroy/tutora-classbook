@@ -69,7 +69,7 @@ class Lessons(
             if (row.startAt > ctx.now() && !SettingsRepository(db).load().earlyDone) {
                 return@inTransaction ScheduleResult.Err(ScheduleError.NOT_STARTED)
             }
-            val next = done(row.copy(plannedMin = minutes)) ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
+            val next = done(row.copy(plannedMin = minutes, autoDone = false)) ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
             dao.upsertLesson(next.copy(isDetached = row.ruleId != null))
             ScheduleResult.Ok(id)
         }
@@ -162,6 +162,7 @@ class Lessons(
                         rateCents = null,
                         rateType = null,
                         isDetached = row.ruleId != null,
+                        autoDone = false,
                         updatedAt = ctx.now(),
                     ),
                 ),
@@ -173,20 +174,26 @@ class Lessons(
     suspend fun undo(id: String): ScheduleResult =
         db.inTransaction {
             val row = dao.lesson(id) ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
-            dao.upsertLesson(
-                row.copy(
-                    status = LessonStatus.SCHEDULED.key,
-                    rateCents = null,
-                    rateType = null,
-                    feeCents = null,
-                    cancelReason = null,
-                    cancelNote = null,
-                    payer = null,
-                    dueCents = null,
-                    packageId = null,
-                    updatedAt = ctx.now(),
-                ),
-            )
+            dao.upsertLesson(undone(ctx, row))
             ScheduleResult.Ok(id)
         }
 }
+
+/** A row back to Agendada, following the current price again, no longer "Dada sozinha" (AC-006-13). */
+internal fun undone(
+    ctx: Ctx,
+    row: LessonRow,
+): LessonRow =
+    row.copy(
+        status = LessonStatus.SCHEDULED.key,
+        rateCents = null,
+        rateType = null,
+        feeCents = null,
+        cancelReason = null,
+        cancelNote = null,
+        payer = null,
+        dueCents = null,
+        packageId = null,
+        autoDone = false,
+        updatedAt = ctx.now(),
+    )
