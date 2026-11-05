@@ -1,6 +1,6 @@
 # Spec 014: Reminders, confirming classes and first-run setup
 
-Status: done
+Status: in progress
 Depends on: 005 Schedule (series filled ahead), 006 Lessons (mark done, cancel, missed), 007 Live timer (notifications), 008 Payments (who owes), 011 Backup (the folder), 016 Visual refresh (Hoje, the Agenda, AgendaCard)
 Mockups: docs/mockups/Setup.dc.html (first-run setup), docs/mockups/Settings.dc.html. The confirm list and the reminders follow the design system.
 Takes in: the draft spec 018 (Confirm classes), whose criteria and answers are here (Victor, 4 Nov 2026).
@@ -84,14 +84,14 @@ Three things that keep Tutora in step with the teacher's real week. **Reminders*
 
 ### Third round (Victor, 5 Nov 2026)
 
-- **AC-014-32.** A bell at the top right of Hoje and of the Agenda opens Lembretes. It shows a dot while the phone has Tutora's notifications off (AC-014-16).
+- **AC-014-32.** *(Where it leads changed by AC-014-39: the bell opens Notificações.)* A bell at the top right of Hoje and of the Agenda opens Lembretes. It shows a dot while the phone has Tutora's notifications off (AC-014-16).
 - **AC-014-33.** Ganhos' header has two icon buttons, Evolução and Relatório, each with its name for screen readers. They replace the Relatório button and the "Ver evolução" button.
 - **AC-014-34.** Evolução lists each month of the range under the chart, newest first:
   - earned, received and to receive;
   - how many classes and hours;
   - the change from the month before, in reais and percent ("+R$ 400 · +14%"; no percent after a month of R$ 0).
 - **AC-014-35.** Evolução filters by type (Tudo, Particulares, Escola e emprego), by who (one student, group or place, chosen from a list), and by place kind (Online, Casa do Aluno, Escola, Salinha, Cursinho, Particular). The filters combine. The chart shows earned and received as two bars side by side for each month, with a legend.
-- **AC-014-36.** "Aviso antes da aula" has "Personalizado" beside Desligado, 5, 15, 30 and 60. It opens an hh:mm picker for how long before: from 00:05 to 24:00. The chip and the row then read the chosen time ("2h antes", "1h30 antes").
+- **AC-014-36.** *(Its layout replaced by AC-014-38: a switch with choices under it.)* "Aviso antes da aula" has "Personalizado" beside Desligado, 5, 15, 30 and 60. It opens an hh:mm picker for how long before: from 00:05 to 24:00. The chip and the row then read the chosen time ("2h antes", "1h30 antes").
 - **AC-014-37.** Every value is entered with the design system's field for its kind, and forms no longer use bare steppers:
   - text and phone: `TextField`;
   - money: `MoneyField`;
@@ -100,6 +100,21 @@ Three things that keep Tutora in step with the teacher's real week. **Reminders*
   - a clock time: `TimeField`, with the clock picker;
   - a date: `DateField`, with the calendar.
   - So Lembretes' hours become TimeFields, the setup's prices MoneyFields, and package classes, backups kept, bonus minutes and the commission NumberFields. Class and place durations become DurationFields. This takes the place of AC-014-29.
+
+### Fourth round (Victor, 5 Nov 2026)
+
+- **AC-014-38.** In Lembretes, "Aviso antes da aula" is one switch.
+  - On, a row of choices sits under it: 5, 15, 30 or 60 min, or "Outro".
+  - "Outro" shows an hh:mm field right there, from 00:05 to 24:00.
+  - Turning the switch on starts at 15 min. This replaces AC-014-36's chip and sheet.
+- **AC-014-39.** The bell opens "Notificações". Its cogwheel opens Lembretes.
+  - **"Agora":** what needs the teacher now: classes to confirm, who owes, a backup overdue.
+  - **"Recentes":** every notification Tutora sent in the last 30 days, newest first, with when it came. Each one opens its page: the class, the confirm list, or who owes.
+  - With nothing in either, the page says so.
+- **AC-014-40.** Tutora keeps the notifications it sends for 30 days, even when the phone shows none.
+  - The bell shows how many haven't been seen; opening Notificações marks them seen.
+  - With none unseen and the phone's notifications off, the bell shows its dot (AC-014-32).
+  - Backups carry the list, and older backups restore with it empty.
 
 ### Language
 

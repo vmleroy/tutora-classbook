@@ -107,6 +107,23 @@ Lean, one test per criterion, `./gradlew check` once.
   - Screens: swap the 12 `Stepper` and 3 `DurationStepper` uses as listed in AC-014-37. The duration sheet goes, since the field is typed.
   - Components: 43 (`NumberField`).
 
+## Fourth round (AC-014-38 to 40)
+
+- **Aviso layout (38):**
+  - A `ListRow` switch with the current choice as its subtitle.
+  - Under it, a `SegmentedControl` of 5, 15, 30, 60 and Outro.
+  - Outro shows a `DurationField` (step 5, 00:05 to 24:00) inline. The chip row and the sheet go.
+- **Notices (39, 40):**
+  - Domain: `NoticeKind` (CLASS, OWED, CONFIRM) and `Notice`, plus `NOTICE_DAYS = 30`.
+  - Data, migration 6→7: a `notice` table (`id`, `kind`, `lesson_id`, `count`, `cents`, `minutes`, `only_students`, `at`, `seen`), with schema 7 exported and a migration test. Backups get step 6→7, which adds the empty table.
+  - `NoticeDao`: insert, observe since, count unseen, mark all seen, delete before.
+  - Use case `Notices`: `record(notice)`, called by `Reminders.fire` whatever the phone allows; `markSeen()`; and `prune()` on start and at each fire.
+  - UI: a route `NoticesHome`, with the header's cogwheel opening `RemindersHome`.
+    - "Agora" reuses `ConfirmAlert`, `PendingAlert` and `BackupAlert`.
+    - "Recentes" is a `ListGroup` of notices: icon, text in the app language, and when ("hoje, 20:00"). Unseen ones show a dot.
+    - Opening the page marks them seen.
+  - Bell: `IconButton.count` (the tab's count pill) when unseen > 0; otherwise `dot` while notifications are off.
+
 ## Risks
 
 - **Inexact alarms** can be minutes late. That's fine for reminders (the architecture doc accepts it).

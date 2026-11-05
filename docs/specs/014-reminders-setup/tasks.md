@@ -24,6 +24,11 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 18. Evolução: place kind and payer on earnings, filters, month details, paired bars. Test: `EarningsRulesTest.kt` (AC-014-34, 35), `EarningsScreensTest.kt` (AC-014-34, 35).
 - [x] 19. `./gradlew check`; the new screens on the emulator.
 
+- [ ] 20. Aviso as a switch with choices and an inline Outro field. Test: `RemindersTest.kt` (AC-014-38).
+- [ ] 21. Notices: domain, table and migration 6→7, backup step, `Notices` use case recorded by `Reminders.fire`. Test: `MigrationsTest.kt`, `RemindersTest.kt` (AC-014-40).
+- [ ] 22. Notificações page with Agora and Recentes, the cogwheel, the bell's unseen count; `IconButton.count`. Test: `NoticesScreensTest.kt` (AC-014-39, AC-014-40); update AC-014-32's test.
+- [ ] 23. `./gradlew check`; the emulator.
+
 ## Checked on a device (5 Nov 2026, emulator, Android 16)
 
 The app's data was copied aside first and put back afterwards. Clock jumps used root on the emulator.
