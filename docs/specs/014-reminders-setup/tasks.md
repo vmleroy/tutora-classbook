@@ -18,11 +18,11 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 13. Ganhos: bars by period, Evolução with ranges and the comparison; update AC-009-12's test. Test: `EarningsScreensTest.kt` (AC-014-30, AC-014-31).
 - [x] 14. Setup's fixed travel amount; `./gradlew check`; the new screens on the emulator (Ajustes pages, Evolução, typing in steppers, an exact reminder).
 
-- [ ] 15. Design system: `NumberField`, `DurationField` with − +, bell and chart icons, `IconButton.dot`, paired `MonthBars`; guidelines, gallery (43 components). Test: `DesignSystemTest.kt` (AC-014-37).
-- [ ] 16. Fields per kind on every form (Lembretes' hours, the setup's prices, counts, percent, minutes, durations). Update the tests that pressed − and + or the duration sheet. Test: `FieldsTest.kt` (AC-014-37).
-- [ ] 17. Bell on Hoje and the Agenda; Ganhos' header icons; custom aviso. Test: `RemindersTest.kt` (AC-014-32, 36), `EarningsScreensTest.kt` (AC-014-33).
-- [ ] 18. Evolução: place kind and payer on earnings, filters, month details, paired bars. Test: `EarningsRulesTest.kt` (AC-014-34, 35), `EarningsScreensTest.kt` (AC-014-34, 35).
-- [ ] 19. `./gradlew check`; the new screens on the emulator.
+- [x] 15. Design system: `NumberField`, `DurationField` with − +, bell and chart icons, `IconButton.dot`, paired `MonthBars`; guidelines, gallery (43 components). Test: `DesignSystemTest.kt` (AC-014-37).
+- [x] 16. Fields per kind on every form (Lembretes' hours, the setup's prices, counts, percent, minutes, durations). Update the tests that pressed − and + or the duration sheet. Test: `FieldsTest.kt` (AC-014-37).
+- [x] 17. Bell on Hoje and the Agenda; Ganhos' header icons; custom aviso. Test: `RemindersTest.kt` (AC-014-32, 36), `EarningsScreensTest.kt` (AC-014-33).
+- [x] 18. Evolução: place kind and payer on earnings, filters, month details, paired bars. Test: `EarningsRulesTest.kt` (AC-014-34, 35), `EarningsScreensTest.kt` (AC-014-34, 35).
+- [x] 19. `./gradlew check`; the new screens on the emulator.
 
 ## Checked on a device (5 Nov 2026, emulator, Android 16)
 
@@ -52,6 +52,12 @@ Fixed along the way:
 - [x] Ganhos: November (empty) shows only its empty state; October shows its five weeks. Evolução scrolls through 12 months and compares October with September ("+R$ 640,20", no percent since September is zero).
 
 Fixed along the way: small segments wrapped "Seg" to "Se g" (now 4 dp a side), and the chevron on "Ver evolução" was dropped.
+
+## Checked on a device, third round (5 Nov 2026)
+
+- [x] The bell on Hoje's band; Ganhos' header shows the chart and report icons.
+- [x] Evolução: filters by type, who and place kind; earned and received side by side with their legend; a row per month with its totals, classes, hours and change.
+- [x] The class form reads as one family: date picker, time picker, duration typed with − and + inside, money.
 
 ## Decided
 
