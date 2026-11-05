@@ -23,6 +23,6 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 013 | [Appearance](013-appearance/spec.md): Aparência with a live preview, mode, theme, quick main and highlight colors, text size; Suas cores for the seven parts with hex, sliders and contrast | in progress | Theme, ColorPicker, Settings |
 | 014 | Reminders and first-run setup | not written | Setup |
 | 016 | [Visual refresh 2026](016-visual-refresh/spec.md): the "Quadro refinado" look on every screen, built only from theme colors; Agenda titled by month and year, a Mês view and a month/year picker | done | DirA, A_Agenda, A_AgendaMes, A_AgendaAno, A_Aluno, A_Ganhos, A_Ajustes, A_Estilo |
-| 018 | [Confirm classes](018-confirm-classes/spec.md): past classes still scheduled are dimmed "A confirmar", counted on Hoje, and confirmed as Dada, Cancelada or Faltou, one by one or all at once | draft | none yet |
+| 018 | [Confirm classes](018-confirm-classes/spec.md): past classes still scheduled are dimmed "A confirmar", counted on Hoje, and confirmed as Dada, Cancelada or Faltou, one by one or all at once; Ajustes chooses when they ask, or marks them done on their own | ready | none yet |
 
 Status moves draft → ready → in progress → done. Update this table in the same PR that changes a status.
