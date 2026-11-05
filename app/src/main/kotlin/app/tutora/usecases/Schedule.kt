@@ -6,10 +6,10 @@ import app.tutora.data.SkipRow
 import app.tutora.data.TutoraDatabase
 import app.tutora.data.inTransaction
 import app.tutora.domain.Cents
-import app.tutora.domain.HORIZON_DAYS
 import app.tutora.domain.LessonStatus
 import app.tutora.domain.Repeat
 import app.tutora.domain.RuleDates
+import app.tutora.domain.agendaHorizon
 import app.tutora.domain.isoText
 import app.tutora.domain.localOf
 import app.tutora.domain.localToInstant
@@ -89,7 +89,8 @@ class Schedule(
 
     private fun today(): LocalDate = localOf(ctx.now(), ctx.zone()).date
 
-    private fun horizon(): LocalDate = today().plus(DatePeriod(days = HORIZON_DAYS))
+    /** 8 weeks ahead, to the end of that month: the same horizon the Agenda shows (AC-005-8, AC-016-23). */
+    private fun horizon(): LocalDate = agendaHorizon(today())
 
     /** Fills one series from where it stopped up to [until]; existing dates are left alone. */
     private suspend fun fillRule(

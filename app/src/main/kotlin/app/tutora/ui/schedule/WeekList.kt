@@ -8,10 +8,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -20,29 +23,41 @@ import androidx.compose.ui.res.stringResource
 import app.tutora.R
 import app.tutora.designsystem.components.AgendaCard
 import app.tutora.designsystem.components.BusyBlock
-import app.tutora.designsystem.components.Button
-import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.DayHeading
-import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
-import app.tutora.domain.BusyDay
+import app.tutora.domain.BusyEvent
+import app.tutora.domain.Language
 import app.tutora.domain.Lesson
+import app.tutora.domain.busyFor
 import app.tutora.domain.counted
+import app.tutora.domain.dayRange
 import app.tutora.domain.expected
+import app.tutora.domain.instantOf
 import app.tutora.domain.localOf
+import app.tutora.domain.nextLesson
+import app.tutora.domain.weekStart
 import app.tutora.domain.worth
 import app.tutora.ui.clockTime
 import app.tutora.ui.countText
+import app.tutora.ui.monthShort
 import app.tutora.ui.weekdayLong
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 
-// Semana as one list down the page (Victor, 4 Nov 2026, after Teams' agenda, in Tutora's look):
-// each day's heading stays on top while its classes scroll under it, and the week strip follows.
+// Semana as one endless list of days (Victor, 4 Nov 2026, after Teams' agenda, in Tutora's look):
+// each day's heading stays on top while its classes scroll under it; the day being read is
+// highlighted here and on the strip; more weeks load as the teacher nears either end, up to the
+// 8-week horizon.
 
 /** One thing in a day: a class, or an appointment from the phone's other calendars. */
 private sealed interface Entry {
@@ -66,26 +81,44 @@ private fun hm(m: Int) = (m % (24 * 60)).let { LocalTime(it / 60, it % 60) }
 /** "Segunda" / "Monday": the weekday as Hoje writes it. */
 private fun dayName(
     d: LocalDate,
-    language: app.tutora.domain.Language,
+    language: Language,
 ) = weekdayLong(d, language).removeSuffix("-feira").replaceFirstChar { it.uppercase() }
+
+private val WEEK = DatePeriod(days = 7)
+
+/** How close to either end, in rows, the list loads another week. */
+private const val LOAD_AHEAD = 6
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WeekList(
-    days: List<LocalDate>,
-    byDay: Map<LocalDate, List<Lesson>>,
-    zone: String,
-    today: LocalDate,
     selected: LocalDate,
-    nextId: String?,
+    today: LocalDate,
+    zone: String,
+    /** Now, so "Próxima" marks the next class, not the next one of the week being shown. */
+    now: String,
+    lessonsBetween: (LocalDate, LocalDate) -> Flow<List<Lesson>>,
+    busyBetween: (Long, Long) -> Flow<List<BusyEvent>>,
     onSelectDay: (LocalDate) -> Unit,
     onOpen: (Lesson) -> Unit,
-    busy: (LocalDate) -> BusyDay?,
-    onNextWeek: (() -> Unit)?,
+    modifier: Modifier = Modifier,
 ) {
     val language = currentLanguage()
     val state = rememberLazyListState()
-    // Where each day's heading sits in the list.
+
+    // The days loaded, whole weeks from Monday; grows at either end (saved across rotation).
+    var fromText by rememberSaveable { mutableStateOf(weekStart(selected).toString()) }
+    var toText by rememberSaveable { mutableStateOf(weekStart(selected).plus(DatePeriod(days = 6)).toString()) }
+    val from = LocalDate.parse(fromText)
+    val to = LocalDate.parse(toText)
+    val range = remember(from, to) { dayRange(from, to, zone) }
+    val lessons by remember(from, to) { lessonsBetween(from, to) }.collectAsState(initial = emptyList())
+    val busy by remember(range) {
+        busyBetween(instantOf(range.first).toEpochMilliseconds(), instantOf(range.second).toEpochMilliseconds())
+    }.collectAsState(initial = emptyList())
+    val days = generateSequence(from) { it.plus(DatePeriod(days = 1)) }.takeWhile { it <= to }.toList()
+    val byDay = lessons.groupBy { localOf(it.startAt, zone).date }
+    val nextId = nextLesson(lessons.filter { it.status == app.tutora.domain.LessonStatus.SCHEDULED }, now) { it.startAt }?.id
     val entries =
         days.associateWith { d ->
             val classes =
@@ -93,47 +126,77 @@ fun WeekList(
                     val t = localOf(l.startAt, zone).time
                     Entry.Class(l, t.hour * 60 + t.minute)
                 }
-            val others = busy(d)?.blocks.orEmpty().map { (title, from, to) -> Entry.Busy(title, from, to) }
+            val others = busyFor(busy, d, zone).blocks.map { (title, start, end) -> Entry.Busy(title, start, end) }
             (classes + others).sortedBy { it.minute }
         }
+    val bands = days.associateWith { busyFor(busy, it, zone).bands }
+    // Where each day's heading sits in the list.
     val headerAt = mutableMapOf<LocalDate, Int>()
     var index = 0
+
     days.forEach { d ->
         headerAt[d] = index
-        index += 1 + busy(d)?.bands.orEmpty().size + entries.getValue(d).size
+        index += 1 + bands.getValue(d).size + entries.getValue(d).size
     }
-    // A day chosen on the strip scrolls there; scrolling moves the strip, without scrolling back.
+    val currentHeaders by rememberUpdatedState(headerAt.toMap())
+    // The day being read: the last heading at or above the top of the list.
+    val shown by remember {
+        derivedStateOf {
+            val first = state.firstVisibleItemIndex
+            currentHeaders.entries
+                .filter { it.value <= first }
+                .maxByOrNull { it.value }
+                ?.key
+        }
+    }
+    // A day chosen on the strip scrolls there, loading its week first; scrolling moves the strip.
     var fromScroll by remember { mutableStateOf(false) }
-    // While the list slides to a chosen day, its passing days must not move the strip.
     var jumping by remember { mutableStateOf(false) }
-    val currentSelect by rememberUpdatedState(onSelectDay)
-    LaunchedEffect(selected, days) {
+    // Until the list has first reached the chosen day, its top says nothing about what is read.
+    var ready by remember { mutableStateOf(false) }
+    val select by rememberUpdatedState(onSelectDay)
+    LaunchedEffect(selected) {
         if (fromScroll) {
             fromScroll = false
-        } else {
-            headerAt[selected]?.let {
-                jumping = true
-                try {
-                    state.animateScrollToItem(it)
-                } finally {
-                    jumping = false
-                }
+            return@LaunchedEffect
+        }
+        if (selected < from) fromText = weekStart(selected).toString()
+        if (selected > to) toText = weekStart(selected).plus(DatePeriod(days = 6)).toString()
+        // Waits for the day's week to be loaded and laid out.
+        val at = snapshotFlow { currentHeaders[selected] }.filterNotNull().first()
+        jumping = true
+        try {
+            if (ready) state.animateScrollToItem(at) else state.scrollToItem(at)
+        } finally {
+            jumping = false
+            ready = true
+        }
+    }
+    LaunchedEffect(Unit) {
+        snapshotFlow { shown }.distinctUntilChanged().collect { day ->
+            if (day != null && ready && !jumping && day != selected) {
+                fromScroll = true
+                select(day)
             }
         }
     }
-    LaunchedEffect(days) {
-        snapshotFlow { state.firstVisibleItemIndex }.distinctUntilChanged().collect { first ->
-            if (state.isScrollInProgress && !jumping) {
-                val day = days.lastOrNull { (headerAt[it] ?: 0) <= first }
-                if (day != null && day != selected) {
-                    fromScroll = true
-                    currentSelect(day)
-                }
+    // Endless both ways: near the bottom the next week loads, near the top the one before; past
+    // the horizon its classes are forecasts from their series (AC-016-35).
+    LaunchedEffect(Unit) {
+        snapshotFlow {
+            val info = state.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: 0
+            Triple(state.firstVisibleItemIndex, last, info.totalItemsCount)
+        }.collect { (first, last, total) ->
+            val end = LocalDate.parse(toText)
+            if (total > 0 && last >= total - LOAD_AHEAD) toText = end.plus(WEEK).toString()
+            if (first <= 1 && state.isScrollInProgress && !jumping) {
+                fromText = LocalDate.parse(fromText).minus(WEEK).toString()
             }
         }
     }
     LazyColumn(
-        Modifier.fillMaxWidth().testTag("week-list"),
+        modifier.fillMaxWidth().testTag("week-list"),
         state = state,
         contentPadding = PaddingValues(start = Spacing.s5, end = Spacing.s5, bottom = Size.fab + Spacing.s7),
         verticalArrangement = Arrangement.spacedBy(Spacing.s2),
@@ -150,17 +213,18 @@ fun WeekList(
                     if (d == today) stringResource(R.string.schedule_today) else dayName(d, language),
                     Modifier.testTag("week-day-$d"),
                     aside =
-                        if (list.isEmpty()) {
-                            stringResource(R.string.schedule_noClassesDay)
-                        } else if (previsto.cents > 0) {
-                            stringResource(R.string.schedule_dayTotal, count, formatMoney(previsto.cents, language, compact = true))
-                        } else {
-                            count
+                        when {
+                            list.isEmpty() -> stringResource(R.string.schedule_noClassesDay)
+                            previsto.cents > 0 ->
+                                stringResource(R.string.schedule_dayTotal, count, formatMoney(previsto.cents, language, compact = true))
+                            else -> count
                         },
                     today = d == today,
+                    current = d == shown,
+                    month = monthShort(d, language),
                 )
             }
-            busy(d)?.bands.orEmpty().forEach { band ->
+            bands.getValue(d).forEach { band ->
                 item(key = "band-$d-$band") { BusyBlock(band, Modifier.fillMaxWidth(), band = true) }
             }
             list.forEach { e ->
@@ -169,9 +233,8 @@ fun WeekList(
                         item(key = "class-${e.lesson.id}") {
                             val l = e.lesson
                             val badge = statusBadge(l)
-                            val start = localOf(l.startAt, zone).time
                             AgendaCard(
-                                clockTime(start, language),
+                                clockTime(hm(e.minute), language),
                                 clockTime(hm(e.minute + l.plannedMin), language),
                                 l.whoTag,
                                 l.whoName,
@@ -191,17 +254,6 @@ fun WeekList(
                             )
                         }
                 }
-            }
-        }
-        onNextWeek?.let { next ->
-            item(key = "next-week") {
-                Button(
-                    stringResource(R.string.schedule_nextWeek),
-                    next,
-                    fullWidth = true,
-                    variant = ButtonVariant.GHOST,
-                    icon = IconName.CHEVRON_RIGHT,
-                )
             }
         }
     }

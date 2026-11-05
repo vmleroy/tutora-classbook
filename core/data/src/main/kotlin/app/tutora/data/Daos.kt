@@ -228,6 +228,17 @@ interface ScheduleDao {
         now: String,
     )
 
+    /** Every series and every date taken out of one, for the forecast past the horizon (AC-016-35). */
+    @Query("SELECT * FROM schedule_rule")
+    fun observeRules(): Flow<List<RuleRow>>
+
+    @Query("SELECT * FROM rule_skip")
+    fun observeSkips(): Flow<List<SkipRow>>
+
+    /** The latest real class of a series, which "Ver a série" opens. */
+    @Query("SELECT id FROM lesson WHERE rule_id = :ruleId ORDER BY start_at DESC LIMIT 1")
+    suspend fun lastOfRule(ruleId: String): String?
+
     @Query("SELECT occurrence_date FROM rule_skip WHERE rule_id = :ruleId")
     suspend fun skips(ruleId: String): List<String>
 

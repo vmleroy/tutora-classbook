@@ -19,9 +19,6 @@ import kotlin.time.Instant
 
 enum class Repeat { WEEKLY, BIWEEKLY }
 
-/** How far ahead repeating classes are kept filled: 8 weeks. */
-const val HORIZON_DAYS = 56
-
 /** The Monday of the week holding [date]; weeks start on Monday in both languages. */
 fun weekStart(date: LocalDate): LocalDate = date.minus(DatePeriod(days = date.dayOfWeek.isoDayNumber - DayOfWeek.MONDAY.isoDayNumber))
 

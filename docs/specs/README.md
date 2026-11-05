@@ -4,7 +4,7 @@ Tutora is built spec by spec. Each folder holds `spec.md` (what and why), `plan.
 
 ## Roadmap
 
-Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + Compose: the Expo version of 001–005 is archived at the `expo-final` tag, and those specs are re-planned (`/plan`) and implemented again in Kotlin. 001 to 013, 016 and 017 are written so far; write the next one with `/spec` when its turn comes.
+Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + Compose: the Expo version of 001–005 is archived at the `expo-final` tag, and those specs are re-planned (`/plan`) and implemented again in Kotlin. 001 to 013 and 016 are written so far; write the next one with `/spec` when its turn comes.
 
 | # | Spec | Status | Mockups |
 | --- | --- | --- | --- |

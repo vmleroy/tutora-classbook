@@ -200,7 +200,17 @@ fun CalendarScreen(nav: NavHostController) {
             when {
                 !s.on -> stringResource(R.string.cal_off)
                 s.syncedAt.isEmpty() -> stringResource(R.string.cal_updating)
-                else -> pluralStringResource(R.plurals.cal_status, s.count, syncedTime(s), s.count)
+                else -> {
+                    val services = LocalServices.current
+                    val horizon = app.tutora.domain.agendaHorizon(localOf(services.now(), services.zone).date)
+                    pluralStringResource(
+                        R.plurals.cal_status,
+                        s.count,
+                        syncedTime(s),
+                        s.count,
+                        app.tutora.ui.dayShortMonth(horizon, currentLanguage()),
+                    )
+                }
             }
         ListGroup(
             listOf {

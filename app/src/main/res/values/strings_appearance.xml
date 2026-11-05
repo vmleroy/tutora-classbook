@@ -88,4 +88,5 @@
     <string name="ap_uiSize">Interface size</string>
     <string name="ap_compact">Compact</string>
     <string name="ap_zoomed">Enlarged</string>
+    <string name="ap_theme_mono">Monochrome</string>
 </resources>

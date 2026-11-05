@@ -3,12 +3,13 @@ package app.tutora.domain
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
+import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
 // The Agenda's month view (spec 016): the grid of a month, how far ahead it may look, and the
 // dot each class puts under its day.
 
-/** How far ahead the schedule is kept filled (AC-005-8), and so how far the Agenda looks. */
+/** At least how far ahead the schedule is kept filled (AC-005-8), and so how far the Agenda looks. */
 const val HORIZON_WEEKS = 8
 
 /** One square of the month grid; [inMonth] is false for the neighbors' days that fill its weeks. */
@@ -31,16 +32,13 @@ fun monthCells(month: YearMonth): List<MonthCell> {
         .toList()
 }
 
-/** The last day the Agenda shows: 8 weeks from today (AC-016-23). */
-fun agendaHorizon(today: LocalDate): LocalDate = today.plus(DatePeriod(days = HORIZON_WEEKS * 7))
-
-/** Whether [month] may be shown: any month up to the one that holds the horizon (AC-016-23). */
-fun canShowMonth(
-    month: YearMonth,
-    today: LocalDate,
-): Boolean {
-    val h = agendaHorizon(today)
-    return month <= YearMonth(h.year, h.month)
+/**
+ * The last day classes are filled and the Agenda shows: 8 weeks from today, then on to the end of
+ * that month, so the calendar and the lists end on a whole month (Victor, 4 Nov 2026; AC-016-23).
+ */
+fun agendaHorizon(today: LocalDate): LocalDate {
+    val eight = today.plus(DatePeriod(days = HORIZON_WEEKS * 7))
+    return LocalDate(eight.year, eight.month, 1).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
 }
 
 /** The kind of dot a class puts under its day; cancelled and missed classes put none (AC-016-17). */
@@ -63,9 +61,8 @@ fun dayDots(
     byDay: Map<LocalDate, List<Lesson>>,
     today: LocalDate,
 ): Map<LocalDate, List<DayKind>> {
-    val horizon = agendaHorizon(today)
+    // Past the horizon the classes are forecasts from their series, and they get their dots too (AC-016-35).
     return byDay
-        .filterKeys { it <= horizon }
         .mapValues { (_, lessons) -> lessons.mapNotNull { it.dayKind() } }
         .filterValues { it.isNotEmpty() }
 }

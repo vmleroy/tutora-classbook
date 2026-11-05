@@ -88,4 +88,5 @@
     <string name="ap_uiSize">Tamanho da interface</string>
     <string name="ap_compact">Compacta</string>
     <string name="ap_zoomed">Ampliada</string>
+    <string name="ap_theme_mono">Monocromático</string>
 </resources>

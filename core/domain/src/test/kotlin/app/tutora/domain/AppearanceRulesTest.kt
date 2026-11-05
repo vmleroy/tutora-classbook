@@ -94,7 +94,7 @@ class AppearanceRulesTest {
                 )
             }
         }
-        assertEquals(8, app.tutora.domain.theme.allThemeIds.size)
+        assertEquals(9, app.tutora.domain.theme.allThemeIds.size)
     }
 
     @Test

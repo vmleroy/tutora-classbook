@@ -5,7 +5,6 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
@@ -18,6 +17,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.CancelReason
@@ -137,7 +138,7 @@ class AgendaMonthTest {
     @Test
     fun `AC-016-15 the switch reads Dia, Semana and Mes, with the week's dates over the strip`() {
         agenda()
-        listOf("Dia", "Semana", "Mês", "Semana de 26 out a 1 nov").forEach { exists(it) }
+        listOf("Dia", "Semana", "Mês", "26 out – 1 nov de 2026").forEach { exists(it) }
         compose.onNodeWithText("Hoje · 1 aula", useUnmergedTree = true).assertExists()
     }
 
@@ -149,17 +150,92 @@ class AgendaMonthTest {
         compose.onNodeWithTag("week-list").assertExists()
         // Today first in view, with its class as a card: times, who and where, its value.
         compose.onNodeWithTag("week-day-2026-10-26").assertIsDisplayed()
-        compose
-            .onAllNodes(
-                // Money is written with a no-break space after R$.
-                hasText("Ana Souza", substring = true) and hasText("120,00", substring = true),
-            ).onFirst()
-            .assertExists()
+        // Money is written with a no-break space after R$. The list loads its days in the background.
+        val card = hasText("Ana Souza", substring = true) and hasText("120,00", substring = true)
+        compose.waitUntil(5_000) { compose.onAllNodes(card).fetchSemanticsNodes().isNotEmpty() }
+        compose.onAllNodes(card).onFirst().assertExists()
         // Tapping Sunday on the strip scrolls the list to it.
         compose.onNodeWithContentDescription("Dom 1").performClick()
         h.settle(compose)
         compose.onNodeWithTag("week-day-2026-11-01").assertIsDisplayed()
         exists("Sem aulas")
+    }
+
+    @Test
+    fun `AC-016-31 Semana never ends, loading the next weeks as the teacher scrolls`() {
+        agenda()
+        compose.onNodeWithText("Semana").performClick()
+        h.settle(compose)
+        // Today is 26 Oct: scrolling down loads week after week, past the stored days too.
+        repeat(30) {
+            compose.onNodeWithTag("week-list").performTouchInput { swipeUp() }
+            compose.waitForIdle()
+        }
+        h.settle(compose)
+        compose.onNodeWithTag("week-day-2026-12-31").assertDoesNotExist()
+        // The strip followed the list: it no longer shows the first week.
+        compose.onNodeWithText("26 out – 1 nov de 2026").assertDoesNotExist()
+    }
+
+    @Test
+    fun `AC-016-33 the week's line names its dates with the year, across months and years too`() {
+        val pt = app.tutora.domain.Language.PT_BR
+        val en = app.tutora.domain.Language.EN
+        assertEquals("23 – 29 de novembro de 2026", app.tutora.ui.weekRange(LocalDate(2026, 11, 23), LocalDate(2026, 11, 29), pt))
+        assertEquals("30 nov – 6 dez de 2026", app.tutora.ui.weekRange(LocalDate(2026, 11, 30), LocalDate(2026, 12, 6), pt))
+        assertEquals("28 dez 2026 – 3 jan 2027", app.tutora.ui.weekRange(LocalDate(2026, 12, 28), LocalDate(2027, 1, 3), pt))
+        assertEquals("Dec 28, 2026 – Jan 3, 2027", app.tutora.ui.weekRange(LocalDate(2026, 12, 28), LocalDate(2027, 1, 3), en))
+        agenda()
+        exists("26 out – 1 nov de 2026")
+    }
+
+    @Test
+    fun `AC-016-34 every day can be chosen, past the stored days too, in every view`() {
+        agenda()
+        // Today is 26 Oct; classes are stored to 31 Dec. › walks on into 2027.
+        repeat(10) {
+            compose.onNodeWithContentDescription("Próxima semana").performClick()
+            h.settle(compose)
+        }
+        exists("4 – 10 de janeiro de 2027")
+        compose.onNodeWithContentDescription("Ter 5").assertIsEnabled().performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Semana").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("week-day-2027-01-05").assertExists()
+        compose.onNodeWithText("Mês").performClick()
+        h.settle(compose)
+        exists("Janeiro 2027")
+    }
+
+    @Test
+    fun `AC-016-35 past the stored days a series shows forecast classes, and one opens what it is`() {
+        agenda()
+        tap("Outubro 2026, escolher mês e ano")
+        tap("Próximo ano")
+        compose.onNodeWithContentDescription("Fevereiro 2027", substring = true).performClick()
+        h.settle(compose)
+        // Ana's weekly Monday class goes on as forecasts: a dot on each Monday.
+        eventually("1 de fevereiro, 1 aula")
+        compose.onNodeWithText("Semana").performClick()
+        h.settle(compose)
+        compose.onAllNodesWithText("Prevista", useUnmergedTree = true).onFirst().assertExists()
+        compose.onAllNodes(hasText("Ana Souza", substring = true)).onFirst().performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Aula prevista").assertExists()
+        compose.onNodeWithText("Ver a série").assertExists()
+    }
+
+    @Test
+    fun `AC-016-32 the shown day is filled on the strip and highlighted in the list, today outlined`() {
+        agenda()
+        compose.onNodeWithText("Semana").performClick()
+        h.settle(compose)
+        compose.onNodeWithContentDescription("Seg 26").assertIsSelected()
+        compose.onNodeWithContentDescription("Qua 28").performClick()
+        h.settle(compose)
+        compose.onNodeWithContentDescription("Qua 28").assertIsSelected()
+        compose.onNodeWithTag("week-day-2026-10-28").assertIsDisplayed()
     }
 
     @Test
@@ -252,18 +328,17 @@ class AgendaMonthTest {
     }
 
     @Test
-    fun `AC-016-23 the Agenda looks 8 weeks ahead and no further`() {
+    fun `AC-016-23 the Agenda goes past the stored days into any month`() {
         month()
         tap("Próximo mês")
         tap("Próximo mês")
         exists("Dezembro 2026")
-        compose.onNodeWithContentDescription("Próximo mês").assertIsNotEnabled()
-        // 21 Dec is the last day with classes; 28 Dec is past the horizon.
-        eventually("21 de dezembro, 1 aula")
-        compose.onNodeWithContentDescription("28 de dezembro, nenhuma aula").assertExists()
-        compose.onNodeWithContentDescription("3 de janeiro, nenhuma aula").assertIsNotEnabled()
-        tap("Dezembro 2026, escolher mês e ano")
-        compose.onNodeWithContentDescription("Próximo ano").assertIsNotEnabled()
+        // Stored to 31 Dec: 28 Dec has its class; › goes on to January, with its forecast dots.
+        eventually("28 de dezembro, 1 aula")
+        compose.onNodeWithContentDescription("Próximo mês").assertIsEnabled()
+        tap("Próximo mês")
+        exists("Janeiro 2027")
+        eventually("4 de janeiro, 1 aula")
     }
 
     @Test
@@ -282,7 +357,7 @@ class AgendaMonthTest {
     }
 
     @Test
-    fun `AC-016-29 swiping the month shows the next or previous one, never past the horizon`() {
+    fun `AC-016-29 swiping the month shows the next or previous one`() {
         // The gesture is checked on a device; here its two named actions, which run the same change.
         month()
 
@@ -302,11 +377,11 @@ class AgendaMonthTest {
         exists("Novembro 2026")
         swipe("Mês anterior")
         exists("Outubro 2026")
-        // Past the horizon (8 weeks from 26 Oct) nothing moves.
+        // It goes on past the stored days: October, then three months on.
         swipe("Próximo mês")
         swipe("Próximo mês")
         swipe("Próximo mês")
-        exists("Dezembro 2026")
+        exists("Janeiro 2027")
     }
 
     @Test
