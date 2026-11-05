@@ -150,12 +150,10 @@ class AgendaMonthTest {
         compose.onNodeWithTag("week-list").assertExists()
         // Today first in view, with its class as a card: times, who and where, its value.
         compose.onNodeWithTag("week-day-2026-10-26").assertIsDisplayed()
-        compose
-            .onAllNodes(
-                // Money is written with a no-break space after R$.
-                hasText("Ana Souza", substring = true) and hasText("120,00", substring = true),
-            ).onFirst()
-            .assertExists()
+        // Money is written with a no-break space after R$. The list loads its days in the background.
+        val card = hasText("Ana Souza", substring = true) and hasText("120,00", substring = true)
+        compose.waitUntil(5_000) { compose.onAllNodes(card).fetchSemanticsNodes().isNotEmpty() }
+        compose.onAllNodes(card).onFirst().assertExists()
         // Tapping Sunday on the strip scrolls the list to it.
         compose.onNodeWithContentDescription("Dom 1").performClick()
         h.settle(compose)

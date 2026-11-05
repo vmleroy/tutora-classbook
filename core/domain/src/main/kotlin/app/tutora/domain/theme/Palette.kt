@@ -4,7 +4,8 @@ import app.tutora.domain.ThemeMode
 
 // Turns the teacher's choices into one flat palette (docs/design-system/Theming.md).
 
-val themeIds = listOf("quadro", "caderno", "biblioteca", "giz")
+/** The themes with token sets of their own; "mono" is greys only, red and green and tags kept (Victor, 4 Nov 2026). */
+val themeIds = listOf("quadro", "caderno", "biblioteca", "giz", "mono")
 
 enum class Scheme { LIGHT, DARK }
 

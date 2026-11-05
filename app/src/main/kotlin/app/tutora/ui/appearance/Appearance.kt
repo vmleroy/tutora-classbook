@@ -98,6 +98,7 @@ fun themeName(id: String): String =
             "caderno" -> R.string.ap_theme_caderno
             "biblioteca" -> R.string.ap_theme_biblioteca
             "giz" -> R.string.ap_theme_giz
+            "mono" -> R.string.ap_theme_mono
             "floresta" -> R.string.ap_theme_floresta
             "oceano" -> R.string.ap_theme_oceano
             "lavanda" -> R.string.ap_theme_lavanda
@@ -398,6 +399,11 @@ fun AppearanceScreen(nav: NavHostController) {
                             onClick = { choose(Pending.Builtin(id)) },
                             modifier = Modifier.weight(1f).testTag("theme-$id"),
                         )
+                    }
+                    // An odd last card keeps half the width, like the others.
+                    if (pair.size == 1) {
+                        androidx.compose.foundation.layout
+                            .Spacer(Modifier.weight(1f))
                     }
                 }
             }
