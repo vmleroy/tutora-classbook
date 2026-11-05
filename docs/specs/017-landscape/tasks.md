@@ -16,6 +16,7 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - `size-pane-min` is 260 dp, not the plan's 300: at 300 Cadastro's 0.4 pane would not fit beside the rail on an 800 dp phone. Below it, two scrolling panes stack into one column.
 - Sideways the Agenda's week strip has touch-high tiles instead of squares, and its ‹ › sit beside it (the week's dates are already in the title), so Dia keeps room for the hours.
 - `TimerRing` shrinks (staying round) when its parent has less room, so the live class fits 360 dp without scrolling.
+- After the first emulator look (5 Nov 2026) the Agenda header was still over half the height sideways: the week strip now carries the weekday inside each tile, and the title row slides away as the hours or days scroll up and comes back on scrolling down, the strip staying pinned.
 - Cadastro's list is movable content: it keeps its search and chips when it moves into the left pane on turning.
 
 ## Pending on a device

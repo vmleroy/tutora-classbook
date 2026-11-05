@@ -281,7 +281,8 @@ fun WeekStrip(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Spacing.s1),
             ) {
-                Text(d.weekday, style = TutoraTheme.type.badge, color = if (on || isToday) c.btnPrimary else c.inkMuted)
+                // Sideways the weekday sits inside the tile, beside the day (spec 017).
+                if (!landscape) Text(d.weekday, style = TutoraTheme.type.badge, color = if (on || isToday) c.btnPrimary else c.inkMuted)
                 Box(
                     Modifier
                         .fillMaxWidth()
@@ -292,18 +293,35 @@ fun WeekStrip(
                         .then(if (isToday && !on) Modifier.border(Size.borderStrong, c.btnPrimary, shape) else Modifier),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        d.day.toString(),
-                        style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
-                        color =
-                            if (on) {
-                                c.onBtnPrimary
-                            } else if (isToday) {
-                                c.btnPrimary
-                            } else {
-                                c.ink
-                            },
-                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s1), verticalAlignment = Alignment.CenterVertically) {
+                        if (landscape) {
+                            Text(
+                                d.weekday,
+                                style = TutoraTheme.type.badge,
+                                color =
+                                    if (on) {
+                                        c.onBtnPrimary
+                                    } else if (isToday) {
+                                        c.btnPrimary
+                                    } else {
+                                        c.inkMuted
+                                    },
+                                maxLines = 1,
+                            )
+                        }
+                        Text(
+                            d.day.toString(),
+                            style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
+                            color =
+                                if (on) {
+                                    c.onBtnPrimary
+                                } else if (isToday) {
+                                    c.btnPrimary
+                                } else {
+                                    c.ink
+                                },
+                        )
+                    }
                 }
                 Box(Modifier.size(Size.weekDot).clip(CircleShape).background(d.dot?.colors()?.fill ?: Color.Transparent))
             }

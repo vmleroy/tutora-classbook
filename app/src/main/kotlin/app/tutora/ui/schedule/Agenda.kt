@@ -30,6 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -102,6 +105,7 @@ import kotlinx.datetime.YearMonth
 import kotlinx.datetime.minusMonth
 import kotlinx.datetime.plus
 import kotlinx.datetime.plusMonth
+import kotlin.math.roundToInt
 
 enum class AgendaView { DAY, WEEK, MONTH }
 
@@ -210,7 +214,10 @@ fun AgendaScreen(nav: NavHostController) {
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .testTag("schedule-screen"),
     ) {
-        Column(Modifier.fillMaxSize()) {
+        // Sideways the title row slides away as the hours or days scroll up and comes back as they
+        // scroll down, leaving the week strip pinned and the height to the content (AC-017-8, 9).
+        val collapse = rememberCollapse()
+        Column(Modifier.fillMaxSize().then(if (landscape) Modifier.nestedScroll(collapse) else Modifier)) {
             // A white card on top holds the title, the month, the view switch and the week; its days
             // sit right over the grid's columns (Victor, 28 Oct 2026).
             Column(
@@ -220,9 +227,13 @@ fun AgendaScreen(nav: NavHostController) {
                     .background(c.surface)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
                     .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s4, bottom = Spacing.s3),
-                verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+                verticalArrangement = Arrangement.spacedBy(if (landscape) Spacing.s2 else Spacing.s3),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                Row(
+                    Modifier.then(if (landscape) collapse.modifier else Modifier),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+                ) {
                     // "Agenda" over the month and year, which opens the month picker (AC-016-13, 20).
                     Column(
                         Modifier
@@ -578,3 +589,37 @@ private fun MonthPickerSheet(
         )
     }
 }
+
+/**
+ * A header part that slides away while the content under it scrolls up and comes back as it
+ * scrolls down: [modifier] goes on the part, the connection on the column holding both (spec 017).
+ */
+private class Collapse : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+    private var height = 0
+    private var offset by androidx.compose.runtime.mutableFloatStateOf(0f)
+
+    private fun take(dy: Float): androidx.compose.ui.geometry.Offset {
+        val next = (offset + dy).coerceIn(-height.toFloat(), 0f)
+        val used = next - offset
+        offset = next
+        return androidx.compose.ui.geometry
+            .Offset(0f, used)
+    }
+
+    // Either way the header moves first: up it hides, down it comes back at once.
+    override fun onPreScroll(
+        available: androidx.compose.ui.geometry.Offset,
+        source: androidx.compose.ui.input.nestedscroll.NestedScrollSource,
+    ) = take(available.y)
+
+    val modifier =
+        Modifier.clipToBounds().layout { measurable, constraints ->
+            val placeable = measurable.measure(constraints)
+            height = placeable.height
+            val shift = offset.roundToInt().coerceAtLeast(-placeable.height)
+            layout(placeable.width, placeable.height + shift) { placeable.place(0, shift) }
+        }
+}
+
+@Composable
+private fun rememberCollapse() = remember { Collapse() }
