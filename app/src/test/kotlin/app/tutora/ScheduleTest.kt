@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.plus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -81,6 +82,43 @@ class ScheduleTest {
         t.schedule.scheduleLesson(draft())
         return all()
     }
+
+    @Test
+    fun `AC-005-8 three months without opening the app, the missed weeks are filled once, as classes still to mark`() =
+        runTest {
+            // Today, 4 Nov: a weekly class every Wednesday from today; stored to 31 Dec.
+            t.now = "2026-11-04T12:00:00.000Z"
+            t.schedule.scheduleLesson(draft(date = "2026-11-04"))
+            assertEquals("2026-12-30", dates().last())
+            val stored = all().size
+            val repo = ScheduleRepository(t.db)
+            // January is only a forecast for now.
+            assertEquals(4, repo.forecastBetween(LocalDate(2027, 1, 1), LocalDate(2027, 1, 31)).first().size)
+
+            // The app isn't opened again until 4 Feb, three months later.
+            t.now = "2027-02-04T12:00:00.000Z"
+            t.schedule.fillSchedule()
+
+            val after = dates()
+            // Nothing is lost and nothing is doubled: every Wednesday from 4 Nov to the new limit, once.
+            val wednesdays =
+                generateSequence(LocalDate(2026, 11, 4)) { it.plus(kotlinx.datetime.DatePeriod(days = 7)) }
+                    .takeWhile { it <= LocalDate(2027, 4, 30) }
+                    .map { it.toString() }
+                    .toList()
+            assertEquals(wednesdays, after)
+            assertEquals(after.size, after.toSet().size)
+            // The new limit: 4 Feb + 8 weeks is 1 Apr, so classes are stored to the end of April.
+            assertEquals("2027-04-28", after.last())
+            // The weeks missed while the app was closed are there, still scheduled: waiting to be
+            // marked done or cancelled, never counted as given on their own.
+            val missed = all().filter { localOf(it.startAt, zone).date in LocalDate(2027, 1, 1)..LocalDate(2027, 2, 3) }
+            assertEquals(5, missed.size)
+            assertTrue(missed.all { it.status == app.tutora.domain.LessonStatus.SCHEDULED && !it.forecast })
+            assertTrue(stored < after.size)
+            // And nothing is forecast where classes are now stored.
+            assertTrue(repo.forecastBetween(LocalDate(2027, 1, 1), LocalDate(2027, 4, 30)).first().isEmpty())
+        }
 
     @Test
     fun `AC-016-35 past the stored days a series is forecast, never stored, never twice, and ends with it`() =
