@@ -15,7 +15,6 @@ import app.tutora.domain.Student
 import app.tutora.domain.Who
 import app.tutora.domain.isoText
 import app.tutora.domain.localToInstant
-import app.tutora.domain.teaching
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -138,10 +137,14 @@ class ScheduleRepository(
     fun scheduledBefore(before: String): Flow<List<Lesson>> =
         db.schedule().observeScheduledBefore(before).map { rows -> rows.mapNotNull { assemble(it) } }
 
-    /** The kinds of teaching the teacher already has places or classes of (AC-014-20). */
-    fun teachingInUse(): Flow<Set<app.tutora.domain.Teaching>> =
+    /** The kinds of the teacher's own places and of places that hold a class: never hidden (AC-014-20). */
+    fun kindsInUse(): Flow<Set<app.tutora.domain.PlaceKind>> =
         db.schedule().observeKindsInUse().map { kinds ->
-            kinds.mapNotNull { k -> app.tutora.domain.PlaceKind.entries.firstOrNull { it.key == k }?.teaching() }.toSet()
+            kinds
+                .mapNotNull { k ->
+                    app.tutora.domain.PlaceKind.entries
+                        .firstOrNull { it.key == k }
+                }.toSet()
         }
 
     /** The live class, if any (spec 007). */

@@ -4,8 +4,8 @@ import app.tutora.data.LessonRow
 import app.tutora.data.SettingsRepository
 import app.tutora.data.inTransaction
 import app.tutora.domain.ConfirmWhen
-import app.tutora.domain.PastClasses
 import app.tutora.domain.LessonStatus
+import app.tutora.domain.PastClasses
 import app.tutora.domain.instantOf
 import app.tutora.domain.isToConfirm
 

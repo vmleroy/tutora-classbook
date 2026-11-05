@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 014: confirming classes, reminders and the first-run setup. -->
+<resources>
+    <string name="confirm_mark">A confirmar</string>
+    <string name="status_autoDone">Dada sozinha</string>
+    <plurals name="confirm_count">
+        <item quantity="one">%1$d aula para confirmar</item>
+        <item quantity="many">%1$d aulas para confirmar</item>
+        <item quantity="other">%1$d aulas para confirmar</item>
+    </plurals>
+    <string name="confirm_title">Aulas para confirmar</string>
+    <string name="confirm_hint">Toque na aula para mudar a duração antes de confirmar.</string>
+    <string name="confirm_done">Dada</string>
+    <string name="confirm_cancelled">Cancelada</string>
+    <string name="confirm_missed">Faltou</string>
+    <string name="confirm_all">Confirmar todas como dadas</string>
+    <plurals name="confirm_allAsk">
+        <item quantity="one">Marcar %1$d aula como dada?</item>
+        <item quantity="many">Marcar %1$d aulas como dadas?</item>
+        <item quantity="other">Marcar %1$d aulas como dadas?</item>
+    </plurals>
+    <string name="confirm_allEarns">%1$s entram nos ganhos.</string>
+    <string name="confirm_allYes">Marcar como dadas</string>
+    <plurals name="confirm_allDone">
+        <item quantity="one">%1$d aula marcada como dada</item>
+        <item quantity="many">%1$d aulas marcadas como dadas</item>
+        <item quantity="other">%1$d aulas marcadas como dadas</item>
+    </plurals>
+    <string name="confirm_undo">Desfazer</string>
+    <string name="confirm_emptyTitle">Nada para confirmar</string>
+    <string name="confirm_emptyBody">Todas as aulas passadas já estão marcadas.</string>
+
+    <string name="set_pastClasses">Aulas passadas</string>
+    <string name="set_pastAsk">Confirmar uma a uma</string>
+    <string name="set_pastAuto">Marcar como dadas sozinhas</string>
+    <string name="set_pastAskHint">Aulas que já aconteceram ficam “A confirmar” até você marcar.</string>
+    <string name="set_pastAutoHint">Viram Dada com a duração planejada; dá para mudar ou cancelar depois.</string>
+    <string name="set_confirmWhen">Pedir confirmação</string>
+    <string name="set_confirmEnd">Quando a aula termina</string>
+    <string name="set_confirmHour">Uma hora depois</string>
+    <string name="set_confirmNextDay">No dia seguinte</string>
+    <string name="set_reminders">Lembretes</string>
+    <string name="set_remindBefore">Aviso antes da aula</string>
+    <string name="set_remindOff">Desligado</string>
+    <string name="set_remindMinutes">%1$d min antes</string>
+    <string name="set_owedWeekly">Quem te deve</string>
+    <string name="set_owedWhen">%1$s, %2$s</string>
+    <string name="set_confirmDaily">Aulas para confirmar</string>
+    <string name="set_confirmDailyWhen">Todo dia, %1$s</string>
+    <string name="set_hour">Horário</string>
+    <string name="set_notificationsOff">Notificações desligadas no celular</string>
+    <string name="set_openPhoneSettings">Abrir ajustes</string>
+    <string name="set_teaching">Como você dá aula</string>
+
+    <string name="remind_channel">Lembretes</string>
+    <string name="remind_channelHint">Aviso antes da aula, quem te deve e aulas para confirmar</string>
+    <plurals name="remind_classIn">
+        <item quantity="one">Aula em %1$d minuto</item>
+        <item quantity="many">Aula em %1$d minutos</item>
+        <item quantity="other">Aula em %1$d minutos</item>
+    </plurals>
+    <string name="remind_classText">%1$s · %2$s · %3$s</string>
+    <plurals name="remind_owed">
+        <item quantity="one">%1$d aluno te deve %2$s</item>
+        <item quantity="many">%1$d alunos te devem %2$s</item>
+        <item quantity="other">%1$d alunos te devem %2$s</item>
+    </plurals>
+    <string name="remind_owedText">Toque para ver quem</string>
+    <string name="remind_markAll">Marcar todas como dadas</string>
+    <string name="remind_see">Ver</string>
+
+    <string name="setup_title">Configuração inicial</string>
+    <string name="setup_step">Passo %1$d de 4</string>
+    <string name="setup_skip">Pular</string>
+    <string name="setup_back">Voltar</string>
+    <string name="setup_next">Continuar</string>
+    <string name="setup_welcome">Bem-vindo(a)!</string>
+    <string name="setup_welcomeBody">Vamos deixar o app pronto em 1 minuto. Tudo aqui pode ser mudado depois em Ajustes.</string>
+    <string name="setup_language">Idioma</string>
+    <string name="setup_teaching">Como você dá aula?</string>
+    <string name="setup_teachingBody">Marque tudo o que vale para você.</string>
+    <string name="setup_private">Aulas particulares</string>
+    <string name="setup_privateHint">Na casa do aluno ou online</string>
+    <string name="setup_school">Escola ou emprego fixo</string>
+    <string name="setup_schoolHint">Salário por mês</string>
+    <string name="setup_salinha">Salinha ou cursinho</string>
+    <string name="setup_salinhaHint">Eles pagam por aula ou por hora</string>
+    <string name="setup_teachingNote">Escolas, salinhas e cursinhos você cadastra depois em Cadastro › Locais, cada um com seu valor.</string>
+    <string name="setup_prices">Seus preços padrão</string>
+    <string name="setup_pricesBody">Cada aluno começa com esses valores. Dá para mudar por aluno ou em cada aula.</string>
+    <string name="setup_perHour">por hora</string>
+    <string name="setup_travel">Deslocamento</string>
+    <string name="setup_travelVaries">Varia por aula</string>
+    <string name="setup_travelFixed">Fixo</string>
+    <string name="setup_travelNone">Não cobro</string>
+    <string name="setup_travelVariesHint">Você informa o valor em cada aula.</string>
+    <string name="setup_travelFixedHint">Soma %1$s em toda aula na casa do aluno; dá para mudar por aluno.</string>
+    <string name="setup_travelNoneHint">Não soma nada; o preço por hora já cobre o deslocamento.</string>
+    <string name="setup_safe">Seus dados, seguros</string>
+    <string name="setup_safeBody">Tudo fica só neste celular. Um backup automático evita perder o histórico se trocar de aparelho.</string>
+    <string name="setup_backup">Backup automático</string>
+    <string name="setup_backupHint">Toda semana, domingo à noite</string>
+    <string name="setup_folder">Escolher pasta</string>
+    <string name="setup_folderHint">Pode ser no Google Drive ou OneDrive</string>
+    <string name="setup_remind">Aviso antes da aula</string>
+    <string name="setup_remindHint">15 minutos antes</string>
+    <string name="setup_summary">Resumo</string>
+    <string name="setup_rate">%1$s %2$s/h</string>
+    <string name="setup_plusTravel">+ deslocamento por aula</string>
+    <string name="setup_firstStudent">Cadastrar meu primeiro aluno</string>
+    <string name="setup_goToday">Ir para Hoje</string>
+</resources>

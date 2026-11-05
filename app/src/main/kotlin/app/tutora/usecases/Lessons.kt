@@ -69,7 +69,8 @@ class Lessons(
             if (row.startAt > ctx.now() && !SettingsRepository(db).load().earlyDone) {
                 return@inTransaction ScheduleResult.Err(ScheduleError.NOT_STARTED)
             }
-            val next = done(row.copy(plannedMin = minutes, autoDone = false)) ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
+            val next =
+                done(row.copy(plannedMin = minutes, autoDone = false)) ?: return@inTransaction ScheduleResult.Err(ScheduleError.NOT_FOUND)
             dao.upsertLesson(next.copy(isDetached = row.ruleId != null))
             ScheduleResult.Ok(id)
         }

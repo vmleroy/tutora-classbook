@@ -102,7 +102,7 @@ interface BackupPicker {
 val LocalBackupPicker = staticCompositionLocalOf<BackupPicker?> { null }
 
 @Composable
-private fun rememberBackupPicker(): BackupPicker {
+fun rememberBackupPicker(): BackupPicker {
     LocalBackupPicker.current?.let { return it }
     var pending by remember { mutableStateOf<((String?) -> Unit)?>(null) }
     val folder =

@@ -7,7 +7,7 @@ import org.junit.Test
 
 class TeachingRulesTest {
     @Test
-    fun `AC-014-19 what is not chosen is hidden - Escola without school, Salinha and Cursinho without salinha, Particulares without private`() {
+    fun `AC-014-19 what is not chosen is hidden - Escola without school, Salinha and Cursinho without salinha`() {
         val onlyPrivate = setOf(Teaching.PRIVATE)
         assertEquals(listOf(PlaceKind.PRIVATE), ownKindsShown(onlyPrivate, emptySet()))
         assertFalse(shown(Teaching.SCHOOL, onlyPrivate, emptySet()))

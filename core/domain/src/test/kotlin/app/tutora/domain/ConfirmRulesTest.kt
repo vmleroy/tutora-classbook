@@ -21,7 +21,7 @@ class ConfirmRulesTest {
     ) = isToConfirm(status, forecast, start, 60, at(now), zone, whenTo)
 
     @Test
-    fun `AC-014-1 a scheduled class is to confirm once it ended, an hour later or the next day, never when done, cancelled, missed, live or forecast`() {
+    fun `AC-014-1 a class is to confirm after its end, an hour later or the next day, and never once done, cancelled, live or forecast`() {
         assertFalse(toConfirm("2026-10-26T17:59:00Z"))
         assertTrue(toConfirm("2026-10-26T18:00:00Z"))
         assertFalse(toConfirm("2026-10-26T18:59:00Z", ConfirmWhen.HOUR))

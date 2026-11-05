@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -419,8 +419,7 @@ fun AgendaCard(
                     BlockState.TO_CONFIRM -> Opacity.pending
                     else -> 1f
                 },
-            )
-            .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            ).height(androidx.compose.foundation.layout.IntrinsicSize.Min)
             .clip(shape)
             .background(c.surface, shape)
             .then(if (outlined) Modifier.border(Size.borderStrong, c.accent, shape) else Modifier)

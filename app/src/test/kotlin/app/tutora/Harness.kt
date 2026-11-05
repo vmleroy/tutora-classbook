@@ -29,12 +29,15 @@ class Harness(
 
     /** What the calendar permission answers (spec 012). */
     val calendarPermission = FakeCalendarPermission()
+
+    /** Whether notifications are allowed, and what asking answers (spec 014). */
+    val notificationPermission = FakeNotificationPermission()
     lateinit var nav: NavHostController
 
     init {
         runBlocking {
             t.catalog.ensureBuiltinPlaces()
-            services.saveSettings(Settings(language = Language.PT_BR))
+            services.saveSettings(Settings(language = Language.PT_BR, setupDone = true))
         }
     }
 
@@ -58,6 +61,7 @@ class Harness(
                 app.tutora.adapters.export.LocalExports provides exports,
                 app.tutora.ui.backup.LocalBackupPicker provides picker,
                 app.tutora.ui.calendar.LocalCalendarPermission provides calendarPermission,
+                app.tutora.ui.reminders.LocalNotificationPermission provides notificationPermission,
             ) { TutoraNav(AppInfo("1.1.0", "7"), services.schemaVersion, nav = nav) }
         }
     }
@@ -114,6 +118,25 @@ class FakeCalendarPermission : app.tutora.ui.calendar.CalendarPermission {
     var settingsOpened = false
 
     override fun request(onResult: (Boolean) -> Unit) = onResult(answer)
+
+    override fun openSettings() {
+        settingsOpened = true
+    }
+}
+
+class FakeNotificationPermission : app.tutora.ui.reminders.NotificationPermission {
+    var allowed = true
+    var answer = true
+    var asked = 0
+    var settingsOpened = false
+
+    override fun allowed() = allowed
+
+    override fun request(onResult: (Boolean) -> Unit) {
+        asked++
+        allowed = answer
+        onResult(answer)
+    }
 
     override fun openSettings() {
         settingsOpened = true

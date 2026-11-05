@@ -22,6 +22,7 @@ class TestDb(
     val folder: FakeBackupFolder = FakeBackupFolder(),
     val scheduler: FakeBackupScheduler = FakeBackupScheduler(),
     val calendar: FakePhoneCalendar = FakePhoneCalendar(),
+    val reminders: FakeReminderAlarm = FakeReminderAlarm(),
 ) {
     private var n = 0
     val db = openTutoraDatabase(ApplicationProvider.getApplicationContext(), File(dir, "tutora.db"), AndroidSQLiteDriver()).first
@@ -38,6 +39,7 @@ class TestDb(
             File(dir, "files"),
             calendar,
             { TEST_CALENDAR_WORDS },
+            reminders,
         )
     val catalog = Catalog(ctx)
     val schedule = Schedule(ctx)
@@ -179,4 +181,17 @@ class FakePhoneCalendar : app.tutora.usecases.PhoneCalendar {
         fromMs: Long,
         toMs: Long,
     ) = busy
+}
+
+/** The reminders' alarms in memory: what is set for each kind (spec 014). */
+class FakeReminderAlarm : app.tutora.usecases.ReminderAlarm {
+    val set = mutableMapOf<app.tutora.usecases.ReminderKind, Pair<String, String?>>()
+
+    override fun set(
+        kind: app.tutora.usecases.ReminderKind,
+        at: String?,
+        lessonId: String?,
+    ) {
+        if (at == null) set.remove(kind) else set[kind] = at to lessonId
+    }
 }

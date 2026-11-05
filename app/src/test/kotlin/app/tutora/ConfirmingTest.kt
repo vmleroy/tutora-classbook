@@ -73,12 +73,12 @@ class ConfirmingTest {
             ) as ScheduleResult.Ok
         ).lessonId ?: ""
 
-    private suspend fun all(): List<Lesson> = ScheduleRepository(t.db).between("2026-10-01T00:00:00.000Z", "2027-01-31T00:00:00.000Z").first()
+    private suspend fun all(): List<Lesson> =
+        ScheduleRepository(t.db).between("2026-10-01T00:00:00.000Z", "2027-01-31T00:00:00.000Z").first()
 
     private suspend fun one(id: String) = all().first { it.id == id }
 
-    private suspend fun toConfirm(): List<String> =
-        all().filter { it.toConfirm(instantOf(t.now), zone, ConfirmWhen.END) }.map { it.id }
+    private suspend fun toConfirm(): List<String> = all().filter { it.toConfirm(instantOf(t.now), zone, ConfirmWhen.END) }.map { it.id }
 
     private suspend fun settings(change: (app.tutora.domain.Settings) -> app.tutora.domain.Settings) {
         val repo = SettingsRepository(t.db)

@@ -3,7 +3,7 @@
 
     <!-- The live class's ongoing notification (spec 007). -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- Início automático with the app closed sets its alarm again after a restart (AC-007-22). -->
+    <!-- Início automático and the reminders set their alarms again after a restart (AC-007-22, AC-014-15). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Classes copied into a calendar of the phone, and other appointments as busy time (spec 012). -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
@@ -49,6 +49,14 @@
             android:exported="false" />
         <receiver
             android:name=".live.AutoStartReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <!-- Reminders: before each class, who owes and classes to confirm (spec 014). -->
+        <receiver
+            android:name=".reminders.ReminderReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -48,12 +49,15 @@ import app.tutora.domain.Place
 import app.tutora.domain.PlaceKind
 import app.tutora.domain.Preview
 import app.tutora.domain.RateType
+import app.tutora.domain.Teaching
 import app.tutora.domain.TravelMode
 import app.tutora.domain.builtinPlace
 import app.tutora.domain.earningsType
 import app.tutora.domain.initials
+import app.tutora.domain.ownKindsShown
 import app.tutora.domain.payMode
 import app.tutora.domain.previewLesson
+import app.tutora.domain.shown
 import app.tutora.state.LocalServices
 import app.tutora.ui.GroupDetail
 import app.tutora.ui.GroupEdit
@@ -315,6 +319,20 @@ private fun PlaceForm(
     val language = currentLanguage()
     val builtin = d.builtin != null
     val mode = payMode(d.kind)
+    // Escola, Salinha and Cursinho and "o local" paying follow "Como você dá aula", unless already in use (AC-014-19, 20).
+    val settings by services.settings.collectAsState(initial = null)
+    val inUse by remember { services.teachingInUse() }.collectAsState(initial = emptySet())
+    val chosen = settings?.teaching ?: Teaching.entries.toSet()
+    val offered = ownKindsShown(chosen, inUse)
+    val kinds = PlaceKind.own.filter { it in offered || (id != null && it == initial.kind) }
+    val payerChoice = shown(Teaching.SALINHA, chosen, inUse) || (id != null && initial.payer == Payer.PLACE)
+    // A new place starts on a kind and payer that are offered.
+    LaunchedEffect(kinds, payerChoice) {
+        if (id == null && settings != null) {
+            val kind = if (d.kind in kinds) d.kind else kinds.first()
+            d = d.copy(kind = kind, payer = if (payMode(kind) == PayMode.CHOOSE && payerChoice) d.payer else Payer.STUDENT)
+        }
+    }
     ScreenScaffold(
         stringResource(
             if (id !=
@@ -361,10 +379,10 @@ private fun PlaceForm(
             TextField(stringResource(R.string.places_address), d.address.orEmpty(), { d = d.copy(address = it.ifEmpty { null }) })
             Field(stringResource(R.string.places_type)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                    PlaceKind.own.forEach { k ->
+                    kinds.forEach { k ->
                         Chip(kindName(k), d.kind == k, {
                             d =
-                                d.copy(kind = k, payer = if (payMode(k) == PayMode.CHOOSE) d.payer else Payer.STUDENT)
+                                d.copy(kind = k, payer = if (payMode(k) == PayMode.CHOOSE && payerChoice) d.payer else Payer.STUDENT)
                         })
                     }
                 }
@@ -386,7 +404,7 @@ private fun PlaceForm(
         if (mode == PayMode.SALARY) {
             MoneyField(stringResource(R.string.places_salaryLabel), d.monthlySalaryCents, { d = d.copy(monthlySalaryCents = it) })
         } else {
-            if (mode == PayMode.CHOOSE) {
+            if (mode == PayMode.CHOOSE && payerChoice) {
                 Field(stringResource(R.string.places_whoPays)) {
                     SegmentedControl(
                         listOf(

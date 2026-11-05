@@ -102,6 +102,18 @@ fun NavHostController.openTab(graph: Any) {
 /** Ajustes › Geral › Calendário (spec 012). */
 @Serializable data object CalendarHome
 
+/** Aulas para confirmar (spec 014), from Hoje's alert and the daily notification. */
+@Serializable data object ConfirmClasses
+
+/** Ajustes › Lembretes (spec 014). */
+@Serializable data object RemindersHome
+
+/** Ajustes › Geral › Como você dá aula (AC-014-20). */
+@Serializable data object TeachingHome
+
+/** Configuração inicial on the very first run (AC-014-17). */
+@Serializable data object SetupHome
+
 /** Ajustes › Backup e planilha (spec 011); Hoje's backup alert opens it too. */
 @Serializable data object BackupHome
 
@@ -195,7 +207,16 @@ fun TutoraNav(
     nav: NavHostController = rememberNavController(),
     liveRequest: LiveRequest? = null,
     onLiveRequestHandled: () -> Unit = {},
+    /** A route a reminder's notification asked for: a class, the confirm list or who owes (spec 014). */
+    openRequest: Any? = null,
+    onOpenRequestHandled: () -> Unit = {},
 ) {
+    LaunchedEffect(openRequest) {
+        val r = openRequest ?: return@LaunchedEffect
+        if (r is RegistryHome) nav.openTab(RegistryGraph)
+        nav.navigate(r) { launchSingleTop = true }
+        onOpenRequestHandled()
+    }
     // The notification opens the live screen, or Encerrar's sheet (AC-007-15).
     LaunchedEffect(liveRequest) {
         val r = liveRequest ?: return@LaunchedEffect
@@ -206,6 +227,15 @@ fun TutoraNav(
     val activeTab = Tab.entries.firstOrNull { tab -> entry?.destination?.hierarchy?.any { it.hasRoute(tab.graphClass) } == true }
     // Durações em HH:MM reaches every screen from here.
     val clockDurations by LocalServices.current.settings.collectAsState(initial = null)
+    // The Agenda tab counts the classes to confirm (AC-014-4).
+    val services = LocalServices.current
+    val toConfirm by androidx.compose.runtime
+        .remember { services.toConfirm() }
+        .collectAsState(initial = emptyList())
+    // The very first run, with no data, opens on the setup (AC-014-17).
+    LaunchedEffect(Unit) {
+        if (services.setup.needed()) nav.navigate(SetupHome) { popUpTo(TodayGraph) { inclusive = false } }
+    }
     CompositionLocalProvider(LocalClockDurations provides (clockDurations?.clockDurations == true)) {
         Scaffold(
             modifier = modifier,
@@ -217,7 +247,10 @@ fun TutoraNav(
                 // The bar shows on the tabs; details and forms take the whole screen.
                 if (activeTab != null) {
                     TabBar(
-                        tabs = Tab.entries.map { TabItem(it.key, stringResource(it.label), it.icon) },
+                        tabs =
+                            Tab.entries.map {
+                                TabItem(it.key, stringResource(it.label), it.icon, count = if (it == Tab.SCHEDULE) toConfirm.size else 0)
+                            },
                         active = activeTab.key,
                         onSelect = { key ->
                             nav.openTab(Tab.entries.first { it.key == key }.graph)
@@ -253,7 +286,9 @@ fun TutoraNav(
                             { nav.navigate(PersonalData) },
                             { nav.navigate(BackupHome) },
                             { nav.navigate(CalendarHome) },
-                        ) { nav.navigate(AppearanceHome) }
+                            { nav.navigate(AppearanceHome) },
+                            { nav.navigate(RemindersHome) },
+                        ) { nav.navigate(TeachingHome) }
                     }
                     composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
                 }
@@ -268,6 +303,22 @@ fun TutoraNav(
                 composable<CustomColors> {
                     app.tutora.ui.appearance
                         .CustomColorsScreen(nav, it.toRoute<CustomColors>().part)
+                }
+                composable<ConfirmClasses> {
+                    app.tutora.ui.confirm
+                        .ConfirmClassesScreen(nav)
+                }
+                composable<RemindersHome> {
+                    app.tutora.ui.reminders
+                        .RemindersScreen(nav)
+                }
+                composable<TeachingHome> {
+                    app.tutora.ui.setup
+                        .TeachingScreen(nav)
+                }
+                composable<SetupHome> {
+                    app.tutora.ui.setup
+                        .SetupScreen(nav)
                 }
                 composable<CalendarHome> {
                     app.tutora.ui.calendar

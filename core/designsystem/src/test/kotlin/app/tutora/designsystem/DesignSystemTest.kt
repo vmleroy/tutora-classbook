@@ -291,8 +291,10 @@ class DesignSystemTest {
                 Column {
                     app.tutora.designsystem.components.MonthGrid(
                         listOf(
-                            app.tutora.designsystem.components.MonthDay(19, true, emptyList(), 0, "19", pending = true),
-                            app.tutora.designsystem.components.MonthDay(20, true, emptyList(), 0, "20"),
+                            app.tutora.designsystem.components
+                                .MonthDay(19, true, emptyList(), 0, "19", pending = true),
+                            app.tutora.designsystem.components
+                                .MonthDay(20, true, emptyList(), 0, "20"),
                         ),
                         null,
                         {},
@@ -314,7 +316,15 @@ class DesignSystemTest {
                 }
             }
         }
-        assertEquals(1, compose.onAllNodes(androidx.compose.ui.test.hasTestTag("month-pending")).fetchSemanticsNodes().size)
+        assertEquals(
+            1,
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasTestTag("month-pending"),
+                ).fetchSemanticsNodes()
+                .size,
+        )
         compose.onNodeWithTag("tab-count-schedule", useUnmergedTree = true).assertExists()
     }
 }

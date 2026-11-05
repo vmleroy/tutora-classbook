@@ -104,6 +104,7 @@ fun WeekList(
     modifier: Modifier = Modifier,
 ) {
     val language = currentLanguage()
+    val pending = rememberToConfirm()
     val state = rememberLazyListState()
 
     // The days loaded, whole weeks from Monday; grows at either end (saved across rotation).
@@ -241,7 +242,7 @@ fun WeekList(
                                 subtitle = lessonSubtitle(l),
                                 trailing = worthText(l.worth()),
                                 status = badge?.let { it.first to it.second },
-                                state = blockState(l, nextId),
+                                state = blockState(l, nextId, pending(l)),
                                 onClick = { onOpen(l) },
                             )
                         }

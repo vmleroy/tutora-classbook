@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -39,7 +40,9 @@ import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.AutoStart
+import app.tutora.domain.ConfirmWhen
 import app.tutora.domain.Language
+import app.tutora.domain.PastClasses
 import app.tutora.domain.Settings
 import app.tutora.state.LocalServices
 import kotlinx.coroutines.launch
@@ -65,6 +68,8 @@ fun SettingsScreen(
     onBackup: () -> Unit = {},
     onCalendar: () -> Unit = {},
     onAppearance: () -> Unit = {},
+    onReminders: () -> Unit = {},
+    onTeaching: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val settings by services.settings.collectAsState(initial = null)
@@ -137,6 +142,20 @@ fun SettingsScreen(
                         app.tutora.ui.calendar
                             .CalendarSettingsRow(onCalendar)
                     },
+                    // Como você dá aula, to change what the setup chose (AC-014-20).
+                    {
+                        ListRow(
+                            stringResource(R.string.set_teaching),
+                            subtitle =
+                                app.tutora.ui.setup
+                                    .teachingSummary(s.teaching),
+                            icon = IconName.USERS,
+                            onClick = onTeaching,
+                            modifier =
+                                androidx.compose.ui.Modifier
+                                    .testTag("teaching-row"),
+                        )
+                    },
                     {
                         ListRow(
                             stringResource(R.string.settings_showDefaultPlaces),
@@ -172,6 +191,22 @@ fun SettingsScreen(
                             trailing = RowTrailing.SWITCH,
                             switchValue = s.liveTimer,
                             onSwitchChange = { saveTimer(s.copy(liveTimer = it)) },
+                        )
+                    },
+                    // Aulas passadas and, while they are confirmed one by one, Pedir confirmação (AC-014-1, 2).
+                    { PastClassesRow(s) { save(it) } },
+                    // Lembretes, with what is on (AC-014-12 to 14).
+                    {
+                        ListRow(
+                            stringResource(R.string.set_reminders),
+                            subtitle =
+                                app.tutora.ui.reminders
+                                    .remindersSummary(s),
+                            icon = IconName.ALERT,
+                            onClick = onReminders,
+                            modifier =
+                                androidx.compose.ui.Modifier
+                                    .testTag("reminders-row"),
                         )
                     },
                     {
@@ -234,6 +269,50 @@ fun SettingsScreen(
                 style = TutoraTheme.type.caption.copy(fontFeatureSettings = "tnum"),
                 color = TutoraTheme.colors.inkMuted,
             )
+        }
+    }
+}
+
+/** Aulas passadas: one by one or by themselves; one by one, Pedir confirmação says when (AC-014-1, 2). */
+@Composable
+private fun PastClassesRow(
+    s: Settings,
+    onChange: (Settings) -> Unit,
+) {
+    val c = TutoraTheme.colors
+    Column(
+        Modifier.padding(horizontal = Spacing.s4, vertical = Spacing.s2_5).testTag("past-classes"),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s2),
+    ) {
+        Text(stringResource(R.string.set_pastClasses), style = TutoraTheme.type.bodyStrong, color = c.ink)
+        SegmentedControl(
+            listOf(
+                PastClasses.ASK to stringResource(R.string.set_pastAsk),
+                PastClasses.AUTO to stringResource(R.string.set_pastAuto),
+            ),
+            s.pastClasses,
+            { onChange(s.copy(pastClasses = it)) },
+            stringResource(R.string.set_pastClasses),
+            size = ControlSize.SM,
+        )
+        Text(
+            stringResource(if (s.pastClasses == PastClasses.AUTO) R.string.set_pastAutoHint else R.string.set_pastAskHint),
+            style = TutoraTheme.type.meta,
+            color = c.inkMuted,
+        )
+        Text(stringResource(R.string.set_confirmWhen), style = TutoraTheme.type.bodyStrong, color = c.ink)
+        androidx.compose.foundation.layout.FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s2),
+        ) {
+            listOf(
+                ConfirmWhen.END to R.string.set_confirmEnd,
+                ConfirmWhen.HOUR to R.string.set_confirmHour,
+                ConfirmWhen.NEXT_DAY to R.string.set_confirmNextDay,
+            ).forEach { (w, label) ->
+                app.tutora.designsystem.components
+                    .Chip(stringResource(label), s.confirmWhen == w, { onChange(s.copy(confirmWhen = w)) })
+            }
         }
     }
 }

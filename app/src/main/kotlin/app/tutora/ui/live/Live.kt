@@ -94,12 +94,15 @@ import kotlinx.datetime.LocalTime
  * the composables that read it recompose, and UI tests are not kept waiting on it.
  */
 @Composable
-fun rememberNow(services: AppServices): State<String> {
+fun rememberNow(
+    services: AppServices,
+    tickMs: Long = TICK_MS,
+): State<String> {
     val now = remember { mutableStateOf(services.now()) }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(tickMs) {
         withContext(Dispatchers.Default) {
             while (true) {
-                delay(TICK_MS)
+                delay(tickMs)
                 now.value = services.now()
             }
         }

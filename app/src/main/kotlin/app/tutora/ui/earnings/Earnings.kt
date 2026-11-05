@@ -195,12 +195,28 @@ fun EarningsScreen(
                 enabled = !period.isCurrent(today),
             )
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            listOf(
+        // Escola e emprego and Particulares follow "Como você dá aula", unless there are earnings of that kind (AC-014-19, 20).
+        val settings by services.settings.collectAsState(initial = null)
+        val inUse by remember { services.kindsInUse() }.collectAsState(initial = emptySet())
+        val chosen =
+            settings?.teaching ?: app.tutora.domain.Teaching.entries
+                .toSet()
+        val filters =
+            listOfNotNull(
                 TypeFilter.ALL to R.string.earn_all,
-                TypeFilter.PRIVATE to R.string.earn_private,
-                TypeFilter.JOB to R.string.earn_job,
-            ).forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
+                (TypeFilter.PRIVATE to R.string.earn_private).takeIf {
+                    app.tutora.domain.Teaching.PRIVATE in chosen ||
+                        inUse.any { app.tutora.domain.earningsType(it) == app.tutora.domain.EarningsType.PRIVATE }
+                },
+                (TypeFilter.JOB to R.string.earn_job).takeIf {
+                    app.tutora.domain.Teaching.SCHOOL in chosen ||
+                        inUse.any { app.tutora.domain.earningsType(it) == app.tutora.domain.EarningsType.JOB }
+                },
+            )
+        if (filters.size > 1) {
+            FlowRow(Modifier.testTag("earn-filters"), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                filters.forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
+            }
         }
         if (picking) {
             PeriodPickerSheet(period, today, { picking = false }) {

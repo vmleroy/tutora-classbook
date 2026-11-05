@@ -127,8 +127,13 @@ class Reminders(
                         ?.let { ReminderNotice.Class(it) }
                 ReminderKind.OWED ->
                     if (s.owedWeekly) {
-                        owedSummary(PaymentRepository(ctx.db).balances().first().values.map { balanceOf(it.coerceAtLeast(0), 0) })
-                            ?.let { ReminderNotice.Owed(it) }
+                        owedSummary(
+                            PaymentRepository(ctx.db)
+                                .balances()
+                                .first()
+                                .values
+                                .map { balanceOf(it.coerceAtLeast(0), 0) },
+                        )?.let { ReminderNotice.Owed(it) }
                     } else {
                         null
                     }

@@ -380,6 +380,7 @@ private fun MonthView(
 ) {
     val language = currentLanguage()
     val zone = LocalServices.current.zone
+    val pending = rememberToConfirm()
     val dots = dayDots(byDay, today)
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.schedule_prevMonth), {
@@ -416,6 +417,8 @@ private fun MonthView(
                 today = cell.date == today,
                 // A neighbor's day opens its month (Victor, 29 Oct 2026).
                 enabled = true,
+                // A ring on a day with a class to confirm, so a forgotten week stands out (AC-014-5).
+                pending = byDay[cell.date].orEmpty().any(pending),
             )
         }
     MonthGrid(
@@ -467,7 +470,8 @@ private fun MonthView(
         ListGroup(
             dayLessons.map<Lesson, @Composable () -> Unit> { l ->
                 {
-                    val badge = statusBadge(l)
+                    val toConfirm = pending(l)
+                    val badge = statusBadge(l, toConfirm)
                     LessonRow(
                         clockTime(localOf(l.startAt, zone).time, language),
                         l.whoTag,
@@ -477,6 +481,7 @@ private fun MonthView(
                         trailing = worthText(l.worth()),
                         onClick = { onOpen(l) },
                         statusIcon = badge?.third,
+                        pending = toConfirm,
                     )
                 }
             },

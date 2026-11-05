@@ -58,6 +58,23 @@ class AppContainer(
     /** The live timer for the notification's buttons, which run without the screens. */
     val live by lazy { Live(ctx) }
 
+    /** The reminders' alarms and notifications, which run without the screens (spec 014). */
+    private val reminderAlarm =
+        app.tutora.reminders
+            .AndroidReminderAlarm(context)
+    val reminderNotifier =
+        app.tutora.reminders
+            .ReminderNotifier(context)
+    val reminders by lazy { app.tutora.usecases.Reminders(ctx) }
+    val confirming by lazy { app.tutora.usecases.Confirming(ctx) }
+
+    suspend fun settings() =
+        app.tutora.data
+            .SettingsRepository(database.first)
+            .load()
+
+    fun zone(): String = ctx.zone()
+
     /** Automatic backups for the 20:00 work, which runs without the screens (AC-011-6). */
     val backups by lazy { Backups(ctx) }
 
@@ -73,6 +90,7 @@ class AppContainer(
             privateDir = context.filesDir,
             calendar = calendar,
             calendarWords = calendarWords,
+            reminders = reminderAlarm,
         )
     }
 
@@ -95,6 +113,7 @@ class AppContainer(
             privateDir = context.filesDir,
             calendar = calendar,
             calendarWords = calendarWords,
+            reminders = reminderAlarm,
         )
 }
 
