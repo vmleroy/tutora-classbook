@@ -106,14 +106,14 @@ fun dayName(
         .removeSuffix("-feira")
         .replaceFirstChar { it.uppercase() }
 
-/** "15 min antes" / "Desligado", Ajustes' line for Lembretes. */
+/** "15 min antes · Quem te deve · Aulas para confirmar": what is on; "Desligado" when nothing is. */
 @Composable
 fun remindersSummary(s: app.tutora.domain.Settings): String =
-    if (s.remindBefore > 0) {
-        stringResource(R.string.set_remindMinutes, s.remindBefore)
-    } else {
-        stringResource(R.string.set_remindOff)
-    }
+    listOfNotNull(
+        stringResource(R.string.set_remindMinutes, s.remindBefore).takeIf { s.remindBefore > 0 },
+        stringResource(R.string.set_owedWeekly).takeIf { s.owedWeekly },
+        stringResource(R.string.set_confirmDaily).takeIf { s.confirmDaily && s.pastClasses == PastClasses.ASK },
+    ).joinToString(" · ").ifEmpty { stringResource(R.string.set_remindOff) }
 
 /**
  * Lembretes: Aviso antes da aula, Quem te deve on its day and hour, and Aulas para confirmar at
@@ -251,9 +251,18 @@ private fun HourRow(
             stringResource(R.string.set_hour),
             style = TutoraTheme.type.body,
             color = TutoraTheme.colors.ink,
-            modifier = Modifier.weight(1f),
         )
-        Stepper(hour.toLong(), { onChange(it.toInt()) }, step = 1, min = 0, max = LAST_HOUR, format = text, size = ControlSize.SM)
+        // The stepper takes the room left, so the label keeps its own width.
+        Stepper(
+            hour.toLong(),
+            { onChange(it.toInt()) },
+            Modifier.weight(1f),
+            step = 1,
+            min = 0,
+            max = LAST_HOUR,
+            format = text,
+            size = ControlSize.SM,
+        )
     }
 }
 

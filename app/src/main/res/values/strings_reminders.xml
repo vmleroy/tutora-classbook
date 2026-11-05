@@ -60,6 +60,10 @@
         <item quantity="one">%1$d student owes you %2$s</item>
         <item quantity="other">%1$d students owe you %2$s</item>
     </plurals>
+    <plurals name="remind_owedMixed">
+        <item quantity="one">%1$d pending payment · %2$s</item>
+        <item quantity="other">%1$d pending payments · %2$s</item>
+    </plurals>
     <string name="remind_owedText">Tap to see who</string>
     <string name="remind_markAll">Mark all as done</string>
     <string name="remind_see">See</string>

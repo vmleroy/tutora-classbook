@@ -70,6 +70,8 @@ sealed interface ReminderNotice {
     /** "3 alunos te devem R$ 480,00"; tapping opens Cadastro on those who owe (AC-014-13). */
     data class Owed(
         val summary: OwedSummary,
+        /** Everyone owing is a student: "3 alunos te devem"; otherwise "3 pagamentos pendentes", as Hoje says (AC-008-15). */
+        val onlyStudents: Boolean = true,
     ) : ReminderNotice
 
     /** "5 aulas para confirmar", with Marcar todas como dadas and Ver (AC-014-14). */
@@ -127,13 +129,9 @@ class Reminders(
                         ?.let { ReminderNotice.Class(it) }
                 ReminderKind.OWED ->
                     if (s.owedWeekly) {
-                        owedSummary(
-                            PaymentRepository(ctx.db)
-                                .balances()
-                                .first()
-                                .values
-                                .map { balanceOf(it.coerceAtLeast(0), 0) },
-                        )?.let { ReminderNotice.Owed(it) }
+                        val owing = PaymentRepository(ctx.db).balances().first().filterValues { it > 0 }
+                        owedSummary(owing.values.map { balanceOf(it, 0) })
+                            ?.let { ReminderNotice.Owed(it, owing.keys.all { p -> p.kind == app.tutora.domain.PayerKind.STUDENT }) }
                     } else {
                         null
                     }

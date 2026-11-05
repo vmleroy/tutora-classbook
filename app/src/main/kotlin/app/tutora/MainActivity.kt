@@ -24,6 +24,7 @@ import app.tutora.ui.ConfirmClasses
 import app.tutora.ui.LessonDetail
 import app.tutora.ui.LiveRequest
 import app.tutora.ui.RegistryHome
+import app.tutora.ui.TodayGraph
 import app.tutora.ui.TutoraApp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity() {
                 a.OPEN_LESSON -> intent.getStringExtra(a.EXTRA_LESSON)?.let { LessonDetail(it) }
                 a.OPEN_CONFIRM -> ConfirmClasses
                 a.OPEN_OWED -> RegistryHome(owing = true)
+                a.OPEN_TODAY -> TodayGraph
                 else -> null
             }
         if (route != null) openRequest.value = route

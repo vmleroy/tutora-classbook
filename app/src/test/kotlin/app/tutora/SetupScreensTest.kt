@@ -153,5 +153,9 @@ class SetupScreensTest {
         h.settle(compose)
         compose.onNodeWithTag("student-edit").assertExists()
         assertTrue(settings().setupDone)
+        // Hoje is under the new student, not an empty stack.
+        compose.runOnIdle { h.nav.popBackStack() }
+        h.settle(compose)
+        compose.onNodeWithTag("today-screen").assertExists()
     }
 }

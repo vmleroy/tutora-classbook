@@ -213,8 +213,14 @@ fun TutoraNav(
 ) {
     LaunchedEffect(openRequest) {
         val r = openRequest ?: return@LaunchedEffect
-        if (r is RegistryHome) nav.openTab(RegistryGraph)
-        nav.navigate(r) { launchSingleTop = true }
+        when (r) {
+            is RegistryHome -> {
+                nav.openTab(RegistryGraph)
+                nav.navigate(r) { launchSingleTop = true }
+            }
+            TodayGraph -> nav.openTab(TodayGraph)
+            else -> nav.navigate(r) { launchSingleTop = true }
+        }
         onOpenRequestHandled()
     }
     // The notification opens the live screen, or Encerrar's sheet (AC-007-15).
@@ -234,7 +240,9 @@ fun TutoraNav(
         .collectAsState(initial = emptyList())
     // The very first run, with no data, opens on the setup (AC-014-17).
     LaunchedEffect(Unit) {
-        if (services.setup.needed()) nav.navigate(SetupHome) { popUpTo(TodayGraph) { inclusive = false } }
+        // Not again when the screen is made anew (a language change): the setup already open keeps its steps.
+        val open = nav.currentBackStackEntry?.destination?.hasRoute(SetupHome::class) == true
+        if (!open && services.setup.needed()) nav.navigate(SetupHome) { launchSingleTop = true }
     }
     CompositionLocalProvider(LocalClockDurations provides (clockDurations?.clockDurations == true)) {
         Scaffold(

@@ -3,7 +3,6 @@ package app.tutora.ui.confirm
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -125,11 +124,14 @@ fun ConfirmClassesScreen(nav: NavHostController) {
                             onClick = { nav.navigate(LessonDetail(l.id)) },
                             card = true,
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                        // Each button at its own width, wrapping when Large text doesn't fit the three on one line.
+                        androidx.compose.foundation.layout.FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+                            verticalArrangement = Arrangement.spacedBy(Spacing.s2),
+                        ) {
                             Button(
                                 stringResource(R.string.confirm_done),
                                 { scope.launch { services.confirming.confirm(l.id) } },
-                                Modifier.weight(1f),
                                 variant = ButtonVariant.OUTLINE,
                                 size = ControlSize.SM,
                                 icon = IconName.CHECK,
@@ -137,14 +139,12 @@ fun ConfirmClassesScreen(nav: NavHostController) {
                             Button(
                                 stringResource(R.string.confirm_cancelled),
                                 { cancelling = l to CancelReason.STUDENT },
-                                Modifier.weight(1f),
                                 variant = ButtonVariant.OUTLINE,
                                 size = ControlSize.SM,
                             )
                             Button(
                                 stringResource(R.string.confirm_missed),
                                 { cancelling = l to CancelReason.NO_SHOW },
-                                Modifier.weight(1f),
                                 variant = ButtonVariant.OUTLINE,
                                 size = ControlSize.SM,
                             )

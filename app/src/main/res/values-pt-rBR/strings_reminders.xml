@@ -65,6 +65,11 @@
         <item quantity="many">%1$d alunos te devem %2$s</item>
         <item quantity="other">%1$d alunos te devem %2$s</item>
     </plurals>
+    <plurals name="remind_owedMixed">
+        <item quantity="one">%1$d pagamento pendente · %2$s</item>
+        <item quantity="many">%1$d pagamentos pendentes · %2$s</item>
+        <item quantity="other">%1$d pagamentos pendentes · %2$s</item>
+    </plurals>
     <string name="remind_owedText">Toque para ver quem</string>
     <string name="remind_markAll">Marcar todas como dadas</string>
     <string name="remind_see">Ver</string>

@@ -53,7 +53,6 @@ import app.tutora.domain.TravelMode
 import app.tutora.state.LocalServices
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentEdit
-import app.tutora.ui.TodayGraph
 import app.tutora.ui.backup.rememberBackupPicker
 import app.tutora.usecases.SETUP_HOME_CENTS
 import app.tutora.usecases.SETUP_ONLINE_CENTS
@@ -65,6 +64,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val STEPS = 4
+
+/** The price stepper's share of its row against the label's 1. */
+private const val STEPPER_SHARE = 1.3f
 
 /** "Aulas particulares · Salinha ou cursinho", Ajustes' line for Como você dá aula. */
 @Composable
@@ -159,7 +161,8 @@ fun SetupScreen(nav: NavHostController) {
     fun finish(then: Any?) =
         scope.launch {
             withContext(Dispatchers.IO) { services.setup.save(choices()) }
-            nav.popBackStack(TodayGraph, inclusive = false)
+            // Only the setup leaves the stack: Hoje stays under it, so Voltar from the new student lands there.
+            nav.popBackStack(app.tutora.ui.SetupHome, inclusive = true)
             then?.let { nav.navigate(it) }
         }
 
@@ -345,12 +348,15 @@ private fun PriceRow(
             Text(place, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
             Text(stringResource(R.string.setup_perHour), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
         }
+        // The stepper takes a little more of the row than the label, so neither is squeezed.
         Stepper(
             cents,
             onChange,
+            Modifier.weight(STEPPER_SHARE),
             step = SETUP_PRICE_STEP,
             min = SETUP_PRICE_STEP,
-            format = { formatMoney(it, language) },
+            // Whole reais ("R$ 100"): the step is R$ 5, and the full "R$ 100,00" doesn't fit beside − and +.
+            format = { formatMoney(it, language, compact = true) },
             valueLabel = place,
             size = ControlSize.SM,
         )

@@ -78,6 +78,7 @@ class AndroidReminderAlarm(
         const val OPEN_LESSON = "lesson"
         const val OPEN_CONFIRM = "confirm"
         const val OPEN_OWED = "owed"
+        const val OPEN_TODAY = "today"
         private const val REQUEST_BASE = 100
     }
 }
@@ -153,8 +154,13 @@ class ReminderNotifier(
                             BuiltinPlace.ONLINE -> res.getString(R.string.places_builtin_online)
                             null -> l.place.name.orEmpty()
                         }
+                    // The minutes really left: an inexact alarm can come later than asked.
+                    val left =
+                        ((instantOf(l.startAt).toEpochMilliseconds() - System.currentTimeMillis()) / MINUTE_MS)
+                            .toInt()
+                            .coerceIn(1, minutesBefore.coerceAtLeast(1))
                     b
-                        .setContentTitle(res.getQuantityString(R.plurals.remind_classIn, minutesBefore, minutesBefore))
+                        .setContentTitle(res.getQuantityString(R.plurals.remind_classIn, left, left))
                         .setContentText(
                             res.getString(R.string.remind_classText, who, clockTime(localOf(l.startAt, zone).time, language), place),
                         ).setContentIntent(open(AndroidReminderAlarm.OPEN_LESSON, l.id))
@@ -164,10 +170,19 @@ class ReminderNotifier(
                     val money =
                         app.tutora.designsystem.components
                             .formatMoney(notice.summary.cents, language)
+                    val n = notice.summary.count
                     b
-                        .setContentTitle(res.getQuantityString(R.plurals.remind_owed, notice.summary.count, notice.summary.count, money))
-                        .setContentText(res.getString(R.string.remind_owedText))
-                        .setContentIntent(open(AndroidReminderAlarm.OPEN_OWED))
+                        .setContentTitle(
+                            if (notice.onlyStudents) {
+                                res.getQuantityString(R.plurals.remind_owed, n, n, money)
+                            } else {
+                                res.getQuantityString(R.plurals.remind_owedMixed, n, n, money)
+                            },
+                        ).setContentText(res.getString(R.string.remind_owedText))
+                        // Cadastro lists students; with groups or places owing too, Hoje's alert lists everyone.
+                        .setContentIntent(
+                            open(if (notice.onlyStudents) AndroidReminderAlarm.OPEN_OWED else AndroidReminderAlarm.OPEN_TODAY),
+                        )
                     ID_OWED
                 }
                 is ReminderNotice.Confirm -> {
@@ -196,6 +211,7 @@ class ReminderNotifier(
         private const val ID_CLASS = 21
         private const val ID_OWED = 22
         private const val ID_CONFIRM = 23
+        private const val MINUTE_MS = 60_000L
     }
 }
 

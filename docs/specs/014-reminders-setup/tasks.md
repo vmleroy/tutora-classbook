@@ -11,12 +11,27 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 7. First-run setup: the four steps, summary and ways out; `setupDone` for teachers with data; hiding by teaching kind. Test: `app/src/test/kotlin/app/tutora/SetupScreensTest.kt`, `SetupTest.kt`. (AC-014-17, AC-014-18, AC-014-19, AC-014-20, AC-014-21, AC-014-22, AC-014-23)
 - [x] 8. `./gradlew check`, roadmap status, device checks pending in the PR.
 
-## Pending on a device
+## Checked on a device (5 Nov 2026, emulator, Android 16)
 
-- A reminder before class arriving with Tutora closed, and again after the phone restarts (AC-014-15); alarms are inexact, so a few minutes late is expected.
-- "Quem te deve" on Monday at 08:00 and "Aulas para confirmar" at 20:00, each opening the right page when tapped (AC-014-13, 14).
-- "Marcar todas como dadas" from the notification, with the app closed (AC-014-14).
-- The notification permission prompt on Android 13+, and "Abrir ajustes" opening Tutora's page in the phone's settings (AC-014-16).
-- The setup on a fresh install: the language switch redrawing the setup in English without losing the steps, and the folder picker in step 4 (AC-014-17, 18, 22).
-- Large text on the confirm list's three buttons and the setup's price steppers.
+The app's data was copied aside first and put back afterwards. Clock jumps used root on the emulator.
 
+- [x] Migration 5→6 on real data: Hoje shows "2 aulas para confirmar", and the Agenda tab shows 2. The setup doesn't appear for a teacher with data.
+- [x] Turning a reminder on asks for notifications. Without permission, Lembretes shows "Notificações desligadas no celular · Abrir ajustes".
+- [x] With Tutora closed, "Aulas para confirmar" (20:00), "Quem te deve" (Monday) and the reminder before class arrive. Tapping each opens the list, Cadastro on Devendo, or the class.
+- [x] "Marcar todas como dadas" from the notification, with the app closed, marks the classes and clears the notification.
+- [x] After the phone restarts, the three alarms are set again without opening the app.
+- [x] Fresh install: the setup opens, switching language mid-setup keeps the steps, the folder picker in step 4 turns on Backup automático, and "Cadastrar meu primeiro aluno" goes back to Hoje.
+- [x] Largest text: the confirm list's buttons, the setup's price steppers and the Lembretes hours fit.
+
+Fixed along the way:
+- The hour and price steppers squeezed their labels to one letter per line.
+- A language switch opened a second setup, losing the choices.
+- Finishing the setup emptied Hoje's stack, so going back closed the app.
+- "Cancelada" was cut at Large text.
+- The Lembretes row said "Desligado" while other reminders were on.
+- The class reminder said "15 minutos" when it came late.
+- "Quem te deve" called places and groups "alunos"; it now says "pagamentos pendentes" and opens Hoje.
+
+## Still open
+
+- Android gives these inexact alarms a window of up to an hour (`window=+1h` in `dumpsys alarm`), so a reminder before class can arrive after the class has started. Exact alarms would need `USE_EXACT_ALARM` (Play allows it for calendar-like apps) or `SCHEDULE_EXACT_ALARM` (the teacher grants it). Victor to decide.
