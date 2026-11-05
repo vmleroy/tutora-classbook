@@ -155,7 +155,6 @@
     <string name="schedule_listEnd">The schedule goes up to %1$s</string>
     <string name="schedule_nextWeek">Next week</string>
     <string name="schedule_month">Month</string>
-    <string name="schedule_weekOf">Week of %1$s to %2$s</string>
     <string name="schedule_prevMonth">Previous month</string>
     <string name="schedule_nextMonth">Next month</string>
     <string name="schedule_prevYear">Previous year</string>

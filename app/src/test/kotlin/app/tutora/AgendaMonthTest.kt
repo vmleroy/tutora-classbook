@@ -139,7 +139,7 @@ class AgendaMonthTest {
     @Test
     fun `AC-016-15 the switch reads Dia, Semana and Mes, with the week's dates over the strip`() {
         agenda()
-        listOf("Dia", "Semana", "Mês", "Semana de 26 out a 1 nov").forEach { exists(it) }
+        listOf("Dia", "Semana", "Mês", "26 out – 1 nov de 2026").forEach { exists(it) }
         compose.onNodeWithText("Hoje · 1 aula", useUnmergedTree = true).assertExists()
     }
 
@@ -176,9 +176,24 @@ class AgendaMonthTest {
         }
         h.settle(compose)
         compose.onNodeWithTag("week-end").assertExists()
+        // Each day carries its month, like a calendar page.
+        compose.onNodeWithTag("week-day-2026-12-21").assertExists()
+        compose.onAllNodesWithText("Dez", useUnmergedTree = true).onFirst().assertExists()
         exists("A agenda vai até 21 dez")
         // The strip followed the list: it no longer shows the first week.
-        compose.onNodeWithText("Semana de 26 out a 1 nov").assertDoesNotExist()
+        compose.onNodeWithText("26 out – 1 nov de 2026").assertDoesNotExist()
+    }
+
+    @Test
+    fun `AC-016-33 the week's line names its dates with the year, across months and years too`() {
+        val pt = app.tutora.domain.Language.PT_BR
+        val en = app.tutora.domain.Language.EN
+        assertEquals("23 – 29 de novembro de 2026", app.tutora.ui.weekRange(LocalDate(2026, 11, 23), LocalDate(2026, 11, 29), pt))
+        assertEquals("30 nov – 6 dez de 2026", app.tutora.ui.weekRange(LocalDate(2026, 11, 30), LocalDate(2026, 12, 6), pt))
+        assertEquals("28 dez 2026 – 3 jan 2027", app.tutora.ui.weekRange(LocalDate(2026, 12, 28), LocalDate(2027, 1, 3), pt))
+        assertEquals("Dec 28, 2026 – Jan 3, 2027", app.tutora.ui.weekRange(LocalDate(2026, 12, 28), LocalDate(2027, 1, 3), en))
+        agenda()
+        exists("26 out – 1 nov de 2026")
     }
 
     @Test

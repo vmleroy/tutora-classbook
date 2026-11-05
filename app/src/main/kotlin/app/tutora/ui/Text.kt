@@ -166,6 +166,32 @@ fun dayMonthLong(
             localeOf(language),
         ).format(date.toJavaLocalDate())
 
+/**
+ * The days of a week, always with the year, so the line over the strip says on its own which
+ * dates are shown (Victor, 4 Nov 2026): "23 – 29 de novembro de 2026", "30 nov – 6 dez de 2026",
+ * "28 dez 2026 – 3 jan 2027"; "Nov 23 – 29, 2026", "Nov 30 – Dec 6, 2026", "Dec 28, 2026 – Jan 3, 2027".
+ */
+fun weekRange(
+    first: LocalDate,
+    last: LocalDate,
+    language: Language,
+): String {
+    val pt = language == Language.PT_BR
+
+    fun f(
+        pattern: String,
+        d: LocalDate,
+    ) = DateTimeFormatter.ofPattern(pattern, localeOf(language)).format(d.toJavaLocalDate()).replace(".", "")
+    return when {
+        first.year != last.year ->
+            if (pt) "${f("d MMM yyyy", first)} – ${f("d MMM yyyy", last)}" else "${f("MMM d, yyyy", first)} – ${f("MMM d, yyyy", last)}"
+        first.month != last.month ->
+            if (pt) "${f("d MMM", first)} – ${f("d MMM 'de' yyyy", last)}" else "${f("MMM d", first)} – ${f("MMM d, yyyy", last)}"
+        else ->
+            if (pt) "${first.day} – ${f("d 'de' MMMM 'de' yyyy", last)}" else "${f("MMM d", first)} – ${f("d, yyyy", last)}"
+    }
+}
+
 /** "26 out" / "Oct 26". */
 fun dayShortMonth(
     date: LocalDate,

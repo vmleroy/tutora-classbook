@@ -46,10 +46,10 @@ import app.tutora.domain.layoutDay
 import app.tutora.domain.localOf
 import app.tutora.domain.weekStart
 import app.tutora.ui.clockTime
-import app.tutora.ui.dayShortMonth
 import app.tutora.ui.hourMark
 import app.tutora.ui.placeName
 import app.tutora.ui.tag
+import app.tutora.ui.weekRange
 import app.tutora.ui.weekdayShort
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -108,7 +108,7 @@ fun WeekPicker(
                 onSelect(selected.minus(DatePeriod(days = 7)))
             }, variant = IconButtonVariant.PLAIN)
             Text(
-                stringResource(R.string.schedule_weekOf, dayShortMonth(monday, language), dayShortMonth(days.last(), language)),
+                weekRange(monday, days.last(), language),
                 style = TutoraTheme.type.bodyStrong,
                 color = TutoraTheme.colors.ink,
                 modifier = Modifier.weight(1f),

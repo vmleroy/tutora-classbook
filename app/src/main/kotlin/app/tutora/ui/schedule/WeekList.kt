@@ -47,6 +47,7 @@ import app.tutora.domain.worth
 import app.tutora.ui.clockTime
 import app.tutora.ui.countText
 import app.tutora.ui.dayShortMonth
+import app.tutora.ui.monthShort
 import app.tutora.ui.weekdayLong
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -106,6 +107,7 @@ fun WeekList(
     busyBetween: (Long, Long) -> Flow<List<BusyEvent>>,
     onSelectDay: (LocalDate) -> Unit,
     onOpen: (Lesson) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val language = currentLanguage()
     val state = rememberLazyListState()
@@ -136,6 +138,7 @@ fun WeekList(
     // Where each day's heading sits in the list.
     val headerAt = mutableMapOf<LocalDate, Int>()
     var index = 0
+
     days.forEach { d ->
         headerAt[d] = index
         index += 1 + bands.getValue(d).size + entries.getValue(d).size
@@ -199,7 +202,7 @@ fun WeekList(
         }
     }
     LazyColumn(
-        Modifier.fillMaxWidth().testTag("week-list"),
+        modifier.fillMaxWidth().testTag("week-list"),
         state = state,
         contentPadding = PaddingValues(start = Spacing.s5, end = Spacing.s5, bottom = Size.fab + Spacing.s7),
         verticalArrangement = Arrangement.spacedBy(Spacing.s2),
@@ -224,6 +227,7 @@ fun WeekList(
                         },
                     today = d == today,
                     current = d == shown,
+                    month = monthShort(d, language),
                 )
             }
             bands.getValue(d).forEach { band ->

@@ -440,6 +440,8 @@ fun DayHeading(
     today: Boolean = false,
     /** The day being read, at the top of the list: filled tile and title in the main color, like the strip. */
     current: Boolean = false,
+    /** The short month over the day, like a calendar page ("Dez" over 1; Victor, 4 Nov 2026). */
+    month: String? = null,
 ) {
     val c = TutoraTheme.colors
     val tile = RoundedCornerShape(Radius.sm)
@@ -453,14 +455,24 @@ fun DayHeading(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Today is outlined; the day being read is filled, as on the strip (Victor, 4 Nov 2026).
-        Box(
+        val ink =
+            if (current) {
+                c.onBtnPrimary
+            } else if (today) {
+                c.btnPrimary
+            } else {
+                c.ink
+            }
+        androidx.compose.foundation.layout.Column(
             Modifier
-                .size(Size.tile)
+                .size(if (month != null) Size.touch else Size.tile)
                 .clip(tile)
                 .background(if (current) c.btnPrimary else c.surfaceSunken)
                 .then(if (today && !current) Modifier.border(Size.borderStrong, c.btnPrimary, tile) else Modifier),
-            contentAlignment = Alignment.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
+            month?.let { Text(it, style = TutoraTheme.type.badge, color = if (current) c.onBtnPrimary else c.inkMuted, maxLines = 1) }
             Text(
                 day.toString(),
                 style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),

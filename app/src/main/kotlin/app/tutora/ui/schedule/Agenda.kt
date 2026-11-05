@@ -250,6 +250,8 @@ fun AgendaScreen(nav: NavHostController) {
                         busyBetween = { a, b -> services.calendar.busy(a, b) },
                         onSelectDay = { selectedText = it.toString() },
                         onOpen = { nav.navigate(LessonDetail(it.id)) },
+                        // Below the top card's rounded edge, so the pinned day is never cut.
+                        modifier = Modifier.padding(top = Spacing.s3),
                     )
                 lessons.isEmpty() && busyEvents.none { !it.marked } ->
                     Column(Modifier.padding(horizontal = Spacing.s5)) {

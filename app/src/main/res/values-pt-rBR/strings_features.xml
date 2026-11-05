@@ -155,7 +155,6 @@
     <string name="schedule_listEnd">A agenda vai até %1$s</string>
     <string name="schedule_nextWeek">Próxima semana</string>
     <string name="schedule_month">Mês</string>
-    <string name="schedule_weekOf">Semana de %1$s a %2$s</string>
     <string name="schedule_prevMonth">Mês anterior</string>
     <string name="schedule_nextMonth">Próximo mês</string>
     <string name="schedule_prevYear">Ano anterior</string>
