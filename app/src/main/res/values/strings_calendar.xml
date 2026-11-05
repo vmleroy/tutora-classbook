@@ -7,8 +7,8 @@
     <string name="cal_off">Off</string>
     <string name="cal_send">Send classes to the calendar</string>
     <plurals name="cal_status">
-        <item quantity="one">Updated at %1$s · %2$d class in the next 8 weeks</item>
-        <item quantity="other">Updated at %1$s · %2$d classes in the next 8 weeks</item>
+        <item quantity="one">Updated at %1$s · %2$d class until %3$s</item>
+        <item quantity="other">Updated at %1$s · %2$d classes until %3$s</item>
     </plurals>
     <string name="cal_updating">Updating…</string>
     <string name="cal_noAccess">No access to the calendar. Allow it in the phone\'s settings.</string>

@@ -44,6 +44,7 @@ class AppServices(
     val payments = Payments(ctx)
     val backups = Backups(ctx)
     val calendar = app.tutora.usecases.CalendarSync(ctx)
+    val appearance = app.tutora.usecases.Appearance(ctx)
 
     val settings: Flow<Settings> = settingsRepo.observe()
 
@@ -55,6 +56,23 @@ class AppServices(
 
     /** The saved settings, read once (no subscription). */
     suspend fun currentSettings(): Settings = withContext(Dispatchers.IO) { settingsRepo.load() }
+
+    /**
+     * The Agenda's classes from [first] to [last]: the stored ones, and past the horizon the ones
+     * forecast from their series (Victor, 4 Nov 2026; AC-016-35).
+     */
+    fun agendaBetween(
+        first: kotlinx.datetime.LocalDate,
+        last: kotlinx.datetime.LocalDate,
+    ): Flow<List<app.tutora.domain.Lesson>> {
+        val (from, to) = app.tutora.domain.dayRange(first, last, zone)
+        return kotlinx.coroutines.flow.combine(
+            scheduleRepo.between(from, to),
+            scheduleRepo.forecastBetween(first, last),
+        ) { stored, forecast ->
+            stored + forecast
+        }
+    }
 
     /** The device time zone; classes are scheduled in it. */
     val zone: String get() = ctx.zone()

@@ -5,7 +5,6 @@ import kotlinx.datetime.Month
 import kotlinx.datetime.YearMonth
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MonthRulesTest {
@@ -24,9 +23,10 @@ class MonthRulesTest {
     @Test
     fun `AC-016-16 a month is whole weeks from Monday, with the neighbors' days marked`() {
         val cells = monthCells(YearMonth(2026, Month.OCTOBER))
-        assertEquals(35, cells.size)
+        // Always six weeks, so the grid never changes height (Victor, 4 Nov 2026).
+        assertEquals(42, cells.size)
         assertEquals(LocalDate(2026, 9, 28), cells.first().date)
-        assertEquals(LocalDate(2026, 11, 1), cells.last().date)
+        assertEquals(LocalDate(2026, 11, 8), cells.last().date)
         assertEquals(31, cells.count { it.inMonth })
         assertFalse(cells.first().inMonth)
     }
@@ -51,12 +51,12 @@ class MonthRulesTest {
     }
 
     @Test
-    fun `AC-016-23 the Agenda looks 8 weeks ahead and no further, any month back`() {
-        assertEquals(LocalDate(2026, 12, 21), agendaHorizon(today))
-        assertTrue(canShowMonth(YearMonth(2026, Month.DECEMBER), today))
-        assertFalse(canShowMonth(YearMonth(2027, Month.JANUARY), today))
-        assertTrue(canShowMonth(YearMonth(2020, Month.MARCH), today))
-        val late = LocalDate(2026, 12, 28)
-        assertEquals(emptyMap<LocalDate, List<DayKind>>(), dayDots(mapOf(late to listOf(lesson())), today))
+    fun `AC-016-23 classes are stored 8 weeks ahead to the end of that month, and later days still get their dots`() {
+        // 26 Oct + 8 weeks is 21 Dec: classes are stored to 31 Dec; from 4 Nov too; from 1 Dec to 31 Jan.
+        assertEquals(LocalDate(2026, 12, 31), agendaHorizon(today))
+        assertEquals(LocalDate(2026, 12, 31), agendaHorizon(LocalDate(2026, 11, 4)))
+        assertEquals(LocalDate(2027, 1, 31), agendaHorizon(LocalDate(2026, 12, 1)))
+        val late = LocalDate(2027, 2, 2)
+        assertEquals(mapOf(late to listOf(DayKind.PRIVATE)), dayDots(mapOf(late to listOf(lesson())), today))
     }
 }

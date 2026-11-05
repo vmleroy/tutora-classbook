@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.plus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -83,6 +84,64 @@ class ScheduleTest {
     }
 
     @Test
+    fun `AC-005-8 three months without opening the app, the missed weeks are filled once, as classes still to mark`() =
+        runTest {
+            // Today, 4 Nov: a weekly class every Wednesday from today; stored to 31 Dec.
+            t.now = "2026-11-04T12:00:00.000Z"
+            t.schedule.scheduleLesson(draft(date = "2026-11-04"))
+            assertEquals("2026-12-30", dates().last())
+            val stored = all().size
+            val repo = ScheduleRepository(t.db)
+            // January is only a forecast for now.
+            assertEquals(4, repo.forecastBetween(LocalDate(2027, 1, 1), LocalDate(2027, 1, 31)).first().size)
+
+            // The app isn't opened again until 4 Feb, three months later.
+            t.now = "2027-02-04T12:00:00.000Z"
+            t.schedule.fillSchedule()
+
+            val after = dates()
+            // Nothing is lost and nothing is doubled: every Wednesday from 4 Nov to the new limit, once.
+            val wednesdays =
+                generateSequence(LocalDate(2026, 11, 4)) { it.plus(kotlinx.datetime.DatePeriod(days = 7)) }
+                    .takeWhile { it <= LocalDate(2027, 4, 30) }
+                    .map { it.toString() }
+                    .toList()
+            assertEquals(wednesdays, after)
+            assertEquals(after.size, after.toSet().size)
+            // The new limit: 4 Feb + 8 weeks is 1 Apr, so classes are stored to the end of April.
+            assertEquals("2027-04-28", after.last())
+            // The weeks missed while the app was closed are there, still scheduled: waiting to be
+            // marked done or cancelled, never counted as given on their own.
+            val missed = all().filter { localOf(it.startAt, zone).date in LocalDate(2027, 1, 1)..LocalDate(2027, 2, 3) }
+            assertEquals(5, missed.size)
+            assertTrue(missed.all { it.status == app.tutora.domain.LessonStatus.SCHEDULED && !it.forecast })
+            assertTrue(stored < after.size)
+            // And nothing is forecast where classes are now stored.
+            assertTrue(repo.forecastBetween(LocalDate(2027, 1, 1), LocalDate(2027, 4, 30)).first().isEmpty())
+        }
+
+    @Test
+    fun `AC-016-35 past the stored days a series is forecast, never stored, never twice, and ends with it`() =
+        runTest {
+            t.schedule.scheduleLesson(draft())
+            val repo = ScheduleRepository(t.db)
+            // Stored to 31 Dec; from December to January only January's Mondays are forecast.
+            val forecast = repo.forecastBetween(kotlinx.datetime.LocalDate(2026, 12, 1), kotlinx.datetime.LocalDate(2027, 1, 31)).first()
+            assertEquals(
+                listOf("2027-01-04", "2027-01-11", "2027-01-18", "2027-01-25"),
+                forecast.map { localOf(it.startAt, zone).date.toString() },
+            )
+            assertTrue(forecast.all { it.forecast })
+            assertEquals(10, all().size)
+            // Ending the series on 28 Dec ends its forecasts too.
+            val last = all().last().id
+            t.schedule.removeLesson(last, app.tutora.usecases.Scope.FOLLOWING)
+            assertTrue(
+                repo.forecastBetween(kotlinx.datetime.LocalDate(2027, 1, 1), kotlinx.datetime.LocalDate(2027, 1, 31)).first().isEmpty(),
+            )
+        }
+
+    @Test
     fun `AC-005-2 only the student's linked places, or the group's place, are allowed`() =
         runTest {
             val p =
@@ -113,17 +172,17 @@ class ScheduleTest {
         }
 
     @Test
-    fun `AC-005-8 filling keeps 8 weeks ahead and never duplicates`() =
+    fun `AC-005-8 filling keeps 8 weeks ahead to the end of that month, and never duplicates`() =
         runTest {
             t.schedule.scheduleLesson(draft())
-            assertEquals(9, all().size) // 26/10 to 21/12
+            assertEquals(10, all().size) // Mondays from 26/10 to 28/12: 8 weeks run to 21/12, the month to 31/12
             t.schedule.fillSchedule()
             t.schedule.fillSchedule()
-            assertEquals(9, all().size)
-            later(7)
-            t.schedule.fillSchedule()
-            assertEquals("2026-12-28", dates().last())
             assertEquals(10, all().size)
+            later(35) // 30/11: 8 weeks run to 25/1, the month to 31/1
+            t.schedule.fillSchedule()
+            assertEquals("2027-01-25", dates().last())
+            assertEquals(14, all().size)
         }
 
     @Test

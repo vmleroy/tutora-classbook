@@ -69,7 +69,8 @@ class CalendarRulesTest {
     fun `AC-012-9 the window runs from today to the 8-week horizon, and past events stay`() {
         val (from, to) = syncWindow(LocalDate(2026, 10, 26), zone)
         assertEquals("2026-10-26T03:00:00.000Z", from)
-        assertEquals("2026-12-22T03:00:00.000Z", to)
+        // 8 weeks reach 21 Dec; the window runs to the end of that month (31 Dec, so up to 1 Jan 00:00).
+        assertEquals("2027-01-01T03:00:00.000Z", to)
         val past = MarkedEvent(9, eventFor(lesson("old", start = "2026-10-20T11:00:00.000Z"), words(), false))
         assertTrue(diffEvents(emptyList(), listOf(past), instantOf(from).toEpochMilliseconds()).isEmpty)
     }

@@ -92,6 +92,13 @@ fun NavHostController.openTab(graph: Any) {
 /** Ajustes › Seus dados (spec 010). */
 @Serializable data object PersonalData
 
+/** Ajustes › Geral › Aparência, and Suas cores on one part (spec 013). */
+@Serializable data object AppearanceHome
+
+@Serializable data class CustomColors(
+    val part: String,
+)
+
 /** Ajustes › Geral › Calendário (spec 012). */
 @Serializable data object CalendarHome
 
@@ -245,13 +252,22 @@ fun TutoraNav(
                             schemaVersion,
                             { nav.navigate(PersonalData) },
                             { nav.navigate(BackupHome) },
-                        ) { nav.navigate(CalendarHome) }
+                            { nav.navigate(CalendarHome) },
+                        ) { nav.navigate(AppearanceHome) }
                     }
                     composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
                 }
                 composable<BackupHome> {
                     app.tutora.ui.backup
                         .BackupScreen(nav)
+                }
+                composable<AppearanceHome> {
+                    app.tutora.ui.appearance
+                        .AppearanceScreen(nav)
+                }
+                composable<CustomColors> {
+                    app.tutora.ui.appearance
+                        .CustomColorsScreen(nav, it.toRoute<CustomColors>().part)
                 }
                 composable<CalendarHome> {
                     app.tutora.ui.calendar

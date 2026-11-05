@@ -57,6 +57,7 @@ fun blockState(
     nextId: String?,
 ): BlockState =
     when {
+        l.forecast -> BlockState.FORECAST
         l.status == LessonStatus.LIVE -> BlockState.LIVE
         l.id == nextId -> BlockState.NEXT
         l.status == LessonStatus.DONE -> BlockState.DONE

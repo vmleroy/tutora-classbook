@@ -30,3 +30,6 @@ interface SegmentedControlProps<T extends string = string> {
 
 ## 2026 look (spec 016)
 Joined segments: round outside (20), small corners inside (6), 4 dp apart, on `surface-sunken`; the chosen one is filled with `btnPrimary` and its label is `onBtnPrimary`.
+
+## Sizes since 4 Nov 2026
+Each segment is drawn at `size-button-md` (or `size-button-sm`) inside a `size-touch` press area; label in `button` (Victor, 4 Nov 2026).

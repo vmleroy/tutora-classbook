@@ -44,6 +44,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -481,13 +482,17 @@ class FeatureScreensTest {
     }
 
     @Test
-    fun `AC-005-20 Semana shows the seven days side by side`() {
+    fun `AC-005-20 Semana shows the week's days and their classes`() {
         seedClasses()
         h.show(compose)
         h.go(compose, ScheduleGraph)
         compose.onNodeWithText("Semana").performClick()
-        compose.waitForIdle()
-        compose.onAllNodesWithText("Ana Souza", useUnmergedTree = true).assertCountEquals(2)
+        // The week list reads its own days from the database.
+        h.settle(compose)
+        // This week's two classes, Monday's and Wednesday's, each under its day.
+        assertTrue(compose.onAllNodesWithText("Ana Souza", useUnmergedTree = true).fetchSemanticsNodes().size >= 2)
+        compose.onAllNodesWithText("14:00", useUnmergedTree = true).onFirst().assertExists()
+        compose.onAllNodesWithText("16:30", useUnmergedTree = true).onFirst().assertExists()
     }
 
     @Test
@@ -540,7 +545,7 @@ class FeatureScreensTest {
     }
 
     @Test
-    fun `AC-005-1 Nova aula schedules a weekly class that fills 8 weeks`() {
+    fun `AC-005-1 Nova aula schedules a weekly class that fills 8 weeks to the end of that month`() {
         student("Ana Souza", "Matemática", listOf(PlaceLink(online, true, 12_000)))
         h.show(compose)
         h.go(compose, LessonNew("2026-10-26"))
@@ -562,6 +567,6 @@ class FeatureScreensTest {
                     .first()
                     .size
             }
-        assertEquals(9, count)
+        assertEquals(10, count)
     }
 }

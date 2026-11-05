@@ -46,10 +46,10 @@ import app.tutora.domain.layoutDay
 import app.tutora.domain.localOf
 import app.tutora.domain.weekStart
 import app.tutora.ui.clockTime
-import app.tutora.ui.dayShortMonth
 import app.tutora.ui.hourMark
 import app.tutora.ui.placeName
 import app.tutora.ui.tag
+import app.tutora.ui.weekRange
 import app.tutora.ui.weekdayShort
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -108,7 +108,7 @@ fun WeekPicker(
                 onSelect(selected.minus(DatePeriod(days = 7)))
             }, variant = IconButtonVariant.PLAIN)
             Text(
-                stringResource(R.string.schedule_weekOf, dayShortMonth(monday, language), dayShortMonth(days.last(), language)),
+                weekRange(monday, days.last(), language),
                 style = TutoraTheme.type.bodyStrong,
                 color = TutoraTheme.colors.ink,
                 modifier = Modifier.weight(1f),
@@ -117,16 +117,17 @@ fun WeekPicker(
             IconButton(
                 IconName.CHEVRON_RIGHT,
                 stringResource(R.string.schedule_nextWeek),
-                { onSelect(selected.plus(DatePeriod(days = 7))) },
+                { onSelect(selected.plus(DatePeriod(days = 7)).let { if (horizon != null && it > horizon) horizon else it }) },
                 variant = IconButtonVariant.PLAIN,
                 enabled = horizon == null || monday.plus(DatePeriod(days = 7)) <= horizon,
             )
         }
-        // After a space as wide as the grid's hour labels, so each day sits over its column.
         WeekStrip(
-            modifier = Modifier.padding(start = LABEL_WIDTH),
             days =
-                days.map { d -> WeekDay(weekdayShort(d, language), d.day, byDay[d]?.firstOrNull()?.whoTag) },
+                days.map { d ->
+                    // Days past the horizon are greyed: nothing is planned there (Victor, 4 Nov 2026).
+                    WeekDay(weekdayShort(d, language), d.day, byDay[d]?.firstOrNull()?.whoTag, enabled = horizon == null || d <= horizon)
+                },
             selected = days.indexOf(selected),
             onSelect = { onSelect(days[it]) },
             today = days.indexOf(today).takeIf { it >= 0 },

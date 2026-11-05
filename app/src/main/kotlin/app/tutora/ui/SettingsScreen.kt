@@ -64,6 +64,7 @@ fun SettingsScreen(
     onPersonal: () -> Unit = {},
     onBackup: () -> Unit = {},
     onCalendar: () -> Unit = {},
+    onAppearance: () -> Unit = {},
 ) {
     val services = LocalServices.current
     val settings by services.settings.collectAsState(initial = null)
@@ -126,6 +127,11 @@ fun SettingsScreen(
             rows =
                 listOf(
                     { LanguageRow(s.language) { save(s.copy(language = it)) } },
+                    // Aparência: mode, theme, colors and text size (AC-013-1).
+                    {
+                        app.tutora.ui.appearance
+                            .AppearanceSettingsRow(onAppearance)
+                    },
                     // Calendário: classes into a phone calendar (AC-012-1).
                     {
                         app.tutora.ui.calendar

@@ -37,6 +37,11 @@ data class Lesson(
     val cancelReason: CancelReason? = null,
     /** "Motivo", written in the cancel sheet. */
     val cancelNote: String? = null,
+    /**
+     * Past the horizon, a class worked out from its series and never stored: it becomes a real
+     * class as the horizon reaches it (Victor, 4 Nov 2026; AC-016-35).
+     */
+    val forecast: Boolean = false,
 )
 
 /** The travel fee a class adds: only at Casa do Aluno. */

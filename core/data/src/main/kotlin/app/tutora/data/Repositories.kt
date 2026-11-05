@@ -13,10 +13,13 @@ import app.tutora.domain.RateType
 import app.tutora.domain.Repeat
 import app.tutora.domain.Student
 import app.tutora.domain.Who
+import app.tutora.domain.isoText
+import app.tutora.domain.localToInstant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 
 data class PlaceWithCount(
     val place: Place,
@@ -72,6 +75,59 @@ class ScheduleRepository(
         from: String,
         to: String,
     ): Flow<List<Lesson>> = db.schedule().observeBetween(from, to).map { rows -> rows.mapNotNull { assemble(it) } }
+
+    /**
+     * The classes each series will have from [from] to [to] past what is stored, worked out from
+     * its dates and never written (AC-016-35). Stored classes are never repeated: a series is only
+     * forecast after the day it was filled to.
+     */
+    fun forecastBetween(
+        from: LocalDate,
+        to: LocalDate,
+    ): Flow<List<Lesson>> =
+        kotlinx.coroutines.flow
+            .combine(db.schedule().observeRules(), db.schedule().observeSkips()) { rules, skips ->
+                rules to skips.groupBy({ it.ruleId }, { LocalDate.parse(it.occurrenceDate) })
+            }.map { (rules, skips) ->
+                rules.flatMap { rule ->
+                    val after = LocalDate.parse(rule.generatedUntil).plus(kotlinx.datetime.DatePeriod(days = 1))
+                    val start = if (after > from) after else from
+                    if (start > to) return@flatMap emptyList()
+                    val time = kotlinx.datetime.LocalTime.parse(rule.startTime)
+                    app.tutora.domain
+                        .occurrences(
+                            app.tutora.domain.RuleDates(
+                                LocalDate.parse(rule.startsOn),
+                                rule.endsOn?.let(LocalDate::parse),
+                                Repeat.valueOf(rule.repeat),
+                                skips[rule.id].orEmpty().toSet(),
+                            ),
+                            start,
+                            to,
+                        ).mapNotNull { date ->
+                            val row =
+                                LessonRow(
+                                    id = "forecast:${rule.id}:$date",
+                                    ruleId = rule.id,
+                                    occurrenceDate = date.toString(),
+                                    studentId = rule.studentId,
+                                    groupId = rule.groupId,
+                                    placeId = rule.placeId,
+                                    startAt = localToInstant(date, time, rule.timeZone).isoText(),
+                                    plannedMin = rule.durationMin,
+                                    valueCents = rule.valueCents,
+                                    travelFeeCents = rule.travelFeeCents,
+                                    notes = null,
+                                    createdAt = "",
+                                    updatedAt = "",
+                                )
+                            assemble(LessonWithRepeat(row, rule.repeat))?.copy(forecast = true)
+                        }
+                }
+            }
+
+    /** The latest real class of a series, for "Ver a série" (AC-016-35). */
+    suspend fun lastOfRule(ruleId: String): String? = db.schedule().lastOfRule(ruleId)
 
     fun firstAfter(now: String): Flow<Lesson?> = db.schedule().observeFirstAfter(now).map { it?.let { r -> assemble(r) } }
 

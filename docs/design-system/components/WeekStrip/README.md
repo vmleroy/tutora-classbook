@@ -24,3 +24,6 @@ interface WeekStripProps {
 
 ## 2026 look (spec 016)
 Days sit on `surface-sunken` pills (`radius-2xl`), the chosen one filled with `btnPrimary`. Each day is an equal column padded like an `AgendaBlock`, so on the Agenda, after a space as wide as the hour labels, each day sits over its column of the grid.
+
+## Sizes since 4 Nov 2026
+Days have `radius-md` corners, like the month's tiles, not capsules (Victor, 4 Nov 2026).

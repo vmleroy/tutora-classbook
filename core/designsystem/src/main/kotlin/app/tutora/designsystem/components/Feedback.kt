@@ -141,7 +141,18 @@ fun TimerRing(
             drawArc(c.accent, -90f, 360f * p, false, topLeft, arc, style = Stroke(stroke, cap = StrokeCap.Round))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(elapsed, style = TutoraTheme.type.moneyDisplay, color = c.onHeader)
+            // One line always: with Large text the clock shrinks to fit inside the ring, never wraps.
+            val style = TutoraTheme.type.moneyDisplay
+            androidx.compose.foundation.text.BasicText(
+                elapsed,
+                Modifier.padding(horizontal = Size.timerStroke * 2),
+                style = style.copy(color = c.onHeader),
+                maxLines = 1,
+                softWrap = false,
+                autoSize =
+                    androidx.compose.foundation.text.TextAutoSize
+                        .StepBased(maxFontSize = style.fontSize),
+            )
             if (caption != null) Text(caption, style = TutoraTheme.type.caption, color = c.onHeaderMuted)
         }
     }

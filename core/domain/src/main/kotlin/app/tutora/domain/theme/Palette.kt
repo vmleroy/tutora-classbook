@@ -4,7 +4,8 @@ import app.tutora.domain.ThemeMode
 
 // Turns the teacher's choices into one flat palette (docs/design-system/Theming.md).
 
-val themeIds = listOf("quadro", "caderno", "biblioteca", "giz")
+/** The themes with token sets of their own; "mono" is greys only, red and green and tags kept (Victor, 4 Nov 2026). */
+val themeIds = listOf("quadro", "caderno", "biblioteca", "giz", "mono")
 
 enum class Scheme { LIGHT, DARK }
 
@@ -72,6 +73,9 @@ fun resolvePalette(
     scheme: Scheme,
     custom: CustomColors = emptyMap(),
 ): Palette {
+    // Floresta, Oceano, Lavanda and Terracota are a base theme with fixed colors; the teacher's own
+    // colors go over theirs, through the same lightening and contrast rules (AC-013-19).
+    extraThemes[theme]?.let { return resolvePalette(it.base, scheme, it.colors + custom) }
     val base = colorSets.getValue("$theme-${scheme.name.lowercase()}")
     val p = base.toMutableMap()
     p["btn-primary"] = base.getValue("primary")

@@ -151,9 +151,12 @@
     <string name="schedule_expected">Previsto %1$s</string>
     <string name="schedule_plusSchool">+ escola</string>
     <string name="schedule_prevWeek">Semana anterior</string>
+    <string name="schedule_noClassesDay">Sem aulas</string>
+    <string name="schedule_forecastTitle">Aula prevista</string>
+    <string name="schedule_forecastBody">Esta aula da série ainda não existe: as aulas são criadas até %1$s. Ela vira uma aula de verdade quando essa data chegar perto. Para mudar o horário ou o valor, edite a série.</string>
+    <string name="schedule_forecastSeries">Ver a série</string>
     <string name="schedule_nextWeek">Próxima semana</string>
     <string name="schedule_month">Mês</string>
-    <string name="schedule_weekOf">Semana de %1$s a %2$s</string>
     <string name="schedule_prevMonth">Mês anterior</string>
     <string name="schedule_nextMonth">Próximo mês</string>
     <string name="schedule_prevYear">Ano anterior</string>
