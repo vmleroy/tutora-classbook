@@ -24,5 +24,6 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 014 | [Reminders, confirming classes and first-run setup](014-reminders-setup/spec.md): a reminder before each class, a weekly "who owes you" and a daily "to confirm"; past classes "A confirmar", confirmed one by one or all at once (takes in the draft 018); four skippable setup steps that also hide what doesn't apply | done | Setup, Settings |
 | 016 | [Visual refresh 2026](016-visual-refresh/spec.md): the "Quadro refinado" look on every screen, built only from theme colors; Agenda titled by month and year, a Mês view and a month/year picker | done | DirA, A_Agenda, A_AgendaMes, A_AgendaAno, A_Aluno, A_Ganhos, A_Ajustes, A_Estilo |
 | 017 | [Landscape](017-landscape/spec.md): every screen sideways; tabs on the side, the upright screens at a readable width with what is tapped opening in a side panel; the live class with its clock on the left; nothing lost when turning; screen on during a live class | done | none yet |
+| 019 | [Evolução, any period and tidier filters](019-evolution-filters/spec.md): De and Até for any period up to 5 years, bars by day, week, month or year; type and place kind as dropdowns | draft | none |
 
 Status moves draft → ready → in progress → done. Update this table in the same PR that changes a status.
