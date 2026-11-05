@@ -4,6 +4,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.sqlite.execSQL
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -164,6 +165,25 @@ class MigrationsTest {
             val lesson = db.schedule().lesson("l")
             assertEquals("done", lesson?.status)
             assertEquals(false, lesson?.autoDone)
+            db.close()
+        }
+
+    @Test
+    fun `AC-014-40 migration 6 to 7 keeps the classes and adds an empty list of notifications`() =
+        runTest {
+            val file = File(tmp.root, "tutora.db")
+            val t = "'2026-10-26T12:00:00.000Z'"
+            createAt(
+                6,
+                file,
+                listOf(
+                    "INSERT INTO student (id, name, color, rate_type, created_at, updated_at) VALUES ('s', 'Ana', 'AMBER', 'HOUR', $t, $t)",
+                ),
+            )
+            val (db, _) = openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver())
+            assertEquals("Ana", db.students().get("s")?.name)
+            db.notices().insert(NoticeRow("n", "confirm", null, 2, 0, 0, true, "2026-10-26T23:00:00.000Z", false))
+            assertEquals(1, db.notices().observeUnseen("2026-10-01T00:00:00.000Z").first())
             db.close()
         }
 }

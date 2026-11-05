@@ -143,6 +143,8 @@ fun IconButton(
     dot: Boolean = false,
     /** SM draws a 36 dp circle with a smaller icon, for headers; it still answers on 48 dp. */
     size: ControlSize = ControlSize.MD,
+    /** A number at the top end, such as the bell's unseen notifications (AC-014-40); 0 shows none. */
+    count: Int = 0,
 ) {
     val c = TutoraTheme.colors
     val (bg, fg) =
@@ -161,9 +163,10 @@ fun IconButton(
             modifier
                 .size(if (square) Size.fab else Size.touch)
                 .alpha(if (enabled) 1f else Opacity.disabled)
-                .clip(shape)
+                // Only the drawn circle is clipped, so a count in the corner shows whole.
+                .then(if (count > 0) Modifier else Modifier.clip(shape))
                 .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-                .semantics { contentDescription = label },
+                .semantics { contentDescription = if (count > 0) "$label, $count" else label },
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -193,7 +196,21 @@ fun IconButton(
                     },
             )
         }
-        if (dot) {
+        if (count > 0) {
+            Text(
+                if (count > MAX_COUNT) "$MAX_COUNT+" else count.toString(),
+                style = TutoraTheme.type.badge.copy(fontFeatureSettings = "tnum"),
+                color = c.surface,
+                maxLines = 1,
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .testTag("count")
+                        .clip(RoundedCornerShape(Radius.full))
+                        .background(c.danger)
+                        .padding(horizontal = Spacing.s1),
+            )
+        } else if (dot) {
             Box(
                 Modifier
                     .align(Alignment.TopEnd)
@@ -206,6 +223,8 @@ fun IconButton(
         }
     }
 }
+
+private const val MAX_COUNT = 99
 
 /** How far a tile or control on the summary card moves from the Topo color, away from its text. */
 const val ON_HEADER_FILL = 0.14f

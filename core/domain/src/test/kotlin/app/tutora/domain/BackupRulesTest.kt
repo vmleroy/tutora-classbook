@@ -75,10 +75,10 @@ class BackupRulesTest {
     @Test
     fun `AC-011-15 an older backup is brought up to date, a newer one refused`() {
         val old = encodeBackup(file.copy(schemaVersion = 2, tables = mapOf("student" to file.tables.getValue("student"))))
-        val read = readBackup(old.encodeToByteArray(), 6) as BackupRead.Ok
-        assertEquals(6, read.file.schemaVersion)
-        assertTrue(listOf("lesson_timer", "payment", "package", "payment_lesson", "credit").all { it in read.file.tables })
+        val read = readBackup(old.encodeToByteArray(), 7) as BackupRead.Ok
+        assertEquals(7, read.file.schemaVersion)
+        assertTrue(listOf("lesson_timer", "payment", "package", "payment_lesson", "credit", "notice").all { it in read.file.tables })
         assertEquals(file.tables["student"], read.file.tables["student"])
-        assertEquals(BackupRead.Newer(7), readBackup(encodeBackup(file.copy(schemaVersion = 7)).encodeToByteArray(), 6))
+        assertEquals(BackupRead.Newer(8), readBackup(encodeBackup(file.copy(schemaVersion = 8)).encodeToByteArray(), 7))
     }
 }

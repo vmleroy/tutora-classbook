@@ -214,6 +214,8 @@ fun GallerySections() {
             IconButtonVariant.entries.forEach { IconButton(IconName.PLUS, it.name, {}, variant = it) }
             // The bell with its dot: notifications are off on the phone (AC-014-32).
             IconButton(IconName.BELL, "Lembretes", {}, dot = true)
+            // Three notifications not seen yet (AC-014-40).
+            IconButton(IconName.BELL, "Notificações", {}, count = 3, size = ControlSize.SM)
             IconButton(IconName.CHART, "Evolução", {})
         }
     }

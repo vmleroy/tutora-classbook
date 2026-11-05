@@ -45,9 +45,9 @@
     <string name="set_remindMinutes">%1$d min antes</string>
     <string name="set_remindHours" tools:ignore="PluralsCandidate">%1$dh antes</string>
     <string name="set_remindHoursMinutes" tools:ignore="PluralsCandidate">%1$dh%2$02d antes</string>
-    <string name="set_remindCustom">Personalizado</string>
+    <string name="set_remindShort">%1$d min</string>
+    <string name="set_remindCustom">Outro</string>
     <string name="set_remindHowLong">Quanto tempo antes</string>
-    <string name="set_remindSave">Salvar</string>
     <string name="set_owedWeekly">Quem te deve</string>
     <string name="set_owedWhen">%1$s, %2$s</string>
     <string name="set_confirmDaily">Aulas para confirmar</string>
@@ -105,6 +105,20 @@
     <string name="evo_monthTotals">Ganho %1$s · recebido %2$s · a receber %3$s</string>
     <string name="evo_monthClasses">%1$s · %2$s</string>
     <string name="evo_change">%1$s · %2$s%%</string>
+    <string name="ntf_title">Notificações</string>
+    <string name="ntf_now">Agora</string>
+    <string name="ntf_recent">Recentes</string>
+    <string name="ntf_recentHint">últimos 30 dias</string>
+    <string name="ntf_new">Nova</string>
+    <string name="ntf_emptyTitle">Nenhuma notificação</string>
+    <string name="ntf_emptyBody">Os lembretes que o Tutora mandar aparecem aqui por 30 dias.</string>
+    <string name="ntf_today">Hoje, %1$s</string>
+    <string name="ntf_yesterday">Ontem, %1$s</string>
+    <plurals name="ntf_class">
+        <item quantity="one">Aula em %1$d minuto</item>
+        <item quantity="many">Aula em %1$d minutos</item>
+        <item quantity="other">Aula em %1$d minutos</item>
+    </plurals>
     <string name="setup_title">Configuração inicial</string>
     <string name="setup_step">Passo %1$d de 4</string>
     <string name="setup_skip">Pular</string>

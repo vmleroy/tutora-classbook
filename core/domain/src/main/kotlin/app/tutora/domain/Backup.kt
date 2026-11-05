@@ -97,6 +97,8 @@ val backupUpgrades: Map<Int, (Map<String, List<BackupRow>>) -> Map<String, List<
         4 to { t -> t + ("credit" to t["credit"].orEmpty()) },
         // 014: "Dada sozinha", a column with a default of 0.
         5 to { t -> t },
+        // 014: the notifications sent, starting empty.
+        6 to { t -> t + ("notice" to t["notice"].orEmpty()) },
     )
 
 fun upgradeBackup(

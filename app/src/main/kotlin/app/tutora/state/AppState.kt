@@ -53,6 +53,7 @@ class AppServices(
     val confirming = app.tutora.usecases.Confirming(ctx)
     val reminders = app.tutora.usecases.Reminders(ctx)
     val setup = app.tutora.usecases.Setup(ctx)
+    val notices = app.tutora.usecases.Notices(ctx)
 
     val settings: Flow<Settings> = settingsRepo.observe()
 

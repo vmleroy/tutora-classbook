@@ -150,6 +150,8 @@ class Reminders(
                     }
                 }
             }
+        // Notificações keeps it, whatever the phone allows (AC-014-40).
+        notice?.let { Notices(ctx).record(it) }
         plan()
         return notice
     }

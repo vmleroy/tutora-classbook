@@ -1,6 +1,7 @@
 package app.tutora
 
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -26,6 +27,7 @@ import app.tutora.usecases.Reminders
 import app.tutora.usecases.Result
 import app.tutora.usecases.ScheduleResult
 import app.tutora.usecases.WhoId
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
@@ -151,7 +153,7 @@ class RemindersTest {
         h.notificationPermission.answer = false
         h.show(compose)
         h.go(compose, RemindersHome)
-        compose.onNodeWithText("15 min antes").performClick()
+        compose.onNodeWithContentDescription("Aviso antes da aula").performClick()
         h.settle(compose)
         assertEquals(1, h.notificationPermission.asked)
         compose.onNodeWithTag("notifications-off").assertExists().performClick()
@@ -184,7 +186,7 @@ class RemindersTest {
     }
 
     @Test
-    fun `AC-014-32 a bell on Hoje and the Agenda opens Lembretes, with a dot while notifications are off`() {
+    fun `AC-014-32 a bell on Hoje and the Agenda opens Notificacoes, with a dot while notifications are off`() {
         val h = Harness(t)
         h.notificationPermission.allowed = false
         h.show(compose)
@@ -192,11 +194,11 @@ class RemindersTest {
         compose.onNodeWithTag("dot", useUnmergedTree = true).assertExists()
         compose.onNodeWithTag("bell").performClick()
         h.settle(compose)
-        compose.onNodeWithTag("reminders-screen").assertExists()
+        compose.onNodeWithTag("notices-screen").assertExists()
         h.go(compose, app.tutora.ui.ScheduleGraph)
         compose.onNodeWithTag("bell").performClick()
         h.settle(compose)
-        compose.onNodeWithTag("reminders-screen").assertExists()
+        compose.onNodeWithTag("notices-screen").assertExists()
     }
 
     @Test
@@ -204,7 +206,9 @@ class RemindersTest {
         val h = Harness(t)
         h.show(compose)
         h.go(compose, RemindersHome)
-        compose.onNodeWithTag("remind-custom").performClick()
+        compose.onNodeWithContentDescription("Aviso antes da aula").performClick()
+        h.settle(compose)
+        compose.onNodeWithText("Outro").performClick()
         h.settle(compose)
         compose
             .onNode(
@@ -216,10 +220,61 @@ class RemindersTest {
                                 .hasTestTag("remind-duration"),
                         ),
             ).performTextReplacement("130")
-        compose.onNodeWithText("Salvar").performClick()
         h.awaitDb(compose) { h.services.currentSettings().remindBefore == 90 }
         assertEquals(90, runBlocking { h.services.currentSettings().remindBefore })
         h.settle(compose)
         compose.onNodeWithText("1h30 antes").assertExists()
     }
+
+    @Test
+    fun `AC-014-38 Aviso antes da aula is a switch, with 5, 15, 30, 60 and Outro under it once on`() {
+        val h = Harness(t)
+        h.show(compose)
+        h.go(compose, RemindersHome)
+        compose.onNodeWithTag("remind-choices").assertDoesNotExist()
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasContentDescription("Aviso antes da aula") and
+                    androidx.compose.ui.test
+                        .isToggleable(),
+            ).performClick()
+        h.awaitDb(compose) { h.services.currentSettings().remindBefore == 15 }
+        h.settle(compose)
+        listOf("5 min", "15 min", "30 min", "60 min", "Outro").forEach { compose.onNodeWithText(it).assertExists() }
+        compose.onNodeWithText("30 min").performClick()
+        h.awaitDb(compose) { h.services.currentSettings().remindBefore == 30 }
+        assertEquals(30, runBlocking { h.services.currentSettings().remindBefore })
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasContentDescription("Aviso antes da aula") and
+                    androidx.compose.ui.test
+                        .isToggleable(),
+            ).performClick()
+        h.awaitDb(compose) { h.services.currentSettings().remindBefore == 0 }
+        assertEquals(0, runBlocking { h.services.currentSettings().remindBefore })
+    }
+
+    @Test
+    fun `AC-014-40 every notification sent is kept, unseen until Notificacoes is opened, and only for 30 days`() =
+        runTest {
+            lesson(7, "2026-10-23")
+            reminders.fire(ReminderKind.CONFIRM, null)
+            val notices = app.tutora.usecases.Notices(t.ctx)
+            assertEquals(1, notices.unseen().first())
+            assertEquals(
+                app.tutora.domain.NoticeKind.CONFIRM,
+                notices
+                    .recent()
+                    .first()
+                    .single()
+                    .kind,
+            )
+            notices.markSeen()
+            assertEquals(0, notices.unseen().first())
+            t.now = "2026-11-30T12:00:00.000Z"
+            notices.prune()
+            assertEquals(0, notices.recent().first().size)
+        }
 }

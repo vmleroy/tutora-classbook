@@ -181,7 +181,7 @@ private fun today(): LocalDate {
 
 /** Days without a backup, once it is 14 or more (AC-011-10). */
 @Composable
-private fun warningDays(s: BackupState): Int? {
+internal fun warningDays(s: BackupState): Int? {
     val services = LocalServices.current
     val first by remember { services.backups.firstLessonAt() }.collectAsState(initial = null)
     return backupWarningDays(

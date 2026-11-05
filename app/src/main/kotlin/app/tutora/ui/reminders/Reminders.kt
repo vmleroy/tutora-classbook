@@ -7,12 +7,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,9 +24,6 @@ import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.components.AlertBanner
 import app.tutora.designsystem.components.AlertTone
-import app.tutora.designsystem.components.BottomSheet
-import app.tutora.designsystem.components.Button
-import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DurationField
 import app.tutora.designsystem.components.HeaderVariant
@@ -132,28 +127,31 @@ fun rememberExactAlarmPermission(): ExactAlarmPermission {
 }
 
 /**
- * The bell on Hoje and the Agenda: opens Lembretes, with a dot while the phone has Tutora's
- * notifications off, read again on coming back to the app (AC-014-32).
+ * The bell on Hoje and the Agenda: opens Notificações with how many are unseen; with none, a dot
+ * while the phone has Tutora's notifications off, read again on coming back (AC-014-32, 39, 40).
  */
 @Composable
 fun ReminderBell(
     nav: NavHostController,
     variant: app.tutora.designsystem.components.IconButtonVariant,
 ) {
+    val services = LocalServices.current
     val permission = rememberNotificationPermission()
     var allowed by remember { mutableStateOf(permission.allowed()) }
+    val unseen by remember { services.notices.unseen() }.collectAsState(initial = 0)
     androidx.lifecycle.compose.LifecycleResumeEffect(permission) {
         allowed = permission.allowed()
         onPauseOrDispose { }
     }
     app.tutora.designsystem.components.IconButton(
         IconName.BELL,
-        stringResource(R.string.set_reminders),
-        { nav.navigate(app.tutora.ui.RemindersHome) },
+        stringResource(R.string.ntf_title),
+        { nav.navigate(app.tutora.ui.NoticesHome) },
         Modifier.testTag("bell"),
         variant = variant,
         dot = !allowed,
         size = app.tutora.designsystem.components.ControlSize.SM,
+        count = unseen,
     )
 }
 
@@ -190,6 +188,9 @@ fun remindText(minutes: Int): String =
 
 private const val MINUTES_IN_HOUR = 60
 
+/** "Outro" among the choices: not a number of minutes. */
+private const val OTHER = -1
+
 /** "15 min antes · Quem te deve · Aulas para confirmar": what is on; "Desligado" when nothing is. */
 @Composable
 fun remindersSummary(s: app.tutora.domain.Settings): String =
@@ -218,7 +219,8 @@ fun RemindersScreen(nav: NavHostController) {
     val scope = rememberCoroutineScope()
     val settings by services.settings.collectAsState(initial = null)
     var allowed by remember { mutableStateOf(permission.allowed()) }
-    var customizing by remember { mutableStateOf(false) }
+    // "Outro" open: an hh:mm field under the choices (AC-014-38).
+    var other by remember { mutableStateOf<Boolean?>(null) }
     val s = settings ?: return
 
     fun save(next: app.tutora.domain.Settings) {
@@ -228,31 +230,6 @@ fun RemindersScreen(nav: NavHostController) {
                 (next.confirmDaily && !s.confirmDaily)
         scope.launch { services.saveSettings(next) }
         if (turnedOn && !allowed) permission.request { allowed = it }
-    }
-
-    if (customizing) {
-        var minutes by remember { mutableIntStateOf(s.remindBefore.takeIf { it > 0 } ?: REMIND_BEFORE_DEFAULT) }
-        BottomSheet(
-            stringResource(R.string.set_remindBefore),
-            { customizing = false },
-            actions =
-                listOf { m ->
-                    Button(stringResource(R.string.set_remindSave), {
-                        save(s.copy(remindBefore = minutes.coerceIn(REMIND_MIN, REMIND_MAX)))
-                        customizing = false
-                    }, m, enabled = minutes in REMIND_MIN..REMIND_MAX)
-                },
-        ) {
-            DurationField(
-                stringResource(R.string.set_remindHowLong),
-                minutes,
-                { it?.let { v -> minutes = v } },
-                Modifier.testTag("remind-duration"),
-                maxMinutes = REMIND_MAX,
-                minMinutes = REMIND_MIN,
-                step = 5,
-            )
-        }
     }
 
     fun timeText(
@@ -286,32 +263,62 @@ fun RemindersScreen(nav: NavHostController) {
                 onClick = { exact.open() },
             )
         }
+        // Aviso antes da aula: one switch; on, the choices under it and Outro's field (AC-014-38).
+        val custom = other ?: (s.remindBefore > 0 && s.remindBefore !in REMIND_BEFORE_CHOICES)
         ListGroup(
-            title = stringResource(R.string.set_remindBefore),
-            rows =
-                listOf {
-                    FlowRow(
-                        Modifier.padding(horizontal = Spacing.s4, vertical = Spacing.s2_5),
-                        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.s2),
-                    ) {
-                        REMIND_BEFORE_CHOICES.forEach { m ->
-                            Chip(
-                                if (m == 0) stringResource(R.string.set_remindOff) else stringResource(R.string.set_remindMinutes, m),
-                                s.remindBefore == m,
-                                { save(s.copy(remindBefore = m)) },
-                            )
-                        }
-                        // Any time before: a chip reading the chosen time, opening an hh:mm picker (AC-014-36).
-                        val custom = s.remindBefore !in REMIND_BEFORE_CHOICES
-                        Chip(
-                            if (custom) remindText(s.remindBefore) else stringResource(R.string.set_remindCustom),
-                            custom,
-                            { customizing = true },
-                            Modifier.testTag("remind-custom"),
-                        )
-                    }
+            listOfNotNull(
+                {
+                    ListRow(
+                        stringResource(R.string.set_remindBefore),
+                        subtitle = if (s.remindBefore > 0) remindText(s.remindBefore) else stringResource(R.string.set_remindOff),
+                        icon = IconName.CLOCK,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.remindBefore > 0,
+                        onSwitchChange = { on ->
+                            other = null
+                            save(s.copy(remindBefore = if (on) REMIND_BEFORE_DEFAULT else 0))
+                        },
+                    )
                 },
+                if (s.remindBefore > 0) {
+                    {
+                        Column(
+                            Modifier.padding(horizontal = Spacing.s4, vertical = Spacing.s2_5),
+                            verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+                        ) {
+                            app.tutora.designsystem.components.SegmentedControl(
+                                REMIND_BEFORE_CHOICES.filter { it > 0 }.map { it to stringResource(R.string.set_remindShort, it) } +
+                                    (OTHER to stringResource(R.string.set_remindCustom)),
+                                if (custom) OTHER else s.remindBefore,
+                                { v ->
+                                    if (v == OTHER) {
+                                        other = true
+                                    } else {
+                                        other = false
+                                        save(s.copy(remindBefore = v))
+                                    }
+                                },
+                                stringResource(R.string.set_remindBefore),
+                                Modifier.testTag("remind-choices"),
+                                size = ControlSize.SM,
+                            )
+                            if (custom) {
+                                DurationField(
+                                    stringResource(R.string.set_remindHowLong),
+                                    s.remindBefore,
+                                    { v -> v?.takeIf { it in REMIND_MIN..REMIND_MAX }?.let { save(s.copy(remindBefore = it)) } },
+                                    Modifier.testTag("remind-duration"),
+                                    maxMinutes = REMIND_MAX,
+                                    minMinutes = REMIND_MIN,
+                                    step = 5,
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    null
+                },
+            ),
         )
         ListGroup(
             listOfNotNull(

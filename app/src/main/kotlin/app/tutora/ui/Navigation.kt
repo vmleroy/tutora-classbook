@@ -89,6 +89,9 @@ fun NavHostController.openTab(graph: Any) {
 
 @Serializable data object SettingsHome
 
+/** Notificações, behind the bell (AC-014-39). */
+@Serializable data object NoticesHome
+
 /** Ganhos › Evolução (AC-014-31). */
 @Serializable data object Evolution
 
@@ -321,6 +324,10 @@ fun TutoraNav(
                 composable<ConfirmClasses> {
                     app.tutora.ui.confirm
                         .ConfirmClassesScreen(nav)
+                }
+                composable<NoticesHome> {
+                    app.tutora.ui.reminders
+                        .NoticesScreen(nav)
                 }
                 composable<Evolution> {
                     app.tutora.ui.earnings

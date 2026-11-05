@@ -87,6 +87,8 @@ class StartApp(
             Setup(ctx).markDoneIfData()
             // The reminders' alarms, in case the phone lost them (AC-014-15).
             runCatching { Reminders(ctx).plan() }
+            // Notificações keeps 30 days (AC-014-40).
+            Notices(ctx).prune()
             StartResult.Ready(db, repo.load(), TutoraDatabase.VERSION, ctx)
         } catch (e: Exception) {
             StartResult.Failed(startupLanguage(null, phone), backup, e.message ?: e.toString())
