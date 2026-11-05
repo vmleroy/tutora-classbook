@@ -224,7 +224,6 @@ fun EarningsScreen(
             Modifier.testTag("see-evolution"),
             variant = ButtonVariant.OUTLINE,
             size = ControlSize.SM,
-            icon = IconName.CHEVRON_RIGHT,
         )
         if (picking) {
             PeriodPickerSheet(period, today, { picking = false }) {

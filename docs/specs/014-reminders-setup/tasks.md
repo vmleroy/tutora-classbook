@@ -11,12 +11,12 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 7. First-run setup: the four steps, summary and ways out; `setupDone` for teachers with data; hiding by teaching kind. Test: `app/src/test/kotlin/app/tutora/SetupScreensTest.kt`, `SetupTest.kt`. (AC-014-17, AC-014-18, AC-014-19, AC-014-20, AC-014-21, AC-014-22, AC-014-23)
 - [x] 8. `./gradlew check`, roadmap status, device checks pending in the PR.
 
-- [ ] 9. Domain: `periodBars`, `compareMonths`; `SetupChoices.travelCents`. Test: `EarningsRulesTest.kt` (AC-014-30, AC-014-31), `SetupTest.kt` (AC-014-25).
-- [ ] 10. Design system: typable `Stepper` (`StepperInput`), scrolling `MonthBars`, `size-bar-min`; guidelines and gallery. Test: `DesignSystemTest.kt` (AC-014-29).
-- [ ] 11. Exact reminders: build flag, manifest overlay, `setExactAndAllowWhileIdle`, `ExactAlarmPermission` and the Lembretes row; days as one row. Test: `RemindersTest.kt` (AC-014-26, AC-014-27).
-- [ ] 12. Ajustes in pages: Geral, Aulas, Lembretes, Pagamentos and Sobre, with their summaries; update the screen tests that open Ajustes. Test: `SettingsPagesTest.kt` (AC-014-28).
-- [ ] 13. Ganhos: bars by period, Evolução with ranges and the comparison; update AC-009-12's test. Test: `EarningsScreensTest.kt` (AC-014-30, AC-014-31).
-- [ ] 14. Setup's fixed travel amount; `./gradlew check`; the new screens on the emulator (Ajustes pages, Evolução, typing in steppers, an exact reminder).
+- [x] 9. Domain: `periodBars`, `compareMonths`; `SetupChoices.travelCents`. Test: `EarningsRulesTest.kt` (AC-014-30, AC-014-31), `SetupTest.kt` (AC-014-25).
+- [x] 10. Design system: typable `Stepper` (`StepperInput`), scrolling `MonthBars`, `size-bar-min`; guidelines and gallery. Test: `DesignSystemTest.kt` (AC-014-29).
+- [x] 11. Exact reminders: build flag, manifest overlay, `setExactAndAllowWhileIdle`, `ExactAlarmPermission` and the Lembretes row; days as one row. Test: `RemindersTest.kt` (AC-014-26, AC-014-27).
+- [x] 12. Ajustes in pages: Geral, Aulas, Lembretes, Pagamentos and Sobre, with their summaries; update the screen tests that open Ajustes. Test: `SettingsPagesTest.kt` (AC-014-28).
+- [x] 13. Ganhos: bars by period, Evolução with ranges and the comparison; update AC-009-12's test. Test: `EarningsScreensTest.kt` (AC-014-30, AC-014-31).
+- [x] 14. Setup's fixed travel amount; `./gradlew check`; the new screens on the emulator (Ajustes pages, Evolução, typing in steppers, an exact reminder).
 
 ## Checked on a device (5 Nov 2026, emulator, Android 16)
 
@@ -39,6 +39,14 @@ Fixed along the way:
 - The class reminder said "15 minutos" when it came late.
 - "Quem te deve" called places and groups "alunos"; it now says "pagamentos pendentes" and opens Hoje.
 
-## Still open
+## Checked on a device, second round (5 Nov 2026)
 
-- Android gives these inexact alarms a window of up to an hour (`window=+1h` in `dumpsys alarm`), so a reminder before class can arrive after the class has started. Exact alarms would need `USE_EXACT_ALARM` (Play allows it for calendar-like apps) or `SCHEDULE_EXACT_ALARM` (the teacher grants it). Victor to decide.
+- [x] Ajustes lists its pages with their lines; Lembretes' days fit as Seg … Dom; typing 9 in the hour gives 09:00.
+- [x] With the default build, the class reminder is exact (`window=0`, `exactAllowReason=policy_permission`), and no "Ativar" row shows.
+- [x] Ganhos: November (empty) shows only its empty state; October shows its five weeks. Evolução scrolls through 12 months and compares October with September ("+R$ 640,20", no percent since September is zero).
+
+Fixed along the way: small segments wrapped "Seg" to "Se g" (now 4 dp a side), and the chevron on "Ver evolução" was dropped.
+
+## Decided
+
+- Exact reminders: both permissions, chosen by `-Ptutora.exactAlarm=use|schedule` (Victor, 5 Nov 2026). "use" is the default.

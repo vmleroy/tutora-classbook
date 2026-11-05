@@ -123,7 +123,8 @@ fun <T> SegmentedControl(
                         .fillMaxHeight()
                         .clip(shape)
                         .background(bg)
-                        .padding(horizontal = Spacing.s2, vertical = Spacing.s1),
+                        // Small segments keep 4 dp a side, so seven short day names fit in a row (AC-014-26).
+                        .padding(horizontal = if (size == ControlSize.SM) Spacing.s1 else Spacing.s2, vertical = Spacing.s1),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
