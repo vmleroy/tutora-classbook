@@ -22,11 +22,14 @@ import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.designsystem.components.formatMoney
@@ -116,8 +119,8 @@ class DesignSystemTest {
                 ) { Column(Modifier.verticalScroll(rememberScrollState())) { GallerySections() } }
             }
         }
-        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana).
-        assertEquals(41, galleryComponents.size)
+        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana), UndoBar and NumberField (014).
+        assertEquals(43, galleryComponents.size)
         for (name in galleryComponents) compose.onNodeWithTag("section-$name").assertExists()
         isDark = true
         compose.waitForIdle()
@@ -259,5 +262,147 @@ class DesignSystemTest {
             ?.invoke(results)
         assertEquals(1, results.first().lineCount)
         assertTrue(!results.first().hasVisualOverflow)
+    }
+
+    @Test
+    fun `AC-014-3 a class to confirm reads To confirm on the Agenda's blocks and cards and in a lesson row`() {
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Column {
+                    app.tutora.designsystem.components.AgendaBlock(
+                        app.tutora.designsystem.components.Tag.GREEN,
+                        "Ana",
+                        state = app.tutora.designsystem.components.BlockState.TO_CONFIRM,
+                    )
+                    app.tutora.designsystem.components.AgendaCard(
+                        "14:00",
+                        "15:00",
+                        app.tutora.designsystem.components.Tag.GREEN,
+                        "Bia",
+                        state = app.tutora.designsystem.components.BlockState.TO_CONFIRM,
+                    )
+                }
+            }
+        }
+        assertEquals(2, compose.onAllNodesWithText("To confirm").fetchSemanticsNodes().size)
+    }
+
+    @Test
+    fun `AC-014-5 a month day holding a class to confirm shows a ring, and the Agenda tab its count`() {
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Column {
+                    app.tutora.designsystem.components.MonthGrid(
+                        listOf(
+                            app.tutora.designsystem.components
+                                .MonthDay(19, true, emptyList(), 0, "19", pending = true),
+                            app.tutora.designsystem.components
+                                .MonthDay(20, true, emptyList(), 0, "20"),
+                        ),
+                        null,
+                        {},
+                        listOf("S", "T", "Q", "Q", "S", "S", "D"),
+                        "Outubro",
+                    )
+                    app.tutora.designsystem.components.TabBar(
+                        listOf(
+                            app.tutora.designsystem.components.TabItem(
+                                "schedule",
+                                "Agenda",
+                                app.tutora.designsystem.components.IconName.CALENDAR,
+                                count = 3,
+                            ),
+                        ),
+                        "today",
+                        {},
+                    )
+                }
+            }
+        }
+        assertEquals(
+            1,
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasTestTag("month-pending"),
+                ).fetchSemanticsNodes()
+                .size,
+        )
+        compose.onNodeWithTag("tab-count-schedule", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `AC-014-29 a stepper's value can be typed - percent, money, and out of range kept within bounds`() {
+        var bp by mutableStateOf(3_000L)
+        var cents by mutableStateOf(10_000L)
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Column {
+                    app.tutora.designsystem.components.Stepper(
+                        bp,
+                        { bp = it },
+                        step = 500,
+                        max = 9_000,
+                        format = { "${it / 100}%" },
+                        valueLabel = "Comissão",
+                        typedScale = 100,
+                    )
+                    app.tutora.designsystem.components.Stepper(
+                        cents,
+                        { cents = it },
+                        step = 500,
+                        min = 500,
+                        format = { "R$ ${it / 100}" },
+                        valueLabel = "Preço",
+                        input = app.tutora.designsystem.components.StepperInput.MONEY,
+                    )
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("Comissão, 30%").performClick()
+        compose.onNodeWithTag("stepper-entry").performTextReplacement("45")
+        compose.onNodeWithTag("stepper-entry").performImeAction()
+        compose.waitForIdle()
+        assertEquals(4_500L, bp)
+        compose.onNodeWithContentDescription("Comissão, 45%").performClick()
+        compose.onNodeWithTag("stepper-entry").performTextReplacement("95")
+        compose.onNodeWithTag("stepper-entry").performImeAction()
+        compose.waitForIdle()
+        assertEquals(9_000L, bp)
+        compose.onNodeWithContentDescription("Preço, R$ 100").performClick()
+        compose.onNodeWithTag("stepper-entry").performTextReplacement("13550")
+        compose.onNodeWithTag("stepper-entry").performImeAction()
+        compose.waitForIdle()
+        assertEquals(13_550L, cents)
+    }
+
+    @Test
+    fun `AC-014-37 a number is typed in its field, with − and + inside, and a duration moves by its step`() {
+        var count by mutableStateOf(10L)
+        var minutes by mutableStateOf(60)
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Column {
+                    app.tutora.designsystem.components
+                        .NumberField("Aulas", count, { count = it }, min = 1, max = 100)
+                    app.tutora.designsystem.components
+                        .DurationField("Duração", minutes, { minutes = it ?: minutes }, step = 5, minMinutes = 5)
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("Increase Aulas").performClick()
+        compose.waitForIdle()
+        assertEquals(11L, count)
+        compose.onNodeWithText("11").performTextReplacement("25")
+        compose.waitForIdle()
+        assertEquals(25L, count)
+        // Past the maximum, the number stays.
+        compose.onNodeWithText("25").performTextReplacement("250")
+        compose.waitForIdle()
+        assertEquals(25L, count)
+        compose.onNodeWithContentDescription("Decrease Duração").performClick()
+        compose.waitForIdle()
+        assertEquals(55, minutes)
+        compose.onNodeWithText("00:55").assertExists()
     }
 }

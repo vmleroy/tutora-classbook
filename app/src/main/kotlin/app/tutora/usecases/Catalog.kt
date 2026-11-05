@@ -43,6 +43,8 @@ class Ctx(
     /** The phone's calendars, and the event texts in each language (spec 012). */
     val calendar: PhoneCalendar = PhoneCalendar.None,
     val calendarWords: (app.tutora.domain.Language) -> app.tutora.domain.CalendarWords = NO_CALENDAR_WORDS,
+    /** The alarms behind the reminders (spec 014). */
+    val reminders: ReminderAlarm = ReminderAlarm.None,
 )
 
 sealed interface Result<out T> {

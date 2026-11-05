@@ -39,6 +39,7 @@ class StartApp(
     private val privateDir: java.io.File = java.io.File(System.getProperty("java.io.tmpdir"), "tutora"),
     private val calendar: PhoneCalendar = PhoneCalendar.None,
     private val calendarWords: (Language) -> app.tutora.domain.CalendarWords = NO_CALENDAR_WORDS,
+    private val reminders: ReminderAlarm = ReminderAlarm.None,
 ) {
     suspend operator fun invoke(): StartResult {
         val phone = phoneTags()
@@ -61,6 +62,7 @@ class StartApp(
                     privateDir = privateDir,
                     calendar = calendar,
                     calendarWords = calendarWords,
+                    reminders = reminders,
                 )
             // This phone's calendar setup starts off (AC-012-2).
             app.tutora.data
@@ -79,6 +81,14 @@ class StartApp(
             Live(ctx).restoreNotification()
             // A class whose time came while the app was closed starts now (AC-007-21).
             Live(ctx).autoStart()
+            // With "Marcar como dadas sozinhas", classes that ended while the app was closed are marked now (AC-014-2).
+            Confirming(ctx).autoConfirm()
+            // A teacher who already has data never sees the first-run setup (AC-014-17).
+            Setup(ctx).markDoneIfData()
+            // The reminders' alarms, in case the phone lost them (AC-014-15).
+            runCatching { Reminders(ctx).plan() }
+            // Notificações keeps 30 days (AC-014-40).
+            Notices(ctx).prune()
             StartResult.Ready(db, repo.load(), TutoraDatabase.VERSION, ctx)
         } catch (e: Exception) {
             StartResult.Failed(startupLanguage(null, phone), backup, e.message ?: e.toString())

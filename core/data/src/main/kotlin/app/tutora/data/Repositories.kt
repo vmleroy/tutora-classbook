@@ -133,6 +133,20 @@ class ScheduleRepository(
 
     fun lesson(id: String): Flow<Lesson?> = db.schedule().observeOne(id).map { it?.let { r -> assemble(r) } }
 
+    /** Scheduled classes that started before [before], oldest first; which are to confirm is the domain's rule (AC-014-1). */
+    fun scheduledBefore(before: String): Flow<List<Lesson>> =
+        db.schedule().observeScheduledBefore(before).map { rows -> rows.mapNotNull { assemble(it) } }
+
+    /** The kinds of the teacher's own places and of places that hold a class: never hidden (AC-014-20). */
+    fun kindsInUse(): Flow<Set<app.tutora.domain.PlaceKind>> =
+        db.schedule().observeKindsInUse().map { kinds ->
+            kinds
+                .mapNotNull { k ->
+                    app.tutora.domain.PlaceKind.entries
+                        .firstOrNull { it.key == k }
+                }.toSet()
+        }
+
     /** The live class, if any (spec 007). */
     fun live(): Flow<Lesson?> = db.schedule().observeLive().map { it?.let { r -> assemble(r) } }
 
@@ -185,6 +199,7 @@ class ScheduleRepository(
             feeCents = l.feeCents,
             cancelReason = CancelReason.fromKey(l.cancelReason),
             cancelNote = l.cancelNote,
+            autoDone = l.autoDone,
         )
     }
 }

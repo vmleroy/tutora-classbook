@@ -36,6 +36,38 @@ interface SettingsDao {
     suspend fun upsert(rows: List<SettingRow>)
 }
 
+/** A notification Tutora sent, kept 30 days for Notificações (AC-014-40). */
+@Entity(tableName = "notice")
+data class NoticeRow(
+    @PrimaryKey val id: String,
+    val kind: String,
+    @androidx.room.ColumnInfo(name = "lesson_id") val lessonId: String?,
+    val count: Int,
+    val cents: Long,
+    val minutes: Int,
+    @androidx.room.ColumnInfo(name = "only_students") val onlyStudents: Boolean,
+    val at: String,
+    val seen: Boolean,
+)
+
+@Dao
+interface NoticeDao {
+    @androidx.room.Insert
+    suspend fun insert(row: NoticeRow)
+
+    @Query("SELECT * FROM notice WHERE at >= :since ORDER BY at DESC")
+    fun observeSince(since: String): Flow<List<NoticeRow>>
+
+    @Query("SELECT COUNT(*) FROM notice WHERE seen = 0 AND at >= :since")
+    fun observeUnseen(since: String): Flow<Int>
+
+    @Query("UPDATE notice SET seen = 1 WHERE seen = 0")
+    suspend fun markAllSeen()
+
+    @Query("DELETE FROM notice WHERE at < :before")
+    suspend fun deleteBefore(before: String)
+}
+
 /** What the backup page needs besides the dump (spec 011). */
 @Dao
 interface BackupDao {
@@ -55,7 +87,7 @@ interface BackupDao {
     entities = [
         SettingRow::class, PlaceRow::class, StudentRow::class, LinkRow::class, GroupRow::class, MemberRow::class,
         RuleRow::class, SkipRow::class, LessonRow::class, TimerRow::class, PackageRow::class, PaymentRow::class,
-        PaymentLessonRow::class, CreditRow::class,
+        PaymentLessonRow::class, CreditRow::class, NoticeRow::class,
     ],
     version = TutoraDatabase.VERSION,
     exportSchema = true,
@@ -77,12 +109,14 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     abstract fun backup(): BackupDao
 
+    abstract fun notices(): NoticeDao
+
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 5
+        const val VERSION = 7
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
     }
 }
 
@@ -165,5 +199,25 @@ val MIGRATION_4_5 =
                 "CREATE INDEX IF NOT EXISTS `index_credit_place_id` ON `credit` (`place_id`)",
                 "CREATE INDEX IF NOT EXISTS `index_credit_lesson_id` ON `credit` (`lesson_id`)",
             ).forEach { connection.execSQL(it) }
+        }
+    }
+
+/** Spec 014: "Dada sozinha", a class marked done by itself (AC-014-2). */
+val MIGRATION_5_6 =
+    object : Migration(5, 6) {
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("ALTER TABLE lesson ADD COLUMN auto_done INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+/** Spec 014: the notifications Tutora sent, for Notificações (AC-014-40). */
+val MIGRATION_6_7 =
+    object : Migration(6, 7) {
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL(
+                "CREATE TABLE IF NOT EXISTS `notice` (`id` TEXT NOT NULL, `kind` TEXT NOT NULL, `lesson_id` TEXT, `count` INTEGER " +
+                    "NOT NULL, `cents` INTEGER NOT NULL, `minutes` INTEGER NOT NULL, `only_students` INTEGER NOT NULL, `at` TEXT NOT " +
+                    "NULL, `seen` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+            )
         }
     }

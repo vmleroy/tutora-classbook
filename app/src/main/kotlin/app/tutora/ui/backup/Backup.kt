@@ -44,7 +44,6 @@ import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SegmentedControl
-import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.TileTone
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -102,7 +101,7 @@ interface BackupPicker {
 val LocalBackupPicker = staticCompositionLocalOf<BackupPicker?> { null }
 
 @Composable
-private fun rememberBackupPicker(): BackupPicker {
+fun rememberBackupPicker(): BackupPicker {
     LocalBackupPicker.current?.let { return it }
     var pending by remember { mutableStateOf<((String?) -> Unit)?>(null) }
     val folder =
@@ -182,7 +181,7 @@ private fun today(): LocalDate {
 
 /** Days without a backup, once it is 14 or more (AC-011-10). */
 @Composable
-private fun warningDays(s: BackupState): Int? {
+internal fun warningDays(s: BackupState): Int? {
     val services = LocalServices.current
     val first by remember { services.backups.firstLessonAt() }.collectAsState(initial = null)
     return backupWarningDays(
@@ -725,36 +724,20 @@ fun BackupScreen(nav: NavHostController) {
     }
 }
 
-/** Guardar os últimos N, as a row of the group: the title and its effect, a small stepper on the right. */
+/** Guardar os últimos N, as a row of the group: a number field with its effect under it (AC-014-37). */
 @Composable
 private fun KeepRow(
     keep: Int,
     onChange: (Int) -> Unit,
 ) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Spacing.s4, vertical = Spacing.s2_5),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.bk_keep), style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
-            Text(
-                pluralStringResource(R.plurals.bk_keepValue, keep, keep),
-                style = TutoraTheme.type.meta,
-                color = TutoraTheme.colors.inkMuted,
-            )
-        }
-        Stepper(
+    androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.s4, vertical = Spacing.s2_5)) {
+        app.tutora.designsystem.components.NumberField(
+            stringResource(R.string.bk_keep),
             keep.toLong(),
             { onChange(it.toInt()) },
-            Modifier.weight(0.8f),
-            step = 1,
             min = BACKUP_KEEP_MIN.toLong(),
             max = BACKUP_KEEP_MAX.toLong(),
-            valueLabel = stringResource(R.string.bk_keep),
-            size = app.tutora.designsystem.components.ControlSize.SM,
+            helper = pluralStringResource(R.plurals.bk_keepValue, keep, keep),
         )
     }
 }

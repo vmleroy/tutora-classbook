@@ -4,7 +4,7 @@ Tutora is built spec by spec. Each folder holds `spec.md` (what and why), `plan.
 
 ## Roadmap
 
-Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + Compose: the Expo version of 001–005 is archived at the `expo-final` tag, and those specs are re-planned (`/plan`) and implemented again in Kotlin. 001 to 013 and 016 are written so far; write the next one with `/spec` when its turn comes.
+Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + Compose: the Expo version of 001–005 is archived at the `expo-final` tag, and those specs are re-planned (`/plan`) and implemented again in Kotlin. 001 to 014 and 016 are written so far; write the next one with `/spec` when its turn comes.
 
 | # | Spec | Status | Mockups |
 | --- | --- | --- | --- |
@@ -20,8 +20,8 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 010 | [Reports](010-reports/spec.md): per student, group or place with periods; PDF, Excel (own small writer) and copy as text; earnings report from Ganhos; name and Pix key in Ajustes | done | Report, ReportPdf, EarningsPdf |
 | 011 | [Backup and restore](011-backup/spec.md): full backup file shared anywhere, automatic backup to a folder, restore with undo, readable spreadsheet | done | Backup, Settings |
 | 012 | [Calendar sync and .ics](012-calendar/spec.md): classes of the next 8 weeks in a "Tutora – Aulas" calendar, updated on every change; other appointments as busy time on the Agenda; .ics export | done | Calendar, Settings |
-| 013 | [Appearance](013-appearance/spec.md): Aparência with a live preview, mode, theme, quick main and highlight colors, text size; Suas cores for the seven parts with hex, sliders and contrast | in progress | Theme, ColorPicker, Settings |
-| 014 | Reminders and first-run setup | not written | Setup |
+| 013 | [Appearance](013-appearance/spec.md): Aparência with a live preview, mode, theme, quick main and highlight colors, text size; Suas cores for the seven parts with hex, sliders and contrast | done | Theme, ColorPicker, Settings |
+| 014 | [Reminders, confirming classes and first-run setup](014-reminders-setup/spec.md): a reminder before each class, a weekly "who owes you" and a daily "to confirm"; past classes "A confirmar", confirmed one by one or all at once (takes in the draft 018); four skippable setup steps that also hide what doesn't apply | done | Setup, Settings |
 | 016 | [Visual refresh 2026](016-visual-refresh/spec.md): the "Quadro refinado" look on every screen, built only from theme colors; Agenda titled by month and year, a Mês view and a month/year picker | done | DirA, A_Agenda, A_AgendaMes, A_AgendaAno, A_Aluno, A_Ganhos, A_Ajustes, A_Estilo |
 
 Status moves draft → ready → in progress → done. Update this table in the same PR that changes a status.

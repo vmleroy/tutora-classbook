@@ -59,6 +59,13 @@ class AppViewModel(
                                         .catch { }
                                         .collect { }
                                 }
+                                // The reminders follow every change to the classes and their settings (AC-014-15).
+                                launch(kotlinx.coroutines.Dispatchers.IO) {
+                                    s.reminders
+                                        .changes(today.filterNotNull().distinctUntilChanged())
+                                        .catch { }
+                                        .collect { }
+                                }
                             }
                         AppState.Ready(r)
                     }

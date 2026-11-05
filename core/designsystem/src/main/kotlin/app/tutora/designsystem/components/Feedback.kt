@@ -1,6 +1,8 @@
 package app.tutora.designsystem.components
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +12,10 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -19,12 +24,15 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -157,3 +165,54 @@ fun TimerRing(
         }
     }
 }
+
+/**
+ * A bar at the bottom after an action that changed many things at once: what was done and
+ * "Desfazer", for a few seconds (AC-014-9). It closes by itself after [durationMs], calling
+ * [onTimeout]; the screen keeps the change from then on.
+ */
+@Composable
+fun UndoBar(
+    message: String,
+    actionLabel: String,
+    onUndo: () -> Unit,
+    onTimeout: () -> Unit,
+    modifier: Modifier = Modifier,
+    durationMs: Long = UNDO_MS,
+) {
+    val c = TutoraTheme.colors
+    val latest = androidx.compose.runtime.rememberUpdatedState(onTimeout)
+    androidx.compose.runtime.LaunchedEffect(message) {
+        kotlinx.coroutines.delay(durationMs)
+        latest.value()
+    }
+    Row(
+        modifier
+            .fillMaxWidth()
+            .testTag("undo-bar")
+            .padding(horizontal = Spacing.s4, vertical = Spacing.s2)
+            .navigationBarsPadding()
+            .clip(RoundedCornerShape(Radius.xl))
+            .background(c.ink)
+            .semantics { liveRegion = androidx.compose.ui.semantics.LiveRegionMode.Polite }
+            .padding(start = Spacing.s4, end = Spacing.s1),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+    ) {
+        Text(message, style = TutoraTheme.type.body, color = c.surface, modifier = Modifier.weight(1f).padding(vertical = Spacing.s3))
+        Text(
+            actionLabel,
+            style = TutoraTheme.type.bodyStrong,
+            color = c.accent,
+            modifier =
+                Modifier
+                    .sizeIn(minHeight = Size.touch, minWidth = Size.touch)
+                    .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onUndo)
+                    .padding(horizontal = Spacing.s3)
+                    .wrapContentHeight(),
+        )
+    }
+}
+
+/** How long Desfazer stays (AC-014-9). */
+const val UNDO_MS = 6_000L

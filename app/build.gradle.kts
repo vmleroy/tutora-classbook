@@ -7,6 +7,12 @@ plugins {
 // Release signing comes from the environment, never from the repo (constitution rule 19).
 fun env(name: String): String? = System.getenv(name)?.takeIf { it.isNotBlank() }
 
+// How the reminder before class gets exact alarms (AC-014-27): "use" (USE_EXACT_ALARM, granted at
+// install) or "schedule" (SCHEDULE_EXACT_ALARM, which the teacher turns on). Build with
+// -Ptutora.exactAlarm=schedule if Play refuses USE_EXACT_ALARM.
+val exactAlarm = (findProperty("tutora.exactAlarm") as String?) ?: "use"
+require(exactAlarm == "use" || exactAlarm == "schedule") { "tutora.exactAlarm is use or schedule, not $exactAlarm" }
+
 android {
     namespace = "app.tutora"
     compileSdk = 37
@@ -20,6 +26,7 @@ android {
         versionCode = env("TUTORA_VERSION_CODE")?.toInt() ?: 1
         // Follows the last spec shipped: 1.5.0 = specs 001 to 005.
         versionName = "1.11.0"
+        buildConfigField("Boolean", "USE_EXACT_ALARM", (exactAlarm == "use").toString())
     }
 
     signingConfigs {
@@ -89,4 +96,13 @@ dependencies {
     testImplementation(libs.sqlite.framework)
     testImplementation(libs.androidx.navigation.testing)
     debugImplementation(libs.compose.ui.test.manifest)
+}
+
+// USE_EXACT_ALARM is only declared in "use" builds, so a "schedule" build never shows it to Play.
+androidComponents {
+    onVariants { variant ->
+        if (exactAlarm == "use") {
+            variant.sources.manifests.addStaticManifestFile("src/exactAlarm/AndroidManifest.xml")
+        }
+    }
 }

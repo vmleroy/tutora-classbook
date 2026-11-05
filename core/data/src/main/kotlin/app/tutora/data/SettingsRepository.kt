@@ -1,13 +1,18 @@
 package app.tutora.data
 
 import app.tutora.domain.AutoStart
+import app.tutora.domain.ConfirmWhen
 import app.tutora.domain.Language
+import app.tutora.domain.PastClasses
 import app.tutora.domain.SavedTheme
 import app.tutora.domain.Settings
+import app.tutora.domain.Teaching
 import app.tutora.domain.ThemeMode
 import app.tutora.domain.theme.CustomPart
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.isoDayNumber
 import org.json.JSONObject
 
 /** Settings as stored rows: one key per field, the value as JSON text. */
@@ -63,6 +68,17 @@ class SettingsRepository(
                 "pix_key" to org.json.JSONObject.quote(s.pixKey),
                 "saved_themes" to savedJson(s.savedThemes),
                 "saved_theme_id" to (s.savedThemeId?.let { org.json.JSONObject.quote(it) } ?: "null"),
+                "confirm_when" to quote(s.confirmWhen.key),
+                "past_classes" to quote(s.pastClasses.key),
+                "remind_before" to s.remindBefore.toString(),
+                "owed_weekly" to s.owedWeekly.toString(),
+                "owed_day" to s.owedDay.isoDayNumber.toString(),
+                "owed_hour" to s.owedHour.toString(),
+                "owed_minute" to s.owedMinute.toString(),
+                "confirm_daily" to s.confirmDaily.toString(),
+                "confirm_hour" to s.confirmHour.toString(),
+                "confirm_minute" to s.confirmMinute.toString(),
+                "teaching" to org.json.JSONArray(s.teaching.map { it.key }.sorted()).toString(),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
         /** Themes of the teacher's own (spec 013), as a JSON list. */
@@ -121,6 +137,17 @@ class SettingsRepository(
                 customColors = v["custom_colors"]?.let(::customColors) ?: emptyMap(),
                 savedThemes = v["saved_themes"]?.let(::saved) ?: emptyList(),
                 savedThemeId = v["saved_theme_id"]?.takeIf { it != "null" }?.let(::text),
+                confirmWhen = ConfirmWhen.fromKey(v["confirm_when"]?.let(::unquote)),
+                pastClasses = PastClasses.fromKey(v["past_classes"]?.let(::unquote)),
+                remindBefore = v["remind_before"]?.toIntOrNull() ?: 0,
+                owedWeekly = v["owed_weekly"] != "false",
+                owedDay = v["owed_day"]?.toIntOrNull()?.takeIf { it in 1..7 }?.let { DayOfWeek(it) } ?: DayOfWeek.MONDAY,
+                owedHour = v["owed_hour"]?.toIntOrNull() ?: 8,
+                owedMinute = v["owed_minute"]?.toIntOrNull()?.coerceIn(0, 59) ?: 0,
+                confirmDaily = v["confirm_daily"] != "false",
+                confirmHour = v["confirm_hour"]?.toIntOrNull() ?: 20,
+                confirmMinute = v["confirm_minute"]?.toIntOrNull()?.coerceIn(0, 59) ?: 0,
+                teaching = v["teaching"]?.let(::skipped)?.mapNotNull(Teaching::fromKey)?.toSet() ?: Teaching.entries.toSet(),
             )
         }
     }

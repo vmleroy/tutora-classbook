@@ -14,7 +14,6 @@ import app.tutora.domain.ThemeMode
 import app.tutora.domain.theme.CustomPart
 import app.tutora.ui.AppearanceHome
 import app.tutora.ui.CustomColors
-import app.tutora.ui.SettingsGraph
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -73,7 +72,7 @@ class AppearanceScreensTest {
     @Test
     fun `AC-013-1 Ajustes has Aparencia in Geral, and its page has every part`() {
         h.show(compose)
-        h.go(compose, SettingsGraph)
+        h.go(compose, app.tutora.ui.SettingsGeneral)
         exists("Quadro-negro · Sistema")
         compose.onNodeWithTag("appearance-row").performScrollTo().performClick()
         h.settle(compose)

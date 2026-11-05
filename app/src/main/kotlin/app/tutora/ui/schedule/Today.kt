@@ -85,6 +85,7 @@ fun TodayScreen(nav: NavHostController) {
     val next by remember { services.scheduleRepo.firstAfter(now) }.collectAsState(initial = null)
     val settings by services.settings.collectAsState(initial = null)
     val startLesson = rememberStartLesson(nav)
+    val pending = rememberToConfirm()
     val scope = rememberCoroutineScope()
     var marking by remember { mutableStateOf<Lesson?>(null) }
 
@@ -132,7 +133,18 @@ fun TodayScreen(nav: NavHostController) {
                     .background(c.header)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
             ) {
-                ScreenHeader(stringResource(g), variant = HeaderVariant.HERO, eyebrow = longDate(local.date, language))
+                ScreenHeader(
+                    stringResource(g),
+                    variant = HeaderVariant.HERO,
+                    eyebrow = longDate(local.date, language),
+                    // The bell to Lembretes (AC-014-32).
+                    trailing = {
+                        app.tutora.ui.reminders.ReminderBell(
+                            nav,
+                            app.tutora.designsystem.components.IconButtonVariant.ON_PRIMARY,
+                        )
+                    },
+                )
             }
             Box(
                 Modifier
@@ -219,6 +231,9 @@ fun TodayScreen(nav: NavHostController) {
                         }
                     }
                 }
+                // Classes that ended still scheduled, counted, opening their list (AC-014-4).
+                app.tutora.ui.confirm
+                    .ConfirmAlert(nav)
                 PendingAlert(nav)
                 app.tutora.ui.backup
                     .BackupAlert(nav)
@@ -237,7 +252,8 @@ fun TodayScreen(nav: NavHostController) {
                         lessons.forEach { l ->
                             run {
                                 // Done, cancelled and missed classes say so; a scheduled one shows its value (AC-006-15).
-                                val badge = statusBadge(l)
+                                val toConfirm = pending(l)
+                                val badge = statusBadge(l, toConfirm)
                                 LessonRow(
                                     clockTime(localOf(l.startAt, zone).time, language),
                                     l.whoTag,
@@ -248,6 +264,7 @@ fun TodayScreen(nav: NavHostController) {
                                     onClick = { nav.navigate(LessonDetail(l.id)) },
                                     statusIcon = badge?.third,
                                     card = true,
+                                    pending = toConfirm,
                                 )
                             }
                         }

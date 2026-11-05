@@ -183,6 +183,8 @@ data class LessonRow(
     /** What the class owes its payer; null when it owes nothing. */
     @ColumnInfo(name = "due_cents") val dueCents: Long? = null,
     @ColumnInfo(name = "package_id") val packageId: String? = null,
+    /** "Dada sozinha": marked done by itself with Aulas passadas on "Marcar como dadas sozinhas" (AC-014-2). */
+    @ColumnInfo(name = "auto_done", defaultValue = "0") val autoDone: Boolean = false,
 )
 
 /** The clock of a live class (spec 007): timestamps only, so nothing is lost if the app closes. */

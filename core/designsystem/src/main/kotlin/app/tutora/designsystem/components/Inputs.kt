@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -70,6 +75,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import app.tutora.designsystem.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.tokens.TutoraTokens.Opacity
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -176,6 +182,7 @@ private fun Input(
     imeAction: ImeAction = ImeAction.Next,
     capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     textStyle: TextStyle = TutoraTheme.type.body,
+    centered: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     val ink = if (onPrimary) c.onPrimary else c.ink
@@ -183,7 +190,16 @@ private fun Input(
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
-        textStyle = textStyle.copy(color = ink, textAlign = if (alignEnd) TextAlign.End else TextAlign.Start),
+        textStyle =
+            textStyle.copy(
+                color = ink,
+                textAlign =
+                    when {
+                        centered -> TextAlign.Center
+                        alignEnd -> TextAlign.End
+                        else -> TextAlign.Start
+                    },
+            ),
         // Next moves to the following field and Done closes the keyboard (Compose's defaults).
         keyboardOptions = KeyboardOptions(capitalization = capitalization, keyboardType = keyboardType, imeAction = imeAction),
         cursorBrush = SolidColor(ink),
@@ -192,7 +208,15 @@ private fun Input(
             // Fill the field's height so the text sits in its vertical middle.
             Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 // The hint and the input overlap, so both sit in the field's middle.
-                Box(Modifier.weight(1f), contentAlignment = if (alignEnd) Alignment.CenterEnd else Alignment.CenterStart) {
+                Box(
+                    Modifier.weight(1f),
+                    contentAlignment =
+                        when {
+                            centered -> Alignment.Center
+                            alignEnd -> Alignment.CenterEnd
+                            else -> Alignment.CenterStart
+                        },
+                ) {
                     if (value.text.isEmpty() && placeholder != null) {
                         Text(placeholder, style = TutoraTheme.type.body, color = if (onPrimary) c.onPrimaryMuted else c.inkMuted)
                     }
@@ -297,8 +321,9 @@ fun MoneyField(
 }
 
 /**
- * A duration or time typed as hh:mm, filling from the right (1, 3, 0 → 01:30). Minutes over
- * 59 or past [maxMinutes] show an error and report null (AC-004-27).
+ * A duration typed as hh:mm, filling from the right (1, 3, 0 → 01:30). Minutes over 59 or past
+ * [maxMinutes] show an error and report null (AC-004-27). With [step], small − and + inside the
+ * field move it by that many minutes, within [minMinutes] and [maxMinutes] (AC-014-37).
  */
 @Composable
 fun DurationField(
@@ -307,31 +332,152 @@ fun DurationField(
     onMinutesChange: (Int?) -> Unit,
     modifier: Modifier = Modifier,
     maxMinutes: Int = MAX_DURATION_MIN,
+    minMinutes: Int = 0,
+    step: Int? = null,
+    helper: String? = null,
 ) {
     var digits by rememberSaveable { mutableStateOf(durationDigits(minutes)) }
-    val valid = typedDuration(digits, digits, maxMinutes).minutes != null
+    // − and + (or the caller) changed the minutes: show them. A typed value the caller didn't take keeps its digits.
+    var synced by rememberSaveable { mutableIntStateOf(minutes) }
+    if (minutes != synced) {
+        synced = minutes
+        digits = durationDigits(minutes)
+    }
+    val typed = typedDuration(digits, digits, maxMinutes).minutes
+    val error =
+        when {
+            typed == null -> stringResource(R.string.ds_duration_invalid, hhmm(durationDigits(maxMinutes)))
+            typed < minMinutes -> stringResource(R.string.ds_number_min, hhmm(durationDigits(minMinutes)))
+            else -> null
+        }
     val shown = hhmm(digits)
     Column(modifier) {
-        FieldFrame(
-            label,
-            null,
-            if (valid) null else stringResource(R.string.ds_duration_invalid, hhmm(durationDigits(maxMinutes))),
-            false,
-        ) { m ->
-            Input(
-                TextFieldValue(shown, TextRange(shown.length)),
-                {
-                    val next = typedDuration(it.text, digits, maxMinutes)
-                    digits = next.digits
-                    onMinutesChange(next.minutes)
-                },
+        FieldFrame(label, helper, error, false) { m ->
+            StepRow(
                 m,
-                null,
-                KeyboardType.Number,
-                false,
-                alignEnd = true,
-            )
+                step?.let { s -> { onMinutesChange((minutes - s).coerceIn(minMinutes, maxMinutes)) } },
+                step?.let { s -> { onMinutesChange((minutes + s).coerceIn(minMinutes, maxMinutes)) } },
+                minutes > minMinutes,
+                minutes < maxMinutes,
+                label,
+            ) { inner ->
+                Input(
+                    TextFieldValue(shown, TextRange(shown.length)),
+                    {
+                        val next = typedDuration(it.text, digits, maxMinutes)
+                        digits = next.digits
+                        onMinutesChange(next.minutes)
+                    },
+                    inner,
+                    null,
+                    KeyboardType.Number,
+                    false,
+                    alignEnd = step == null,
+                    centered = step != null,
+                )
+            }
         }
+    }
+}
+
+/**
+ * A whole number typed with the number keyboard, with an optional [suffix] ("%"), and small −
+ * and + inside the field that move it by [step] within [min] and [max] (AC-014-37). Typing past
+ * [max] keeps the previous number; below [min] it shows an error.
+ */
+@Composable
+fun NumberField(
+    label: String,
+    value: Long,
+    onValueChange: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+    min: Long = 0,
+    max: Long = MAX_NUMBER,
+    step: Long = 1,
+    suffix: String = "",
+    helper: String? = null,
+    required: Boolean = false,
+) {
+    val shown = "$value$suffix"
+    val error = if (value < min) stringResource(R.string.ds_number_min, "$min$suffix") else null
+    Column(modifier) {
+        FieldFrame(label, helper, error, false, required = required) { m ->
+            StepRow(
+                m,
+                { onValueChange((value - step).coerceIn(min, max)) },
+                { onValueChange((value + step).coerceIn(min, max)) },
+                value > min,
+                value < max,
+                label,
+            ) { inner ->
+                Input(
+                    // The cursor stays before the suffix, so typing adds digits to the number.
+                    TextFieldValue(shown, TextRange(shown.length - suffix.length)),
+                    { typed ->
+                        val digits = typed.text.filter { it.isDigit() }.trimStart('0')
+                        val next = if (digits.isEmpty()) 0L else digits.take(MAX_NUMBER.toString().length).toLong()
+                        if (next <= max) onValueChange(next)
+                    },
+                    inner,
+                    null,
+                    KeyboardType.Number,
+                    false,
+                    centered = true,
+                    textStyle = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
+                )
+            }
+        }
+    }
+}
+
+/** The largest number a [NumberField] takes unless told otherwise. */
+const val MAX_NUMBER = 99_999L
+
+/** A field's inside with − at the start and + at the end when [onMinus] and [onPlus] are given. */
+@Composable
+private fun StepRow(
+    modifier: Modifier,
+    onMinus: (() -> Unit)?,
+    onPlus: (() -> Unit)?,
+    canMinus: Boolean,
+    canPlus: Boolean,
+    label: String,
+    input: @Composable (Modifier) -> Unit,
+) {
+    if (onMinus == null || onPlus == null) {
+        input(modifier)
+        return
+    }
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        FieldStep(IconName.MINUS, stringResource(R.string.ds_decreaseOf, label), canMinus, onMinus)
+        input(Modifier.weight(1f).fillMaxHeight())
+        FieldStep(IconName.PLUS, stringResource(R.string.ds_increaseOf, label), canPlus, onPlus)
+    }
+}
+
+/** − or + inside a field: a small sunken circle, answering on the field's full height. */
+@Composable
+private fun FieldStep(
+    icon: IconName,
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    Box(
+        Modifier
+            .size(Size.touch)
+            .alpha(if (enabled) 1f else Opacity.disabled)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .size(Size.buttonSm)
+                .clip(CircleShape)
+                .background(TutoraTheme.colors.surfaceSunken),
+            contentAlignment = Alignment.Center,
+        ) { Icon(icon, tint = TutoraTheme.colors.ink, size = Size.iconSm) }
     }
 }
 

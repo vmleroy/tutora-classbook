@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 014: confirming classes, reminders and the first-run setup. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="confirm_mark">To confirm</string>
+    <string name="status_autoDone">Done by itself</string>
+    <plurals name="confirm_count">
+        <item quantity="one">%1$d class to confirm</item>
+        <item quantity="other">%1$d classes to confirm</item>
+    </plurals>
+    <string name="confirm_title">Classes to confirm</string>
+    <string name="confirm_hint">Tap a class to change its length before confirming.</string>
+    <string name="confirm_done">Done</string>
+    <string name="confirm_cancelled">Cancelled</string>
+    <string name="confirm_missed">No-show</string>
+    <string name="confirm_all">Confirm all as done</string>
+    <plurals name="confirm_allAsk">
+        <item quantity="one">Mark %1$d class as done?</item>
+        <item quantity="other">Mark %1$d classes as done?</item>
+    </plurals>
+    <string name="confirm_allEarns">%1$s goes into your earnings.</string>
+    <string name="confirm_allYes">Mark as done</string>
+    <plurals name="confirm_allDone">
+        <item quantity="one">%1$d class marked as done</item>
+        <item quantity="other">%1$d classes marked as done</item>
+    </plurals>
+    <string name="confirm_undo">Undo</string>
+    <string name="confirm_emptyTitle">Nothing to confirm</string>
+    <string name="confirm_emptyBody">Every past class is already marked.</string>
+
+    <string name="set_pastClasses">Past classes</string>
+    <string name="set_pastAsk">Confirm one by one</string>
+    <string name="set_pastAuto">Mark as done by themselves</string>
+    <string name="set_pastAskHint">Classes that already happened stay “To confirm” until you mark them.</string>
+    <string name="set_pastAutoHint">They become Done with the planned length; you can still change or cancel them.</string>
+    <string name="set_confirmWhen">Ask to confirm</string>
+    <string name="set_confirmEnd">When the class ends</string>
+    <string name="set_confirmHour">One hour later</string>
+    <string name="set_confirmNextDay">The next day</string>
+    <string name="set_reminders">Reminders</string>
+    <string name="set_remindBefore">Before each class</string>
+    <string name="set_remindOff">Off</string>
+    <string name="set_remindMinutes">%1$d min before</string>
+    <string name="set_remindHours" tools:ignore="PluralsCandidate">%1$dh before</string>
+    <string name="set_remindHoursMinutes" tools:ignore="PluralsCandidate">%1$dh%2$02d before</string>
+    <string name="set_remindShort">%1$d min</string>
+    <string name="set_remindCustom">Other</string>
+    <string name="set_remindHowLong">How long before</string>
+    <string name="set_owedWeekly">Who owes you</string>
+    <string name="set_owedWhen">%1$s, %2$s</string>
+    <string name="set_confirmDaily">Classes to confirm</string>
+    <string name="set_confirmDailyWhen">Every day, %1$s</string>
+    <string name="set_hour">Time</string>
+    <string name="set_exactTitle">Reminders on time</string>
+    <string name="set_exactAction">Turn on</string>
+    <string name="set_notificationsOff">Notifications are off on the phone</string>
+    <string name="set_openPhoneSettings">Open settings</string>
+    <string name="set_payments">Payments</string>
+    <string name="set_creditsOn">Credits and bonuses on</string>
+    <string name="set_creditsOff">Credits and bonuses off</string>
+    <string name="set_hhmm">Durations as HH:MM</string>
+    <string name="set_aboutLine">%1$s · database %2$d</string>
+    <string name="set_teaching">How you teach</string>
+
+    <string name="remind_channel">Reminders</string>
+    <string name="remind_channelHint">Before each class, who owes you and classes to confirm</string>
+    <plurals name="remind_classIn">
+        <item quantity="one">Class in %1$d minute</item>
+        <item quantity="other">Class in %1$d minutes</item>
+    </plurals>
+    <string name="remind_classText">%1$s · %2$s · %3$s</string>
+    <plurals name="remind_owed">
+        <item quantity="one">%1$d student owes you %2$s</item>
+        <item quantity="other">%1$d students owe you %2$s</item>
+    </plurals>
+    <plurals name="remind_owedMixed">
+        <item quantity="one">%1$d pending payment · %2$s</item>
+        <item quantity="other">%1$d pending payments · %2$s</item>
+    </plurals>
+    <string name="remind_owedText">Tap to see who</string>
+    <string name="remind_markAll">Mark all as done</string>
+    <string name="remind_see">See</string>
+
+    <string name="earn_byWeek">By week</string>
+    <string name="earn_byMonth">By month</string>
+    <string name="earn_weekLabel">%1$d–%2$d</string>
+    <string name="earn_evolution">Evolution</string>
+    <string name="evo_six">6 months</string>
+    <string name="evo_twelve">12 months</string>
+    <string name="evo_year">Year</string>
+    <string name="evo_hint">Tap two months to compare.</string>
+    <string name="evo_monthLine">Earned %1$s · received %2$s</string>
+    <string name="evo_diffPercent">%1$s (%2$s%%)</string>
+    <string name="evo_difference">Difference: %1$s</string>
+    <string name="evo_who">Who</string>
+    <string name="evo_everyone">Everyone</string>
+    <string name="evo_allPlaces">All places</string>
+    <string name="evo_earned">Earned</string>
+    <string name="evo_received">Received</string>
+    <string name="evo_monthTotals">Earned %1$s · received %2$s · to receive %3$s</string>
+    <string name="evo_monthClasses">%1$s · %2$s</string>
+    <string name="evo_change">%1$s · %2$s%%</string>
+    <string name="ntf_title">Notifications</string>
+    <string name="ntf_now">Now</string>
+    <string name="ntf_recent">Recent</string>
+    <string name="ntf_recentHint">last 30 days</string>
+    <string name="ntf_new">New</string>
+    <string name="ntf_emptyTitle">No notifications</string>
+    <string name="ntf_emptyBody">The reminders Tutora sends show here for 30 days.</string>
+    <string name="ntf_today">Today, %1$s</string>
+    <string name="ntf_yesterday">Yesterday, %1$s</string>
+    <plurals name="ntf_class">
+        <item quantity="one">Class in %1$d minute</item>
+        <item quantity="other">Class in %1$d minutes</item>
+    </plurals>
+    <string name="setup_title">First-run setup</string>
+    <string name="setup_step">Step %1$d of 4</string>
+    <string name="setup_skip">Skip</string>
+    <string name="setup_back">Back</string>
+    <string name="setup_next">Continue</string>
+    <string name="setup_welcome">Welcome!</string>
+    <string name="setup_welcomeBody">Let\'s get the app ready in a minute. You can change all of this later in Settings.</string>
+    <string name="setup_language">Language</string>
+    <string name="setup_teaching">How do you teach?</string>
+    <string name="setup_teachingBody">Tick everything that applies to you.</string>
+    <string name="setup_private">Private lessons</string>
+    <string name="setup_privateHint">At the student\'s home or online</string>
+    <string name="setup_school">School or a steady job</string>
+    <string name="setup_schoolHint">A monthly salary</string>
+    <string name="setup_salinha">Tutoring room or course</string>
+    <string name="setup_salinhaHint">They pay per class or per hour</string>
+    <string name="setup_teachingNote">You add schools, tutoring rooms and courses later in Registry › Places, each with its own rate.</string>
+    <string name="setup_prices">Your default prices</string>
+    <string name="setup_pricesBody">Every student starts with these. You can change them per student or per class.</string>
+    <string name="setup_perHour">per hour</string>
+    <string name="setup_travel">Travel</string>
+    <string name="setup_travelVaries">Varies per class</string>
+    <string name="setup_travelFixed">Fixed</string>
+    <string name="setup_travelNone">I don\'t charge</string>
+    <string name="setup_travelAmount">Travel amount</string>
+    <string name="setup_travelVariesHint">You enter the amount on each class.</string>
+    <string name="setup_travelFixedHint">Adds %1$s to every class at the student\'s home; you can change it per student.</string>
+    <string name="setup_travelNoneHint">Adds nothing; the hourly price already covers travel.</string>
+    <string name="setup_safe">Your data, safe</string>
+    <string name="setup_safeBody">Everything stays on this phone. An automatic backup keeps your history if you change phones.</string>
+    <string name="setup_backup">Automatic backup</string>
+    <string name="setup_backupHint">Every week, Sunday evening</string>
+    <string name="setup_folder">Choose folder</string>
+    <string name="setup_folderHint">It can be on Google Drive or OneDrive</string>
+    <string name="setup_remind">Before each class</string>
+    <string name="setup_remindHint">15 minutes before</string>
+    <string name="setup_summary">Summary</string>
+    <string name="setup_rate">%1$s %2$s/h</string>
+    <string name="setup_plusTravel">+ travel per class</string>
+    <string name="setup_firstStudent">Add my first student</string>
+    <string name="setup_goToday">Go to Today</string>
+</resources>

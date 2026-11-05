@@ -23,17 +23,34 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import app.tutora.designsystem.R
@@ -43,6 +60,7 @@ import app.tutora.designsystem.tokens.TutoraTokens.Opacity
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
+import app.tutora.domain.typedCents
 
 /**
  * Two to four exclusive options as joined segments (spec 016): the outer ends are round, the
@@ -105,7 +123,8 @@ fun <T> SegmentedControl(
                         .fillMaxHeight()
                         .clip(shape)
                         .background(bg)
-                        .padding(horizontal = Spacing.s2, vertical = Spacing.s1),
+                        // Small segments keep 4 dp a side, so seven short day names fit in a row (AC-014-26).
+                        .padding(horizontal = if (size == ControlSize.SM) Spacing.s1 else Spacing.s2, vertical = Spacing.s1),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -223,7 +242,20 @@ fun Checkbox(
     }
 }
 
-/** Minus / value / plus, for durations and small amounts; tapping the value can open exact entry. */
+/** How a [Stepper]'s value is typed when tapped (AC-014-29). */
+enum class StepperInput {
+    /** A whole number; the value is it times the stepper's `typedScale` (30 → 3000 for 30%). */
+    NUMBER,
+
+    /** An amount of money, filling from the right like [MoneyField] (1, 2, 0, 0, 0 → R$ 120,00). */
+    MONEY,
+}
+
+/**
+ * Minus / value / plus, for durations and small amounts. Tapping the value turns it into a field
+ * with the number keyboard; Done or leaving it keeps the nearest value between [min] and [max]
+ * (AC-014-29). A caller with its own exact entry passes [onPressValue] instead.
+ */
 @Composable
 fun Stepper(
     value: Long,
@@ -238,9 +270,13 @@ fun Stepper(
     decrementLabel: String = stringResource(R.string.ds_decrease),
     incrementLabel: String = stringResource(R.string.ds_increase),
     size: ControlSize = ControlSize.MD,
+    input: StepperInput = StepperInput.NUMBER,
+    /** What one typed unit is worth in [value]: 100 when the value is basis points typed as percent. */
+    typedScale: Long = 1,
 ) {
     val c = TutoraTheme.colors
     val shape = RoundedCornerShape(Radius.xl)
+    var editing by remember { mutableStateOf(false) }
     // One compact height for every stepper; [size] stays for callers (Victor, 29 Oct 2026).
     Row(
         modifier =
@@ -249,7 +285,7 @@ fun Stepper(
                 .height(Size.controlMd)
                 .clip(shape)
                 .background(c.surface)
-                .border(Size.border, c.line, shape)
+                .border(if (editing) Size.borderStrong else Size.border, if (editing) c.focus else c.line, shape)
                 .padding(horizontal = Spacing.s1),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -259,9 +295,9 @@ fun Stepper(
                 .weight(1f)
                 .fillMaxHeight()
                 .then(
-                    if (onPressValue != null) {
+                    if (!editing) {
                         Modifier
-                            .clickable(role = Role.Button, onClick = onPressValue)
+                            .clickable(role = Role.Button, onClick = onPressValue ?: { editing = true })
                             .semantics { contentDescription = listOfNotNull(valueLabel, format(value)).joinToString(", ") }
                     } else {
                         Modifier
@@ -269,11 +305,69 @@ fun Stepper(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Text(format(value), style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"), color = c.ink, maxLines = 1)
+            if (editing) {
+                StepperEntry(value, input, typedScale, valueLabel ?: format(value)) { typed ->
+                    editing = false
+                    typed?.let { onChange(it.coerceIn(min, max)) }
+                }
+            } else {
+                Text(format(value), style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"), color = c.ink, maxLines = 1)
+            }
         }
         StepButton(IconName.PLUS, incrementLabel, { onChange((value + step).coerceIn(min, max)) }, enabled = value < max)
     }
 }
+
+/** The field a tapped [Stepper] value becomes: focused at once, the number keyboard, Done to keep it. */
+@Composable
+private fun StepperEntry(
+    value: Long,
+    input: StepperInput,
+    typedScale: Long,
+    label: String,
+    onDone: (Long?) -> Unit,
+) {
+    val c = TutoraTheme.colors
+    val language = currentLanguage()
+    val focus = remember { FocusRequester() }
+    var typed by remember { mutableLongStateOf(if (input == StepperInput.MONEY) value else value / typedScale.coerceAtLeast(1)) }
+    var focused by remember { mutableStateOf(false) }
+    val text = if (input == StepperInput.MONEY) formatMoney(typed, language) else typed.toString()
+
+    fun commit() = onDone(if (input == StepperInput.MONEY) typed else typed * typedScale.coerceAtLeast(1))
+    BasicTextField(
+        TextFieldValue(text, TextRange(text.length)),
+        { next ->
+            typed =
+                if (input == StepperInput.MONEY) {
+                    typedCents(next.text, typed)
+                } else {
+                    next.text
+                        .filter { it.isDigit() }
+                        .takeLast(MAX_TYPED_DIGITS)
+                        .toLongOrNull() ?: 0L
+                }
+        },
+        Modifier
+            .fillMaxWidth()
+            .focusRequester(focus)
+            .testTag("stepper-entry")
+            .semantics { contentDescription = label }
+            .onFocusChanged {
+                if (focused && !it.isFocused) commit()
+                focused = it.isFocused
+            },
+        textStyle = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum", color = c.ink, textAlign = TextAlign.Center),
+        singleLine = true,
+        cursorBrush = SolidColor(c.ink),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { commit() }),
+    )
+    LaunchedEffect(Unit) { focus.requestFocus() }
+}
+
+/** Digits a typed stepper value keeps: enough for any count, minutes or percent. */
+private const val MAX_TYPED_DIGITS = 6
 
 /** − or + of a Stepper: a small circle, with the full 48 dp to press around it (AC-016-8). */
 @Composable

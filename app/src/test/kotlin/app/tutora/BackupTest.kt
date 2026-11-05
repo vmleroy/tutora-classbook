@@ -101,7 +101,7 @@ class BackupTest {
             pay(12_000)
             val (name, bytes) = backups.makeBackup()
             assertEquals("Tutora backup 2026-10-26 09-00.json", name)
-            val file = (readBackup(bytes, 5) as BackupRead.Ok).file
+            val file = (readBackup(bytes, app.tutora.data.TutoraDatabase.VERSION) as BackupRead.Ok).file
             val every =
                 listOf(
                     "settings",

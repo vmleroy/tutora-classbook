@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -138,6 +139,12 @@ fun IconButton(
     modifier: Modifier = Modifier,
     variant: IconButtonVariant = IconButtonVariant.SUNKEN,
     enabled: Boolean = true,
+    /** A small red dot at the top end: something there needs a look (the bell, AC-014-32). */
+    dot: Boolean = false,
+    /** SM draws a 36 dp circle with a smaller icon, for headers; it still answers on 48 dp. */
+    size: ControlSize = ControlSize.MD,
+    /** A number at the top end, such as the bell's unseen notifications (AC-014-40); 0 shows none. */
+    count: Int = 0,
 ) {
     val c = TutoraTheme.colors
     val (bg, fg) =
@@ -148,21 +155,76 @@ fun IconButton(
             IconButtonVariant.ACCENT, IconButtonVariant.ACCENT_SQUARE -> c.accent to c.onAccent
         }
     val square = variant == IconButtonVariant.ACCENT_SQUARE
+    val small = size == ControlSize.SM && !square
     val shape = if (square) RoundedCornerShape(Radius.x2xl) else CircleShape
+    // The press area is always at least the touch size; the drawn circle may be smaller.
     Box(
         modifier =
             modifier
                 .size(if (square) Size.fab else Size.touch)
-                .clip(shape)
-                .background(bg, shape)
                 .alpha(if (enabled) 1f else Opacity.disabled)
+                // Only the drawn circle is clipped, so a count in the corner shows whole.
+                .then(if (count > 0) Modifier else Modifier.clip(shape))
                 .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-                .semantics { contentDescription = label },
+                .semantics { contentDescription = if (count > 0) "$label, $count" else label },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, tint = fg, size = if (square) Size.iconLg else Size.icon)
+        Box(
+            Modifier
+                .size(
+                    if (square) {
+                        Size.fab
+                    } else if (small) {
+                        Size.controlSm
+                    } else {
+                        Size.touch
+                    },
+                ).clip(shape)
+                .background(bg, shape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                icon,
+                tint = fg,
+                size =
+                    if (square) {
+                        Size.iconLg
+                    } else if (small) {
+                        Size.iconSm
+                    } else {
+                        Size.icon
+                    },
+            )
+        }
+        if (count > 0) {
+            Text(
+                if (count > MAX_COUNT) "$MAX_COUNT+" else count.toString(),
+                style = TutoraTheme.type.badge.copy(fontFeatureSettings = "tnum"),
+                color = c.surface,
+                maxLines = 1,
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .testTag("count")
+                        .clip(RoundedCornerShape(Radius.full))
+                        .background(c.danger)
+                        .padding(horizontal = Spacing.s1),
+            )
+        } else if (dot) {
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(if (small) Spacing.s1_5 else Spacing.s2_5)
+                    .size(Size.dot)
+                    .clip(CircleShape)
+                    .background(c.danger)
+                    .testTag("dot"),
+            )
+        }
     }
 }
+
+private const val MAX_COUNT = 99
 
 /** How far a tile or control on the summary card moves from the Topo color, away from its text. */
 const val ON_HEADER_FILL = 0.14f

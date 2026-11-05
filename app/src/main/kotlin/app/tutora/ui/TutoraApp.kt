@@ -22,6 +22,8 @@ fun TutoraApp(
     appInfo: AppInfo,
     services: AppServices? = null,
     liveRequest: LiveRequest? = null,
+    openRequest: Any? = null,
+    onOpenRequestHandled: () -> Unit = {},
     onLiveRequestHandled: () -> Unit = {},
 ) {
     // Test tags double as resource ids so Maestro flows can find them.
@@ -61,6 +63,8 @@ fun TutoraApp(
                         root,
                         liveRequest = liveRequest,
                         onLiveRequestHandled = onLiveRequestHandled,
+                        openRequest = openRequest,
+                        onOpenRequestHandled = onOpenRequestHandled,
                     )
                 }
             }

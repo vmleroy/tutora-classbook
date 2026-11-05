@@ -9,6 +9,8 @@ import app.tutora.data.ScheduleRepository
 import app.tutora.data.SettingsRepository
 import app.tutora.data.TutoraDatabase
 import app.tutora.domain.Settings
+import app.tutora.domain.teaching
+import app.tutora.domain.toConfirm
 import app.tutora.usecases.Backups
 import app.tutora.usecases.Catalog
 import app.tutora.usecases.Ctx
@@ -18,6 +20,9 @@ import app.tutora.usecases.Payments
 import app.tutora.usecases.Schedule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 // The state layer (architecture, layers): screens read Flows and call actions here, never
@@ -45,6 +50,10 @@ class AppServices(
     val backups = Backups(ctx)
     val calendar = app.tutora.usecases.CalendarSync(ctx)
     val appearance = app.tutora.usecases.Appearance(ctx)
+    val confirming = app.tutora.usecases.Confirming(ctx)
+    val reminders = app.tutora.usecases.Reminders(ctx)
+    val setup = app.tutora.usecases.Setup(ctx)
+    val notices = app.tutora.usecases.Notices(ctx)
 
     val settings: Flow<Settings> = settingsRepo.observe()
 
@@ -74,10 +83,42 @@ class AppServices(
         }
     }
 
+    /**
+     * The classes to confirm, oldest first, read again each minute as classes end and after any
+     * change (AC-014-1, 4, 6). The clock runs off the main thread.
+     */
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    fun toConfirm(): Flow<List<app.tutora.domain.Lesson>> {
+        val ticks =
+            kotlinx.coroutines.flow
+                .flow {
+                    while (true) {
+                        emit(Unit)
+                        kotlinx.coroutines.delay(MINUTE_MS)
+                    }
+                }.flowOn(Dispatchers.Default)
+        return kotlinx.coroutines.flow
+            .combine(ticks, settings) { _, s -> s.confirmWhen }
+            .flatMapLatest { whenTo ->
+                val now = now()
+                scheduleRepo.scheduledBefore(now).map { list ->
+                    list.filter { it.toConfirm(app.tutora.domain.instantOf(now), zone, whenTo) }
+                }
+            }
+    }
+
+    /** The kinds of teaching the teacher already has places or classes of: never hidden (AC-014-20). */
+    fun teachingInUse(): Flow<Set<app.tutora.domain.Teaching>> = kindsInUse().map { kinds -> kinds.map { it.teaching() }.toSet() }
+
+    /** The place kinds the teacher has places or classes of (AC-014-20). */
+    fun kindsInUse(): Flow<Set<app.tutora.domain.PlaceKind>> = scheduleRepo.kindsInUse()
+
     /** The device time zone; classes are scheduled in it. */
     val zone: String get() = ctx.zone()
 
     fun now(): String = ctx.now()
 }
+
+private const val MINUTE_MS = 60_000L
 
 val LocalServices = staticCompositionLocalOf<AppServices> { error("AppServices are missing") }

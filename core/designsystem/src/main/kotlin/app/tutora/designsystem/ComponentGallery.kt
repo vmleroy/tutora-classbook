@@ -76,6 +76,7 @@ import app.tutora.designsystem.components.SelectField
 import app.tutora.designsystem.components.StatTile
 import app.tutora.designsystem.components.StatTone
 import app.tutora.designsystem.components.Stepper
+import app.tutora.designsystem.components.StepperInput
 import app.tutora.designsystem.components.SummaryCard
 import app.tutora.designsystem.components.SummaryTile
 import app.tutora.designsystem.components.SummaryTone
@@ -140,6 +141,8 @@ val galleryComponents =
         "Swatch",
         "ThemeCard",
         "ColorSlider",
+        "UndoBar",
+        "NumberField",
     )
 
 /**
@@ -206,7 +209,16 @@ fun GallerySections() {
         Button("Carregando", {}, loading = true)
         Button("Desabilitado", {}, enabled = false)
     }
-    Section("IconButton") { FlowRow { IconButtonVariant.entries.forEach { IconButton(IconName.PLUS, it.name, {}, variant = it) } } }
+    Section("IconButton") {
+        FlowRow {
+            IconButtonVariant.entries.forEach { IconButton(IconName.PLUS, it.name, {}, variant = it) }
+            // The bell with its dot: notifications are off on the phone (AC-014-32).
+            IconButton(IconName.BELL, "Lembretes", {}, dot = true)
+            // Three notifications not seen yet (AC-014-40).
+            IconButton(IconName.BELL, "Notificações", {}, count = 3, size = ControlSize.SM)
+            IconButton(IconName.CHART, "Evolução", {})
+        }
+    }
     Section("Fab") { Fab({}) }
     Section("SegmentedControl") {
         SegmentedControl(listOf("mes" to "Mês", "tri" to "Trimestre", "ano" to "Ano"), segment, { segment = it }, "Período")
@@ -226,6 +238,17 @@ fun GallerySections() {
     Section("Stepper") {
         Stepper(minutes, { minutes = it }, step = 15, min = 15, max = 300, format = { "$it min" })
         Stepper(500, {}, step = 500, size = ControlSize.SM, format = { "R$ ${it / 100},00" }, onPressValue = {}, valueLabel = "Valor")
+        // Tap the value to type it: money fills from the right (AC-014-29).
+        var price by remember { mutableLongStateOf(10_000L) }
+        Stepper(
+            price,
+            { price = it },
+            step = 500,
+            min = 500,
+            format = { "R$ ${it / 100}" },
+            input = StepperInput.MONEY,
+            valueLabel = "Preço",
+        )
     }
     Section("TextField") {
         TextField("Nome", name, { name = it }, placeholder = "Ex.: Ana Souza", helper = "Como aparece nos relatórios")
@@ -233,6 +256,9 @@ fun GallerySections() {
         MoneyField("Valor da aula", cents, { cents = it ?: 0 })
         MoneyField("Preço por aula", null, {}, placeholder = "Sem preço")
         DurationField("Duração", 90, {})
+        // Typed hh:mm with − and + inside, 5 minutes a step (AC-014-37).
+        var lessonMinutes by remember { mutableIntStateOf(60) }
+        DurationField("Duração da aula", lessonMinutes, { lessonMinutes = it ?: lessonMinutes }, step = 5, minMinutes = 5)
         TextField("Nome", "", {}, error = "Digite o nome", required = true)
         FieldError("Escolha um aluno ou turma")
     }
@@ -275,6 +301,15 @@ fun GallerySections() {
                 MonthBar(m, v * 100, v * 80)
             },
             "Últimos 6 meses",
+        )
+        // Twelve months scroll sideways; two are chosen to compare (Evolução).
+        var picked by remember { mutableStateOf(setOf(8, 9)) }
+        MonthBars(
+            (1..12).map { MonthBar(it.toString().padStart(2, '0'), (2_000L + it * 300) * 100, (1_800L + it * 250) * 100) },
+            "Evolução",
+            selected = picked,
+            onSelect = { i -> picked = if (i in picked) picked - i else (picked + i).toList().takeLast(2).toSet() },
+            pairs = "Ganho" to "Recebido",
         )
     }
     Section("Card") {
@@ -333,7 +368,15 @@ fun GallerySections() {
             (28..30).map { MonthDay(it, false, emptyList(), 0, "$it de setembro") } +
                 (1..31).map { d ->
                     val dots = if (d % 7 == 5) emptyList() else tones.take(1 + d % 3).let { if (d == 26) tones else it }
-                    MonthDay(d, true, dots.take(2), (dots.size - 2).coerceAtLeast(0), "$d de outubro, ${dots.size} aulas", today = d == 26)
+                    MonthDay(
+                        d,
+                        true,
+                        dots.take(2),
+                        (dots.size - 2).coerceAtLeast(0),
+                        "$d de outubro, ${dots.size} aulas",
+                        today = d == 26,
+                        pending = d in 19..23 && dots.isNotEmpty(),
+                    )
                 } + MonthDay(1, false, emptyList(), 0, "1 de novembro")
         MonthGrid(
             days,
@@ -375,6 +418,15 @@ fun GallerySections() {
     Section("LessonRow") {
         LessonRow("10:00", Tag.GREEN, "Pedro Lima", subtitle = "Física · Presencial", trailing = "+ R$ 120", onClick = {})
         LessonRow("08:00", Tag.BLUE, "9º ano B", subtitle = "Colégio Santa Clara", status = BadgeTone.SUCCESS to "Concluída", onClick = {})
+        LessonRow(
+            "14:00",
+            Tag.AMBER,
+            "Ana Souza",
+            subtitle = "Matemática · Online",
+            status = BadgeTone.SECONDARY to "A confirmar",
+            pending = true,
+            onClick = {},
+        )
     }
     Section("ListGroup") {
         ListGroup(
@@ -421,7 +473,7 @@ fun GallerySections() {
         TabBar(
             listOf(
                 TabItem("today", "Hoje", IconName.HOME),
-                TabItem("schedule", "Agenda", IconName.CALENDAR),
+                TabItem("schedule", "Agenda", IconName.CALENDAR, count = 3),
                 TabItem("registry", "Cadastro", IconName.USERS),
                 TabItem("earnings", "Ganhos", IconName.WALLET),
                 TabItem("settings", "Ajustes", IconName.GEAR),
@@ -492,6 +544,18 @@ fun GallerySections() {
             .DayHeading(4, "Hoje", aside = "1 aula · R$ 80", today = true)
         app.tutora.designsystem.components
             .DayHeading(5, "Quinta", aside = "Sem aulas")
+    }
+    Section("NumberField") {
+        var count by remember { mutableLongStateOf(10L) }
+        app.tutora.designsystem.components
+            .NumberField("Aulas no pacote", count, { count = it }, min = 1, max = 100)
+        var percent by remember { mutableLongStateOf(30L) }
+        app.tutora.designsystem.components
+            .NumberField("Comissão do local", percent, { percent = it }, max = 90, step = 5, suffix = "%")
+    }
+    Section("UndoBar") {
+        app.tutora.designsystem.components
+            .UndoBar("6 aulas marcadas como dadas", "Desfazer", {}, {}, durationMs = Long.MAX_VALUE)
     }
     Section("BusyBlock") {
         BusyBlock("Dentista", time = "14:00 – 15:00", height = Size.agendaHour)

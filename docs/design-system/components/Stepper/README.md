@@ -33,3 +33,9 @@ interface StepperProps {
   className?: string;
 }
 ```
+
+## Typing the value (spec 014)
+Tapping the value turns it into a field with the number keyboard, focused at once (AC-014-29). `input = NUMBER` types a whole number, worth `typedScale` each (100 when a commission is stored in basis points and typed as percent); `MONEY` fills from the right like `MoneyField`. Done or leaving the field keeps the nearest value between `min` and `max`; − and + keep working. A caller with its own exact entry (the duration sheet) passes `onPressValue` instead.
+
+## In forms (spec 014)
+Since AC-014-37 a form never shows a bare stepper: counts and percent use `NumberField`, durations `DurationField` with `step`. `Stepper` stays as a building block.

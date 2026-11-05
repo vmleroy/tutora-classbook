@@ -156,6 +156,7 @@ fun DayGrid(
     busy: (LocalDate) -> app.tutora.domain.BusyDay? = { null },
 ) {
     val language = currentLanguage()
+    val pending = rememberToConfirm()
     val hour = Size.agendaHour
     val density = LocalDensity.current
     LaunchedEffect(startHour, days) { scroll.scrollTo(with(density) { (hour * (startHour - 1).coerceAtLeast(0)).roundToPx() }) }
@@ -255,7 +256,7 @@ fun DayGrid(
                             l.whoTag,
                             l.whoName,
                             subtitle = if (compact) null else lessonSubtitle(l),
-                            state = blockState(l, nextId),
+                            state = blockState(l, nextId, pending(l)),
                             height = hour * l.plannedMin / 60,
                             onClick = { onOpen(l) },
                             modifier =

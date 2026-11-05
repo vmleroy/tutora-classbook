@@ -313,6 +313,45 @@ interface ScheduleDao {
     @Query("SELECT lesson.*, r.repeat AS repeat FROM lesson LEFT JOIN schedule_rule r ON r.id = lesson.rule_id WHERE lesson.id = :id")
     fun observeOne(id: String): Flow<LessonWithRepeat?>
 
+    /** Scheduled classes that started before [before], oldest first: those that may be to confirm (AC-014-1). */
+    @Query(
+        """SELECT lesson.*, r.repeat AS repeat FROM lesson
+           LEFT JOIN schedule_rule r ON r.id = lesson.rule_id
+           LEFT JOIN place p ON p.id = lesson.place_id
+           LEFT JOIN student s ON s.id = lesson.student_id
+           LEFT JOIN student_place sp ON sp.student_id = lesson.student_id AND sp.place_id = lesson.place_id
+           LEFT JOIN group_class g ON g.id = lesson.group_id
+           WHERE lesson.status = 'scheduled' AND lesson.start_at < :before ORDER BY lesson.start_at, lesson.id""",
+    )
+    fun observeScheduledBefore(before: String): Flow<List<LessonWithRepeat>>
+
+    @Query("SELECT * FROM lesson WHERE status = 'scheduled' AND start_at < :before ORDER BY start_at, id")
+    suspend fun scheduledBefore(before: String): List<LessonRow>
+
+    /** Scheduled classes starting from [from], for the next reminder (AC-014-12). */
+    @Query("SELECT * FROM lesson WHERE status = 'scheduled' AND start_at >= :from ORDER BY start_at LIMIT :limit")
+    suspend fun scheduledFrom(
+        from: String,
+        limit: Int,
+    ): List<LessonRow>
+
+    /**
+     * The kinds of the teacher's own places, of places that hold a class, and of places that pay
+     * the teacher: what is never hidden by "Como você dá aula" (AC-014-20).
+     */
+    @Query(
+        """SELECT kind FROM place WHERE builtin IS NULL
+           UNION SELECT p.kind FROM lesson l JOIN place p ON p.id = l.place_id""",
+    )
+    fun observeKindsInUse(): Flow<List<String>>
+
+    /** Whether there is any data of the teacher's: own places, students, groups or classes (AC-014-17). */
+    @Query(
+        """SELECT EXISTS(SELECT 1 FROM place WHERE builtin IS NULL) OR EXISTS(SELECT 1 FROM student)
+           OR EXISTS(SELECT 1 FROM group_class) OR EXISTS(SELECT 1 FROM lesson)""",
+    )
+    suspend fun hasData(): Boolean
+
     // The live class and its clock (spec 007). Only one class is live at a time.
 
     @Query("SELECT * FROM lesson WHERE status = 'live' LIMIT 1")

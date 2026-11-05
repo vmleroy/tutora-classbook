@@ -108,8 +108,8 @@ class FeatureScreensTest {
     @Test
     fun `AC-003-11 Ajustes opens with Geral, whose first row is Idioma do app with both languages and samples`() {
         h.show(compose)
-        h.go(compose, SettingsGraph)
-        compose.onNodeWithContentDescription("Geral").assertExists()
+        h.go(compose, app.tutora.ui.SettingsGeneral)
+        compose.onNodeWithTag("settings-general").assertExists()
         compose.onNodeWithText("Idioma do app", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("Português", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("English", useUnmergedTree = true).assertExists()
@@ -120,7 +120,7 @@ class FeatureScreensTest {
     @Test
     fun `AC-003-12 switching language is saved at once`() {
         h.show(compose)
-        h.go(compose, SettingsGraph)
+        h.go(compose, app.tutora.ui.SettingsGeneral)
         compose.onNodeWithText("English").performClick()
         h.awaitDb(compose) { h.services.currentSettings().language == Language.EN }
         assertEquals(Language.EN, runBlocking { h.services.currentSettings().language })
@@ -161,7 +161,7 @@ class FeatureScreensTest {
     @Test
     fun `AC-004-29 Mostrar locais padrão is on by default and turning it off hides the default places`() {
         h.show(compose)
-        h.go(compose, SettingsGraph)
+        h.go(compose, app.tutora.ui.SettingsGeneral)
         compose.onNodeWithContentDescription("Mostrar locais padrão").performClick()
         h.awaitDb(compose) {
             !h.services.settings

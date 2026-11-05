@@ -24,6 +24,8 @@ enum class IconName(
     @param:DrawableRes val res: Int,
 ) {
     PLUS(R.drawable.ic_plus),
+    BELL(R.drawable.ic_bell),
+    CHART(R.drawable.ic_chart),
     MINUS(R.drawable.ic_minus),
     CHECK(R.drawable.ic_check),
     CLOSE(R.drawable.ic_close),

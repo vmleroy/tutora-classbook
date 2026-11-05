@@ -42,12 +42,14 @@ import kotlinx.coroutines.launch
 fun CancelSheet(
     l: Lesson,
     started: Boolean,
+    /** Faltou from the confirm list opens on Faltou (AC-014-8). */
+    initial: CancelReason = CancelReason.STUDENT,
     onDismiss: () -> Unit,
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val language = currentLanguage()
-    var reason by remember { mutableStateOf(CancelReason.STUDENT) }
+    var reason by remember { mutableStateOf(initial) }
     var note by remember { mutableStateOf("") }
     var charging by remember { mutableStateOf(false) }
     val value = l.valueWithoutTravel()

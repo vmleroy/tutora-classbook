@@ -8,7 +8,9 @@ import app.tutora.domain.CreditEntry
 import app.tutora.domain.EarnedClass
 import app.tutora.domain.EarningsType
 import app.tutora.domain.EarningsView
+import app.tutora.domain.EvolutionFilter
 import app.tutora.domain.LessonStatus
+import app.tutora.domain.MonthDetail
 import app.tutora.domain.Payer
 import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
@@ -19,13 +21,17 @@ import app.tutora.domain.Received
 import app.tutora.domain.Salary
 import app.tutora.domain.Tip
 import app.tutora.domain.TypeFilter
+import app.tutora.domain.bars
 import app.tutora.domain.bonusCover
 import app.tutora.domain.earnedOf
 import app.tutora.domain.earningsType
 import app.tutora.domain.isoText
 import app.tutora.domain.localOf
 import app.tutora.domain.localToInstant
+import app.tutora.domain.monthDetails
 import app.tutora.domain.monthOf
+import app.tutora.domain.monthSpans
+import app.tutora.domain.periodSpans
 import app.tutora.domain.sources
 import app.tutora.domain.summarize
 import app.tutora.domain.trend
@@ -200,7 +206,14 @@ class EarningsRepository(
                         r.groupId != null -> PayerRef(PayerKind.GROUP, r.groupId)
                         else -> PayerRef(PayerKind.PLACE, r.placeId.orEmpty())
                     }
-                Tip(localOf(r.paidAt, zone).date, cents, typeOf(r.kind), payer, r.payerName.orEmpty())
+                Tip(
+                    localOf(r.paidAt, zone).date,
+                    cents,
+                    typeOf(r.kind),
+                    payer,
+                    r.payerName.orEmpty(),
+                    r.kind?.let { PlaceKind.fromKey(it) },
+                )
             }
         }
 
@@ -250,7 +263,59 @@ class EarningsRepository(
                 sources(classes, salaries, months, filter, tipsIn),
                 classes.filter { filter.matches(it.type) },
                 received.filter { inPeriod(it.day) && filter.matches(it.type) },
+                bars(periodSpans(period), all, received, salaries, filter, today, tips),
             )
+        }
+    }
+
+    /** Who paid a payment row: its student, group or place. */
+    private fun ReceivedRow.payerRef(): PayerRef =
+        when {
+            studentId != null -> PayerRef(PayerKind.STUDENT, studentId)
+            groupId != null -> PayerRef(PayerKind.GROUP, groupId)
+            else -> PayerRef(PayerKind.PLACE, placeId.orEmpty())
+        }
+
+    /** Evolução: month by month from [firstMonth], with the filters, details and change (AC-014-31, 34, 35). */
+    fun evolution(
+        firstMonth: LocalDate,
+        count: Int,
+        filter: EvolutionFilter,
+        today: LocalDate,
+        zone: String,
+    ): Flow<List<MonthDetail>> {
+        val spans = monthSpans(firstMonth, count)
+        val from = spans.first().first
+        val to = spans.last().second
+        return combine(
+            classes(from, to, zone),
+            dao.observeReceived(instant(from, zone), instant(to.plus(DatePeriod(days = 1)), zone)),
+            dao.observeSchools(),
+            tips(from, to, zone),
+            payments.leftByLesson(),
+        ) { all, paid, schools, tips, left ->
+            val received =
+                paid.map { r ->
+                    val kind = r.kind?.let { PlaceKind.fromKey(it) }
+                    Received(
+                        localOf(r.paidAt, zone).date,
+                        r.amountCents,
+                        kind?.let { earningsType(it) } ?: EarningsType.PRIVATE,
+                        r.payerRef(),
+                        kind,
+                    )
+                }
+            val salaries =
+                schools.map { s ->
+                    Salary(
+                        s.id,
+                        s.name.orEmpty(),
+                        s.salaryCents,
+                        localOf(s.createdAt, zone).date,
+                        s.archivedAt?.let { localOf(it, zone).date },
+                    )
+                }
+            monthDetails(spans, all, received, salaries, filter, today, left, tips)
         }
     }
 }

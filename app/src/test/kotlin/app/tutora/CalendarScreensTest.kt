@@ -12,7 +12,6 @@ import app.tutora.domain.BusyEvent
 import app.tutora.domain.instantOf
 import app.tutora.ui.CalendarHome
 import app.tutora.ui.ScheduleGraph
-import app.tutora.ui.SettingsGraph
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -51,7 +50,7 @@ class CalendarScreensTest {
     @Test
     fun `AC-012-1 Ajustes has Calendario in Geral, and its page has every part`() {
         h.show(compose)
-        h.go(compose, SettingsGraph)
+        h.go(compose, app.tutora.ui.SettingsGeneral)
         exists("Calendário")
         compose.onNodeWithTag("calendar-row").performScrollTo().performClick()
         h.settle(compose)

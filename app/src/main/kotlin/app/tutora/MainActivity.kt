@@ -19,7 +19,12 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.tutora.domain.Language
 import app.tutora.live.AndroidLiveNotifier
+import app.tutora.reminders.AndroidReminderAlarm
+import app.tutora.ui.ConfirmClasses
+import app.tutora.ui.LessonDetail
 import app.tutora.ui.LiveRequest
+import app.tutora.ui.RegistryHome
+import app.tutora.ui.TodayGraph
 import app.tutora.ui.TutoraApp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +43,24 @@ class MainActivity : AppCompatActivity() {
     /** A tap on the live notification, waiting for the tabs to open it (AC-007-15). */
     private val liveRequest = MutableStateFlow<LiveRequest?>(null)
 
+    /** A tap on a reminder, waiting for the tabs to open what it asked for (spec 014). */
+    private val openRequest = MutableStateFlow<Any?>(null)
+
+    private fun takeOpenRequest(intent: Intent?) {
+        val a = AndroidReminderAlarm
+        val route =
+            when (intent?.getStringExtra(a.EXTRA_OPEN)) {
+                a.OPEN_LESSON -> intent.getStringExtra(a.EXTRA_LESSON)?.let { LessonDetail(it) }
+                a.OPEN_CONFIRM -> ConfirmClasses
+                a.OPEN_OWED -> RegistryHome(owing = true)
+                a.OPEN_TODAY -> TodayGraph
+                else -> null
+            }
+        if (route != null) openRequest.value = route
+    }
+
     private fun takeLiveRequest(intent: Intent?) {
+        takeOpenRequest(intent)
         val id = intent?.getStringExtra(AndroidLiveNotifier.EXTRA_LESSON) ?: return
         liveRequest.value = LiveRequest(id, intent.getBooleanExtra(AndroidLiveNotifier.EXTRA_END, false))
     }
@@ -70,7 +92,8 @@ class MainActivity : AppCompatActivity() {
                 AppState.Loading -> Unit
             }
             val request by liveRequest.collectAsStateWithLifecycle()
-            TutoraApp(state, container.appInfo, app.services, request) { liveRequest.value = null }
+            val open by openRequest.collectAsStateWithLifecycle()
+            TutoraApp(state, container.appInfo, app.services, request, open, { openRequest.value = null }) { liveRequest.value = null }
         }
     }
 
@@ -80,6 +103,7 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {
                     app.services?.live?.autoStart()
+                    app.services?.confirming?.autoConfirm()
                     delay(AUTO_START_CHECK_MS)
                 }
             }
