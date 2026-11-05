@@ -1,8 +1,12 @@
 package app.tutora.ui
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -25,6 +29,7 @@ import app.tutora.AppInfo
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.IconName
+import app.tutora.designsystem.components.NavRail
 import app.tutora.designsystem.components.TabBar
 import app.tutora.designsystem.components.TabItem
 import app.tutora.state.LocalServices
@@ -259,6 +264,12 @@ fun TutoraNav(
         val open = nav.currentBackStackEntry?.destination?.hasRoute(SetupHome::class) == true
         if (!open && services.setup.needed()) nav.navigate(SetupHome) { launchSingleTop = true }
     }
+    val landscape = TutoraTheme.landscape
+    val tabItems =
+        Tab.entries.map {
+            TabItem(it.key, stringResource(it.label), it.icon, count = if (it == Tab.SCHEDULE) toConfirm.size else 0)
+        }
+    val onTab: (String) -> Unit = { key -> nav.openTab(Tab.entries.first { it.key == key }.graph) }
     CompositionLocalProvider(LocalClockDurations provides (clockDurations?.clockDurations == true)) {
         Scaffold(
             modifier = modifier,
@@ -267,113 +278,124 @@ fun TutoraNav(
             // tab bar's height (with the navigation bar) is consumed here so it is not padded twice.
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
-                // The bar shows on the tabs; details and forms take the whole screen.
-                if (activeTab != null) {
-                    TabBar(
-                        tabs =
-                            Tab.entries.map {
-                                TabItem(it.key, stringResource(it.label), it.icon, count = if (it == Tab.SCHEDULE) toConfirm.size else 0)
-                            },
-                        active = activeTab.key,
-                        onSelect = { key ->
-                            nav.openTab(Tab.entries.first { it.key == key }.graph)
-                        },
-                    )
-                }
+                // The bar shows on the tabs; details and forms take the whole screen. Sideways
+                // the tabs move to the rail on the left (AC-017-2).
+                if (activeTab != null && !landscape) TabBar(tabs = tabItems, active = activeTab.key, onSelect = onTab)
             },
         ) { padding ->
-            NavHost(nav, startDestination = TodayGraph, modifier = Modifier.padding(padding).consumeWindowInsets(padding)) {
-                navigation<TodayGraph>(startDestination = TodayHome) {
-                    composable<TodayHome> { TodayScreen(nav) }
-                }
-                navigation<ScheduleGraph>(startDestination = ScheduleHome) {
-                    composable<ScheduleHome> { AgendaScreen(nav) }
-                }
-                navigation<RegistryGraph>(startDestination = RegistryHome()) {
-                    composable<RegistryHome> {
-                        val r = it.toRoute<RegistryHome>()
-                        RegistryScreen(nav, r.view, r.owing)
+            Row(Modifier.padding(padding).consumeWindowInsets(padding)) {
+                val railTab = activeTab?.takeIf { landscape }
+                val rail = railTab != null
+                if (railTab != null) NavRail(tabs = tabItems, active = railTab.key, onSelect = onTab)
+                NavHost(
+                    nav,
+                    startDestination = TodayGraph,
+                    // The rail already keeps clear of the cut-out on the left (AC-017-5).
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .then(
+                                if (rail) {
+                                    Modifier.consumeWindowInsets(
+                                        WindowInsets.safeDrawing.only(WindowInsetsSides.Start),
+                                    )
+                                } else {
+                                    Modifier
+                                },
+                            ),
+                ) {
+                    navigation<TodayGraph>(startDestination = TodayHome) {
+                        composable<TodayHome> { TodayScreen(nav) }
                     }
-                }
-                navigation<EarningsGraph>(startDestination = EarningsHome) {
-                    composable<EarningsHome> { entry ->
-                        val asked by entry.savedStateHandle.getStateFlow<String?>(OPEN_PERIOD, null).collectAsState()
-                        EarningsScreen(nav, asked) { entry.savedStateHandle[OPEN_PERIOD] = null }
+                    navigation<ScheduleGraph>(startDestination = ScheduleHome) {
+                        composable<ScheduleHome> { AgendaScreen(nav) }
                     }
-                }
-                navigation<SettingsGraph>(startDestination = SettingsHome) {
-                    composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { route -> nav.navigate(route) } }
-                    composable<SettingsGeneral> { SettingsGeneralScreen(nav) }
-                    composable<SettingsLessons> { SettingsLessonsScreen(nav) }
-                    composable<SettingsPayments> { SettingsPaymentsScreen(nav) }
-                    composable<SettingsAbout> { SettingsAboutScreen(nav, appInfo, schemaVersion) }
-                    composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
-                }
-                composable<BackupHome> {
-                    app.tutora.ui.backup
-                        .BackupScreen(nav)
-                }
-                composable<AppearanceHome> {
-                    app.tutora.ui.appearance
-                        .AppearanceScreen(nav)
-                }
-                composable<CustomColors> {
-                    app.tutora.ui.appearance
-                        .CustomColorsScreen(nav, it.toRoute<CustomColors>().part)
-                }
-                composable<ConfirmClasses> {
-                    app.tutora.ui.confirm
-                        .ConfirmClassesScreen(nav)
-                }
-                composable<NoticesHome> {
-                    app.tutora.ui.reminders
-                        .NoticesScreen(nav)
-                }
-                composable<Evolution> {
-                    app.tutora.ui.earnings
-                        .EvolutionScreen(nav)
-                }
-                composable<RemindersHome> {
-                    app.tutora.ui.reminders
-                        .RemindersScreen(nav)
-                }
-                composable<TeachingHome> {
-                    app.tutora.ui.setup
-                        .TeachingScreen(nav)
-                }
-                composable<SetupHome> {
-                    app.tutora.ui.setup
-                        .SetupScreen(nav)
-                }
-                composable<CalendarHome> {
-                    app.tutora.ui.calendar
-                        .CalendarScreen(nav)
-                }
-                composable<PlaceDetail> { PlaceDetailScreen(nav, it.toRoute<PlaceDetail>().id) }
-                composable<PlaceEdit> { PlaceEditScreen(nav, it.toRoute<PlaceEdit>().id) }
-                composable<StudentDetail> { StudentDetailScreen(nav, it.toRoute<StudentDetail>().id) }
-                composable<StudentEdit> { StudentEditScreen(nav, it.toRoute<StudentEdit>().id) }
-                composable<GroupEdit> {
-                    val r = it.toRoute<GroupEdit>()
-                    GroupEditScreen(nav, r.id, r.placeId)
-                }
-                composable<LiveLesson> {
-                    val r = it.toRoute<LiveLesson>()
-                    LiveScreen(nav, r.id, r.end)
-                }
-                composable<GroupDetail> { GroupDetailScreen(nav, it.toRoute<GroupDetail>().id) }
-                composable<Archived> { ArchivedScreen(nav) }
-                composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
-                composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
-                composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
-                composable<Report> {
-                    val r = it.toRoute<Report>()
-                    ReportScreen(nav, r.kind, r.id)
-                }
-                composable<PaymentDetail> { PaymentDetailScreen(nav, it.toRoute<PaymentDetail>().id) }
-                composable<PayerLessons> {
-                    val r = it.toRoute<PayerLessons>()
-                    PayerLessonsScreen(nav, r.kind, r.id)
+                    navigation<RegistryGraph>(startDestination = RegistryHome()) {
+                        composable<RegistryHome> {
+                            val r = it.toRoute<RegistryHome>()
+                            RegistryScreen(nav, r.view, r.owing)
+                        }
+                    }
+                    navigation<EarningsGraph>(startDestination = EarningsHome) {
+                        composable<EarningsHome> { entry ->
+                            val asked by entry.savedStateHandle.getStateFlow<String?>(OPEN_PERIOD, null).collectAsState()
+                            EarningsScreen(nav, asked) { entry.savedStateHandle[OPEN_PERIOD] = null }
+                        }
+                    }
+                    navigation<SettingsGraph>(startDestination = SettingsHome) {
+                        composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { route -> nav.navigate(route) } }
+                        composable<SettingsGeneral> { SettingsGeneralScreen(nav) }
+                        composable<SettingsLessons> { SettingsLessonsScreen(nav) }
+                        composable<SettingsPayments> { SettingsPaymentsScreen(nav) }
+                        composable<SettingsAbout> { SettingsAboutScreen(nav, appInfo, schemaVersion) }
+                        composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
+                    }
+                    composable<BackupHome> {
+                        app.tutora.ui.backup
+                            .BackupScreen(nav)
+                    }
+                    composable<AppearanceHome> {
+                        app.tutora.ui.appearance
+                            .AppearanceScreen(nav)
+                    }
+                    composable<CustomColors> {
+                        app.tutora.ui.appearance
+                            .CustomColorsScreen(nav, it.toRoute<CustomColors>().part)
+                    }
+                    composable<ConfirmClasses> {
+                        app.tutora.ui.confirm
+                            .ConfirmClassesScreen(nav)
+                    }
+                    composable<NoticesHome> {
+                        app.tutora.ui.reminders
+                            .NoticesScreen(nav)
+                    }
+                    composable<Evolution> {
+                        app.tutora.ui.earnings
+                            .EvolutionScreen(nav)
+                    }
+                    composable<RemindersHome> {
+                        app.tutora.ui.reminders
+                            .RemindersScreen(nav)
+                    }
+                    composable<TeachingHome> {
+                        app.tutora.ui.setup
+                            .TeachingScreen(nav)
+                    }
+                    composable<SetupHome> {
+                        app.tutora.ui.setup
+                            .SetupScreen(nav)
+                    }
+                    composable<CalendarHome> {
+                        app.tutora.ui.calendar
+                            .CalendarScreen(nav)
+                    }
+                    composable<PlaceDetail> { PlaceDetailScreen(nav, it.toRoute<PlaceDetail>().id) }
+                    composable<PlaceEdit> { PlaceEditScreen(nav, it.toRoute<PlaceEdit>().id) }
+                    composable<StudentDetail> { StudentDetailScreen(nav, it.toRoute<StudentDetail>().id) }
+                    composable<StudentEdit> { StudentEditScreen(nav, it.toRoute<StudentEdit>().id) }
+                    composable<GroupEdit> {
+                        val r = it.toRoute<GroupEdit>()
+                        GroupEditScreen(nav, r.id, r.placeId)
+                    }
+                    composable<LiveLesson> {
+                        val r = it.toRoute<LiveLesson>()
+                        LiveScreen(nav, r.id, r.end)
+                    }
+                    composable<GroupDetail> { GroupDetailScreen(nav, it.toRoute<GroupDetail>().id) }
+                    composable<Archived> { ArchivedScreen(nav) }
+                    composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
+                    composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
+                    composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
+                    composable<Report> {
+                        val r = it.toRoute<Report>()
+                        ReportScreen(nav, r.kind, r.id)
+                    }
+                    composable<PaymentDetail> { PaymentDetailScreen(nav, it.toRoute<PaymentDetail>().id) }
+                    composable<PayerLessons> {
+                        val r = it.toRoute<PayerLessons>()
+                        PayerLessonsScreen(nav, r.kind, r.id)
+                    }
                 }
             }
         }

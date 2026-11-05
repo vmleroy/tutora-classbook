@@ -87,6 +87,8 @@ import kotlinx.coroutines.launch
 fun PlaceDetailScreen(
     nav: NavHostController,
     id: String,
+    /** Back, or closing Cadastro's right side when the phone is sideways (AC-017-11). */
+    onBack: () -> Unit = { nav.popBackStack() },
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
@@ -105,13 +107,13 @@ fun PlaceDetailScreen(
         stringResource(R.string.places_detail),
         "place-detail",
         variant = HeaderVariant.PUSH,
-        onBack = { nav.popBackStack() },
+        onBack = onBack,
         // Arquivar sits beside the pencil; built-in places can't be archived (AC-004-2, 23).
         actions =
             listOfNotNull(
                 if (p.builtin == null && p.archivedAt == null) {
                     HeaderAction(IconName.ARCHIVE, stringResource(R.string.catalog_archive)) {
-                        scope.launch { services.catalog.archive(Kind.PLACE, p.id).also { nav.popBackStack() } }
+                        scope.launch { services.catalog.archive(Kind.PLACE, p.id).also { onBack() } }
                     }
                 } else {
                     null

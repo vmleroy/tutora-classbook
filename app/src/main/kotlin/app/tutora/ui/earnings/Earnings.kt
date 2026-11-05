@@ -55,6 +55,7 @@ import app.tutora.designsystem.components.ProgressBar
 import app.tutora.designsystem.components.ProgressTone
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
+import app.tutora.designsystem.components.TwoPane
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
@@ -162,196 +163,214 @@ fun EarningsScreen(
                 )
             }
         },
+        scroll = !TutoraTheme.landscape,
+        readable = !TutoraTheme.landscape,
     ) {
-        SegmentedControl(
-            listOf(
-                PeriodKind.DAY to stringResource(R.string.earn_day),
-                PeriodKind.MONTH to stringResource(R.string.earn_month),
-                PeriodKind.QUARTER to stringResource(R.string.earn_quarter),
-                PeriodKind.YEAR to stringResource(R.string.earn_year),
-            ),
-            kind,
-            {
-                kind = it
-                anchor = today.toString()
-            },
-            stringResource(R.string.earn_period),
-            // Four options: the smaller size keeps "Trimestre" on one line.
-            size = ControlSize.SM,
-        )
-        // ‹ and › move by the period; › stops at the one holding today (AC-009-9).
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.earn_previous), { anchor = period.previous().anchor.toString() })
-            // Tapping the period opens a picker of months or years (Victor, 29 Oct 2026).
-            val range = rangeLabel(period, language)
-            val pickLabel = stringResource(R.string.earn_pickPeriod, range)
-            Row(
-                Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(Radius.lg))
-                    .clickable(role = Role.Button) { picking = true }
-                    .semantics(mergeDescendants = true) { contentDescription = pickLabel }
-                    .padding(vertical = Spacing.s2),
-                horizontalArrangement = Arrangement.spacedBy(Spacing.s1, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(range, Modifier.testTag("earn-range"), style = TutoraTheme.type.titleMd, color = TutoraTheme.colors.ink)
-                Icon(IconName.CHEVRON_DOWN, tint = TutoraTheme.colors.ink, size = Size.iconSm)
-            }
-            IconButton(
-                IconName.CHEVRON_RIGHT,
-                stringResource(R.string.earn_next),
-                { anchor = period.next().anchor.toString() },
-                variant = IconButtonVariant.SUNKEN,
-                enabled = !period.isCurrent(today),
-            )
-        }
-        // Escola e emprego and Particulares follow "Como você dá aula", unless there are earnings of that kind (AC-014-19, 20).
-        val settings by services.settings.collectAsState(initial = null)
-        val inUse by remember { services.kindsInUse() }.collectAsState(initial = emptySet())
-        val chosen =
-            settings?.teaching ?: app.tutora.domain.Teaching.entries
-                .toSet()
-        val filters =
-            listOfNotNull(
-                TypeFilter.ALL to R.string.earn_all,
-                (TypeFilter.PRIVATE to R.string.earn_private).takeIf {
-                    app.tutora.domain.Teaching.PRIVATE in chosen ||
-                        inUse.any { app.tutora.domain.earningsType(it) == app.tutora.domain.EarningsType.PRIVATE }
+        @Composable
+        fun periodCard() {
+            SegmentedControl(
+                listOf(
+                    PeriodKind.DAY to stringResource(R.string.earn_day),
+                    PeriodKind.MONTH to stringResource(R.string.earn_month),
+                    PeriodKind.QUARTER to stringResource(R.string.earn_quarter),
+                    PeriodKind.YEAR to stringResource(R.string.earn_year),
+                ),
+                kind,
+                {
+                    kind = it
+                    anchor = today.toString()
                 },
-                (TypeFilter.JOB to R.string.earn_job).takeIf {
-                    app.tutora.domain.Teaching.SCHOOL in chosen ||
-                        inUse.any { app.tutora.domain.earningsType(it) == app.tutora.domain.EarningsType.JOB }
-                },
+                stringResource(R.string.earn_period),
+                // Four options: the smaller size keeps "Trimestre" on one line.
+                size = ControlSize.SM,
             )
-        if (filters.size > 1) {
-            FlowRow(Modifier.testTag("earn-filters"), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                filters.forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
+            // ‹ and › move by the period; › stops at the one holding today (AC-009-9).
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.earn_previous), { anchor = period.previous().anchor.toString() })
+                // Tapping the period opens a picker of months or years (Victor, 29 Oct 2026).
+                val range = rangeLabel(period, language)
+                val pickLabel = stringResource(R.string.earn_pickPeriod, range)
+                Row(
+                    Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(Radius.lg))
+                        .clickable(role = Role.Button) { picking = true }
+                        .semantics(mergeDescendants = true) { contentDescription = pickLabel }
+                        .padding(vertical = Spacing.s2),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s1, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(range, Modifier.testTag("earn-range"), style = TutoraTheme.type.titleMd, color = TutoraTheme.colors.ink)
+                    Icon(IconName.CHEVRON_DOWN, tint = TutoraTheme.colors.ink, size = Size.iconSm)
+                }
+                IconButton(
+                    IconName.CHEVRON_RIGHT,
+                    stringResource(R.string.earn_next),
+                    { anchor = period.next().anchor.toString() },
+                    variant = IconButtonVariant.SUNKEN,
+                    enabled = !period.isCurrent(today),
+                )
             }
-        }
-        if (picking) {
-            PeriodPickerSheet(period, today, { picking = false }) {
-                anchor = it.toString()
-                picking = false
-            }
-        }
-        val v = view ?: return@ScreenScaffold
-        if (reporting) {
-            val typeLabel =
-                stringResource(
-                    when (filter) {
-                        TypeFilter.ALL -> R.string.earn_all
-                        TypeFilter.PRIVATE -> R.string.earn_private
-                        TypeFilter.JOB -> R.string.earn_job
+            // Escola e emprego and Particulares follow "Como você dá aula", unless there are earnings of that kind (AC-014-19, 20).
+            val settings by services.settings.collectAsState(initial = null)
+            val inUse by remember { services.kindsInUse() }.collectAsState(initial = emptySet())
+            val chosen =
+                settings?.teaching ?: app.tutora.domain.Teaching.entries
+                    .toSet()
+            val filters =
+                listOfNotNull(
+                    TypeFilter.ALL to R.string.earn_all,
+                    (TypeFilter.PRIVATE to R.string.earn_private).takeIf {
+                        app.tutora.domain.Teaching.PRIVATE in chosen ||
+                            inUse.any { app.tutora.domain.earningsType(it) == app.tutora.domain.EarningsType.PRIVATE }
+                    },
+                    (TypeFilter.JOB to R.string.earn_job).takeIf {
+                        app.tutora.domain.Teaching.SCHOOL in chosen ||
+                            inUse.any { app.tutora.domain.earningsType(it) == app.tutora.domain.EarningsType.JOB }
                     },
                 )
-            EarningsReportSheet(
-                v,
-                "${rangeLabel(period, language)} · $typeLabel",
-                "${stringResource(R.string.rep_earningsTitle)} - ${rangeLabel(period, language)}",
-            ) { reporting = false }
-        }
-        val s = v.summary
-        if (s.earned == 0L && v.sources.isEmpty()) {
-            EmptyState(stringResource(R.string.earn_empty), icon = IconName.WALLET)
-            return@ScreenScaffold
-        }
-        // Earned, received and to receive, with what commission and bonuses took (AC-009-11).
-        EarningsSummary(
-            stringResource(
-                when {
-                    kind != PeriodKind.DAY -> R.string.earn_earned
-                    period.anchor == today -> R.string.earn_today
-                    else -> R.string.earn_earnedDay
-                },
-            ),
-            s.earned,
-            Modifier.testTag("earn-summary"),
-            stats =
-                listOf(
-                    EarningsStat(stringResource(R.string.earn_received), s.received, MoneyTone.PAID),
-                    EarningsStat(stringResource(R.string.pay_toReceive), s.toReceive, MoneyTone.OWED),
-                ),
-            receivedShare = if (s.earned > 0) s.received.toFloat() / s.earned else 0f,
-            receivedLabel = stringResource(R.string.earn_received),
-            // A white card, as on Hoje (Victor, 29 Oct 2026).
-            onCard = true,
-            footnote =
-                listOfNotNull(
-                    s.commission.takeIf { it > 0 }?.let { stringResource(R.string.earn_commission, formatMoney(it, language)) },
-                    s.bonus.takeIf { it > 0 }?.let { stringResource(R.string.earn_bonus, formatMoney(it, language)) },
-                ).joinToString(" · ").ifEmpty { null },
-        )
-        // The period's own bars: weeks of a month, months of a quarter or a year; none for a day (AC-014-30).
-        if (v.bars.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                SectionHeader(stringResource(if (kind == PeriodKind.MONTH) R.string.earn_byWeek else R.string.earn_byMonth))
-                val labels = v.bars.map { barLabel(it, kind, language) }
-                MonthBars(
-                    v.bars.mapIndexed { i, b -> MonthBar(labels[i], b.earned, b.received) },
-                    barsDescription(v.bars, labels, language),
-                    Modifier.testTag("earn-bars"),
-                )
+            if (filters.size > 1) {
+                FlowRow(Modifier.testTag("earn-filters"), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    filters.forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
+                }
             }
+            if (picking) {
+                PeriodPickerSheet(period, today, { picking = false }) {
+                    anchor = it.toString()
+                    picking = false
+                }
+            }
+            val v = view ?: return
+            if (reporting) {
+                val typeLabel =
+                    stringResource(
+                        when (filter) {
+                            TypeFilter.ALL -> R.string.earn_all
+                            TypeFilter.PRIVATE -> R.string.earn_private
+                            TypeFilter.JOB -> R.string.earn_job
+                        },
+                    )
+                EarningsReportSheet(
+                    v,
+                    "${rangeLabel(period, language)} · $typeLabel",
+                    "${stringResource(R.string.rep_earningsTitle)} - ${rangeLabel(period, language)}",
+                ) { reporting = false }
+            }
+            val s = v.summary
+            if (s.earned == 0L && v.sources.isEmpty()) {
+                EmptyState(stringResource(R.string.earn_empty), icon = IconName.WALLET)
+                return
+            }
+            // Earned, received and to receive, with what commission and bonuses took (AC-009-11).
+            EarningsSummary(
+                stringResource(
+                    when {
+                        kind != PeriodKind.DAY -> R.string.earn_earned
+                        period.anchor == today -> R.string.earn_today
+                        else -> R.string.earn_earnedDay
+                    },
+                ),
+                s.earned,
+                Modifier.testTag("earn-summary"),
+                stats =
+                    listOf(
+                        EarningsStat(stringResource(R.string.earn_received), s.received, MoneyTone.PAID),
+                        EarningsStat(stringResource(R.string.pay_toReceive), s.toReceive, MoneyTone.OWED),
+                    ),
+                receivedShare = if (s.earned > 0) s.received.toFloat() / s.earned else 0f,
+                receivedLabel = stringResource(R.string.earn_received),
+                // A white card, as on Hoje (Victor, 29 Oct 2026).
+                onCard = true,
+                footnote =
+                    listOfNotNull(
+                        s.commission.takeIf { it > 0 }?.let { stringResource(R.string.earn_commission, formatMoney(it, language)) },
+                        s.bonus.takeIf { it > 0 }?.let { stringResource(R.string.earn_bonus, formatMoney(it, language)) },
+                    ).joinToString(" · ").ifEmpty { null },
+            )
         }
-        // De onde veio: largest first, each on its own card with its share of the total, opening
-        // its detail (AC-009-13).
-        if (v.sources.isNotEmpty()) {
-            val total = v.sources.sumOf { it.cents }.coerceAtLeast(1)
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                SectionHeader(stringResource(R.string.earn_sources), aside = stringResource(R.string.earn_sourcesHint))
-                ListGroup(
-                    v.sources.map<app.tutora.domain.Source, @Composable () -> Unit> { src ->
-                        {
-                            val owes = (balances[src.payer] ?: 0).takeIf { it > 0 }
-                            val share = src.cents.toFloat() / total
-                            val percent = stringResource(R.string.earn_share, Math.round(share * 100))
-                            // One compact row: who, what they still owe, the amount and its share (AC-009-13).
-                            Column(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clickable(role = Role.Button) { nav.navigate(payerRoute(src.payer)) }
-                                    .semantics(mergeDescendants = true) {}
-                                    .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
-                                verticalArrangement = Arrangement.spacedBy(Spacing.s1_5),
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+
+        @Composable
+        fun breakdown() {
+            val v = view ?: return
+            if (v.summary.earned == 0L && v.sources.isEmpty()) return
+            // The period's own bars: weeks of a month, months of a quarter or a year; none for a day (AC-014-30).
+            if (v.bars.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    SectionHeader(stringResource(if (kind == PeriodKind.MONTH) R.string.earn_byWeek else R.string.earn_byMonth))
+                    val labels = v.bars.map { barLabel(it, kind, language) }
+                    MonthBars(
+                        v.bars.mapIndexed { i, b -> MonthBar(labels[i], b.earned, b.received) },
+                        barsDescription(v.bars, labels, language),
+                        Modifier.testTag("earn-bars"),
+                    )
+                }
+            }
+            // De onde veio: largest first, each on its own card with its share of the total, opening
+            // its detail (AC-009-13).
+            if (v.sources.isNotEmpty()) {
+                val total = v.sources.sumOf { it.cents }.coerceAtLeast(1)
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    SectionHeader(stringResource(R.string.earn_sources), aside = stringResource(R.string.earn_sourcesHint))
+                    ListGroup(
+                        v.sources.map<app.tutora.domain.Source, @Composable () -> Unit> { src ->
+                            {
+                                val owes = (balances[src.payer] ?: 0).takeIf { it > 0 }
+                                val share = src.cents.toFloat() / total
+                                val percent = stringResource(R.string.earn_share, Math.round(share * 100))
+                                // One compact row: who, what they still owe, the amount and its share (AC-009-13).
+                                Column(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .clickable(role = Role.Button) { nav.navigate(payerRoute(src.payer)) }
+                                        .semantics(mergeDescendants = true) {}
+                                        .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
+                                    verticalArrangement = Arrangement.spacedBy(Spacing.s1_5),
                                 ) {
-                                    Text(
-                                        src.name,
-                                        style = TutoraTheme.type.bodyStrong,
-                                        color = TutoraTheme.colors.ink,
-                                        modifier = Modifier.weight(1f),
-                                    )
-                                    owes?.let {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+                                    ) {
                                         Text(
-                                            stringResource(R.string.earn_owes, formatMoney(it, language, compact = true)),
-                                            style = TutoraTheme.type.meta,
-                                            color = TutoraTheme.colors.dangerInk,
+                                            src.name,
+                                            style = TutoraTheme.type.bodyStrong,
+                                            color = TutoraTheme.colors.ink,
+                                            modifier = Modifier.weight(1f),
                                         )
+                                        owes?.let {
+                                            Text(
+                                                stringResource(R.string.earn_owes, formatMoney(it, language, compact = true)),
+                                                style = TutoraTheme.type.meta,
+                                                color = TutoraTheme.colors.dangerInk,
+                                            )
+                                        }
+                                        Money(src.cents, tone = MoneyTone.EARNINGS, compact = true)
                                     }
-                                    Money(src.cents, tone = MoneyTone.EARNINGS, compact = true)
-                                }
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-                                ) {
-                                    ProgressBar(
-                                        share,
-                                        "${src.name}: $percent",
-                                        Modifier.weight(1f),
-                                        tone = ProgressTone.ACCENT,
-                                        thin = true,
-                                    )
-                                    Text(percent, style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+                                    ) {
+                                        ProgressBar(
+                                            share,
+                                            "${src.name}: $percent",
+                                            Modifier.weight(1f),
+                                            tone = ProgressTone.ACCENT,
+                                            thin = true,
+                                        )
+                                        Text(percent, style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+                                    }
                                 }
                             }
-                        }
-                    },
-                )
+                        },
+                    )
+                }
             }
+        }
+        if (TutoraTheme.landscape) {
+            // Sideways: the period's card on the left, its bars and De onde veio on the right (AC-017-7).
+            TwoPane(start = { periodCard() }, end = { breakdown() }, startWeight = 0.45f, gap = Spacing.s4)
+        } else {
+            periodCard()
+            breakdown()
         }
     }
 }

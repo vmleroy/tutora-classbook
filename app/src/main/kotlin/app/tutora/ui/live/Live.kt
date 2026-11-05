@@ -50,6 +50,7 @@ import app.tutora.designsystem.components.MoneySize
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.TimerRing
+import app.tutora.designsystem.components.TwoPane
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
@@ -168,6 +169,13 @@ fun LiveScreen(
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
+    // The phone doesn't dim or lock while the class is on screen; leaving gives its timeout back
+    // (AC-017-13; Victor, 4 Nov 2026).
+    val view = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.DisposableEffect(view) {
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
+    }
     val lesson by remember(id) { services.scheduleRepo.lesson(id) }.collectAsState(initial = null)
     val timer by remember(id) { services.scheduleRepo.timer(id) }.collectAsState(initial = null)
     var ending by rememberSaveable { mutableStateOf(openEnd) }
@@ -183,35 +191,68 @@ fun LiveScreen(
         Done(nav, l)
         return
     }
-    ScreenScaffold(
-        stringResource(R.string.live_title),
-        "live-screen",
-        variant = HeaderVariant.PUSH,
-        onBack = { nav.popBackStack() },
-        bottomBar = {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-                Button(
-                    stringResource(if (t.running) R.string.live_pause else R.string.live_resume),
-                    { scope.launch { if (t.running) services.live.pause(id) else services.live.resume(id) } },
-                    Modifier.weight(1f),
-                    variant = ButtonVariant.OUTLINE,
-                )
-                Button(stringResource(R.string.live_end), { ending = true }, Modifier.weight(1f))
-            }
-        },
-    ) {
+    val landscape = TutoraTheme.landscape
+    var note by remember(id) { mutableStateOf(t.note.orEmpty()) }
+
+    @Composable
+    fun controls() {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            Button(
+                stringResource(if (t.running) R.string.live_pause else R.string.live_resume),
+                { scope.launch { if (t.running) services.live.pause(id) else services.live.resume(id) } },
+                Modifier.weight(1f),
+                variant = ButtonVariant.OUTLINE,
+            )
+            Button(stringResource(R.string.live_end), { ending = true }, Modifier.weight(1f))
+        }
+    }
+
+    @Composable
+    fun badge() {
         Badge(
             stringResource(if (t.running) R.string.status_live else R.string.live_paused),
             tone = if (t.running) BadgeTone.ACCENT else BadgeTone.NEUTRAL,
         )
-        Who(l, services)
-        Clock(l, t, services)
-        var note by remember(id) { mutableStateOf(t.note.orEmpty()) }
+    }
+
+    @Composable
+    fun noteField() {
         TextField(stringResource(R.string.live_note), note, {
             note = it
             scope.launch { services.live.setNote(id, it) }
         }, imeAction = ImeAction.Done)
         Button(stringResource(R.string.live_discard), { discarding = true }, variant = ButtonVariant.GHOST)
+    }
+    ScreenScaffold(
+        stringResource(R.string.live_title),
+        "live-screen",
+        variant = HeaderVariant.PUSH,
+        onBack = { nav.popBackStack() },
+        bottomBar = if (landscape) null else ({ controls() }),
+        scroll = !landscape,
+        readable = !landscape,
+    ) {
+        if (landscape) {
+            // Sideways: the clock and the value on the left, the note with Pausar and Encerrar on
+            // the right, all in view without scrolling (AC-017-12).
+            TwoPane(
+                start = {
+                    Who(l, services)
+                    Clock(l, t, services, Modifier.weight(1f))
+                },
+                end = {
+                    badge()
+                    noteField()
+                    controls()
+                },
+                scrollStart = false,
+            )
+        } else {
+            badge()
+            Who(l, services)
+            Clock(l, t, services)
+            noteField()
+        }
     }
     if (ending) {
         val counted = elapsedMs(t, services.now())
@@ -275,6 +316,8 @@ private fun Clock(
     l: Lesson,
     t: LessonTimer,
     services: AppServices,
+    /** Sideways the clock fills the height it is given and the ring shrinks to fit (AC-017-12). */
+    modifier: Modifier = Modifier,
 ) {
     val language = currentLanguage()
     val now by rememberNow(services)
@@ -282,18 +325,20 @@ private fun Clock(
     val c = TutoraTheme.colors
     // The ring is drawn for the header ground (its guideline): white digits and an accent ring on
     // the main color, as in the Live mockup, so the clock keeps its contrast in every theme.
+    val landscape = TutoraTheme.landscape
     Column(
-        Modifier
+        modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(Radius.xl))
             .background(c.header)
-            .padding(vertical = Spacing.s5, horizontal = Spacing.s4),
+            .padding(vertical = if (landscape) Spacing.s3 else Spacing.s5, horizontal = Spacing.s4),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Spacing.s2),
+        verticalArrangement = Arrangement.spacedBy(if (landscape) Spacing.s1 else Spacing.s2, Alignment.CenterVertically),
     ) {
         TimerRing(
             clockText(ms),
             ms / (l.plannedMin * MINUTE_MS).toFloat(),
+            if (landscape) Modifier.weight(1f, fill = false) else Modifier,
             caption = stringResource(R.string.live_planned, minutesText(l.plannedMin)),
             label = "${stringResource(R.string.live_time)} ${clockText(ms)}",
         )

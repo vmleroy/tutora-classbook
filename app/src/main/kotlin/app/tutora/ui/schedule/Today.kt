@@ -42,6 +42,7 @@ import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.LessonRow
 import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SectionHeader
+import app.tutora.designsystem.components.TwoPane
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -125,7 +126,8 @@ fun TodayScreen(nav: NavHostController) {
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .testTag("today-screen"),
     ) {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        @Composable
+        fun band() {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -157,118 +159,155 @@ fun TodayScreen(nav: NavHostController) {
                         )
                     }.padding(horizontal = Spacing.s5),
             ) { TodayEarnings(nav, lessons, local.date) }
-            Column(
-                // The last class stays clear of the floating +.
-                Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s4, bottom = Size.fab + Spacing.s7),
-                verticalArrangement = Arrangement.spacedBy(Spacing.s4),
-            ) {
-                LiveBanner(nav)
-                next?.let { n ->
-                    Card(label = stringResource(R.string.home_next)) {
-                        Text(
-                            "${stringResource(R.string.home_next)} · ${whenText(n)}",
-                            style = TutoraTheme.type.caption,
-                            color = TutoraTheme.colors.inkMuted,
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3), verticalAlignment = Alignment.CenterVertically) {
-                            Avatar(initials(n.whoName), n.whoTag)
-                            Column(Modifier.weight(1f)) {
-                                Text(n.whoName, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
-                                Text(
-                                    listOfNotNull(lessonSubtitle(n), rate(n)).joinToString(" · "),
-                                    style = TutoraTheme.type.meta,
-                                    color = TutoraTheme.colors.inkMuted,
-                                )
-                            }
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    clockTime(localOf(n.startAt, zone).time, language),
-                                    style = TutoraTheme.type.section.copy(fontFeatureSettings = "tnum"),
-                                    color = TutoraTheme.colors.ink,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                )
-                                Text(durationText(n.plannedMin), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
-                            }
+        }
+
+        @Composable
+        fun nextClass() {
+            next?.let { n ->
+                Card(label = stringResource(R.string.home_next)) {
+                    Text(
+                        "${stringResource(R.string.home_next)} · ${whenText(n)}",
+                        style = TutoraTheme.type.caption,
+                        color = TutoraTheme.colors.inkMuted,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3), verticalAlignment = Alignment.CenterVertically) {
+                        Avatar(initials(n.whoName), n.whoTag)
+                        Column(Modifier.weight(1f)) {
+                            Text(n.whoName, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
+                            Text(
+                                listOfNotNull(lessonSubtitle(n), rate(n)).joinToString(" · "),
+                                style = TutoraTheme.type.meta,
+                                color = TutoraTheme.colors.inkMuted,
+                            )
                         }
-                        // Iniciar aula when the next class is today, while the timer is on (AC-007-1, 3); with
-                        // Marcar como dada antes do horário, Marcar como dada beside it (AC-006-25, AC-016-5).
-                        val canStart = localOf(n.startAt, zone).date == local.date && settings?.liveTimer != false
-                        val canMark = settings?.earlyDone == true
-                        when {
-                            canStart && canMark ->
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                                    Button(
-                                        stringResource(R.string.lesson_markDone),
-                                        { marking = n },
-                                        Modifier.weight(1f),
-                                        variant = ButtonVariant.OUTLINE,
-                                        icon = IconName.CHECK,
-                                    )
-                                    Button(
-                                        stringResource(R.string.live_start),
-                                        { startLesson(n.id) },
-                                        Modifier.weight(1f),
-                                        variant = ButtonVariant.ACCENT,
-                                        icon = IconName.PLAY,
-                                    )
-                                }
-                            canStart ->
-                                Button(
-                                    stringResource(R.string.live_start),
-                                    { startLesson(n.id) },
-                                    fullWidth = true,
-                                    variant = ButtonVariant.ACCENT,
-                                    icon = IconName.PLAY,
-                                )
-                            canMark ->
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                clockTime(localOf(n.startAt, zone).time, language),
+                                style = TutoraTheme.type.section.copy(fontFeatureSettings = "tnum"),
+                                color = TutoraTheme.colors.ink,
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                            Text(durationText(n.plannedMin), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+                        }
+                    }
+                    // Iniciar aula when the next class is today, while the timer is on (AC-007-1, 3); with
+                    // Marcar como dada antes do horário, Marcar como dada beside it (AC-006-25, AC-016-5).
+                    val canStart = localOf(n.startAt, zone).date == local.date && settings?.liveTimer != false
+                    val canMark = settings?.earlyDone == true
+                    when {
+                        canStart && canMark ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                                 Button(
                                     stringResource(R.string.lesson_markDone),
                                     { marking = n },
-                                    fullWidth = true,
+                                    Modifier.weight(1f),
                                     variant = ButtonVariant.OUTLINE,
+                                    icon = IconName.CHECK,
                                 )
+                                Button(
+                                    stringResource(R.string.live_start),
+                                    { startLesson(n.id) },
+                                    Modifier.weight(1f),
+                                    variant = ButtonVariant.ACCENT,
+                                    icon = IconName.PLAY,
+                                )
+                            }
+                        canStart ->
+                            Button(
+                                stringResource(R.string.live_start),
+                                { startLesson(n.id) },
+                                fullWidth = true,
+                                variant = ButtonVariant.ACCENT,
+                                icon = IconName.PLAY,
+                            )
+                        canMark ->
+                            Button(
+                                stringResource(R.string.lesson_markDone),
+                                { marking = n },
+                                fullWidth = true,
+                                variant = ButtonVariant.OUTLINE,
+                            )
+                    }
+                }
+            }
+        }
+
+        @Composable
+        fun dayList() {
+            // Classes that ended still scheduled, counted, opening their list (AC-014-4).
+            app.tutora.ui.confirm
+                .ConfirmAlert(nav)
+            PendingAlert(nav)
+            app.tutora.ui.backup
+                .BackupAlert(nav)
+            if (lessons.isEmpty()) {
+                EmptyState(
+                    stringResource(R.string.empty_today_title),
+                    icon = IconName.CALENDAR,
+                    body = stringResource(R.string.empty_today_body),
+                )
+            } else {
+                SectionHeader(
+                    stringResource(R.string.home_lessonsToday),
+                    aside = countText(R.string.schedule_count_zero, R.plurals.schedule_count, lessons.size),
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    lessons.forEach { l ->
+                        run {
+                            // Done, cancelled and missed classes say so; a scheduled one shows its value (AC-006-15).
+                            val toConfirm = pending(l)
+                            val badge = statusBadge(l, toConfirm)
+                            LessonRow(
+                                clockTime(localOf(l.startAt, zone).time, language),
+                                l.whoTag,
+                                l.whoName,
+                                subtitle = "${lessonSubtitle(l)} · ${minutesText(l.plannedMin)}",
+                                status = badge?.let { it.first to it.second },
+                                trailing = worthText(l.worth()),
+                                onClick = { nav.navigate(LessonDetail(l.id)) },
+                                statusIcon = badge?.third,
+                                card = true,
+                                pending = toConfirm,
+                            )
                         }
                     }
                 }
-                // Classes that ended still scheduled, counted, opening their list (AC-014-4).
-                app.tutora.ui.confirm
-                    .ConfirmAlert(nav)
-                PendingAlert(nav)
-                app.tutora.ui.backup
-                    .BackupAlert(nav)
-                if (lessons.isEmpty()) {
-                    EmptyState(
-                        stringResource(R.string.empty_today_title),
-                        icon = IconName.CALENDAR,
-                        body = stringResource(R.string.empty_today_body),
-                    )
-                } else {
-                    SectionHeader(
-                        stringResource(R.string.home_lessonsToday),
-                        aside = countText(R.string.schedule_count_zero, R.plurals.schedule_count, lessons.size),
-                    )
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                        lessons.forEach { l ->
-                            run {
-                                // Done, cancelled and missed classes say so; a scheduled one shows its value (AC-006-15).
-                                val toConfirm = pending(l)
-                                val badge = statusBadge(l, toConfirm)
-                                LessonRow(
-                                    clockTime(localOf(l.startAt, zone).time, language),
-                                    l.whoTag,
-                                    l.whoName,
-                                    subtitle = "${lessonSubtitle(l)} · ${minutesText(l.plannedMin)}",
-                                    status = badge?.let { it.first to it.second },
-                                    trailing = worthText(l.worth()),
-                                    onClick = { nav.navigate(LessonDetail(l.id)) },
-                                    statusIcon = badge?.third,
-                                    card = true,
-                                    pending = toConfirm,
-                                )
-                            }
-                        }
+            }
+        }
+        if (TutoraTheme.landscape) {
+            // Sideways: the money and the next class on the left, today's classes and the alerts
+            // on the right (AC-017-6; Victor, 4 Nov 2026).
+            TwoPane(
+                start = {
+                    band()
+                    Column(Modifier.padding(horizontal = Spacing.s5)) { nextClass() }
+                },
+                end = {
+                    Column(
+                        Modifier
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
+                            .padding(end = Spacing.s5, top = Spacing.s4, bottom = Size.fab + Spacing.s7),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.s4),
+                    ) {
+                        LiveBanner(nav)
+                        dayList()
                     }
+                },
+                startWeight = 0.45f,
+                gap = Spacing.s4,
+            )
+        } else {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                band()
+                Column(
+                    // The last class stays clear of the floating +.
+                    Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s4, bottom = Size.fab + Spacing.s7),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s4),
+                ) {
+                    LiveBanner(nav)
+                    nextClass()
+                    dayList()
                 }
             }
         }

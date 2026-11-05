@@ -58,8 +58,10 @@ import app.tutora.designsystem.components.MonthGrid
 import app.tutora.designsystem.components.MonthPicker
 import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.SegmentedControl
+import app.tutora.designsystem.components.TwoPane
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
+import app.tutora.designsystem.components.readableWidth
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -184,6 +186,23 @@ fun AgendaScreen(nav: NavHostController) {
     val title = monthYear(selected, language)
     val c = TutoraTheme.colors
     val pickLabel = stringResource(R.string.schedule_pickMonth, title)
+    val landscape = TutoraTheme.landscape
+
+    @Composable
+    fun viewSwitch(modifier: Modifier) {
+        SegmentedControl(
+            listOf(
+                AgendaView.DAY to stringResource(R.string.schedule_day),
+                AgendaView.WEEK to stringResource(R.string.schedule_week),
+                AgendaView.MONTH to stringResource(R.string.schedule_month),
+            ),
+            view,
+            { viewName = it.name },
+            stringResource(R.string.tab_schedule),
+            modifier,
+            size = ControlSize.SM,
+        )
+    }
     Box(
         Modifier
             .fillMaxSize()
@@ -224,6 +243,8 @@ fun AgendaScreen(nav: NavHostController) {
                             Icon(IconName.CHEVRON_DOWN, tint = c.inkMuted, size = Size.iconSm)
                         }
                     }
+                    // Sideways the header is one row, leaving the height to the content (AC-017-8).
+                    if (landscape) viewSwitch(Modifier.weight(1.2f))
                     Button(
                         stringResource(R.string.schedule_today),
                         { selectedText = today.toString() },
@@ -236,23 +257,29 @@ fun AgendaScreen(nav: NavHostController) {
                         app.tutora.designsystem.components.IconButtonVariant.SUNKEN,
                     )
                 }
-                SegmentedControl(
-                    listOf(
-                        AgendaView.DAY to stringResource(R.string.schedule_day),
-                        AgendaView.WEEK to stringResource(R.string.schedule_week),
-                        AgendaView.MONTH to stringResource(R.string.schedule_month),
-                    ),
-                    view,
-                    { viewName = it.name },
-                    stringResource(R.string.tab_schedule),
-                    size = ControlSize.SM,
-                )
+                if (!landscape) viewSwitch(Modifier)
                 if (view != AgendaView.MONTH) WeekPicker(selected, today, { selectedText = it.toString() }, byDay)
             }
             if (view == AgendaView.DAY) {
                 Column(Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3)) { DayHeader(selected, today, dayLessons) }
             }
             when {
+                view == AgendaView.MONTH && landscape ->
+                    // Sideways: the fitted grid on the left, the chosen day's classes on the right,
+                    // both in view without scrolling the page (AC-017-10).
+                    TwoPane(
+                        start = {
+                            MonthView(month, cells, selected, today, byDay, { selectedText = it.toString() }, fill = true)
+                        },
+                        end = {
+                            Column(
+                                Modifier.padding(bottom = Size.fab + Spacing.s7),
+                                verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+                            ) { MonthDayList(selected, today, byDay) { open(it) } }
+                        },
+                        modifier = Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s2),
+                        scrollStart = false,
+                    )
                 view == AgendaView.MONTH ->
                     Column(
                         // The last row stays clear of the floating +.
@@ -261,14 +288,8 @@ fun AgendaScreen(nav: NavHostController) {
                             .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3, bottom = Size.fab + Spacing.s7),
                         verticalArrangement = Arrangement.spacedBy(Spacing.s3),
                     ) {
-                        MonthView(
-                            month,
-                            cells,
-                            selected,
-                            today,
-                            byDay,
-                            { selectedText = it.toString() },
-                        ) { open(it) }
+                        MonthView(month, cells, selected, today, byDay, { selectedText = it.toString() })
+                        MonthDayList(selected, today, byDay) { open(it) }
                     }
                 // Semana: one endless list of days, like Teams' agenda in Tutora's look (Victor, 4 Nov 2026).
                 view == AgendaView.WEEK ->
@@ -281,8 +302,9 @@ fun AgendaScreen(nav: NavHostController) {
                         busyBetween = { a, b -> services.calendar.busy(a, b) },
                         onSelectDay = { selectedText = it.toString() },
                         onOpen = { open(it) },
-                        // Below the top card's rounded edge, so the pinned day is never cut.
-                        modifier = Modifier.padding(top = Spacing.s3),
+                        // Below the top card's rounded edge, so the pinned day is never cut; at the
+                        // readable width when the phone is sideways (AC-017-9).
+                        modifier = Modifier.readableWidth().padding(top = Spacing.s3),
                     )
                 lessons.isEmpty() && busyEvents.none { !it.marked } ->
                     Column(Modifier.padding(horizontal = Spacing.s5)) {
@@ -374,17 +396,17 @@ private fun DayHeader(
  * (AC-016-16 to 19, 23).
  */
 @Composable
-private fun MonthView(
+private fun androidx.compose.foundation.layout.ColumnScope.MonthView(
     month: YearMonth,
     cells: List<app.tutora.domain.MonthCell>,
     selected: LocalDate,
     today: LocalDate,
     byDay: Map<LocalDate, List<Lesson>>,
     onSelect: (LocalDate) -> Unit,
-    onOpen: (Lesson) -> Unit,
+    /** Sideways the grid fills the height it is given, its days as large as fit (AC-017-10). */
+    fill: Boolean = false,
 ) {
     val language = currentLanguage()
-    val zone = LocalServices.current.zone
     val pending = rememberToConfirm()
     val dots = dayDots(byDay, today)
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -434,6 +456,7 @@ private fun MonthView(
         monthYear(month.firstDay, language),
         // Swiping changes month, within the same limits as ‹ › (AC-016-23; Victor, 4 Nov 2026).
         page = month.year * 12 + month.month.ordinal,
+        modifier = if (fill) Modifier.weight(1f) else Modifier,
         swipeLabels = stringResource(R.string.schedule_prevMonth) to stringResource(R.string.schedule_nextMonth),
         onSwipe = { step ->
             val target = if (step > 0) month.plusMonth() else month.minusMonth()
@@ -446,8 +469,21 @@ private fun MonthView(
                 DotTone.ACCENT to stringResource(R.string.schedule_kindPrivate),
                 DotTone.VIOLET to stringResource(R.string.schedule_kindGroup),
             ),
+        fill = fill,
     )
-    // The chosen day's classes, cancelled ones included, with their count and expected value.
+}
+
+/** The chosen day's classes, cancelled ones included, with their count and expected value. */
+@Composable
+private fun MonthDayList(
+    selected: LocalDate,
+    today: LocalDate,
+    byDay: Map<LocalDate, List<Lesson>>,
+    onOpen: (Lesson) -> Unit,
+) {
+    val language = currentLanguage()
+    val zone = LocalServices.current.zone
+    val pending = rememberToConfirm()
     val dayLessons = byDay[selected].orEmpty()
     val previsto = expected(dayLessons.mapNotNull { it.counted() })
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

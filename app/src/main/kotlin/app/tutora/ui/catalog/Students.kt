@@ -108,6 +108,8 @@ import kotlinx.coroutines.launch
 fun StudentDetailScreen(
     nav: NavHostController,
     id: String,
+    /** Back, or closing Cadastro's right side when the phone is sideways (AC-017-11). */
+    onBack: () -> Unit = { nav.popBackStack() },
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
@@ -125,13 +127,13 @@ fun StudentDetailScreen(
         stringResource(R.string.students_detail),
         "student-detail",
         variant = HeaderVariant.PUSH,
-        onBack = { nav.popBackStack() },
+        onBack = onBack,
         // Arquivar sits beside the pencil (AC-004-23).
         actions =
             listOfNotNull(
                 if (!archived) {
                     HeaderAction(IconName.ARCHIVE, stringResource(R.string.catalog_archive)) {
-                        scope.launch { services.catalog.archive(Kind.STUDENT, id).also { nav.popBackStack() } }
+                        scope.launch { services.catalog.archive(Kind.STUDENT, id).also { onBack() } }
                     }
                 } else {
                     null
@@ -545,6 +547,8 @@ private fun ColorPicker(
 fun GroupDetailScreen(
     nav: NavHostController,
     id: String,
+    /** Back, or closing Cadastro's right side when the phone is sideways (AC-017-11). */
+    onBack: () -> Unit = { nav.popBackStack() },
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
@@ -562,12 +566,12 @@ fun GroupDetailScreen(
         stringResource(R.string.groups_detail),
         "group-detail",
         variant = HeaderVariant.PUSH,
-        onBack = { nav.popBackStack() },
+        onBack = onBack,
         actions =
             listOfNotNull(
                 if (!archived) {
                     HeaderAction(IconName.ARCHIVE, stringResource(R.string.catalog_archive)) {
-                        scope.launch { services.catalog.archive(Kind.GROUP, id).also { nav.popBackStack() } }
+                        scope.launch { services.catalog.archive(Kind.GROUP, id).also { onBack() } }
                     }
                 } else {
                     null
@@ -581,7 +585,7 @@ fun GroupDetailScreen(
                 archived = true,
                 onArchive = {},
                 onRestore = { scope.launch { services.catalog.restore(Kind.GROUP, id) } },
-                onRemove = { scope.launch { services.catalog.removePermanently(Kind.GROUP, id).also { nav.popBackStack() } } },
+                onRemove = { scope.launch { services.catalog.removePermanently(Kind.GROUP, id).also { onBack() } } },
             )
         }
         DetailIdentity(g.name, listOfNotNull(g.subject, place?.let { placeName(it) }).joinToString(" · ")) {
