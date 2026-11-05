@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,7 +69,6 @@ import app.tutora.domain.LessonStatus
 import app.tutora.domain.MAX_DAY_DOTS
 import app.tutora.domain.agendaHorizon
 import app.tutora.domain.busyFor
-import app.tutora.domain.canShowMonth
 import app.tutora.domain.counted
 import app.tutora.domain.dayDots
 import app.tutora.domain.dayKind
@@ -86,11 +86,13 @@ import app.tutora.ui.LessonNew
 import app.tutora.ui.clockTime
 import app.tutora.ui.countText
 import app.tutora.ui.dayMonthLong
+import app.tutora.ui.dayShortMonth
 import app.tutora.ui.minutesText
 import app.tutora.ui.monthShort
 import app.tutora.ui.monthYear
 import app.tutora.ui.shortDate
 import app.tutora.ui.weekdayNarrow
+import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
@@ -131,17 +133,40 @@ fun AgendaScreen(nav: NavHostController) {
     var selectedText by rememberSaveable { mutableStateOf(today.toString()) }
     var viewName by rememberSaveable { mutableStateOf(AgendaView.DAY.name) }
     var picking by rememberSaveable { mutableStateOf(false) }
+    // A forecast class has no page of its own: a sheet says what it is and opens its series (AC-016-35).
+    var forecast by remember { mutableStateOf<Lesson?>(null) }
+    val scope = rememberCoroutineScope()
+
+    fun open(l: Lesson) {
+        if (l.forecast) forecast = l else nav.navigate(LessonDetail(l.id))
+    }
+    forecast?.let { l ->
+        BottomSheet(
+            stringResource(R.string.schedule_forecastTitle),
+            { forecast = null },
+            subtitle = stringResource(R.string.schedule_forecastBody, dayShortMonth(agendaHorizon(today), language)),
+            actions =
+                listOf { m ->
+                    Button(stringResource(R.string.schedule_forecastSeries), {
+                        forecast = null
+                        scope.launch {
+                            val id = l.ruleId?.let { services.scheduleRepo.lastOfRule(it) }
+                            if (id != null) nav.navigate(LessonDetail(id))
+                        }
+                    }, m)
+                },
+        )
+    }
     val view = AgendaView.valueOf(viewName)
-    // Never past the horizon, whichever way a date got here (a week's last days, a saved state):
-    // Mês, Dia and Semana always show days that are planned (Victor, 4 Nov 2026).
-    val selected = LocalDate.parse(selectedText).let { if (it > horizon) horizon else it }
+    // Any date opens: past the horizon its classes are forecasts from their series (AC-016-35).
+    val selected = LocalDate.parse(selectedText)
     val month = YearMonth(selected.year, selected.month)
     val cells = remember(month) { monthCells(month) }
     val monday = weekStart(selected)
     val first = if (view == AgendaView.MONTH) cells.first().date else monday
     val last = if (view == AgendaView.MONTH) cells.last().date else monday.plus(DatePeriod(days = 6))
     val range = remember(first, last) { dayRange(first, last, zone) }
-    val lessons by remember(range) { services.scheduleRepo.between(range.first, range.second) }.collectAsState(initial = emptyList())
+    val lessons by remember(first, last) { services.agendaBetween(first, last) }.collectAsState(initial = emptyList())
     val byDay = byLocalDay(lessons, zone)
     // Other appointments, on Dia and Semana only (AC-012-17).
     val busyEvents by remember(range, view) {
@@ -217,7 +242,7 @@ fun AgendaScreen(nav: NavHostController) {
                     stringResource(R.string.tab_schedule),
                     size = ControlSize.SM,
                 )
-                if (view != AgendaView.MONTH) WeekPicker(selected, today, { selectedText = it.toString() }, byDay, horizon)
+                if (view != AgendaView.MONTH) WeekPicker(selected, today, { selectedText = it.toString() }, byDay)
             }
             if (view == AgendaView.DAY) {
                 Column(Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3)) { DayHeader(selected, today, dayLessons) }
@@ -238,20 +263,19 @@ fun AgendaScreen(nav: NavHostController) {
                             today,
                             byDay,
                             { selectedText = it.toString() },
-                        ) { nav.navigate(LessonDetail(it.id)) }
+                        ) { open(it) }
                     }
                 // Semana: one endless list of days, like Teams' agenda in Tutora's look (Victor, 4 Nov 2026).
                 view == AgendaView.WEEK ->
                     WeekList(
                         selected = selected,
                         today = today,
-                        horizon = horizon,
                         zone = zone,
                         now = now,
-                        lessonsBetween = { a, b -> services.scheduleRepo.between(a, b) },
+                        lessonsBetween = { a, b -> services.agendaBetween(a, b) },
                         busyBetween = { a, b -> services.calendar.busy(a, b) },
                         onSelectDay = { selectedText = it.toString() },
-                        onOpen = { nav.navigate(LessonDetail(it.id)) },
+                        onOpen = { open(it) },
                         // Below the top card's rounded edge, so the pinned day is never cut.
                         modifier = Modifier.padding(top = Spacing.s3),
                     )
@@ -280,7 +304,7 @@ fun AgendaScreen(nav: NavHostController) {
                             compact = view == AgendaView.WEEK,
                             startHour = startHour,
                             scroll = scroll,
-                            onOpen = { nav.navigate(LessonDetail(it.id)) },
+                            onOpen = { open(it) },
                             chosen = selected,
                             busy = { d -> busyFor(busyEvents, d, zone) },
                         )
@@ -373,7 +397,7 @@ private fun MonthView(
             stringResource(R.string.schedule_nextMonth),
             { onSelect(dayIn(month.plusMonth(), today)) },
             variant = IconButtonVariant.PLAIN,
-            enabled = canShowMonth(month.plusMonth(), today),
+            // Any month ahead: past the horizon its classes are forecasts (AC-016-35).
         )
     }
     val days =
@@ -390,8 +414,8 @@ private fun MonthView(
                     countText(R.string.schedule_count_zero, R.plurals.schedule_count, kinds.size),
                 ),
                 today = cell.date == today,
-                // A neighbor's day opens its month, up to the horizon (Victor, 29 Oct 2026).
-                enabled = canShowMonth(YearMonth(cell.date.year, cell.date.month), today),
+                // A neighbor's day opens its month (Victor, 29 Oct 2026).
+                enabled = true,
             )
         }
     MonthGrid(
@@ -405,7 +429,7 @@ private fun MonthView(
         swipeLabels = stringResource(R.string.schedule_prevMonth) to stringResource(R.string.schedule_nextMonth),
         onSwipe = { step ->
             val target = if (step > 0) month.plusMonth() else month.minusMonth()
-            if (step < 0 || canShowMonth(target, today)) onSelect(dayIn(target, today))
+            onSelect(dayIn(target, today))
         },
         legend =
             listOf(
@@ -416,7 +440,7 @@ private fun MonthView(
             ),
     )
     // The chosen day's classes, cancelled ones included, with their count and expected value.
-    val dayLessons = if (selected <= agendaHorizon(today)) byDay[selected].orEmpty() else emptyList()
+    val dayLessons = byDay[selected].orEmpty()
     val previsto = expected(dayLessons.mapNotNull { it.counted() })
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -473,14 +497,14 @@ private fun MonthPickerSheet(
     val language = currentLanguage()
     val zone = services.zone
     var year by rememberSaveable { mutableIntStateOf(shown.year) }
-    val range = remember(year) { dayRange(LocalDate(year, 1, 1), LocalDate(year, 12, 31), zone) }
-    val lessons by remember(range) { services.scheduleRepo.between(range.first, range.second) }.collectAsState(initial = emptyList())
-    val horizon = agendaHorizon(today)
+    val lessons by remember(year) {
+        services.agendaBetween(LocalDate(year, 1, 1), LocalDate(year, 12, 31))
+    }.collectAsState(initial = emptyList())
+    // Forecast classes count too: a month ahead shows what its series will bring (AC-016-35).
     val counts =
         lessons
             .filter { it.dayKind() != null }
             .map { localOf(it.startAt, zone).date }
-            .filter { it <= horizon }
             .groupingBy { it.month }
             .eachCount()
     BottomSheet(stringResource(R.string.schedule_pickTitle), onDismiss) {
@@ -493,7 +517,7 @@ private fun MonthPickerSheet(
                     monthShort(ym.firstDay, language),
                     count,
                     "${monthYear(ym.firstDay, language)}, $count",
-                    canShowMonth(ym, today),
+                    true,
                 )
             },
             if (shown.year == year) shown.month.ordinal else null,
@@ -504,7 +528,7 @@ private fun MonthPickerSheet(
             { year += 1 },
             stringResource(R.string.schedule_backToday),
             onToday,
-            nextEnabled = canShowMonth(YearMonth(year + 1, Month.JANUARY), today),
+            nextEnabled = true,
         )
     }
 }

@@ -4,10 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -22,9 +20,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import app.tutora.R
-import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.AgendaCard
 import app.tutora.designsystem.components.BusyBlock
 import app.tutora.designsystem.components.DayHeading
@@ -46,7 +42,6 @@ import app.tutora.domain.weekStart
 import app.tutora.domain.worth
 import app.tutora.ui.clockTime
 import app.tutora.ui.countText
-import app.tutora.ui.dayShortMonth
 import app.tutora.ui.monthShort
 import app.tutora.ui.weekdayLong
 import kotlinx.coroutines.flow.Flow
@@ -99,11 +94,10 @@ private const val LOAD_AHEAD = 6
 fun WeekList(
     selected: LocalDate,
     today: LocalDate,
-    horizon: LocalDate,
     zone: String,
     /** Now, so "Próxima" marks the next class, not the next one of the week being shown. */
     now: String,
-    lessonsBetween: (String, String) -> Flow<List<Lesson>>,
+    lessonsBetween: (LocalDate, LocalDate) -> Flow<List<Lesson>>,
     busyBetween: (Long, Long) -> Flow<List<BusyEvent>>,
     onSelectDay: (LocalDate) -> Unit,
     onOpen: (Lesson) -> Unit,
@@ -112,15 +106,13 @@ fun WeekList(
     val language = currentLanguage()
     val state = rememberLazyListState()
 
-    @Suppress("NAME_SHADOWING")
-    val selected = if (selected > horizon) horizon else selected
     // The days loaded, whole weeks from Monday; grows at either end (saved across rotation).
     var fromText by rememberSaveable { mutableStateOf(weekStart(selected).toString()) }
-    var toText by rememberSaveable { mutableStateOf(minOf(weekStart(selected).plus(DatePeriod(days = 6)), horizon).toString()) }
+    var toText by rememberSaveable { mutableStateOf(weekStart(selected).plus(DatePeriod(days = 6)).toString()) }
     val from = LocalDate.parse(fromText)
     val to = LocalDate.parse(toText)
     val range = remember(from, to) { dayRange(from, to, zone) }
-    val lessons by remember(range) { lessonsBetween(range.first, range.second) }.collectAsState(initial = emptyList())
+    val lessons by remember(from, to) { lessonsBetween(from, to) }.collectAsState(initial = emptyList())
     val busy by remember(range) {
         busyBetween(instantOf(range.first).toEpochMilliseconds(), instantOf(range.second).toEpochMilliseconds())
     }.collectAsState(initial = emptyList())
@@ -169,7 +161,7 @@ fun WeekList(
             return@LaunchedEffect
         }
         if (selected < from) fromText = weekStart(selected).toString()
-        if (selected > to) toText = minOf(weekStart(selected).plus(DatePeriod(days = 6)), horizon).toString()
+        if (selected > to) toText = weekStart(selected).plus(DatePeriod(days = 6)).toString()
         // Waits for the day's week to be loaded and laid out.
         val at = snapshotFlow { currentHeaders[selected] }.filterNotNull().first()
         jumping = true
@@ -188,7 +180,8 @@ fun WeekList(
             }
         }
     }
-    // Endless: near the bottom the next week loads (up to the horizon), near the top the one before.
+    // Endless both ways: near the bottom the next week loads, near the top the one before; past
+    // the horizon its classes are forecasts from their series (AC-016-35).
     LaunchedEffect(Unit) {
         snapshotFlow {
             val info = state.layoutInfo
@@ -196,9 +189,7 @@ fun WeekList(
             Triple(state.firstVisibleItemIndex, last, info.totalItemsCount)
         }.collect { (first, last, total) ->
             val end = LocalDate.parse(toText)
-            if (total > 0 && last >= total - LOAD_AHEAD && end < horizon) {
-                toText = minOf(end.plus(WEEK), horizon).toString()
-            }
+            if (total > 0 && last >= total - LOAD_AHEAD) toText = end.plus(WEEK).toString()
             if (first <= 1 && state.isScrollInProgress && !jumping) {
                 fromText = LocalDate.parse(fromText).minus(WEEK).toString()
             }
@@ -263,17 +254,6 @@ fun WeekList(
                             )
                         }
                 }
-            }
-        }
-        if (to >= horizon) {
-            item(key = "end") {
-                Text(
-                    stringResource(R.string.schedule_listEnd, dayShortMonth(horizon, language)),
-                    style = TutoraTheme.type.meta,
-                    color = TutoraTheme.colors.inkMuted,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.s4).testTag("week-end"),
-                )
             }
         }
     }

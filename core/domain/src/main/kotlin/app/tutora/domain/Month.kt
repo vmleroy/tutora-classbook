@@ -41,15 +41,6 @@ fun agendaHorizon(today: LocalDate): LocalDate {
     return LocalDate(eight.year, eight.month, 1).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
 }
 
-/** Whether [month] may be shown: any month up to the one that holds the horizon (AC-016-23). */
-fun canShowMonth(
-    month: YearMonth,
-    today: LocalDate,
-): Boolean {
-    val h = agendaHorizon(today)
-    return month <= YearMonth(h.year, h.month)
-}
-
 /** The kind of dot a class puts under its day; cancelled and missed classes put none (AC-016-17). */
 enum class DayKind { SCHOOL, DONE, PRIVATE, GROUP }
 
@@ -70,9 +61,8 @@ fun dayDots(
     byDay: Map<LocalDate, List<Lesson>>,
     today: LocalDate,
 ): Map<LocalDate, List<DayKind>> {
-    val horizon = agendaHorizon(today)
+    // Past the horizon the classes are forecasts from their series, and they get their dots too (AC-016-35).
     return byDay
-        .filterKeys { it <= horizon }
         .mapValues { (_, lessons) -> lessons.mapNotNull { it.dayKind() } }
         .filterValues { it.isNotEmpty() }
 }

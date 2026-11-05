@@ -152,7 +152,9 @@
     <string name="schedule_plusSchool">+ school</string>
     <string name="schedule_prevWeek">Previous week</string>
     <string name="schedule_noClassesDay">No classes</string>
-    <string name="schedule_listEnd">The schedule goes up to %1$s</string>
+    <string name="schedule_forecastTitle">Forecast class</string>
+    <string name="schedule_forecastBody">This class of the series doesn\'t exist yet: classes are created up to %1$s. It becomes a real class as that date comes near. To change its time or value, edit the series.</string>
+    <string name="schedule_forecastSeries">See the series</string>
     <string name="schedule_nextWeek">Next week</string>
     <string name="schedule_month">Month</string>
     <string name="schedule_prevMonth">Previous month</string>

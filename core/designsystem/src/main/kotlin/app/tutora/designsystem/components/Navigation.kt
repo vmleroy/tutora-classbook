@@ -237,7 +237,16 @@ fun WeekStrip(
  * MUTED is a cancelled or missed class: neutral fill and the title struck through. LIVE is the
  * class running now: accent outline and "Ao vivo", like NEXT with its own word.
  */
-enum class BlockState { DEFAULT, DONE, NEXT, MUTED, LIVE }
+enum class BlockState {
+    DEFAULT,
+    DONE,
+    NEXT,
+    MUTED,
+    LIVE,
+
+    /** A class worked out from its series past the planned days: lighter, marked "Prevista" (AC-016-35). */
+    FORECAST,
+}
 
 /** A lesson on the Agenda grid, sized by its duration; the screen places it. */
 @Composable
@@ -260,12 +269,14 @@ fun AgendaBlock(
             else -> null
         }
     val muted = state == BlockState.MUTED
+    val forecast = state == BlockState.FORECAST
     val ink = if (muted) c.inkMuted else t.ink
     Column(
         modifier =
             modifier
                 .fillMaxWidth()
                 .height(maxOf(height, Size.agendaMin))
+                .alpha(if (forecast) Opacity.disabled else 1f)
                 .clip(shape)
                 .background(if (muted) c.surfaceSunken else t.soft)
                 .then(if (badge != null) Modifier.border(Size.borderStrong, c.accent, shape) else Modifier)
@@ -291,6 +302,7 @@ fun AgendaBlock(
                 modifier = Modifier.weight(1f, fill = false),
             )
             if (badge != null) Badge(badge, tone = BadgeTone.ACCENT)
+            if (forecast) Badge(stringResource(R.string.ds_forecast), tone = BadgeTone.NEUTRAL)
         }
         if (subtitle != null) Text(subtitle, style = TutoraTheme.type.meta, color = ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
@@ -355,15 +367,18 @@ fun AgendaCard(
     val shape = RoundedCornerShape(Radius.xl)
     val outlined = state == BlockState.NEXT || state == BlockState.LIVE
     val muted = state == BlockState.MUTED
+    val forecast = state == BlockState.FORECAST
     val flag =
         when (state) {
             BlockState.NEXT -> stringResource(R.string.ds_next)
             BlockState.LIVE -> stringResource(R.string.ds_live)
+            BlockState.FORECAST -> stringResource(R.string.ds_forecast)
             else -> null
         }
     androidx.compose.foundation.layout.Row(
         modifier
             .fillMaxWidth()
+            .alpha(if (forecast) Opacity.disabled else 1f)
             .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
             .clip(shape)
             .background(c.surface, shape)

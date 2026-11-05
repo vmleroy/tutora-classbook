@@ -83,6 +83,27 @@ class ScheduleTest {
     }
 
     @Test
+    fun `AC-016-35 past the stored days a series is forecast, never stored, never twice, and ends with it`() =
+        runTest {
+            t.schedule.scheduleLesson(draft())
+            val repo = ScheduleRepository(t.db)
+            // Stored to 31 Dec; from December to January only January's Mondays are forecast.
+            val forecast = repo.forecastBetween(kotlinx.datetime.LocalDate(2026, 12, 1), kotlinx.datetime.LocalDate(2027, 1, 31)).first()
+            assertEquals(
+                listOf("2027-01-04", "2027-01-11", "2027-01-18", "2027-01-25"),
+                forecast.map { localOf(it.startAt, zone).date.toString() },
+            )
+            assertTrue(forecast.all { it.forecast })
+            assertEquals(10, all().size)
+            // Ending the series on 28 Dec ends its forecasts too.
+            val last = all().last().id
+            t.schedule.removeLesson(last, app.tutora.usecases.Scope.FOLLOWING)
+            assertTrue(
+                repo.forecastBetween(kotlinx.datetime.LocalDate(2027, 1, 1), kotlinx.datetime.LocalDate(2027, 1, 31)).first().isEmpty(),
+            )
+        }
+
+    @Test
     fun `AC-005-2 only the student's linked places, or the group's place, are allowed`() =
         runTest {
             val p =
