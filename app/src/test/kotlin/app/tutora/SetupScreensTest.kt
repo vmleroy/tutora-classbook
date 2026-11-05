@@ -17,7 +17,6 @@ import app.tutora.domain.Teaching
 import app.tutora.domain.builtinPlace
 import app.tutora.ui.EarningsGraph
 import app.tutora.ui.PlaceEdit
-import app.tutora.ui.SettingsGraph
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -104,7 +103,7 @@ class SetupScreensTest {
     fun `AC-014-20 Como voce da aula changes in Ajustes, and a kind already in use shows again`() {
         teaching(Teaching.PRIVATE)
         h.show(compose)
-        h.go(compose, SettingsGraph)
+        h.go(compose, app.tutora.ui.SettingsGeneral)
         compose.onNodeWithTag("teaching-row").performScrollTo().performClick()
         h.settle(compose)
         compose.onNodeWithContentDescription("Escola ou emprego fixo").performClick()

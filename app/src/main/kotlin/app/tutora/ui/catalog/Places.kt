@@ -450,7 +450,7 @@ private fun PlaceForm(
                 Field(stringResource(R.string.places_commission)) {
                     Stepper(d.commissionBp.toLong(), {
                         d = d.copy(commissionBp = it.toInt())
-                    }, step = 500, min = 0, max = MAX_COMMISSION_BP.toLong(), format = { "${it / 100}%" })
+                    }, step = 500, min = 0, max = MAX_COMMISSION_BP.toLong(), format = { "${it / 100}%" }, typedScale = 100)
                 }
             }
             if (d.payer == Payer.PLACE) {

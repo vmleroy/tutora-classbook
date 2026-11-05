@@ -590,7 +590,7 @@ class PaymentScreensTest {
         creditsOn()
         runBlocking { h.services.payments.giveBonus(anaRef, 5_000, 0) }
         h.show(compose)
-        h.go(compose, app.tutora.ui.SettingsGraph)
+        h.go(compose, app.tutora.ui.SettingsPayments)
         compose.onNodeWithContentDescription("Créditos e bônus").performScrollTo().performClick()
         h.settle(compose)
         exists("1 aluno tem bônus")

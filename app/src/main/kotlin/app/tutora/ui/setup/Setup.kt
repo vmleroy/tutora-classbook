@@ -37,6 +37,7 @@ import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
+import app.tutora.designsystem.components.MoneyField
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.Stepper
@@ -153,10 +154,11 @@ fun SetupScreen(nav: NavHostController) {
     var online by rememberSaveable { mutableLongStateOf(SETUP_ONLINE_CENTS) }
     var home by rememberSaveable { mutableLongStateOf(SETUP_HOME_CENTS) }
     var travel by rememberSaveable { mutableStateOf(TravelMode.VARIES) }
+    var travelCents by rememberSaveable { mutableLongStateOf(SETUP_TRAVEL_CENTS) }
     var remind by rememberSaveable { mutableStateOf(true) }
     val chosen = teaching.mapNotNull(Teaching::fromKey).toSet()
 
-    fun choices() = SetupChoices(language, chosen, online, home, travel, remind)
+    fun choices() = SetupChoices(language, chosen, online, home, travel, travelCents, remind)
 
     fun finish(then: Any?) =
         scope.launch {
@@ -240,14 +242,23 @@ fun SetupScreen(nav: NavHostController) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                     listOf(
                         TravelMode.VARIES to stringResource(R.string.setup_travelVaries),
-                        TravelMode.FIXED to "${stringResource(R.string.setup_travelFixed)} ${formatMoney(SETUP_TRAVEL_CENTS, language)}",
+                        TravelMode.FIXED to stringResource(R.string.setup_travelFixed),
                         TravelMode.NONE to stringResource(R.string.setup_travelNone),
                     ).forEach { (m, label) -> Chip(label, travel == m, { travel = m }) }
+                }
+                // Fixo takes the amount typed, R$ 20,00 at first (AC-014-25).
+                if (travel == TravelMode.FIXED) {
+                    MoneyField(
+                        stringResource(R.string.setup_travelAmount),
+                        travelCents,
+                        { travelCents = it ?: 0 },
+                        Modifier.testTag("setup-travel-amount"),
+                    )
                 }
                 Text(
                     when (travel) {
                         TravelMode.VARIES -> stringResource(R.string.setup_travelVariesHint)
-                        TravelMode.FIXED -> stringResource(R.string.setup_travelFixedHint, formatMoney(SETUP_TRAVEL_CENTS, language))
+                        TravelMode.FIXED -> stringResource(R.string.setup_travelFixedHint, formatMoney(travelCents, language))
                         TravelMode.NONE -> stringResource(R.string.setup_travelNoneHint)
                     },
                     style = TutoraTheme.type.meta,
@@ -359,6 +370,7 @@ private fun PriceRow(
             format = { formatMoney(it, language, compact = true) },
             valueLabel = place,
             size = ControlSize.SM,
+            input = app.tutora.designsystem.components.StepperInput.MONEY,
         )
     }
 }
@@ -370,7 +382,7 @@ private fun Summary(c: SetupChoices) {
     val travel =
         when (c.travel) {
             TravelMode.VARIES -> " ${stringResource(R.string.setup_plusTravel)}"
-            TravelMode.FIXED -> " + ${formatMoney(SETUP_TRAVEL_CENTS, language)}"
+            TravelMode.FIXED -> " + ${formatMoney(c.travelCents, language)}"
             TravelMode.NONE -> ""
         }
     val line =

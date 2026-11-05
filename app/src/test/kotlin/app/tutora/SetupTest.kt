@@ -80,4 +80,11 @@ class SetupTest {
             assertEquals(TravelMode.VARIES.name, place(BuiltinPlace.STUDENT_HOME.id).travelMode)
             assertFalse(setup.needed())
         }
+
+    @Test
+    fun `AC-014-25 Fixo takes the amount the teacher types`() =
+        runTest {
+            setup.save(SetupChoices(Language.PT_BR, travel = TravelMode.FIXED, travelCents = 3_500))
+            assertEquals(3_500L, place(BuiltinPlace.STUDENT_HOME.id).travelFeeCents)
+        }
 }

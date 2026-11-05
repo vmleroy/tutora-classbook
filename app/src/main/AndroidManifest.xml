@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Início automático and the reminders set their alarms again after a restart (AC-007-22, AC-014-15). -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- The reminder before class on time, once the teacher allows it (AC-014-27). Builds with
+         tutora.exactAlarm=use also get USE_EXACT_ALARM, from src/exactAlarm. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!-- Classes copied into a calendar of the phone, and other appointments as busy time (spec 012). -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
@@ -60,6 +63,8 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <!-- Exact alarms just allowed: set the class reminder again, now on time. -->
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
             </intent-filter>
         </receiver>
     </application>

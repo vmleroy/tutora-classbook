@@ -76,6 +76,7 @@ import app.tutora.designsystem.components.SelectField
 import app.tutora.designsystem.components.StatTile
 import app.tutora.designsystem.components.StatTone
 import app.tutora.designsystem.components.Stepper
+import app.tutora.designsystem.components.StepperInput
 import app.tutora.designsystem.components.SummaryCard
 import app.tutora.designsystem.components.SummaryTile
 import app.tutora.designsystem.components.SummaryTone
@@ -227,6 +228,17 @@ fun GallerySections() {
     Section("Stepper") {
         Stepper(minutes, { minutes = it }, step = 15, min = 15, max = 300, format = { "$it min" })
         Stepper(500, {}, step = 500, size = ControlSize.SM, format = { "R$ ${it / 100},00" }, onPressValue = {}, valueLabel = "Valor")
+        // Tap the value to type it: money fills from the right (AC-014-29).
+        var price by remember { mutableLongStateOf(10_000L) }
+        Stepper(
+            price,
+            { price = it },
+            step = 500,
+            min = 500,
+            format = { "R$ ${it / 100}" },
+            input = StepperInput.MONEY,
+            valueLabel = "Preço",
+        )
     }
     Section("TextField") {
         TextField("Nome", name, { name = it }, placeholder = "Ex.: Ana Souza", helper = "Como aparece nos relatórios")
@@ -276,6 +288,14 @@ fun GallerySections() {
                 MonthBar(m, v * 100, v * 80)
             },
             "Últimos 6 meses",
+        )
+        // Twelve months scroll sideways; two are chosen to compare (Evolução).
+        var picked by remember { mutableStateOf(setOf(8, 9)) }
+        MonthBars(
+            (1..12).map { MonthBar(it.toString().padStart(2, '0'), (2_000L + it * 300) * 100, (1_800L + it * 250) * 100) },
+            "Evolução",
+            selected = picked,
+            onSelect = { i -> picked = if (i in picked) picked - i else (picked + i).toList().takeLast(2).toSet() },
         )
     }
     Section("Card") {

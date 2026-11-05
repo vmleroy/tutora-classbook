@@ -3,6 +3,7 @@ package app.tutora.data
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Query
+import app.tutora.domain.Bar
 import app.tutora.domain.ClassRecord
 import app.tutora.domain.CreditEntry
 import app.tutora.domain.EarnedClass
@@ -19,6 +20,7 @@ import app.tutora.domain.Received
 import app.tutora.domain.Salary
 import app.tutora.domain.Tip
 import app.tutora.domain.TypeFilter
+import app.tutora.domain.bars
 import app.tutora.domain.bonusCover
 import app.tutora.domain.earnedOf
 import app.tutora.domain.earningsType
@@ -26,6 +28,8 @@ import app.tutora.domain.isoText
 import app.tutora.domain.localOf
 import app.tutora.domain.localToInstant
 import app.tutora.domain.monthOf
+import app.tutora.domain.monthSpans
+import app.tutora.domain.periodSpans
 import app.tutora.domain.sources
 import app.tutora.domain.summarize
 import app.tutora.domain.trend
@@ -250,7 +254,47 @@ class EarningsRepository(
                 sources(classes, salaries, months, filter, tipsIn),
                 classes.filter { filter.matches(it.type) },
                 received.filter { inPeriod(it.day) && filter.matches(it.type) },
+                bars(periodSpans(period), all, received, salaries, filter, today, tips),
             )
+        }
+    }
+
+    /** Earned and received month by month from [firstMonth], for Evolução (AC-014-31). */
+    fun evolution(
+        firstMonth: LocalDate,
+        count: Int,
+        filter: TypeFilter,
+        today: LocalDate,
+        zone: String,
+    ): Flow<List<Bar>> {
+        val spans = monthSpans(firstMonth, count)
+        val from = spans.first().first
+        val to = spans.last().second
+        return combine(
+            classes(from, to, zone),
+            dao.observeReceived(instant(from, zone), instant(to.plus(DatePeriod(days = 1)), zone)),
+            dao.observeSchools(),
+            tips(from, to, zone),
+        ) { all, paid, schools, tips ->
+            val received =
+                paid.map { r ->
+                    Received(
+                        localOf(r.paidAt, zone).date,
+                        r.amountCents,
+                        r.kind?.let { earningsType(PlaceKind.fromKey(it)) } ?: EarningsType.PRIVATE,
+                    )
+                }
+            val salaries =
+                schools.map { s ->
+                    Salary(
+                        s.id,
+                        s.name.orEmpty(),
+                        s.salaryCents,
+                        localOf(s.createdAt, zone).date,
+                        s.archivedAt?.let { localOf(it, zone).date },
+                    )
+                }
+            bars(spans, all, received, salaries, filter, today, tips)
         }
     }
 }

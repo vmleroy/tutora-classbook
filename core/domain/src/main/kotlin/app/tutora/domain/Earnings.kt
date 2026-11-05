@@ -2,6 +2,7 @@ package app.tutora.domain
 
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
@@ -224,6 +225,8 @@ data class EarningsView(
     /** The period's classes and payments, for the earnings report (spec 010). */
     val classes: List<EarnedClass> = emptyList(),
     val received: List<Received> = emptyList(),
+    /** The period's bars: weeks of a month, months of a quarter or a year (AC-014-30). */
+    val bars: List<Bar> = emptyList(),
 )
 
 /**
@@ -254,7 +257,75 @@ fun summarize(
     )
 }
 
-/** Six months ending at [last]'s month: earned and received in each (AC-009-12). */
+/** One bar: earned and received from [first] to [last] (local days). */
+data class Bar(
+    val first: LocalDate,
+    val last: LocalDate,
+    val earned: Cents,
+    val received: Cents,
+)
+
+/**
+ * The spans a period's bars cover (AC-014-30): none for Dia, the weeks of a month (Monday to
+ * Sunday, cut at the month's ends), and the months of a quarter or a year.
+ */
+fun periodSpans(period: Period): List<Pair<LocalDate, LocalDate>> =
+    when (period.kind) {
+        PeriodKind.DAY -> emptyList()
+        PeriodKind.MONTH -> {
+            val spans = mutableListOf<Pair<LocalDate, LocalDate>>()
+            var start = period.first
+            while (start <= period.last) {
+                val toSunday = (7 - start.dayOfWeek.isoDayNumber)
+                val end = minOf(start.plus(DatePeriod(days = toSunday)), period.last)
+                spans += start to end
+                start = end.plus(DatePeriod(days = 1))
+            }
+            spans
+        }
+        else -> monthSpans(period.firstMonth, period.kind.months)
+    }
+
+/** [count] whole months from [firstMonth], for the quarter, the year and Evolução (AC-014-31). */
+fun monthSpans(
+    firstMonth: LocalDate,
+    count: Int,
+): List<Pair<LocalDate, LocalDate>> =
+    (0 until count).map { i ->
+        val m = monthOf(firstMonth).plus(DatePeriod(months = i))
+        m to m.plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
+    }
+
+/**
+ * Earned and received in each span, following [filter]. A school's salary counts in the span
+ * holding its month's first day, once that month has begun (AC-009-5, AC-014-30).
+ */
+fun bars(
+    spans: List<Pair<LocalDate, LocalDate>>,
+    classes: List<EarnedClass>,
+    received: List<Received>,
+    salaries: List<Salary>,
+    filter: TypeFilter,
+    today: LocalDate,
+    tips: List<Tip> = emptyList(),
+): List<Bar> =
+    spans.map { (first, last) ->
+        val inSpan = { d: LocalDate -> d >= first && d <= last }
+        val months = listOf(monthOf(last)).filter { inSpan(it) && it <= monthOf(today) }
+        val s =
+            summarize(
+                classes.filter { inSpan(it.day) },
+                received.filter { inSpan(it.day) },
+                salaries,
+                months,
+                emptyMap(),
+                filter,
+                tips.filter { inSpan(it.day) },
+            )
+        Bar(first, last, s.earned, s.received)
+    }
+
+/** Six months ending at [last]'s month, for the earnings report (spec 010). */
 fun trend(
     last: LocalDate,
     classes: List<EarnedClass>,
@@ -264,21 +335,27 @@ fun trend(
     today: LocalDate,
     tips: List<Tip> = emptyList(),
 ): List<MonthPoint> =
-    (5 downTo 0).map { back ->
-        val month = monthOf(last).minus(DatePeriod(months = back))
-        val inMonth = { d: LocalDate -> monthOf(d) == month }
-        val s =
-            summarize(
-                classes.filter { inMonth(it.day) },
-                received.filter { inMonth(it.day) },
-                salaries,
-                listOf(month).filter { it <= monthOf(today) },
-                emptyMap(),
-                filter,
-                tips.filter { inMonth(it.day) },
-            )
-        MonthPoint(month, s.earned, s.received)
-    }
+    bars(monthSpans(monthOf(last).minus(DatePeriod(months = 5)), 6), classes, received, salaries, filter, today, tips)
+        .map { MonthPoint(it.first, it.earned, it.received) }
+
+/** Two months side by side in Evolução: the later minus the earlier, and that as a percent of the earlier (AC-014-31). */
+data class Comparison(
+    val earlier: Bar,
+    val later: Bar,
+    val difference: Cents,
+    /** Whole percent, rounded half away from zero; null when the earlier month earned nothing. */
+    val percent: Long?,
+)
+
+fun compareBars(
+    a: Bar,
+    b: Bar,
+): Comparison {
+    val (earlier, later) = if (a.first <= b.first) a to b else b to a
+    val diff = later.earned - earlier.earned
+    val percent = if (earlier.earned > 0) roundHalfAwayFromZero(diff * 100, earlier.earned) else null
+    return Comparison(earlier, later, diff, percent)
+}
 
 /** "De onde veio": what each payer and each school's salary earned, largest first (AC-009-13). */
 fun sources(

@@ -109,12 +109,30 @@ class EarningsRulesTest {
     }
 
     @Test
-    fun `AC-009-12 the trend has the six months ending at the period, earned and received`() {
-        val classes = listOfNotNull(earnedOf(record(day = LocalDate(2026, 6, 3))))
-        val t =
-            trend(oct22, classes, listOf(Received(LocalDate(2026, 6, 5), 12_000, EarningsType.PRIVATE)), emptyList(), TypeFilter.ALL, oct22)
-        assertEquals((5..10).map { LocalDate(2026, it, 1) }, t.map { it.month })
-        assertEquals(MonthPoint(LocalDate(2026, 6, 1), 12_000, 12_000), t[1])
+    fun `AC-014-30 the bars follow the period - weeks of a month, months of a quarter or year, none for a day`() {
+        val oct = Period(PeriodKind.MONTH, oct22)
+        val weeks = periodSpans(oct)
+        // October 2026 starts on a Thursday: 1-4, 5-11, 12-18, 19-25, 26-31.
+        assertEquals(listOf(1 to 4, 5 to 11, 12 to 18, 19 to 25, 26 to 31), weeks.map { it.first.day to it.second.day })
+        assertEquals(3, periodSpans(Period(PeriodKind.QUARTER, oct22)).size)
+        assertEquals(12, periodSpans(Period(PeriodKind.YEAR, oct22)).size)
+        assertEquals(emptyList<Pair<LocalDate, LocalDate>>(), periodSpans(Period(PeriodKind.DAY, oct22)))
+        // A class in June never shows on October's bars.
+        val classes = listOfNotNull(earnedOf(record(day = LocalDate(2026, 6, 3))), earnedOf(record(id = "b", day = LocalDate(2026, 10, 6))))
+        val b = bars(weeks, classes, emptyList(), emptyList(), TypeFilter.ALL, oct22)
+        assertEquals(listOf(0L, 12_000L, 0L, 0L, 0L), b.map { it.earned })
+    }
+
+    @Test
+    fun `AC-014-31 Evolucao compares two months - the later minus the earlier, in reais and percent`() {
+        val sep = Bar(LocalDate(2026, 9, 1), LocalDate(2026, 9, 30), 280_000, 250_000)
+        val oct = Bar(LocalDate(2026, 10, 1), LocalDate(2026, 10, 31), 320_000, 300_000)
+        val c = compareBars(oct, sep)
+        assertEquals(sep, c.earlier)
+        assertEquals(40_000L, c.difference)
+        assertEquals(14L, c.percent)
+        assertEquals(null, compareBars(sep.copy(earned = 0), oct).percent)
+        assertEquals(6, monthSpans(LocalDate(2026, 5, 1), 6).size)
     }
 
     @Test

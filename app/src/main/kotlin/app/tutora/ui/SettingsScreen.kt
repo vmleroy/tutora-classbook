@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.navigation.NavHostController
 import app.tutora.AppInfo
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
@@ -59,56 +60,23 @@ private fun stringIn(
     return context.createConfigurationContext(config).resources.getString(id, *args)
 }
 
-/** Ajustes: Geral (language, default places), Aulas (live timer) and Sobre (AC-001-22, AC-003-11, AC-004-29, AC-007-17). */
+/**
+ * Ajustes: only its pages, each with a line of what is set (AC-014-28). Seus dados and Backup e
+ * planilha first; Geral, Aulas, Lembretes and Pagamentos; then Sobre.
+ */
 @Composable
 fun SettingsScreen(
     appInfo: AppInfo,
     schemaVersion: Int,
-    onPersonal: () -> Unit = {},
-    onBackup: () -> Unit = {},
-    onCalendar: () -> Unit = {},
-    onAppearance: () -> Unit = {},
-    onReminders: () -> Unit = {},
-    onTeaching: () -> Unit = {},
+    onOpen: (Any) -> Unit,
 ) {
     val services = LocalServices.current
     val settings by services.settings.collectAsState(initial = null)
-    val scope = rememberCoroutineScope()
     val s = settings ?: return
-
-    fun save(next: Settings) = scope.launch { services.saveSettings(next) }
-
-    val bonusHolders by remember { services.paymentRepo.bonusHolders() }.collectAsState(initial = 0)
-    var confirmingOff by rememberSaveable { mutableStateOf(false) }
-    if (confirmingOff) {
-        BottomSheet(
-            pluralStringResource(R.plurals.settings_creditsOffTitle, bonusHolders, bonusHolders),
-            { confirmingOff = false },
-            subtitle = stringResource(R.string.settings_creditsOffBody),
-            actions =
-                listOf(
-                    { m -> Button(stringResource(R.string.catalog_cancel), { confirmingOff = false }, m, variant = ButtonVariant.OUTLINE) },
-                    { m ->
-                        Button(stringResource(R.string.settings_creditsOff), {
-                            confirmingOff = false
-                            scope.launch { services.payments.turnCreditsOff() }
-                        }, m, variant = ButtonVariant.DANGER)
-                    },
-                ),
-        )
-    }
-
-    // A change to the timer or its automatic start sets or clears the alarm at once.
-    fun saveTimer(next: Settings) =
-        scope.launch {
-            services.saveSettings(next)
-            services.live.autoStart()
-        }
-
     ScreenScaffold(stringResource(R.string.tab_settings), "settings-screen") {
-        // Seus dados first, on its own page: name and Pix key for reports (AC-010-16).
         ListGroup(
             listOf(
+                // Seus dados: name and Pix key for reports (AC-010-16).
                 {
                     ListRow(
                         stringResource(R.string.rep_personal),
@@ -117,110 +85,190 @@ fun SettingsScreen(
                                 stringResource(R.string.rep_personalHint)
                             },
                         icon = IconName.USERS,
-                        onClick = onPersonal,
+                        onClick = { onOpen(PersonalData) },
                     )
                 },
                 // Backup e planilha, with its state or its warning (AC-011-1, 10).
                 {
                     app.tutora.ui.backup
-                        .BackupSettingsRow(onBackup)
+                        .BackupSettingsRow { onOpen(BackupHome) }
                 },
             ),
         )
         ListGroup(
-            title = stringResource(R.string.settings_general),
-            rows =
-                listOf(
-                    { LanguageRow(s.language) { save(s.copy(language = it)) } },
-                    // Aparência: mode, theme, colors and text size (AC-013-1).
-                    {
-                        app.tutora.ui.appearance
-                            .AppearanceSettingsRow(onAppearance)
-                    },
-                    // Calendário: classes into a phone calendar (AC-012-1).
-                    {
-                        app.tutora.ui.calendar
-                            .CalendarSettingsRow(onCalendar)
-                    },
-                    // Como você dá aula, to change what the setup chose (AC-014-20).
-                    {
-                        ListRow(
-                            stringResource(R.string.set_teaching),
-                            subtitle =
-                                app.tutora.ui.setup
-                                    .teachingSummary(s.teaching),
-                            icon = IconName.USERS,
-                            onClick = onTeaching,
-                            modifier =
-                                androidx.compose.ui.Modifier
-                                    .testTag("teaching-row"),
-                        )
-                    },
-                    {
-                        ListRow(
-                            stringResource(R.string.settings_showDefaultPlaces),
-                            subtitle = stringResource(R.string.settings_showDefaultPlacesHint),
-                            icon = IconName.PIN,
-                            trailing = RowTrailing.SWITCH,
-                            switchValue = s.showDefaultPlaces,
-                            onSwitchChange = { save(s.copy(showDefaultPlaces = it)) },
-                        )
-                    },
-                    {
-                        ListRow(
-                            stringResource(R.string.settings_clockDurations),
-                            subtitle = stringResource(R.string.settings_clockDurationsHint),
-                            icon = IconName.CLOCK,
-                            trailing = RowTrailing.SWITCH,
-                            switchValue = s.clockDurations,
-                            onSwitchChange = { save(s.copy(clockDurations = it)) },
-                        )
-                    },
-                ),
+            listOf(
+                {
+                    PageRow(
+                        stringResource(R.string.settings_general),
+                        listOfNotNull(
+                            stringResource(if (s.language == Language.PT_BR) R.string.languages_pt_BR else R.string.languages_en),
+                            stringResource(R.string.set_hhmm).takeIf { s.clockDurations },
+                        ).joinToString(" · "),
+                        IconName.GEAR,
+                        "page-general",
+                    ) { onOpen(SettingsGeneral) }
+                },
+                {
+                    PageRow(
+                        stringResource(R.string.settings_lessons),
+                        listOfNotNull(
+                            stringResource(if (s.pastClasses == PastClasses.AUTO) R.string.set_pastAuto else R.string.set_pastAsk),
+                            stringResource(R.string.settings_liveTimer).takeIf { s.liveTimer },
+                        ).joinToString(" · "),
+                        IconName.CALENDAR_CHECK,
+                        "page-lessons",
+                    ) { onOpen(SettingsLessons) }
+                },
+                {
+                    PageRow(
+                        stringResource(R.string.set_reminders),
+                        app.tutora.ui.reminders
+                            .remindersSummary(s),
+                        IconName.ALERT,
+                        "reminders-row",
+                    ) { onOpen(RemindersHome) }
+                },
+                {
+                    PageRow(
+                        stringResource(R.string.set_payments),
+                        stringResource(if (s.credits) R.string.set_creditsOn else R.string.set_creditsOff),
+                        IconName.WALLET,
+                        "page-payments",
+                    ) { onOpen(SettingsPayments) }
+                },
+            ),
         )
         ListGroup(
-            title = stringResource(R.string.settings_lessons),
-            rows =
-                listOf(
-                    {
-                        // Off hides Iniciar aula everywhere (AC-007-3, 17).
-                        ListRow(
-                            stringResource(R.string.settings_liveTimer),
-                            subtitle = stringResource(R.string.settings_liveTimerHint),
-                            icon = IconName.PLAY,
-                            trailing = RowTrailing.SWITCH,
-                            switchValue = s.liveTimer,
-                            onSwitchChange = { saveTimer(s.copy(liveTimer = it)) },
-                        )
-                    },
-                    // Aulas passadas and, while they are confirmed one by one, Pedir confirmação (AC-014-1, 2).
-                    { PastClassesRow(s) { save(it) } },
-                    // Lembretes, with what is on (AC-014-12 to 14).
-                    {
-                        ListRow(
-                            stringResource(R.string.set_reminders),
-                            subtitle =
-                                app.tutora.ui.reminders
-                                    .remindersSummary(s),
-                            icon = IconName.ALERT,
-                            onClick = onReminders,
-                            modifier =
-                                androidx.compose.ui.Modifier
-                                    .testTag("reminders-row"),
-                        )
-                    },
-                    {
-                        // On, Marcar como dada shows on a class still ahead (AC-006-25).
-                        ListRow(
-                            stringResource(R.string.settings_earlyDone),
-                            subtitle = stringResource(R.string.settings_earlyDoneHint),
-                            icon = IconName.CALENDAR_CHECK,
-                            trailing = RowTrailing.SWITCH,
-                            switchValue = s.earlyDone,
-                            onSwitchChange = { save(s.copy(earlyDone = it)) },
-                        )
-                    },
-                ),
+            listOf {
+                PageRow(
+                    stringResource(R.string.settings_about),
+                    stringResource(R.string.set_aboutLine, appInfo.versionName, schemaVersion),
+                    IconName.FILE,
+                    "page-about",
+                ) { onOpen(SettingsAbout) }
+            },
+        )
+    }
+}
+
+@Composable
+private fun PageRow(
+    title: String,
+    subtitle: String,
+    icon: IconName,
+    tag: String,
+    onClick: () -> Unit,
+) = ListRow(title, Modifier.testTag(tag), subtitle = subtitle.ifEmpty { null }, icon = icon, onClick = onClick)
+
+/** Ajustes › Geral: Idioma, Aparência, Calendário, Como você dá aula, Locais padrão and Durações em HH:MM (AC-014-28). */
+@Composable
+fun SettingsGeneralScreen(nav: NavHostController) {
+    val services = LocalServices.current
+    val settings by services.settings.collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
+    val s = settings ?: return
+
+    fun save(next: Settings) = scope.launch { services.saveSettings(next) }
+    ScreenScaffold(stringResource(R.string.settings_general), "settings-general", variant = HeaderVariant.PUSH, onBack = {
+        nav.popBackStack()
+    }) {
+        ListGroup(
+            listOf(
+                { LanguageRow(s.language) { save(s.copy(language = it)) } },
+                // Aparência: mode, theme, colors and text size (AC-013-1).
+                {
+                    app.tutora.ui.appearance
+                        .AppearanceSettingsRow { nav.navigate(AppearanceHome) }
+                },
+                // Calendário: classes into a phone calendar (AC-012-1).
+                {
+                    app.tutora.ui.calendar
+                        .CalendarSettingsRow { nav.navigate(CalendarHome) }
+                },
+                // Como você dá aula, to change what the setup chose (AC-014-20).
+                {
+                    ListRow(
+                        stringResource(R.string.set_teaching),
+                        Modifier.testTag("teaching-row"),
+                        subtitle =
+                            app.tutora.ui.setup
+                                .teachingSummary(s.teaching),
+                        icon = IconName.USERS,
+                        onClick = { nav.navigate(TeachingHome) },
+                    )
+                },
+                {
+                    ListRow(
+                        stringResource(R.string.settings_showDefaultPlaces),
+                        subtitle = stringResource(R.string.settings_showDefaultPlacesHint),
+                        icon = IconName.PIN,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.showDefaultPlaces,
+                        onSwitchChange = { save(s.copy(showDefaultPlaces = it)) },
+                    )
+                },
+                {
+                    ListRow(
+                        stringResource(R.string.settings_clockDurations),
+                        subtitle = stringResource(R.string.settings_clockDurationsHint),
+                        icon = IconName.CLOCK,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.clockDurations,
+                        onSwitchChange = { save(s.copy(clockDurations = it)) },
+                    )
+                },
+            ),
+        )
+    }
+}
+
+/**
+ * Ajustes › Aulas: Aula ao vivo with Início automático, Aulas passadas with Pedir confirmação,
+ * and Marcar como dada antes do horário (AC-014-28).
+ */
+@Composable
+fun SettingsLessonsScreen(nav: NavHostController) {
+    val services = LocalServices.current
+    val settings by services.settings.collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
+    val s = settings ?: return
+
+    fun save(next: Settings) = scope.launch { services.saveSettings(next) }
+
+    // A change to the timer or its automatic start sets or clears the alarm at once.
+    fun saveTimer(next: Settings) =
+        scope.launch {
+            services.saveSettings(next)
+            services.live.autoStart()
+        }
+    ScreenScaffold(stringResource(R.string.settings_lessons), "settings-lessons", variant = HeaderVariant.PUSH, onBack = {
+        nav.popBackStack()
+    }) {
+        ListGroup(
+            listOf(
+                {
+                    // Off hides Iniciar aula everywhere (AC-007-3, 17).
+                    ListRow(
+                        stringResource(R.string.settings_liveTimer),
+                        subtitle = stringResource(R.string.settings_liveTimerHint),
+                        icon = IconName.PLAY,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.liveTimer,
+                        onSwitchChange = { saveTimer(s.copy(liveTimer = it)) },
+                    )
+                },
+                {
+                    // On, Marcar como dada shows on a class still ahead (AC-006-25).
+                    ListRow(
+                        stringResource(R.string.settings_earlyDone),
+                        subtitle = stringResource(R.string.settings_earlyDoneHint),
+                        icon = IconName.CALENDAR_CHECK,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.earlyDone,
+                        onSwitchChange = { save(s.copy(earlyDone = it)) },
+                    )
+                },
+            ),
         )
         // Início automático, only while the timer is on (AC-007-19).
         if (s.liveTimer) {
@@ -246,22 +294,75 @@ fun SettingsScreen(
                     ),
             )
         }
+        // Aulas passadas and Pedir confirmação (AC-014-1, 2).
+        ListGroup(listOf { PastClassesRow(s) { save(it) } })
+    }
+}
+
+/** Ajustes › Pagamentos: Créditos e bônus (AC-008-28, AC-014-28). */
+@Composable
+fun SettingsPaymentsScreen(nav: NavHostController) {
+    val services = LocalServices.current
+    val settings by services.settings.collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
+    val bonusHolders by remember { services.paymentRepo.bonusHolders() }.collectAsState(initial = 0)
+    var confirmingOff by rememberSaveable { mutableStateOf(false) }
+    val s = settings ?: return
+    if (confirmingOff) {
+        BottomSheet(
+            pluralStringResource(R.plurals.settings_creditsOffTitle, bonusHolders, bonusHolders),
+            { confirmingOff = false },
+            subtitle = stringResource(R.string.settings_creditsOffBody),
+            actions =
+                listOf(
+                    { m -> Button(stringResource(R.string.catalog_cancel), { confirmingOff = false }, m, variant = ButtonVariant.OUTLINE) },
+                    { m ->
+                        Button(stringResource(R.string.settings_creditsOff), {
+                            confirmingOff = false
+                            scope.launch { services.payments.turnCreditsOff() }
+                        }, m, variant = ButtonVariant.DANGER)
+                    },
+                ),
+        )
+    }
+    ScreenScaffold(
+        stringResource(R.string.set_payments),
+        "settings-payments",
+        variant = HeaderVariant.PUSH,
+        onBack = { nav.popBackStack() },
+    ) {
         // Créditos e bônus, off at first: off, a payment can't be more than is owed (AC-008-28).
         ListGroup(
-            title = stringResource(R.string.pay_section),
-            rows =
-                listOf {
-                    ListRow(
-                        stringResource(R.string.settings_credits),
-                        subtitle = stringResource(R.string.settings_creditsHint),
-                        icon = IconName.WALLET,
-                        trailing = RowTrailing.SWITCH,
-                        switchValue = s.credits,
-                        // Off with bonuses given asks first: they will be deleted (AC-008-38).
-                        onSwitchChange = { on -> if (!on && bonusHolders > 0) confirmingOff = true else save(s.copy(credits = on)) },
-                    )
-                },
+            listOf {
+                ListRow(
+                    stringResource(R.string.settings_credits),
+                    subtitle = stringResource(R.string.settings_creditsHint),
+                    icon = IconName.WALLET,
+                    trailing = RowTrailing.SWITCH,
+                    switchValue = s.credits,
+                    // Off with bonuses given asks first: they will be deleted (AC-008-38).
+                    onSwitchChange = { on ->
+                        if (!on && bonusHolders > 0) confirmingOff = true else scope.launch { services.saveSettings(s.copy(credits = on)) }
+                    },
+                )
+            },
         )
+    }
+}
+
+/** Ajustes › Sobre: the version and the database's (AC-001-22, AC-014-28). */
+@Composable
+fun SettingsAboutScreen(
+    nav: NavHostController,
+    appInfo: AppInfo,
+    schemaVersion: Int,
+) {
+    ScreenScaffold(
+        stringResource(R.string.settings_about),
+        "settings-about",
+        variant = HeaderVariant.PUSH,
+        onBack = { nav.popBackStack() },
+    ) {
         Card(label = stringResource(R.string.settings_about)) {
             Text(stringResource(R.string.settings_about), style = TutoraTheme.type.rowTitle, color = TutoraTheme.colors.ink)
             Text(

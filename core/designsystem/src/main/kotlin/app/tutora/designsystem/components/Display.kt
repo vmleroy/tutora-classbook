@@ -2,6 +2,7 @@ package app.tutora.designsystem.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -22,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
@@ -316,48 +320,79 @@ data class MonthBar(
 )
 
 /**
- * A few months side by side as bars (the 6-month trend on Ganhos): each bar's height follows its
- * total against the largest, with the filled part (received) drawn inside it. The whole chart is
- * read aloud as [description].
+ * Bars side by side (a period's weeks or months on Ganhos, the months of Evolução): each bar's
+ * height follows its total against the largest, with the filled part (received) drawn inside it.
+ * Bars share the width; with more than fit at [Size.barMin], the chart scrolls sideways
+ * (AC-014-30). With [onSelect], a bar can be tapped, and [selected] ones are outlined
+ * (AC-014-31). The whole chart is read aloud as [description].
  */
 @Composable
 fun MonthBars(
     bars: List<MonthBar>,
     description: String,
     modifier: Modifier = Modifier,
+    selected: Set<Int> = emptySet(),
+    onSelect: ((Int) -> Unit)? = null,
 ) {
     val c = TutoraTheme.colors
     val max = bars.maxOfOrNull { it.total }?.takeIf { it > 0 } ?: 1L
     val chart = Size.touch * 2
-    Row(
-        modifier
-            .fillMaxWidth()
-            .clearAndSetSemantics { contentDescription = description },
-        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-        verticalAlignment = Alignment.Bottom,
-    ) {
-        bars.forEach { b ->
-            Column(
-                Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Spacing.s1),
-            ) {
-                Box(Modifier.fillMaxWidth().height(chart), contentAlignment = Alignment.BottomCenter) {
-                    val share = b.total.toFloat() / max
-                    val part = if (b.total > 0) (b.filled.toFloat() / b.total).coerceIn(0f, 1f) else 0f
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(chart * share)
-                            .clip(RoundedCornerShape(Radius.xs))
-                            .background(c.accentSoft),
-                        contentAlignment = Alignment.BottomCenter,
-                    ) {
-                        Box(Modifier.fillMaxWidth().height(chart * share * part).background(c.success))
+    androidx.compose.foundation.layout.BoxWithConstraints(modifier.fillMaxWidth()) {
+        val gap = Spacing.s2
+        val fits = bars.isEmpty() || (maxWidth - gap * (bars.size - 1)) / bars.size >= Size.barMin
+        val scroll = androidx.compose.foundation.rememberScrollState()
+        Row(
+            Modifier
+                .then(if (fits) Modifier.fillMaxWidth() else Modifier.horizontalScroll(scroll))
+                .testTag("month-bars")
+                .then(
+                    if (onSelect == null) Modifier.clearAndSetSemantics { contentDescription = description } else Modifier,
+                ),
+            horizontalArrangement = Arrangement.spacedBy(gap),
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            bars.forEachIndexed { i, b ->
+                val on = i in selected
+                Column(
+                    (if (fits) Modifier.weight(1f) else Modifier.width(Size.barMin))
+                        .then(
+                            if (onSelect != null) {
+                                Modifier
+                                    .clip(RoundedCornerShape(Radius.sm))
+                                    .selectable(selected = on, role = Role.Button) { onSelect(i) }
+                                    .semantics { contentDescription = b.label }
+                            } else {
+                                Modifier
+                            },
+                        ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s1),
+                ) {
+                    Box(Modifier.fillMaxWidth().height(chart), contentAlignment = Alignment.BottomCenter) {
+                        val share = b.total.toFloat() / max
+                        val part = if (b.total > 0) (b.filled.toFloat() / b.total).coerceIn(0f, 1f) else 0f
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(chart * share)
+                                .clip(RoundedCornerShape(Radius.xs))
+                                .background(c.accentSoft)
+                                .then(if (on) Modifier.border(Size.borderStrong, c.ink, RoundedCornerShape(Radius.xs)) else Modifier),
+                            contentAlignment = Alignment.BottomCenter,
+                        ) {
+                            Box(Modifier.fillMaxWidth().height(chart * share * part).background(c.success))
+                        }
                     }
+                    Text(
+                        b.label,
+                        style = if (on) TutoraTheme.type.badge else TutoraTheme.type.caption,
+                        color = if (on) c.ink else c.inkMuted,
+                        maxLines = 1,
+                    )
                 }
-                Text(b.label, style = TutoraTheme.type.caption, color = c.inkMuted, maxLines = 1)
             }
         }
+        // The latest bars are the ones of interest: a scrolling chart opens at its end.
+        androidx.compose.runtime.LaunchedEffect(bars.size, fits) { if (!fits) scroll.scrollTo(scroll.maxValue) }
     }
 }

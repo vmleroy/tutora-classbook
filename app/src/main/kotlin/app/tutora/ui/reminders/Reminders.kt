@@ -95,6 +95,48 @@ fun rememberNotificationPermission(): NotificationPermission {
     }
 }
 
+/** Whether exact alarms are allowed, and the phone's page that allows them in one tap (AC-014-27). */
+interface ExactAlarmPermission {
+    fun allowed(): Boolean
+
+    fun open()
+}
+
+val LocalExactAlarmPermission = staticCompositionLocalOf<ExactAlarmPermission?> { null }
+
+@Composable
+fun rememberExactAlarmPermission(): ExactAlarmPermission {
+    LocalExactAlarmPermission.current?.let { return it }
+    val context = LocalContext.current
+    return remember(context) {
+        object : ExactAlarmPermission {
+            override fun allowed() =
+                app.tutora.reminders
+                    .exactAllowed(context)
+
+            override fun open() {
+                // Before Android 12 exact alarms need no asking, so this row never shows there.
+                if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return
+                context.startActivity(
+                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.fromParts("package", context.packageName, null))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            }
+        }
+    }
+}
+
+/** "Seg" / "Mon", for the row of days (AC-014-26). */
+fun dayShort(
+    day: DayOfWeek,
+    language: Language,
+): String =
+    java.time.DayOfWeek
+        .of(day.ordinal + 1)
+        .getDisplayName(java.time.format.TextStyle.SHORT, localeOf(language))
+        .removeSuffix(".")
+        .replaceFirstChar { it.uppercase() }
+
 /** "Segunda" / "Monday". */
 fun dayName(
     day: DayOfWeek,
@@ -124,6 +166,13 @@ fun RemindersScreen(nav: NavHostController) {
     val services = LocalServices.current
     val language = currentLanguage()
     val permission = rememberNotificationPermission()
+    val exact = rememberExactAlarmPermission()
+    // Read again on coming back from the phone's settings.
+    var exactAllowed by remember { mutableStateOf(exact.allowed()) }
+    androidx.lifecycle.compose.LifecycleResumeEffect(exact) {
+        exactAllowed = exact.allowed()
+        onPauseOrDispose { }
+    }
     val scope = rememberCoroutineScope()
     val settings by services.settings.collectAsState(initial = null)
     var allowed by remember { mutableStateOf(permission.allowed()) }
@@ -153,6 +202,17 @@ fun RemindersScreen(nav: NavHostController) {
                 tone = AlertTone.DANGER,
                 value = stringResource(R.string.set_openPhoneSettings),
                 onClick = { permission.openSettings() },
+            )
+        }
+        // With the build's exact-alarm permission this never shows; otherwise one tap to allow it (AC-014-27).
+        if (s.remindBefore > 0 && !exactAllowed) {
+            AlertBanner(
+                stringResource(R.string.set_exactTitle),
+                Modifier.testTag("exact-off"),
+                tone = AlertTone.SECONDARY,
+                icon = IconName.CLOCK,
+                value = stringResource(R.string.set_exactAction),
+                onClick = { exact.open() },
             )
         }
         ListGroup(
@@ -192,14 +252,15 @@ fun RemindersScreen(nav: NavHostController) {
                             Modifier.padding(horizontal = Spacing.s4, vertical = Spacing.s2_5),
                             verticalArrangement = Arrangement.spacedBy(Spacing.s2),
                         ) {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-                                verticalArrangement = Arrangement.spacedBy(Spacing.s2),
-                            ) {
-                                DayOfWeek.entries.forEach { d ->
-                                    Chip(dayName(d, language), s.owedDay == d, { save(s.copy(owedDay = d)) })
-                                }
-                            }
+                            // The seven days in one row of short names (AC-014-26).
+                            app.tutora.designsystem.components.SegmentedControl(
+                                DayOfWeek.entries.map { it to dayShort(it, language) },
+                                s.owedDay,
+                                { save(s.copy(owedDay = it)) },
+                                stringResource(R.string.set_owedWeekly),
+                                Modifier.testTag("owed-days"),
+                                size = ControlSize.SM,
+                            )
                             HourRow(s.owedHour, ::hourText) { save(s.copy(owedHour = it)) }
                         }
                     }

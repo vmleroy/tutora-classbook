@@ -16,13 +16,15 @@ data class SetupChoices(
     val onlineCents: Cents = SETUP_ONLINE_CENTS,
     val homeCents: Cents = SETUP_HOME_CENTS,
     val travel: TravelMode = TravelMode.VARIES,
+    /** "Fixo": the amount typed, R$ 20,00 at first (AC-014-25). */
+    val travelCents: Cents = SETUP_TRAVEL_CENTS,
     val remind: Boolean = true,
 )
 
 const val SETUP_ONLINE_CENTS = 10_000L
 const val SETUP_HOME_CENTS = 12_000L
 
-/** "Fixo" in the setup adds R$ 20, as the mockup shows; the place's page changes it later. */
+/** "Fixo" in the setup starts at R$ 20,00, as the mockup shows; the teacher types another (AC-014-25). */
 const val SETUP_TRAVEL_CENTS = 2_000L
 
 /** The − and + of the prices step: R$ 5 at a time, never below R$ 5. */
@@ -62,7 +64,7 @@ class Setup(
                     it.copy(
                         rateCents = c.homeCents,
                         travelMode = c.travel.name,
-                        travelFeeCents = if (c.travel == TravelMode.FIXED) SETUP_TRAVEL_CENTS else 0,
+                        travelFeeCents = if (c.travel == TravelMode.FIXED) c.travelCents.coerceAtLeast(0) else 0,
                         updatedAt = ctx.now(),
                     ),
                 )

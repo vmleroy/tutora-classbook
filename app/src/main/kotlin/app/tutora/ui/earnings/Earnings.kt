@@ -62,7 +62,6 @@ import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Language
 import app.tutora.domain.Lesson
-import app.tutora.domain.MonthPoint
 import app.tutora.domain.Period
 import app.tutora.domain.PeriodKind
 import app.tutora.domain.TypeFilter
@@ -91,7 +90,7 @@ import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
 /** "out" / "Oct". */
-private fun shortMonth(
+internal fun shortMonth(
     month: LocalDate,
     language: Language,
 ): String = DateTimeFormatter.ofPattern("LLL", localeOf(language)).format(month.toJavaLocalDate()).removeSuffix(".")
@@ -218,6 +217,15 @@ fun EarningsScreen(
                 filters.forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
             }
         }
+        // Evolução: month by month, to compare (AC-014-31).
+        Button(
+            stringResource(R.string.earn_seeEvolution),
+            { nav.navigate(app.tutora.ui.Evolution) },
+            Modifier.testTag("see-evolution"),
+            variant = ButtonVariant.OUTLINE,
+            size = ControlSize.SM,
+            icon = IconName.CHEVRON_RIGHT,
+        )
         if (picking) {
             PeriodPickerSheet(period, today, { picking = false }) {
                 anchor = it.toString()
@@ -271,13 +279,17 @@ fun EarningsScreen(
                     s.bonus.takeIf { it > 0 }?.let { stringResource(R.string.earn_bonus, formatMoney(it, language)) },
                 ).joinToString(" · ").ifEmpty { null },
         )
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            SectionHeader(stringResource(R.string.earn_trend))
-            MonthBars(
-                v.trend.map { MonthBar(shortMonth(it.month, language), it.earned, it.received) },
-                trendDescription(v.trend, language),
-                Modifier.testTag("earn-trend"),
-            )
+        // The period's own bars: weeks of a month, months of a quarter or a year; none for a day (AC-014-30).
+        if (v.bars.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                SectionHeader(stringResource(if (kind == PeriodKind.MONTH) R.string.earn_byWeek else R.string.earn_byMonth))
+                val labels = v.bars.map { barLabel(it, kind, language) }
+                MonthBars(
+                    v.bars.mapIndexed { i, b -> MonthBar(labels[i], b.earned, b.received) },
+                    barsDescription(v.bars, labels, language),
+                    Modifier.testTag("earn-bars"),
+                )
+            }
         }
         // De onde veio: largest first, each on its own card with its share of the total, opening
         // its detail (AC-009-13).
@@ -341,23 +353,37 @@ fun EarningsScreen(
     }
 }
 
-/** "mai: R$ 3.000 ganhos, R$ 2.400 recebidos; …" for screen readers. */
+/** "5–11" for a week of the month, "out" for a month (AC-014-30). */
 @Composable
-private fun trendDescription(
-    points: List<MonthPoint>,
+internal fun barLabel(
+    b: app.tutora.domain.Bar,
+    kind: PeriodKind,
     language: Language,
-): String {
-    val parts =
-        points.map {
+): String =
+    if (kind ==
+        PeriodKind.MONTH
+    ) {
+        stringResource(R.string.earn_weekLabel, b.first.day, b.last.day)
+    } else {
+        shortMonth(b.first, language)
+    }
+
+/** "5–11: R$ 3.000 ganhos, R$ 2.400 recebidos; …" for screen readers. */
+@Composable
+internal fun barsDescription(
+    bars: List<app.tutora.domain.Bar>,
+    labels: List<String>,
+    language: Language,
+): String =
+    bars
+        .mapIndexed { i, b ->
             stringResource(
                 R.string.earn_trendMonth,
-                shortMonth(it.month, language),
-                formatMoney(it.earned, language, compact = true),
-                formatMoney(it.received, language, compact = true),
+                labels[i],
+                formatMoney(b.earned, language, compact = true),
+                formatMoney(b.received, language, compact = true),
             )
-        }
-    return stringResource(R.string.earn_trend) + ": " + parts.joinToString("; ")
-}
+        }.joinToString("; ")
 
 /**
  * Hoje's earnings card: Ganho hoje against what today's classes are expected to bring, then the

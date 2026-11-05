@@ -89,6 +89,18 @@ fun NavHostController.openTab(graph: Any) {
 
 @Serializable data object SettingsHome
 
+/** Ganhos › Evolução (AC-014-31). */
+@Serializable data object Evolution
+
+/** Ajustes' pages (AC-014-28). */
+@Serializable data object SettingsGeneral
+
+@Serializable data object SettingsLessons
+
+@Serializable data object SettingsPayments
+
+@Serializable data object SettingsAbout
+
 /** Ajustes › Seus dados (spec 010). */
 @Serializable data object PersonalData
 
@@ -287,17 +299,11 @@ fun TutoraNav(
                     }
                 }
                 navigation<SettingsGraph>(startDestination = SettingsHome) {
-                    composable<SettingsHome> {
-                        SettingsScreen(
-                            appInfo,
-                            schemaVersion,
-                            { nav.navigate(PersonalData) },
-                            { nav.navigate(BackupHome) },
-                            { nav.navigate(CalendarHome) },
-                            { nav.navigate(AppearanceHome) },
-                            { nav.navigate(RemindersHome) },
-                        ) { nav.navigate(TeachingHome) }
-                    }
+                    composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { route -> nav.navigate(route) } }
+                    composable<SettingsGeneral> { SettingsGeneralScreen(nav) }
+                    composable<SettingsLessons> { SettingsLessonsScreen(nav) }
+                    composable<SettingsPayments> { SettingsPaymentsScreen(nav) }
+                    composable<SettingsAbout> { SettingsAboutScreen(nav, appInfo, schemaVersion) }
                     composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
                 }
                 composable<BackupHome> {
@@ -315,6 +321,10 @@ fun TutoraNav(
                 composable<ConfirmClasses> {
                     app.tutora.ui.confirm
                         .ConfirmClassesScreen(nav)
+                }
+                composable<Evolution> {
+                    app.tutora.ui.earnings
+                        .EvolutionScreen(nav)
                 }
                 composable<RemindersHome> {
                     app.tutora.ui.reminders

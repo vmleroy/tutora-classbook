@@ -63,7 +63,13 @@ class AndroidReminderAlarm(
         if (at == null) {
             manager.cancel(intent(kind, null))
         } else {
-            manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, instantOf(at).toEpochMilliseconds(), intent(kind, lessonId))
+            val ms = instantOf(at).toEpochMilliseconds()
+            // Only the class reminder needs the minute; the weekly and daily ones may come a little late (AC-014-27).
+            if (kind == ReminderKind.CLASS && exactAllowed(context)) {
+                manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ms, intent(kind, lessonId))
+            } else {
+                manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ms, intent(kind, lessonId))
+            }
         }
     }
 
@@ -82,6 +88,14 @@ class AndroidReminderAlarm(
         private const val REQUEST_BASE = 100
     }
 }
+
+/**
+ * Whether exact alarms are allowed: always before Android 12, granted at install with
+ * USE_EXACT_ALARM, or once the teacher turns on SCHEDULE_EXACT_ALARM (AC-014-27).
+ */
+fun exactAllowed(context: Context): Boolean =
+    Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+        context.getSystemService(AlarmManager::class.java)?.canScheduleExactAlarms() == true
 
 /** Whether the phone lets Tutora post notifications (AC-014-16). */
 fun notificationsAllowed(context: Context): Boolean =
@@ -240,7 +254,10 @@ class ReminderReceiver : BroadcastReceiver() {
                         container.confirming.confirmAll()
                         container.reminderNotifier.cancelConfirm()
                     }
-                    Intent.ACTION_BOOT_COMPLETED -> container.reminders.plan()
+                    // After a restart, or once exact alarms are allowed, the reminders are set again.
+                    Intent.ACTION_BOOT_COMPLETED, AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED ->
+                        container.reminders
+                            .plan()
                 }
             } finally {
                 pending.finish()

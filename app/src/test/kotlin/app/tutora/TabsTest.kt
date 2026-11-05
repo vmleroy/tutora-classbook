@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.ui.Tab
 import org.junit.Assert.assertEquals
@@ -67,6 +68,9 @@ class TabsTest {
     fun `AC-001-22 Sobre shows the version, the build and the schema version`() {
         h.show(compose)
         compose.onNodeWithTag("tab-settings").performClick()
+        // Sobre is its own page since AC-014-28.
+        compose.onNodeWithTag("page-about").performScrollTo().performClick()
+        compose.waitForIdle()
         compose.onNodeWithText("Versão 1.1.0 · build 7 · banco v1").assertExists()
     }
 

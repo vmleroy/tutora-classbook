@@ -32,6 +32,9 @@ class Harness(
 
     /** Whether notifications are allowed, and what asking answers (spec 014). */
     val notificationPermission = FakeNotificationPermission()
+
+    /** Whether exact alarms are allowed, and whether their page was opened (AC-014-27). */
+    val exactAlarm = FakeExactAlarm()
     lateinit var nav: NavHostController
 
     init {
@@ -62,6 +65,7 @@ class Harness(
                 app.tutora.ui.backup.LocalBackupPicker provides picker,
                 app.tutora.ui.calendar.LocalCalendarPermission provides calendarPermission,
                 app.tutora.ui.reminders.LocalNotificationPermission provides notificationPermission,
+                app.tutora.ui.reminders.LocalExactAlarmPermission provides exactAlarm,
             ) { TutoraNav(AppInfo("1.1.0", "7"), services.schemaVersion, nav = nav) }
         }
     }
@@ -140,5 +144,16 @@ class FakeNotificationPermission : app.tutora.ui.reminders.NotificationPermissio
 
     override fun openSettings() {
         settingsOpened = true
+    }
+}
+
+class FakeExactAlarm : app.tutora.ui.reminders.ExactAlarmPermission {
+    var allowed = true
+    var opened = false
+
+    override fun allowed() = allowed
+
+    override fun open() {
+        opened = true
     }
 }

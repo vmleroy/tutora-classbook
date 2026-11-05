@@ -48,8 +48,15 @@
     <string name="set_confirmDaily">Aulas para confirmar</string>
     <string name="set_confirmDailyWhen">Todo dia, %1$s</string>
     <string name="set_hour">Horário</string>
+    <string name="set_exactTitle">Lembrete na hora certa</string>
+    <string name="set_exactAction">Ativar</string>
     <string name="set_notificationsOff">Notificações desligadas no celular</string>
     <string name="set_openPhoneSettings">Abrir ajustes</string>
+    <string name="set_payments">Pagamentos</string>
+    <string name="set_creditsOn">Créditos e bônus ligados</string>
+    <string name="set_creditsOff">Créditos e bônus desligados</string>
+    <string name="set_hhmm">Durações em HH:MM</string>
+    <string name="set_aboutLine">%1$s · base %2$d</string>
     <string name="set_teaching">Como você dá aula</string>
 
     <string name="remind_channel">Lembretes</string>
@@ -74,6 +81,18 @@
     <string name="remind_markAll">Marcar todas como dadas</string>
     <string name="remind_see">Ver</string>
 
+    <string name="earn_byWeek">Por semana</string>
+    <string name="earn_byMonth">Por mês</string>
+    <string name="earn_weekLabel">%1$d–%2$d</string>
+    <string name="earn_seeEvolution">Ver evolução</string>
+    <string name="earn_evolution">Evolução</string>
+    <string name="evo_six">6 meses</string>
+    <string name="evo_twelve">12 meses</string>
+    <string name="evo_year">Ano</string>
+    <string name="evo_hint">Toque em dois meses para comparar.</string>
+    <string name="evo_monthLine">Ganho %1$s · recebido %2$s</string>
+    <string name="evo_diffPercent">%1$s (%2$s%%)</string>
+    <string name="evo_difference">Diferença: %1$s</string>
     <string name="setup_title">Configuração inicial</string>
     <string name="setup_step">Passo %1$d de 4</string>
     <string name="setup_skip">Pular</string>
@@ -98,6 +117,7 @@
     <string name="setup_travelVaries">Varia por aula</string>
     <string name="setup_travelFixed">Fixo</string>
     <string name="setup_travelNone">Não cobro</string>
+    <string name="setup_travelAmount">Valor do deslocamento</string>
     <string name="setup_travelVariesHint">Você informa o valor em cada aula.</string>
     <string name="setup_travelFixedHint">Soma %1$s em toda aula na casa do aluno; dá para mudar por aluno.</string>
     <string name="setup_travelNoneHint">Não soma nada; o preço por hora já cobre o deslocamento.</string>

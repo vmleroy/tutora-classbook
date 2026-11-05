@@ -22,11 +22,14 @@ import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.designsystem.components.formatMoney
@@ -326,5 +329,50 @@ class DesignSystemTest {
                 .size,
         )
         compose.onNodeWithTag("tab-count-schedule", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `AC-014-29 a stepper's value can be typed - percent, money, and out of range kept within bounds`() {
+        var bp by mutableStateOf(3_000L)
+        var cents by mutableStateOf(10_000L)
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Column {
+                    app.tutora.designsystem.components.Stepper(
+                        bp,
+                        { bp = it },
+                        step = 500,
+                        max = 9_000,
+                        format = { "${it / 100}%" },
+                        valueLabel = "Comissão",
+                        typedScale = 100,
+                    )
+                    app.tutora.designsystem.components.Stepper(
+                        cents,
+                        { cents = it },
+                        step = 500,
+                        min = 500,
+                        format = { "R$ ${it / 100}" },
+                        valueLabel = "Preço",
+                        input = app.tutora.designsystem.components.StepperInput.MONEY,
+                    )
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("Comissão, 30%").performClick()
+        compose.onNodeWithTag("stepper-entry").performTextReplacement("45")
+        compose.onNodeWithTag("stepper-entry").performImeAction()
+        compose.waitForIdle()
+        assertEquals(4_500L, bp)
+        compose.onNodeWithContentDescription("Comissão, 45%").performClick()
+        compose.onNodeWithTag("stepper-entry").performTextReplacement("95")
+        compose.onNodeWithTag("stepper-entry").performImeAction()
+        compose.waitForIdle()
+        assertEquals(9_000L, bp)
+        compose.onNodeWithContentDescription("Preço, R$ 100").performClick()
+        compose.onNodeWithTag("stepper-entry").performTextReplacement("13550")
+        compose.onNodeWithTag("stepper-entry").performImeAction()
+        compose.waitForIdle()
+        assertEquals(13_550L, cents)
     }
 }

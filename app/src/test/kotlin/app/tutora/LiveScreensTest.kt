@@ -27,7 +27,6 @@ import app.tutora.domain.startTimer
 import app.tutora.live.AndroidLiveNotifier
 import app.tutora.ui.LessonDetail
 import app.tutora.ui.LiveLesson
-import app.tutora.ui.SettingsGraph
 import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.LiveNote
 import app.tutora.usecases.Result
@@ -195,7 +194,7 @@ class LiveScreensTest {
     @Test
     fun `AC-007-17 Ajustes has Aulas with Aula ao vivo, on by default`() {
         h.show(compose)
-        h.go(compose, SettingsGraph)
+        h.go(compose, app.tutora.ui.SettingsLessons)
         exists("Aulas")
         exists("Cronômetro e ganho ao vivo durante a aula")
         compose.onNodeWithContentDescription("Aula ao vivo").performClick()
@@ -206,7 +205,7 @@ class LiveScreensTest {
     @Test
     fun `AC-007-19 Ajustes has Inicio automatico, off by default, with its two choices once on`() {
         h.show(compose)
-        h.go(compose, SettingsGraph)
+        h.go(compose, app.tutora.ui.SettingsLessons)
         exists("Início automático")
         absent("Também com o app fechado")
         compose.onNodeWithContentDescription("Iniciar aulas automaticamente").performClick()

@@ -3,10 +3,12 @@ package app.tutora
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -219,5 +221,44 @@ class EarningsScreensTest {
         compose.onNodeWithTag("tab-today").performClick()
         h.settle(compose)
         compose.onNodeWithTag("today-screen").assertExists()
+    }
+
+    private fun givenSeptember() =
+        runBlocking {
+            h.t.lessons.logLesson(
+                LessonDraft(WhoId.OfStudent(ana.id), online, LocalDate(2026, 9, 15), LocalTime(8, 0), 60, null, null, null),
+            )
+        }
+
+    @Test
+    fun `AC-014-30 the bars follow the period - weeks on Mes, months on Ano, none on Dia, never another period's`() {
+        given(6)
+        givenSeptember()
+        openEarnings()
+        compose.onNodeWithTag("earn-bars").assertExists()
+        listOf("1–4", "5–11", "26–31").forEach { exists(it) }
+        compose.onAllNodes(matching("set"), useUnmergedTree = true).assertCountEquals(0)
+        compose.onNodeWithText("Ano").performClick()
+        h.settle(compose)
+        listOf("set", "out").forEach { exists(it) }
+        compose.onNodeWithText("Dia").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("earn-bars").assertDoesNotExist()
+    }
+
+    @Test
+    fun `AC-014-31 Evolucao shows the months and compares two of them in reais and percent`() {
+        given(6)
+        given(8)
+        givenSeptember()
+        openEarnings()
+        compose.onNodeWithTag("see-evolution").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("evolution-bars").assertExists()
+        compose.onNodeWithContentDescription("set").performClick()
+        compose.onNodeWithContentDescription("out").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("evolution-compare").assertExists()
+        exists("Diferença: +R$ 120,00 (+100%)")
     }
 }

@@ -157,4 +157,28 @@ class RemindersTest {
         assertTrue(h.notificationPermission.settingsOpened)
         assertEquals(15, runBlocking { h.services.currentSettings().remindBefore })
     }
+
+    @Test
+    fun `AC-014-26 Quem te deve's day is one row of short names`() {
+        val h = Harness(t)
+        h.show(compose)
+        h.go(compose, RemindersHome)
+        listOf("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom").forEach { compose.onNodeWithText(it).assertExists() }
+        compose.onNodeWithText("Qua").performClick()
+        h.awaitDb(compose) { h.services.currentSettings().owedDay == kotlinx.datetime.DayOfWeek.WEDNESDAY }
+        assertEquals(kotlinx.datetime.DayOfWeek.WEDNESDAY, runBlocking { h.services.currentSettings().owedDay })
+    }
+
+    @Test
+    fun `AC-014-27 exact reminders come from the build by default, and otherwise Ativar opens the phone's page in one tap`() {
+        // The default build declares USE_EXACT_ALARM: nothing for the teacher to do.
+        assertTrue(BuildConfig.USE_EXACT_ALARM)
+        val h = Harness(t)
+        runBlocking { h.services.saveSettings(h.services.currentSettings().copy(remindBefore = 15)) }
+        h.exactAlarm.allowed = false
+        h.show(compose)
+        h.go(compose, RemindersHome)
+        compose.onNodeWithTag("exact-off").assertExists().performClick()
+        assertTrue(h.exactAlarm.opened)
+    }
 }
