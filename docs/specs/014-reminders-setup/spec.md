@@ -1,6 +1,6 @@
 # Spec 014: Reminders, confirming classes and first-run setup
 
-Status: draft
+Status: ready
 Depends on: 005 Schedule (series filled ahead), 006 Lessons (mark done, cancel, missed), 007 Live timer (notifications), 008 Payments (who owes), 011 Backup (the folder), 016 Visual refresh (Hoje, the Agenda, AgendaCard)
 Mockups: docs/mockups/Setup.dc.html (first-run setup), docs/mockups/Settings.dc.html. The confirm list and the reminders follow the design system.
 Takes in: the draft spec 018 (Confirm classes), whose criteria and answers are here (Victor, 4 Nov 2026).
@@ -41,9 +41,9 @@ Three things that keep Tutora in step with the teacher's real week. **Reminders*
 
 ### Reminders
 
-- **AC-014-12.** Ajustes › Aulas › "Lembretes" has "Aviso antes da aula": Desligado, 5, 15 (at first), 30 or 60 minutos antes. A notification then comes before each class with who, where and the time ("Ana Souza · 14:00 · Online / Remoto"); tapping it opens the class. Cancelled classes and forecast classes get none.
-- **AC-014-13.** "Quem te deve" sends once a week, on the day and hour chosen (Segunda, 08:00 at first), a notification with the total owed and how many ("3 alunos te devem R$ 480,00"); tapping it opens Cadastro on those who owe. With no one owing, nothing is sent. It can be turned off.
-- **AC-014-14.** "Aulas para confirmar" sends one notification a day at the hour chosen (20:00 at first) while any class is to confirm ("5 aulas para confirmar"), with "Marcar todas como dadas" and "Ver" as its actions; Ver opens the list (AC-014-6), and Marcar todas asks nothing more, since its notification said how many. It can be turned off; with Aulas passadas on "Marcar como dadas sozinhas" it never comes.
+- **AC-014-12.** Ajustes › Aulas › "Lembretes" has "Aviso antes da aula": Desligado, 5, 15 (at first), 30 or 60 minutos antes (Victor, 4 Nov 2026). A notification then comes before each class with who, where and the time ("Ana Souza · 14:00 · Online / Remoto"); tapping it opens the class. Cancelled classes and forecast classes get none.
+- **AC-014-13.** "Quem te deve" sends once a week, on the day and hour chosen (Segunda, 08:00 at first; on from the start; Victor, 4 Nov 2026), a notification with the total owed and how many ("3 alunos te devem R$ 480,00"); tapping it opens Cadastro on those who owe. With no one owing, nothing is sent. It can be turned off.
+- **AC-014-14.** "Aulas para confirmar" sends one notification a day at the hour chosen (20:00 at first) while any class is to confirm ("5 aulas para confirmar"), with "Marcar todas como dadas" and "Ver" as its actions (Victor, 4 Nov 2026); Ver opens the list (AC-014-6), and Marcar todas asks nothing more, since its notification said how many. It can be turned off; with Aulas passadas on "Marcar como dadas sozinhas" it never comes.
 - **AC-014-15.** Reminders keep working with Tutora closed and after the phone restarts, and follow every change: a class moved, cancelled or added changes its reminder. Turning a reminder off removes what was planned.
 - **AC-014-16.** If the phone hasn't allowed Tutora's notifications, turning a reminder on asks once; refused, the row says "Notificações desligadas no celular" with a way to open the phone's settings.
 
@@ -51,14 +51,18 @@ Three things that keep Tutora in step with the teacher's real week. **Reminders*
 
 - **AC-014-17.** On its very first run, with no data yet, Tutora opens on "Configuração inicial" with four steps and a bar showing which; each step has "Pular" (to the end) and Voltar/Continuar. A teacher who already has data never sees it; Ajustes keeps every choice.
 - **AC-014-18.** Step 1, Idioma: Português or English, starting from the phone's; choosing changes the setup's own words at once.
-- **AC-014-19.** Step 2, "Como você dá aula?": Aulas particulares, Escola ou emprego fixo, Salinha ou cursinho, any of them. What is chosen decides what the end of the setup suggests next (AC-014-22) and which of Ganhos' filters show at first.
-- **AC-014-20.** Step 3, "Seus preços padrão": Online / Remoto and Casa do Aluno per hour (R$ 100 and R$ 120 at first, with − and +), and Deslocamento (Varia por aula, Fixo or Não cobro, each with its line of explanation). These become the two built-in places' prices.
-- **AC-014-21.** Step 4, "Seus dados, seguros": Backup automático with "Escolher pasta" (spec 011) and "Aviso antes da aula" (AC-014-12), each on or off.
-- **AC-014-22.** The end shows a summary of the choices and two ways out: "Cadastrar meu primeiro aluno" (opening a new student) and "Ir para Hoje". Skipping keeps the defaults of every step not seen.
+- **AC-014-19.** Step 2, "Como você dá aula?": Aulas particulares, Escola ou emprego fixo, Salinha ou cursinho, any of them. What is chosen decides what the end of the setup suggests next (AC-014-23) and which of Ganhos' filters show, and hides what doesn't apply (Victor, 4 Nov 2026):
+  - Without "Escola ou emprego fixo": the Escola e emprego filter in Ganhos, the salary on places and the "Escola" kind when adding a place are hidden.
+  - Without "Salinha ou cursinho": the Salinha and Cursinho kinds and "Quem paga: o local" are hidden when adding a place.
+  - Without "Aulas particulares": the Particulares filter in Ganhos is hidden.
+- **AC-014-20.** Ajustes › Geral has "Como você dá aula", to change these at any time; and anything hidden shows again as soon as the teacher already has a place or class of that kind (a backup restored, a place added before), so nothing they have is ever out of sight.
+- **AC-014-21.** Step 3, "Seus preços padrão": Online / Remoto and Casa do Aluno per hour (R$ 100 and R$ 120 at first, with − and +), and Deslocamento (Varia por aula, Fixo or Não cobro, each with its line of explanation). These become the two built-in places' prices.
+- **AC-014-22.** Step 4, "Seus dados, seguros": Backup automático with "Escolher pasta" (spec 011) and "Aviso antes da aula" (AC-014-12), each on or off.
+- **AC-014-23.** The end shows a summary of the choices and two ways out: "Cadastrar meu primeiro aluno" (opening a new student) and "Ir para Hoje". Skipping keeps the defaults of every step not seen.
 
 ### Language
 
-- **AC-014-23.** The setup, the confirm list, the marks, the reminders and their notifications follow the app language, with plurals ("1 aula para confirmar", "3 aulas para confirmar").
+- **AC-014-24.** The setup, the confirm list, the marks, the reminders and their notifications follow the app language, with plurals ("1 aula para confirmar", "3 aulas para confirmar").
 
 ## Out of scope
 
@@ -69,9 +73,4 @@ Three things that keep Tutora in step with the teacher's real week. **Reminders*
 
 ## Open questions
 
-For Victor. The assumptions above are marked here so they are easy to change.
-
-- **Aviso antes da aula:** assumed choices of 5, 15, 30 and 60 minutes, 15 at first, and on at first only if the setup says so. Right?
-- **Quem te deve:** assumed weekly, Segunda 08:00, on at first. Or monthly, or off at first?
-- **Aulas para confirmar notification:** assumed daily at 20:00 while any are waiting, with "Marcar todas como dadas" right from the notification. Keep that action in the notification, or only "Ver"?
-- **Como você dá aula:** assumed it only shapes suggestions and Ganhos' filters at first. Should it also hide parts of the app (for example, no school features for a teacher who only gives private classes)?
+Answered by Victor on 4 Nov 2026: the reminder before class is 5, 15, 30 or 60 minutes (15 at first); "Quem te deve" is weekly, Monday 08:00, on at first; the "to confirm" notification has Ver and Marcar todas; "Como você dá aula" shapes suggestions and filters and also hides what doesn't apply, with a row in Ajustes to change it. The draft spec 018's questions were answered the same day and are in AC-014-1 to 11.
