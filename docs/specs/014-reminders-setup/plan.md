@@ -90,6 +90,23 @@ Lean, one test per criterion, `./gradlew check` once.
   - Range chips: 6 meses, 12 meses, Ano (with ‹ ›). The type filter as in Ganhos. Scrollable `MonthBars`.
   - Tapping a bar selects it; a second bar compares. A card shows both months and the difference, from a domain `compareMonths(a, b)` (cents, and percent rounded half away from zero; no percent when the first is zero).
 
+## Third round (AC-014-32 to 37)
+
+- **Bell (32):** `ScreenHeader` takes a trailing `IconButton(IconName.BELL)` with a `dot` flag. That needs an `ic_bell` drawable, an `IconName.BELL` entry, and a `dot` on `IconButton` (a small `danger` circle). Hoje's band and the Agenda's header show it and navigate to `RemindersHome`. The dot follows `NotificationPermission.allowed()`, read again on resume.
+- **Ganhos' header (33):** `trailing` holds two `IconButton`s, `IconName.CHART` (a new `ic_chart`) for Evolução and `IconName.FILE` for Relatório. The "Ver evolução" button goes.
+- **Evolução (34, 35):**
+  - Domain: `EarnedClass` and `Received` gain `placeKind`, and `Received` gains `payer`, filled from the rows the queries already read.
+  - `EvolutionFilter(type, payer: PayerRef?, kind: PlaceKind?)` with `matches`.
+  - `monthDetails(spans, …)` returns per month: earned, received, to receive (from `leftByLesson`), classes, minutes, and `change` against the month before (`compareBars`).
+  - `EarningsRepository.evolution` returns the details instead of bars.
+  - UI: the three filters as chips, plus a "Quem" `SelectField` opening a searchable sheet of students, groups and places. `MonthBars` gets `pairs = true` to draw received beside earned, with a legend (`DotTone`). A `ListGroup` of month rows sits under the chart.
+- **Custom aviso (36):** `REMIND_BEFORE_CHOICES` stays as the quick chips. Any minutes from 5 to 1440 are accepted (`remindBefore` is an Int). "Personalizado" opens a `BottomSheet` with a `DurationField`. `remindText(minutes)` gives "2h antes" or "1h30 antes".
+- **Fields per kind (37):**
+  - Design system: `NumberField` (label, typed whole number, optional suffix "%", inner − and +, `min`, `max`, `step`). `DurationField` gains inner − and + with a `step`. Both are built on the field frame, so they look like `MoneyField`.
+  - `Stepper` stays as the inner control and leaves the gallery's form examples. The guidelines say which field for which kind.
+  - Screens: swap the 12 `Stepper` and 3 `DurationStepper` uses as listed in AC-014-37. The duration sheet goes, since the field is typed.
+  - Components: 43 (`NumberField`).
+
 ## Risks
 
 - **Inexact alarms** can be minutes late. That's fine for reminders (the architecture doc accepts it).

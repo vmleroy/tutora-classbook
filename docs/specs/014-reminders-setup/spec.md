@@ -1,6 +1,6 @@
 # Spec 014: Reminders, confirming classes and first-run setup
 
-Status: done
+Status: in progress
 Depends on: 005 Schedule (series filled ahead), 006 Lessons (mark done, cancel, missed), 007 Live timer (notifications), 008 Payments (who owes), 011 Backup (the folder), 016 Visual refresh (Hoje, the Agenda, AgendaCard)
 Mockups: docs/mockups/Setup.dc.html (first-run setup), docs/mockups/Settings.dc.html. The confirm list and the reminders follow the design system.
 Takes in: the draft spec 018 (Confirm classes), whose criteria and answers are here (Victor, 4 Nov 2026).
@@ -74,13 +74,32 @@ Three things that keep Tutora in step with the teacher's real week. **Reminders*
   - **Pagamentos:** Créditos e bônus.
   - **Sobre:** the version and the database's.
   - Every setting keeps working as before; only where it lives changes.
-- **AC-014-29.** The value of every − / + stepper in the app can be typed: tapping it turns it into a field with the number keyboard. Money is typed like any amount (AC-003), minutes and hours as numbers. A value out of range becomes the nearest allowed one when the field is left, and − and + still work.
+- **AC-014-29.** *(Replaced by AC-014-37: fields per kind instead of bare steppers.)* The value of every − / + stepper in the app can be typed: tapping it turns it into a field with the number keyboard. Money is typed like any amount (AC-003), minutes and hours as numbers. A value out of range becomes the nearest allowed one when the field is left, and − and + still work.
 - **AC-014-30.** Ganhos' bars follow the period chosen, and never show another period's earnings (this replaces AC-009-12):
   - Dia has no bars. Mês has one bar per week of the month, Trimestre its three months, and Ano its twelve months.
   - The bars scroll sideways when they don't fit. They follow the type filter, with the received part filled in as before.
   - A period with nothing earned shows its empty state, with no bars.
 - **AC-014-31.** "Evolução", from Ganhos, shows earned and received month by month for a range: 6 meses (at first), 12 meses, or a chosen year. It follows the type filter, and the bars scroll sideways.
   - Tapping two months compares them: each one's earned and received, and the difference in reais and percent ("Outubro R$ 3.200 · Setembro R$ 2.800 · +R$ 400 (+14%)").
+
+### Third round (Victor, 5 Nov 2026)
+
+- **AC-014-32.** A bell at the top right of Hoje and of the Agenda opens Lembretes. It shows a dot while the phone has Tutora's notifications off (AC-014-16).
+- **AC-014-33.** Ganhos' header has two icon buttons, Evolução and Relatório, each with its name for screen readers. They replace the Relatório button and the "Ver evolução" button.
+- **AC-014-34.** Evolução lists each month of the range under the chart, newest first:
+  - earned, received and to receive;
+  - how many classes and hours;
+  - the change from the month before, in reais and percent ("+R$ 400 · +14%"; no percent after a month of R$ 0).
+- **AC-014-35.** Evolução filters by type (Tudo, Particulares, Escola e emprego), by who (one student, group or place, chosen from a list), and by place kind (Online, Casa do Aluno, Escola, Salinha, Cursinho, Particular). The filters combine. The chart shows earned and received as two bars side by side for each month, with a legend.
+- **AC-014-36.** "Aviso antes da aula" has "Personalizado" beside Desligado, 5, 15, 30 and 60. It opens an hh:mm picker for how long before: from 00:05 to 24:00. The chip and the row then read the chosen time ("2h antes", "1h30 antes").
+- **AC-014-37.** Every value is entered with the design system's field for its kind, and forms no longer use bare steppers:
+  - text and phone: `TextField`;
+  - money: `MoneyField`;
+  - a whole number or a percent: `NumberField`, typed, with small − and + inside;
+  - a length of time: `DurationField`, typed hh:mm, with − and +;
+  - a clock time: `TimeField`, with the clock picker;
+  - a date: `DateField`, with the calendar.
+  - So Lembretes' hours become TimeFields, the setup's prices MoneyFields, and package classes, backups kept, bonus minutes and the commission NumberFields. Class and place durations become DurationFields. This takes the place of AC-014-29.
 
 ### Language
 
