@@ -30,7 +30,6 @@ import app.tutora.designsystem.components.FieldLabel
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.StatTile
 import app.tutora.designsystem.components.StatTone
-import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Lesson
@@ -40,7 +39,6 @@ import app.tutora.domain.dayRange
 import app.tutora.domain.localOf
 import app.tutora.state.LocalServices
 import app.tutora.ui.countText
-import app.tutora.ui.durationText
 import app.tutora.ui.localeOf
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.YearMonth
@@ -68,42 +66,18 @@ fun RequiredLegend() {
     Text(stringResource(R.string.form_requiredLegend), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
 }
 
-/** A duration stepper in 5-minute steps; tapping the time opens hh:mm entry (AC-004-27). */
+/**
+ * A class or place duration: typed hh:mm with − and + in 5-minute steps (AC-004-27, AC-014-37).
+ * Only a length from [min] to [max] reaches [onChange]; a shorter one shows its error.
+ */
 @Composable
-fun DurationStepper(
+fun DurationInput(
     label: String,
     minutes: Int,
     onChange: (Int) -> Unit,
     min: Int = 15,
     max: Int = MAX_DURATION_MIN,
-) {
-    var open by rememberSaveable { mutableStateOf(false) }
-    var exact by rememberSaveable { mutableStateOf<Int?>(minutes) }
-    val shown = durationText(minutes)
-    Stepper(minutes.toLong(), {
-        onChange(
-            it.toInt(),
-        )
-    }, step = 5, min = min.toLong(), max = max.toLong(), format = { shown }, onPressValue = {
-        exact = minutes
-        open = true
-    }, valueLabel = label)
-    if (open) {
-        val value = exact
-        BottomSheet(
-            label,
-            { open = false },
-            subtitle = stringResource(R.string.catalog_exactDuration),
-            actions =
-                listOf { m ->
-                    Button(stringResource(R.string.catalog_done), {
-                        if (value != null && value >= min) onChange(value)
-                        open = false
-                    }, m, enabled = value != null && value >= min)
-                },
-        ) { DurationField(label, minutes, { exact = it }, maxMinutes = max) }
-    }
-}
+) = DurationField(label, minutes, { m -> m?.takeIf { it >= min }?.let(onChange) }, step = 5, minMinutes = min, maxMinutes = max)
 
 /**
  * Arquivar for an active item; Restaurar and Remover para sempre once archived. Removing asks

@@ -37,3 +37,6 @@ interface TextFieldProps {
   className?: string;
 }
 ```
+
+## DurationField steps (spec 014)
+With `step`, small − and + sit inside the duration field (the same circles as `NumberField`) and move it by that many minutes within `minMinutes` and `maxMinutes`; the typed hh:mm then sits centered. A duration in a form is always this field, never a stepper with a sheet (AC-014-37).

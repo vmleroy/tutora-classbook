@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -24,22 +24,27 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import app.tutora.R
-import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.AlertBanner
 import app.tutora.designsystem.components.AlertTone
+import app.tutora.designsystem.components.BottomSheet
+import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
+import app.tutora.designsystem.components.DurationField
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.RowTrailing
-import app.tutora.designsystem.components.Stepper
+import app.tutora.designsystem.components.TimeField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Language
 import app.tutora.domain.PastClasses
 import app.tutora.domain.REMIND_BEFORE_CHOICES
+import app.tutora.domain.REMIND_BEFORE_DEFAULT
+import app.tutora.domain.REMIND_MAX
+import app.tutora.domain.REMIND_MIN
 import app.tutora.state.LocalServices
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.clockTime
@@ -126,6 +131,31 @@ fun rememberExactAlarmPermission(): ExactAlarmPermission {
     }
 }
 
+/**
+ * The bell on Hoje and the Agenda: opens Lembretes, with a dot while the phone has Tutora's
+ * notifications off, read again on coming back to the app (AC-014-32).
+ */
+@Composable
+fun ReminderBell(
+    nav: NavHostController,
+    variant: app.tutora.designsystem.components.IconButtonVariant,
+) {
+    val permission = rememberNotificationPermission()
+    var allowed by remember { mutableStateOf(permission.allowed()) }
+    androidx.lifecycle.compose.LifecycleResumeEffect(permission) {
+        allowed = permission.allowed()
+        onPauseOrDispose { }
+    }
+    app.tutora.designsystem.components.IconButton(
+        IconName.BELL,
+        stringResource(R.string.set_reminders),
+        { nav.navigate(app.tutora.ui.RemindersHome) },
+        Modifier.testTag("bell"),
+        variant = variant,
+        dot = !allowed,
+    )
+}
+
 /** "Seg" / "Mon", for the row of days (AC-014-26). */
 fun dayShort(
     day: DayOfWeek,
@@ -148,11 +178,22 @@ fun dayName(
         .removeSuffix("-feira")
         .replaceFirstChar { it.uppercase() }
 
+/** "15 min antes", "2h antes", "1h30 antes": how long before class (AC-014-12, 36). */
+@Composable
+fun remindText(minutes: Int): String =
+    when {
+        minutes < MINUTES_IN_HOUR -> stringResource(R.string.set_remindMinutes, minutes)
+        minutes % MINUTES_IN_HOUR == 0 -> stringResource(R.string.set_remindHours, minutes / MINUTES_IN_HOUR)
+        else -> stringResource(R.string.set_remindHoursMinutes, minutes / MINUTES_IN_HOUR, minutes % MINUTES_IN_HOUR)
+    }
+
+private const val MINUTES_IN_HOUR = 60
+
 /** "15 min antes · Quem te deve · Aulas para confirmar": what is on; "Desligado" when nothing is. */
 @Composable
 fun remindersSummary(s: app.tutora.domain.Settings): String =
     listOfNotNull(
-        stringResource(R.string.set_remindMinutes, s.remindBefore).takeIf { s.remindBefore > 0 },
+        remindText(s.remindBefore).takeIf { s.remindBefore > 0 },
         stringResource(R.string.set_owedWeekly).takeIf { s.owedWeekly },
         stringResource(R.string.set_confirmDaily).takeIf { s.confirmDaily && s.pastClasses == PastClasses.ASK },
     ).joinToString(" · ").ifEmpty { stringResource(R.string.set_remindOff) }
@@ -176,6 +217,7 @@ fun RemindersScreen(nav: NavHostController) {
     val scope = rememberCoroutineScope()
     val settings by services.settings.collectAsState(initial = null)
     var allowed by remember { mutableStateOf(permission.allowed()) }
+    var customizing by remember { mutableStateOf(false) }
     val s = settings ?: return
 
     fun save(next: app.tutora.domain.Settings) {
@@ -187,7 +229,35 @@ fun RemindersScreen(nav: NavHostController) {
         if (turnedOn && !allowed) permission.request { allowed = it }
     }
 
-    fun hourText(h: Long) = clockTime(LocalTime(h.toInt(), 0), language)
+    if (customizing) {
+        var minutes by remember { mutableIntStateOf(s.remindBefore.takeIf { it > 0 } ?: REMIND_BEFORE_DEFAULT) }
+        BottomSheet(
+            stringResource(R.string.set_remindBefore),
+            { customizing = false },
+            actions =
+                listOf { m ->
+                    Button(stringResource(R.string.set_remindSave), {
+                        save(s.copy(remindBefore = minutes.coerceIn(REMIND_MIN, REMIND_MAX)))
+                        customizing = false
+                    }, m, enabled = minutes in REMIND_MIN..REMIND_MAX)
+                },
+        ) {
+            DurationField(
+                stringResource(R.string.set_remindHowLong),
+                minutes,
+                { it?.let { v -> minutes = v } },
+                Modifier.testTag("remind-duration"),
+                maxMinutes = REMIND_MAX,
+                minMinutes = REMIND_MIN,
+                step = 5,
+            )
+        }
+    }
+
+    fun timeText(
+        h: Int,
+        m: Int,
+    ) = clockTime(LocalTime(h, m), language)
     val anyOn = s.remindBefore > 0 || s.owedWeekly || (s.confirmDaily && s.pastClasses == PastClasses.ASK)
     ScreenScaffold(
         stringResource(R.string.set_reminders),
@@ -231,6 +301,14 @@ fun RemindersScreen(nav: NavHostController) {
                                 { save(s.copy(remindBefore = m)) },
                             )
                         }
+                        // Any time before: a chip reading the chosen time, opening an hh:mm picker (AC-014-36).
+                        val custom = s.remindBefore !in REMIND_BEFORE_CHOICES
+                        Chip(
+                            if (custom) remindText(s.remindBefore) else stringResource(R.string.set_remindCustom),
+                            custom,
+                            { customizing = true },
+                            Modifier.testTag("remind-custom"),
+                        )
                     }
                 },
         )
@@ -239,7 +317,7 @@ fun RemindersScreen(nav: NavHostController) {
                 {
                     ListRow(
                         stringResource(R.string.set_owedWeekly),
-                        subtitle = stringResource(R.string.set_owedWhen, dayName(s.owedDay, language), hourText(s.owedHour.toLong())),
+                        subtitle = stringResource(R.string.set_owedWhen, dayName(s.owedDay, language), timeText(s.owedHour, s.owedMinute)),
                         icon = IconName.WALLET,
                         trailing = RowTrailing.SWITCH,
                         switchValue = s.owedWeekly,
@@ -261,7 +339,10 @@ fun RemindersScreen(nav: NavHostController) {
                                 Modifier.testTag("owed-days"),
                                 size = ControlSize.SM,
                             )
-                            HourRow(s.owedHour, ::hourText) { save(s.copy(owedHour = it)) }
+                            // A clock time: the time picker (AC-014-37).
+                            TimeField(stringResource(R.string.set_hour), s.owedHour, s.owedMinute, { h, m ->
+                                save(s.copy(owedHour = h, owedMinute = m))
+                            })
                         }
                     }
                 } else {
@@ -276,7 +357,7 @@ fun RemindersScreen(nav: NavHostController) {
                     {
                         ListRow(
                             stringResource(R.string.set_confirmDaily),
-                            subtitle = stringResource(R.string.set_confirmDailyWhen, hourText(s.confirmHour.toLong())),
+                            subtitle = stringResource(R.string.set_confirmDailyWhen, timeText(s.confirmHour, s.confirmMinute)),
                             icon = IconName.CALENDAR_CHECK,
                             trailing = RowTrailing.SWITCH,
                             switchValue = s.confirmDaily,
@@ -286,7 +367,9 @@ fun RemindersScreen(nav: NavHostController) {
                     if (s.confirmDaily) {
                         {
                             Column(Modifier.padding(horizontal = Spacing.s4, vertical = Spacing.s2_5)) {
-                                HourRow(s.confirmHour, ::hourText) { save(s.copy(confirmHour = it)) }
+                                TimeField(stringResource(R.string.set_hour), s.confirmHour, s.confirmMinute, { h, m ->
+                                    save(s.copy(confirmHour = h, confirmMinute = m))
+                                })
                             }
                         }
                     } else {
@@ -297,34 +380,3 @@ fun RemindersScreen(nav: NavHostController) {
         }
     }
 }
-
-@Composable
-private fun HourRow(
-    hour: Int,
-    text: (Long) -> String,
-    onChange: (Int) -> Unit,
-) {
-    androidx.compose.foundation.layout.Row(
-        horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-    ) {
-        Text(
-            stringResource(R.string.set_hour),
-            style = TutoraTheme.type.body,
-            color = TutoraTheme.colors.ink,
-        )
-        // The stepper takes the room left, so the label keeps its own width.
-        Stepper(
-            hour.toLong(),
-            { onChange(it.toInt()) },
-            Modifier.weight(1f),
-            step = 1,
-            min = 0,
-            max = LAST_HOUR,
-            format = text,
-            size = ControlSize.SM,
-        )
-    }
-}
-
-private const val LAST_HOUR = 23L

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Spec 014: confirming classes, reminders and the first-run setup. -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="confirm_mark">To confirm</string>
     <string name="status_autoDone">Done by itself</string>
     <plurals name="confirm_count">
@@ -40,6 +40,11 @@
     <string name="set_remindBefore">Before each class</string>
     <string name="set_remindOff">Off</string>
     <string name="set_remindMinutes">%1$d min before</string>
+    <string name="set_remindHours" tools:ignore="PluralsCandidate">%1$dh before</string>
+    <string name="set_remindHoursMinutes" tools:ignore="PluralsCandidate">%1$dh%2$02d before</string>
+    <string name="set_remindCustom">Custom</string>
+    <string name="set_remindHowLong">How long before</string>
+    <string name="set_remindSave">Save</string>
     <string name="set_owedWeekly">Who owes you</string>
     <string name="set_owedWhen">%1$s, %2$s</string>
     <string name="set_confirmDaily">Classes to confirm</string>
@@ -78,7 +83,6 @@
     <string name="earn_byWeek">By week</string>
     <string name="earn_byMonth">By month</string>
     <string name="earn_weekLabel">%1$d–%2$d</string>
-    <string name="earn_seeEvolution">See evolution</string>
     <string name="earn_evolution">Evolution</string>
     <string name="evo_six">6 months</string>
     <string name="evo_twelve">12 months</string>
@@ -87,6 +91,14 @@
     <string name="evo_monthLine">Earned %1$s · received %2$s</string>
     <string name="evo_diffPercent">%1$s (%2$s%%)</string>
     <string name="evo_difference">Difference: %1$s</string>
+    <string name="evo_who">Who</string>
+    <string name="evo_everyone">Everyone</string>
+    <string name="evo_allPlaces">All places</string>
+    <string name="evo_earned">Earned</string>
+    <string name="evo_received">Received</string>
+    <string name="evo_monthTotals">Earned %1$s · received %2$s · to receive %3$s</string>
+    <string name="evo_monthClasses">%1$s · %2$s</string>
+    <string name="evo_change">%1$s · %2$s%%</string>
     <string name="setup_title">First-run setup</string>
     <string name="setup_step">Step %1$d of 4</string>
     <string name="setup_skip">Skip</string>

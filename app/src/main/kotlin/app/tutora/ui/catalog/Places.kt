@@ -30,8 +30,8 @@ import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.MoneyField
+import app.tutora.designsystem.components.NumberField
 import app.tutora.designsystem.components.SegmentedControl
-import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
@@ -447,11 +447,15 @@ private fun PlaceForm(
                     ),
             )
             if (d.payer == Payer.STUDENT && mode == PayMode.CHOOSE) {
-                Field(stringResource(R.string.places_commission)) {
-                    Stepper(d.commissionBp.toLong(), {
-                        d = d.copy(commissionBp = it.toInt())
-                    }, step = 500, min = 0, max = MAX_COMMISSION_BP.toLong(), format = { "${it / 100}%" }, typedScale = 100)
-                }
+                // A percent, typed with − and + in 5% steps; stored in basis points (AC-014-37).
+                NumberField(
+                    stringResource(R.string.places_commission),
+                    d.commissionBp / 100L,
+                    { d = d.copy(commissionBp = (it * 100).toInt()) },
+                    max = MAX_COMMISSION_BP / 100L,
+                    step = 5,
+                    suffix = "%",
+                )
             }
             if (d.payer == Payer.PLACE) {
                 Field(stringResource(R.string.places_cycle)) {
@@ -465,12 +469,7 @@ private fun PlaceForm(
                 }
             }
         }
-        Field(stringResource(R.string.places_duration)) {
-            DurationStepper(stringResource(R.string.places_duration), d.defaultDurationMin, {
-                d =
-                    d.copy(defaultDurationMin = it)
-            })
-        }
+        DurationInput(stringResource(R.string.places_duration), d.defaultDurationMin, { d = d.copy(defaultDurationMin = it) })
         if (d.kind == PlaceKind.STUDENT_HOME) {
             Field(stringResource(R.string.places_travelLabel)) {
                 SegmentedControl(

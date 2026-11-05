@@ -74,8 +74,10 @@ class SettingsRepository(
                 "owed_weekly" to s.owedWeekly.toString(),
                 "owed_day" to s.owedDay.isoDayNumber.toString(),
                 "owed_hour" to s.owedHour.toString(),
+                "owed_minute" to s.owedMinute.toString(),
                 "confirm_daily" to s.confirmDaily.toString(),
                 "confirm_hour" to s.confirmHour.toString(),
+                "confirm_minute" to s.confirmMinute.toString(),
                 "teaching" to org.json.JSONArray(s.teaching.map { it.key }.sorted()).toString(),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
@@ -141,8 +143,10 @@ class SettingsRepository(
                 owedWeekly = v["owed_weekly"] != "false",
                 owedDay = v["owed_day"]?.toIntOrNull()?.takeIf { it in 1..7 }?.let { DayOfWeek(it) } ?: DayOfWeek.MONDAY,
                 owedHour = v["owed_hour"]?.toIntOrNull() ?: 8,
+                owedMinute = v["owed_minute"]?.toIntOrNull()?.coerceIn(0, 59) ?: 0,
                 confirmDaily = v["confirm_daily"] != "false",
                 confirmHour = v["confirm_hour"]?.toIntOrNull() ?: 20,
+                confirmMinute = v["confirm_minute"]?.toIntOrNull()?.coerceIn(0, 59) ?: 0,
                 teaching = v["teaching"]?.let(::skipped)?.mapNotNull(Teaching::fromKey)?.toSet() ?: Teaching.entries.toSet(),
             )
         }

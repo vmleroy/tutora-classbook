@@ -1,8 +1,11 @@
 package app.tutora.ui.earnings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -16,23 +19,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
+import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
+import app.tutora.designsystem.components.ListGroup
+import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.MonthBar
 import app.tutora.designsystem.components.MonthBars
+import app.tutora.designsystem.components.RowTrailing
+import app.tutora.designsystem.components.SelectField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Bar
+import app.tutora.domain.EvolutionFilter
+import app.tutora.domain.MonthDetail
+import app.tutora.domain.PayerKind
+import app.tutora.domain.PayerRef
 import app.tutora.domain.PeriodKind
+import app.tutora.domain.PlaceKind
 import app.tutora.domain.TypeFilter
 import app.tutora.domain.compareBars
 import app.tutora.domain.dateOf
@@ -40,7 +54,11 @@ import app.tutora.domain.instantOf
 import app.tutora.domain.monthOf
 import app.tutora.state.LocalServices
 import app.tutora.ui.ScreenScaffold
+import app.tutora.ui.countText
+import app.tutora.ui.durationText
+import app.tutora.ui.kindName
 import app.tutora.ui.monthYear
+import app.tutora.ui.placeName
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
@@ -64,16 +82,25 @@ fun EvolutionScreen(nav: NavHostController) {
     var range by rememberSaveable { mutableStateOf(EvolutionRange.SIX) }
     var year by rememberSaveable { mutableIntStateOf(today.year) }
     var filter by rememberSaveable { mutableStateOf(TypeFilter.ALL) }
+    var payerKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var kind by rememberSaveable { mutableStateOf<PlaceKind?>(null) }
+    var choosingWho by rememberSaveable { mutableStateOf(false) }
     var picked by rememberSaveable { mutableStateOf(listOf<Int>()) }
+    val payer =
+        payerKey?.let { k ->
+            PayerKind.entries.firstOrNull { k.startsWith(it.key + ":") }?.let { PayerRef(it, k.substringAfter(":")) }
+        }
+    val payers = rememberPayers()
     val (first, count) =
         when (range) {
             EvolutionRange.SIX -> monthOf(today).minus(DatePeriod(months = SHORT_RANGE - 1)) to SHORT_RANGE
             EvolutionRange.TWELVE -> monthOf(today).minus(DatePeriod(months = MONTHS_IN_YEAR - 1)) to MONTHS_IN_YEAR
             EvolutionRange.YEAR -> LocalDate(year, 1, 1) to MONTHS_IN_YEAR
         }
-    val bars by remember(first, count, filter) {
-        services.earningsRepo.evolution(first, count, filter, today, zone)
+    val months by remember(first, count, filter, payer, kind) {
+        services.earningsRepo.evolution(first, count, EvolutionFilter(filter, payer, kind), today, zone)
     }.collectAsState(initial = emptyList())
+    val bars = months.map { it.bar }
     ScreenScaffold(
         stringResource(R.string.earn_evolution),
         "evolution-screen",
@@ -112,12 +139,24 @@ fun EvolutionScreen(nav: NavHostController) {
                 }, variant = IconButtonVariant.PLAIN, enabled = year < today.year)
             }
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        // Type, who and place kind combine (AC-014-35).
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             listOf(
                 TypeFilter.ALL to R.string.earn_all,
                 TypeFilter.PRIVATE to R.string.earn_private,
                 TypeFilter.JOB to R.string.earn_job,
             ).forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
+        }
+        SelectField(
+            payers.firstOrNull { it.first == payer }?.second ?: stringResource(R.string.evo_everyone),
+            { choosingWho = true },
+            Modifier.testTag("evo-who"),
+            label = stringResource(R.string.evo_who),
+            icon = IconName.USERS,
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+            Chip(stringResource(R.string.evo_allPlaces), kind == null, { kind = null })
+            EVOLUTION_KINDS.forEach { k -> Chip(kindName(k), kind == k, { kind = if (kind == k) null else k }) }
         }
         val labels = bars.map { barLabel(it, PeriodKind.YEAR, language) }
         MonthBars(
@@ -127,6 +166,7 @@ fun EvolutionScreen(nav: NavHostController) {
             selected = picked.toSet(),
             // A third month replaces the older choice, so two are compared at most.
             onSelect = { i -> picked = if (i in picked) picked - i else (picked + i).takeLast(2) },
+            pairs = stringResource(R.string.evo_earned) to stringResource(R.string.evo_received),
         )
         val chosen = picked.mapNotNull { bars.getOrNull(it) }
         when (chosen.size) {
@@ -134,7 +174,117 @@ fun EvolutionScreen(nav: NavHostController) {
             1 -> Card(Modifier.testTag("evolution-month")) { MonthLine(chosen[0]) }
             else -> Comparison(chosen[0], chosen[1])
         }
+        // Each month, newest first: totals, classes and hours, and the change from the month before (AC-014-34).
+        if (months.isNotEmpty()) {
+            ListGroup(
+                months.reversed().map<MonthDetail, @Composable () -> Unit> { m -> { MonthRow(m) } },
+                Modifier.testTag("evolution-months"),
+            )
+        }
     }
+    if (choosingWho) {
+        BottomSheet(stringResource(R.string.evo_who), { choosingWho = false }) {
+            ListGroup(
+                (listOf<Pair<PayerRef?, String>>(null to stringResource(R.string.evo_everyone)) + payers).map { (p, name) ->
+                    {
+                        ListRow(
+                            name,
+                            trailing = RowTrailing.NONE,
+                            onClick = {
+                                payerKey = p?.let { "${it.kind.key}:${it.id}" }
+                                picked = emptyList()
+                                choosingWho = false
+                            },
+                        )
+                    }
+                },
+            )
+        }
+    }
+}
+
+/** The kinds of place Evolução filters by (AC-014-35). */
+private val EVOLUTION_KINDS =
+    listOf(PlaceKind.ONLINE, PlaceKind.STUDENT_HOME, PlaceKind.SCHOOL, PlaceKind.SALINHA, PlaceKind.COURSE, PlaceKind.PRIVATE)
+
+/** Everyone who can pay, by name: students, groups and places (AC-014-35). */
+@Composable
+private fun rememberPayers(): List<Pair<PayerRef, String>> {
+    val services = LocalServices.current
+    val students by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
+    val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
+    val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
+    return students.map { PayerRef(PayerKind.STUDENT, it.student.id) to it.student.name } +
+        groups.map { PayerRef(PayerKind.GROUP, it.id) to it.name } +
+        places.map { PayerRef(PayerKind.PLACE, it.place.id) to placeName(it.place) }
+}
+
+/** "Outubro 2026", its totals, "6 aulas · 07:30", and "+R$ 400,00 · +14%" against the month before. */
+@Composable
+private fun MonthRow(m: MonthDetail) {
+    val language = currentLanguage()
+    val c = TutoraTheme.colors
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s0_5),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(monthYear(m.bar.first, language), style = TutoraTheme.type.bodyStrong, color = c.ink, modifier = Modifier.weight(1f))
+            m.change?.let { ch ->
+                Text(
+                    changeText(ch),
+                    style = TutoraTheme.type.caption.copy(fontFeatureSettings = "tnum"),
+                    color =
+                        if (ch.difference < 0) {
+                            c.dangerInk
+                        } else if (ch.difference > 0) {
+                            c.successInk
+                        } else {
+                            c.inkMuted
+                        },
+                )
+            }
+        }
+        Text(
+            stringResource(
+                R.string.evo_monthTotals,
+                formatMoney(m.bar.earned, language),
+                formatMoney(m.bar.received, language),
+                formatMoney(m.toReceive, language),
+            ),
+            style = TutoraTheme.type.meta,
+            color = c.inkMuted,
+        )
+        Text(
+            stringResource(
+                R.string.evo_monthClasses,
+                countText(R.string.schedule_count_zero, R.plurals.schedule_count, m.classes),
+                durationText(m.minutes),
+            ),
+            style = TutoraTheme.type.meta,
+            color = c.inkMuted,
+        )
+    }
+}
+
+/** "+R$ 400,00 · +14%", "−R$ 100,00 · −5%", or just the reais after a month of R$ 0. */
+@Composable
+private fun changeText(c: app.tutora.domain.Comparison): String {
+    val language = currentLanguage()
+
+    fun sign(v: Long) =
+        if (v > 0) {
+            "+"
+        } else if (v < 0) {
+            "−"
+        } else {
+            ""
+        }
+    val money = sign(c.difference) + formatMoney(kotlin.math.abs(c.difference), language)
+    return c.percent?.let { stringResource(R.string.evo_change, money, sign(it) + kotlin.math.abs(it)) } ?: money
 }
 
 @Composable

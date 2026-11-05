@@ -104,6 +104,8 @@ data class EarnedClass(
     val commission: Cents,
     val bonus: Cents,
     val minutes: Int = 0,
+    /** Where it was given, for Evolução's place-kind filter (AC-014-35). */
+    val placeKind: PlaceKind? = null,
 ) {
     /** What the teacher keeps: after the place's commission and what a bonus paid for. */
     val earned: Cents get() = (gross - commission - bonus).coerceAtLeast(0)
@@ -133,7 +135,7 @@ fun earnedOf(
     val commission =
         if (c.placePayer == Payer.STUDENT && c.commissionBp > 0 && base > 0) base - afterCommission(base, c.commissionBp) else 0L
     val minutes = if (c.status == LessonStatus.DONE) c.minutes else 0
-    return EarnedClass(c.lessonId, c.day, type, c.payer, c.payerName, gross, commission, minOf(bonus, gross), minutes)
+    return EarnedClass(c.lessonId, c.day, type, c.payer, c.payerName, gross, commission, minOf(bonus, gross), minutes, c.placeKind)
 }
 
 /** A credit row as the bonus attribution reads it: oldest first. */
@@ -185,6 +187,9 @@ data class Received(
     val day: LocalDate,
     val cents: Cents,
     val type: EarningsType,
+    /** Who paid and the kind of place, for Evolução's filters (AC-014-35). */
+    val payer: PayerRef? = null,
+    val placeKind: PlaceKind? = null,
 )
 
 /** What a payment gave on top of the classes it paid: earned and received on its day (AC-016-27). */
@@ -194,6 +199,7 @@ data class Tip(
     val type: EarningsType,
     val payer: PayerRef,
     val payerName: String,
+    val placeKind: PlaceKind? = null,
 )
 
 data class Summary(
@@ -346,6 +352,62 @@ data class Comparison(
     /** Whole percent, rounded half away from zero; null when the earlier month earned nothing. */
     val percent: Long?,
 )
+
+/** Evolução's filters: the type, one payer (student, group or place) and a place kind; null is any (AC-014-35). */
+data class EvolutionFilter(
+    val type: TypeFilter = TypeFilter.ALL,
+    val payer: PayerRef? = null,
+    val kind: PlaceKind? = null,
+) {
+    private fun fits(
+        p: PayerRef?,
+        k: PlaceKind?,
+    ) = (payer == null || p == payer) && (kind == null || k == kind)
+
+    fun classes(list: List<EarnedClass>) = list.filter { fits(it.payer, it.placeKind) }
+
+    fun received(list: List<Received>) = list.filter { fits(it.payer, it.placeKind) }
+
+    fun tips(list: List<Tip>) = list.filter { fits(it.payer, it.placeKind) }
+
+    /** A school's salary is that school's, and a Escola's. */
+    fun salaries(list: List<Salary>) = list.filter { fits(PayerRef(PayerKind.PLACE, it.placeId), PlaceKind.SCHOOL) }
+}
+
+/** One month of Evolução: its totals, its classes and hours, and the change from the month before (AC-014-34). */
+data class MonthDetail(
+    val bar: Bar,
+    val toReceive: Cents,
+    val classes: Int,
+    val minutes: Int,
+    /** Against the month before; null for the first month of the range. */
+    val change: Comparison?,
+)
+
+fun monthDetails(
+    spans: List<Pair<LocalDate, LocalDate>>,
+    classes: List<EarnedClass>,
+    received: List<Received>,
+    salaries: List<Salary>,
+    filter: EvolutionFilter,
+    today: LocalDate,
+    left: Map<String, Cents>,
+    tips: List<Tip> = emptyList(),
+): List<MonthDetail> {
+    val shownClasses = filter.classes(classes).filter { filter.type.matches(it.type) }
+    val b =
+        bars(spans, filter.classes(classes), filter.received(received), filter.salaries(salaries), filter.type, today, filter.tips(tips))
+    return b.mapIndexed { i, bar ->
+        val inMonth = shownClasses.filter { it.day >= bar.first && it.day <= bar.last }
+        MonthDetail(
+            bar,
+            sum(inMonth.map { left[it.lessonId] ?: 0 }),
+            inMonth.size,
+            inMonth.sumOf { it.minutes },
+            if (i > 0) compareBars(b[i - 1], bar) else null,
+        )
+    }
+}
 
 fun compareBars(
     a: Bar,

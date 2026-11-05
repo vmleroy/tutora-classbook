@@ -27,6 +27,7 @@ import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Checkbox
 import app.tutora.designsystem.components.ControlSize
+import app.tutora.designsystem.components.DurationField
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
@@ -35,7 +36,6 @@ import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.MoneyField
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SegmentedControl
-import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
@@ -56,8 +56,7 @@ import app.tutora.state.LocalServices
 import app.tutora.ui.LessonEdit
 import app.tutora.ui.LiveLesson
 import app.tutora.ui.ScreenScaffold
-import app.tutora.ui.catalog.DurationStepper
-import app.tutora.ui.catalog.Field
+import app.tutora.ui.catalog.DurationInput
 import app.tutora.ui.clockTime
 import app.tutora.ui.durationText
 import app.tutora.ui.live.rememberStartLesson
@@ -347,9 +346,7 @@ fun DoneSheet(
                 listOf(confirm)
             },
     ) {
-        Field(stringResource(R.string.lesson_realDuration)) {
-            DurationStepper(stringResource(R.string.lesson_realDuration), minutes, { minutes = it })
-        }
+        DurationInput(stringResource(R.string.lesson_realDuration), minutes, { minutes = it })
         Fact(stringResource(R.string.lesson_value), worthText(value), muted = value == Worth.Unset)
         if (offer != null) {
             Checkbox(stringResource(R.string.pay_useBonusHere) + " · " + offer.label, useBonus, { useBonus = it })
@@ -364,13 +361,13 @@ fun DoneSheet(
                     )
                 }
                 if (inMinutes) {
-                    Stepper(
-                        minutesUse,
-                        { bonusMinutes = it },
+                    // Bonus minutes are a length of time: hh:mm with − and + (AC-014-37).
+                    DurationField(
+                        stringResource(R.string.pay_useBonusAmount),
+                        minutesUse.toInt(),
+                        { m -> m?.let { bonusMinutes = it.toLong() } },
                         step = 5,
-                        min = 0,
-                        max = minOf(offer.minutes, minutes).toLong(),
-                        valueLabel = stringResource(R.string.pay_useBonusAmount),
+                        maxMinutes = minOf(offer.minutes, minutes),
                     )
                 } else {
                     MoneyField(

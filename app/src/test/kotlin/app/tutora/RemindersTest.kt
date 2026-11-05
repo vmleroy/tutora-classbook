@@ -4,6 +4,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.data.SettingsRepository
 import app.tutora.domain.BuiltinPlace
@@ -180,5 +181,45 @@ class RemindersTest {
         h.go(compose, RemindersHome)
         compose.onNodeWithTag("exact-off").assertExists().performClick()
         assertTrue(h.exactAlarm.opened)
+    }
+
+    @Test
+    fun `AC-014-32 a bell on Hoje and the Agenda opens Lembretes, with a dot while notifications are off`() {
+        val h = Harness(t)
+        h.notificationPermission.allowed = false
+        h.show(compose)
+        compose.onNodeWithTag("bell").assertExists()
+        compose.onNodeWithTag("dot", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("bell").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("reminders-screen").assertExists()
+        h.go(compose, app.tutora.ui.ScheduleGraph)
+        compose.onNodeWithTag("bell").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("reminders-screen").assertExists()
+    }
+
+    @Test
+    fun `AC-014-36 Personalizado takes any time before, from 5 minutes to a day, and reads it back`() {
+        val h = Harness(t)
+        h.show(compose)
+        h.go(compose, RemindersHome)
+        compose.onNodeWithTag("remind-custom").performClick()
+        h.settle(compose)
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasSetTextAction() and
+                    androidx.compose.ui.test
+                        .hasAnyAncestor(
+                            androidx.compose.ui.test
+                                .hasTestTag("remind-duration"),
+                        ),
+            ).performTextReplacement("130")
+        compose.onNodeWithText("Salvar").performClick()
+        h.awaitDb(compose) { h.services.currentSettings().remindBefore == 90 }
+        assertEquals(90, runBlocking { h.services.currentSettings().remindBefore })
+        h.settle(compose)
+        compose.onNodeWithText("1h30 antes").assertExists()
     }
 }

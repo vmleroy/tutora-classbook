@@ -136,14 +136,12 @@
     <string name="catalog_removeTitle">Remove %1$s?</string>
     <string name="catalog_removeBody">This cannot be undone.</string>
     <string name="catalog_removePlaceBody">This cannot be undone. This place\'s groups and student links go too; the students stay.</string>
-    <string name="catalog_done">Done</string>
     <string name="catalog_errors_nameRequired">Give it a name to save.</string>
     <string name="catalog_errors_placeRequired">Link the student to at least one place.</string>
     <string name="catalog_errors_builtinFixed">Built-in places can\'t be renamed or archived.</string>
     <string name="catalog_errors_commissionRange" formatted="false">Commission goes from 0% to 90%.</string>
     <string name="catalog_errors_notArchived">Archive it before removing.</string>
     <string name="catalog_errors_notFound">Not found.</string>
-    <string name="catalog_exactDuration">Exact duration</string>
     <string name="schedule_day">Day</string>
     <string name="schedule_week">Week</string>
     <string name="schedule_today">Today</string>

@@ -101,9 +101,15 @@ class Reminders(
                 null
             }
         ctx.reminders.set(ReminderKind.CLASS, next?.at?.isoText(), next?.lessonId)
-        ctx.reminders.set(ReminderKind.OWED, if (s.owedWeekly) nextWeekly(now, s.owedDay, s.owedHour, ctx.zone()).isoText() else null)
+        ctx.reminders.set(
+            ReminderKind.OWED,
+            if (s.owedWeekly) nextWeekly(now, s.owedDay, s.owedHour, ctx.zone(), s.owedMinute).isoText() else null,
+        )
         // With "Marcar como dadas sozinhas" the daily alarm still comes, to mark them with the app closed, but says nothing.
-        ctx.reminders.set(ReminderKind.CONFIRM, if (dailyAlarm(s)) nextDaily(now, s.confirmHour, ctx.zone()).isoText() else null)
+        ctx.reminders.set(
+            ReminderKind.CONFIRM,
+            if (dailyAlarm(s)) nextDaily(now, s.confirmHour, ctx.zone(), s.confirmMinute).isoText() else null,
+        )
     }
 
     private fun dailyAlarm(s: Settings) = (s.confirmDaily && s.pastClasses == PastClasses.ASK) || s.pastClasses == PastClasses.AUTO

@@ -147,4 +147,51 @@ class EarningsRulesTest {
             )
         assertEquals(listOf("Colégio" to 240_000L, "Ana" to 24_000L), s.map { it.name to it.cents })
     }
+
+    @Test
+    fun `AC-014-34 each month of Evolucao has its totals, classes, hours and the change from the month before`() {
+        val classes =
+            listOfNotNull(
+                earnedOf(record(id = "s", day = LocalDate(2026, 9, 10))),
+                earnedOf(record(id = "o1", day = LocalDate(2026, 10, 6), minutes = 90)),
+                earnedOf(record(id = "o2", day = LocalDate(2026, 10, 8))),
+            )
+        val months =
+            monthDetails(
+                monthSpans(LocalDate(2026, 9, 1), 2),
+                classes,
+                listOf(Received(LocalDate(2026, 10, 9), 12_000, EarningsType.PRIVATE, ana)),
+                emptyList(),
+                EvolutionFilter(),
+                oct22,
+                mapOf("o2" to 12_000L),
+            )
+        val oct = months[1]
+        assertEquals(30_000L, oct.bar.earned)
+        assertEquals(12_000L, oct.bar.received)
+        assertEquals(12_000L, oct.toReceive)
+        assertEquals(2, oct.classes)
+        assertEquals(150, oct.minutes)
+        assertEquals(18_000L, oct.change?.difference)
+        assertEquals(150L, oct.change?.percent)
+        assertNull(months[0].change)
+    }
+
+    @Test
+    fun `AC-014-35 Evolucao filters by who pays and by place kind, combined with the type`() {
+        val bia = PayerRef(PayerKind.STUDENT, "bia")
+        val classes =
+            listOfNotNull(
+                earnedOf(record(id = "a")),
+                earnedOf(record(id = "h", kind = PlaceKind.STUDENT_HOME)),
+                earnedOf(record(id = "b").copy(payer = bia)),
+            )
+        val span = monthSpans(LocalDate(2026, 10, 1), 1)
+
+        fun earned(f: EvolutionFilter) = monthDetails(span, classes, emptyList(), emptyList(), f, oct22, emptyMap()).single().bar.earned
+        assertEquals(36_000L, earned(EvolutionFilter()))
+        assertEquals(24_000L, earned(EvolutionFilter(payer = ana)))
+        assertEquals(12_000L, earned(EvolutionFilter(payer = ana, kind = PlaceKind.STUDENT_HOME)))
+        assertEquals(0L, earned(EvolutionFilter(type = TypeFilter.JOB)))
+    }
 }

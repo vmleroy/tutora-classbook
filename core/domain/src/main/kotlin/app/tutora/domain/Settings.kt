@@ -50,9 +50,11 @@ data class Settings(
     val owedWeekly: Boolean = true,
     val owedDay: kotlinx.datetime.DayOfWeek = kotlinx.datetime.DayOfWeek.MONDAY,
     val owedHour: Int = 8,
+    val owedMinute: Int = 0,
     /** Aulas para confirmar, daily (AC-014-14): on, 20:00. */
     val confirmDaily: Boolean = true,
     val confirmHour: Int = 20,
+    val confirmMinute: Int = 0,
     /** Como você dá aula (AC-014-19); all three for teachers from before spec 014. */
     val teaching: Set<Teaching> = Teaching.entries.toSet(),
 )

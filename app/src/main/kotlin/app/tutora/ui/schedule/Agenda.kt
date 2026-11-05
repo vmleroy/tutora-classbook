@@ -230,6 +230,11 @@ fun AgendaScreen(nav: NavHostController) {
                         variant = ButtonVariant.OUTLINE,
                         size = ControlSize.SM,
                     )
+                    // The bell to Lembretes (AC-014-32).
+                    app.tutora.ui.reminders.ReminderBell(
+                        nav,
+                        app.tutora.designsystem.components.IconButtonVariant.SUNKEN,
+                    )
                 }
                 SegmentedControl(
                     listOf(

@@ -21,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
@@ -40,7 +39,6 @@ import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.MoneyField
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SegmentedControl
-import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
@@ -57,7 +55,6 @@ import app.tutora.ui.StudentEdit
 import app.tutora.ui.backup.rememberBackupPicker
 import app.tutora.usecases.SETUP_HOME_CENTS
 import app.tutora.usecases.SETUP_ONLINE_CENTS
-import app.tutora.usecases.SETUP_PRICE_STEP
 import app.tutora.usecases.SETUP_TRAVEL_CENTS
 import app.tutora.usecases.SetupChoices
 import kotlinx.coroutines.Dispatchers
@@ -65,9 +62,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val STEPS = 4
-
-/** The price stepper's share of its row against the label's 1. */
-private const val STEPPER_SHARE = 1.3f
 
 /** "Aulas particulares · Salinha ou cursinho", Ajustes' line for Como você dá aula. */
 @Composable
@@ -346,33 +340,14 @@ private fun StepBar(step: Int) {
     }
 }
 
-/** A built-in place's price per hour, R$ 5 at a time (AC-014-21). */
+/** A built-in place's price per hour: money, typed like any amount (AC-014-21, 37). */
 @Composable
 private fun PriceRow(
     place: String,
     cents: Long,
     onChange: (Long) -> Unit,
 ) {
-    val language = currentLanguage()
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-        Column(Modifier.weight(1f)) {
-            Text(place, style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
-            Text(stringResource(R.string.setup_perHour), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
-        }
-        // The stepper takes a little more of the row than the label, so neither is squeezed.
-        Stepper(
-            cents,
-            onChange,
-            Modifier.weight(STEPPER_SHARE),
-            step = SETUP_PRICE_STEP,
-            min = SETUP_PRICE_STEP,
-            // Whole reais ("R$ 100"): the step is R$ 5, and the full "R$ 100,00" doesn't fit beside − and +.
-            format = { formatMoney(it, language, compact = true) },
-            valueLabel = place,
-            size = ControlSize.SM,
-            input = app.tutora.designsystem.components.StepperInput.MONEY,
-        )
-    }
+    MoneyField(place, cents, { onChange(it ?: 0) }, helper = stringResource(R.string.setup_perHour))
 }
 
 /** RESUMO: the choices in one line, as the mockup's (AC-014-23). */

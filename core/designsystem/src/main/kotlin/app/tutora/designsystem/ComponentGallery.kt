@@ -142,6 +142,7 @@ val galleryComponents =
         "ThemeCard",
         "ColorSlider",
         "UndoBar",
+        "NumberField",
     )
 
 /**
@@ -208,7 +209,14 @@ fun GallerySections() {
         Button("Carregando", {}, loading = true)
         Button("Desabilitado", {}, enabled = false)
     }
-    Section("IconButton") { FlowRow { IconButtonVariant.entries.forEach { IconButton(IconName.PLUS, it.name, {}, variant = it) } } }
+    Section("IconButton") {
+        FlowRow {
+            IconButtonVariant.entries.forEach { IconButton(IconName.PLUS, it.name, {}, variant = it) }
+            // The bell with its dot: notifications are off on the phone (AC-014-32).
+            IconButton(IconName.BELL, "Lembretes", {}, dot = true)
+            IconButton(IconName.CHART, "Evolução", {})
+        }
+    }
     Section("Fab") { Fab({}) }
     Section("SegmentedControl") {
         SegmentedControl(listOf("mes" to "Mês", "tri" to "Trimestre", "ano" to "Ano"), segment, { segment = it }, "Período")
@@ -246,6 +254,9 @@ fun GallerySections() {
         MoneyField("Valor da aula", cents, { cents = it ?: 0 })
         MoneyField("Preço por aula", null, {}, placeholder = "Sem preço")
         DurationField("Duração", 90, {})
+        // Typed hh:mm with − and + inside, 5 minutes a step (AC-014-37).
+        var lessonMinutes by remember { mutableIntStateOf(60) }
+        DurationField("Duração da aula", lessonMinutes, { lessonMinutes = it ?: lessonMinutes }, step = 5, minMinutes = 5)
         TextField("Nome", "", {}, error = "Digite o nome", required = true)
         FieldError("Escolha um aluno ou turma")
     }
@@ -296,6 +307,7 @@ fun GallerySections() {
             "Evolução",
             selected = picked,
             onSelect = { i -> picked = if (i in picked) picked - i else (picked + i).toList().takeLast(2).toSet() },
+            pairs = "Ganho" to "Recebido",
         )
     }
     Section("Card") {
@@ -530,6 +542,14 @@ fun GallerySections() {
             .DayHeading(4, "Hoje", aside = "1 aula · R$ 80", today = true)
         app.tutora.designsystem.components
             .DayHeading(5, "Quinta", aside = "Sem aulas")
+    }
+    Section("NumberField") {
+        var count by remember { mutableLongStateOf(10L) }
+        app.tutora.designsystem.components
+            .NumberField("Aulas no pacote", count, { count = it }, min = 1, max = 100)
+        var percent by remember { mutableLongStateOf(30L) }
+        app.tutora.designsystem.components
+            .NumberField("Comissão do local", percent, { percent = it }, max = 90, step = 5, suffix = "%")
     }
     Section("UndoBar") {
         app.tutora.designsystem.components

@@ -17,6 +17,9 @@
     <string name="ds_required">obrigatório</string>
     <string name="ds_remove">Remover %1$s</string>
     <string name="ds_forecast">Prevista</string>
+    <string name="ds_increaseOf">Aumentar %1$s</string>
+    <string name="ds_decreaseOf">Diminuir %1$s</string>
+    <string name="ds_number_min">No mínimo %1$s</string>
     <string name="ds_toConfirm">A confirmar</string>
     <string name="ds_live">Ao vivo</string>
 </resources>

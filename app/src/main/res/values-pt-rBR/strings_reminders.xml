@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Spec 014: confirming classes, reminders and the first-run setup. -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="confirm_mark">A confirmar</string>
     <string name="status_autoDone">Dada sozinha</string>
     <plurals name="confirm_count">
@@ -43,6 +43,11 @@
     <string name="set_remindBefore">Aviso antes da aula</string>
     <string name="set_remindOff">Desligado</string>
     <string name="set_remindMinutes">%1$d min antes</string>
+    <string name="set_remindHours" tools:ignore="PluralsCandidate">%1$dh antes</string>
+    <string name="set_remindHoursMinutes" tools:ignore="PluralsCandidate">%1$dh%2$02d antes</string>
+    <string name="set_remindCustom">Personalizado</string>
+    <string name="set_remindHowLong">Quanto tempo antes</string>
+    <string name="set_remindSave">Salvar</string>
     <string name="set_owedWeekly">Quem te deve</string>
     <string name="set_owedWhen">%1$s, %2$s</string>
     <string name="set_confirmDaily">Aulas para confirmar</string>
@@ -84,7 +89,6 @@
     <string name="earn_byWeek">Por semana</string>
     <string name="earn_byMonth">Por mês</string>
     <string name="earn_weekLabel">%1$d–%2$d</string>
-    <string name="earn_seeEvolution">Ver evolução</string>
     <string name="earn_evolution">Evolução</string>
     <string name="evo_six">6 meses</string>
     <string name="evo_twelve">12 meses</string>
@@ -93,6 +97,14 @@
     <string name="evo_monthLine">Ganho %1$s · recebido %2$s</string>
     <string name="evo_diffPercent">%1$s (%2$s%%)</string>
     <string name="evo_difference">Diferença: %1$s</string>
+    <string name="evo_who">Quem</string>
+    <string name="evo_everyone">Todos</string>
+    <string name="evo_allPlaces">Todos os locais</string>
+    <string name="evo_earned">Ganho</string>
+    <string name="evo_received">Recebido</string>
+    <string name="evo_monthTotals">Ganho %1$s · recebido %2$s · a receber %3$s</string>
+    <string name="evo_monthClasses">%1$s · %2$s</string>
+    <string name="evo_change">%1$s · %2$s%%</string>
     <string name="setup_title">Configuração inicial</string>
     <string name="setup_step">Passo %1$d de 4</string>
     <string name="setup_skip">Pular</string>

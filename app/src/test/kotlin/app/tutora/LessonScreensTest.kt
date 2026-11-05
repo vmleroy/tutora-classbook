@@ -100,7 +100,7 @@ class LessonScreensTest {
         h.settle(compose)
         exists("Duração real")
         exists("Confirmar · R$ 120,00")
-        compose.onNodeWithContentDescription("Aumentar").performClick()
+        compose.onNodeWithContentDescription("Aumentar Duração real").performClick()
         h.settle(compose)
         exists("Confirmar · R$ 130,00")
         compose.onNode(hasPlainText("Confirmar · R$ 130,00")).performClick()

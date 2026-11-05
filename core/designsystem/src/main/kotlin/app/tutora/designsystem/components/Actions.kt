@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -138,6 +139,8 @@ fun IconButton(
     modifier: Modifier = Modifier,
     variant: IconButtonVariant = IconButtonVariant.SUNKEN,
     enabled: Boolean = true,
+    /** A small red dot at the top end: something there needs a look (the bell, AC-014-32). */
+    dot: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     val (bg, fg) =
@@ -161,6 +164,17 @@ fun IconButton(
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, tint = fg, size = if (square) Size.iconLg else Size.icon)
+        if (dot) {
+            Box(
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(Spacing.s2_5)
+                    .size(Size.dot)
+                    .clip(CircleShape)
+                    .background(c.danger)
+                    .testTag("dot"),
+            )
+        }
     }
 }
 

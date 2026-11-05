@@ -27,9 +27,6 @@ const val SETUP_HOME_CENTS = 12_000L
 /** "Fixo" in the setup starts at R$ 20,00, as the mockup shows; the teacher types another (AC-014-25). */
 const val SETUP_TRAVEL_CENTS = 2_000L
 
-/** The − and + of the prices step: R$ 5 at a time, never below R$ 5. */
-const val SETUP_PRICE_STEP = 500L
-
 /** The first-run setup (spec 014). Backup automático is saved by [Backups] when a folder is chosen. */
 class Setup(
     private val ctx: Ctx,

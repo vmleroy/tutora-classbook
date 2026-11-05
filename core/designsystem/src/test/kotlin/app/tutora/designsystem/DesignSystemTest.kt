@@ -119,8 +119,8 @@ class DesignSystemTest {
                 ) { Column(Modifier.verticalScroll(rememberScrollState())) { GallerySections() } }
             }
         }
-        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana), UndoBar (014).
-        assertEquals(42, galleryComponents.size)
+        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana), UndoBar and NumberField (014).
+        assertEquals(43, galleryComponents.size)
         for (name in galleryComponents) compose.onNodeWithTag("section-$name").assertExists()
         isDark = true
         compose.waitForIdle()
@@ -374,5 +374,35 @@ class DesignSystemTest {
         compose.onNodeWithTag("stepper-entry").performImeAction()
         compose.waitForIdle()
         assertEquals(13_550L, cents)
+    }
+
+    @Test
+    fun `AC-014-37 a number is typed in its field, with − and + inside, and a duration moves by its step`() {
+        var count by mutableStateOf(10L)
+        var minutes by mutableStateOf(60)
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Column {
+                    app.tutora.designsystem.components
+                        .NumberField("Aulas", count, { count = it }, min = 1, max = 100)
+                    app.tutora.designsystem.components
+                        .DurationField("Duração", minutes, { minutes = it ?: minutes }, step = 5, minMinutes = 5)
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("Increase Aulas").performClick()
+        compose.waitForIdle()
+        assertEquals(11L, count)
+        compose.onNodeWithText("11").performTextReplacement("25")
+        compose.waitForIdle()
+        assertEquals(25L, count)
+        // Past the maximum, the number stays.
+        compose.onNodeWithText("25").performTextReplacement("250")
+        compose.waitForIdle()
+        assertEquals(25L, count)
+        compose.onNodeWithContentDescription("Decrease Duração").performClick()
+        compose.waitForIdle()
+        assertEquals(55, minutes)
+        compose.onNodeWithText("00:55").assertExists()
     }
 }

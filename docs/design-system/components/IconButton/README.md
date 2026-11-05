@@ -28,3 +28,6 @@ interface IconButtonProps {
 
 ## 2026 look (spec 016)
 Round, at least 48 dp. `ACCENT_SQUARE` is an add button in a tab header (Cadastro): a 56 dp rounded square (`radius-2xl`) in the highlight color. On Hoje's Topo band the + is the round `ACCENT`. `ON_PRIMARY` sits on the Topo color and uses `onHeaderFill()`.
+
+## Dot (spec 014)
+`dot` puts a small `danger` circle at the top end: the bell on Hoje and the Agenda shows it while notifications are off on the phone (AC-014-32).

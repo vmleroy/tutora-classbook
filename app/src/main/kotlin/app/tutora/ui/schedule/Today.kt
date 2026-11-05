@@ -133,7 +133,18 @@ fun TodayScreen(nav: NavHostController) {
                     .background(c.header)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
             ) {
-                ScreenHeader(stringResource(g), variant = HeaderVariant.HERO, eyebrow = longDate(local.date, language))
+                ScreenHeader(
+                    stringResource(g),
+                    variant = HeaderVariant.HERO,
+                    eyebrow = longDate(local.date, language),
+                    // The bell to Lembretes (AC-014-32).
+                    trailing = {
+                        app.tutora.ui.reminders.ReminderBell(
+                            nav,
+                            app.tutora.designsystem.components.IconButtonVariant.ON_PRIMARY,
+                        )
+                    },
+                )
             }
             Box(
                 Modifier

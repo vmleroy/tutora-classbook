@@ -6,6 +6,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -260,5 +261,47 @@ class EarningsScreensTest {
         h.settle(compose)
         compose.onNodeWithTag("evolution-compare").assertExists()
         exists("Diferença: +R$ 120,00 (+100%)")
+    }
+
+    @Test
+    fun `AC-014-33 Ganhos' header has Evolucao and Relatorio as named icons, and no Ver evolucao button`() {
+        openEarnings()
+        compose.onNodeWithContentDescription("Evolução").assertExists()
+        compose.onNodeWithContentDescription("Relatório").assertExists()
+        compose.onNodeWithText("Ver evolução").assertDoesNotExist()
+        compose.onNodeWithText("Relatório").assertDoesNotExist()
+    }
+
+    private fun openEvolution() {
+        openEarnings()
+        compose.onNodeWithTag("see-evolution").performClick()
+        h.settle(compose)
+    }
+
+    @Test
+    fun `AC-014-34 Evolucao lists each month with its totals, classes and hours`() {
+        given(6)
+        given(8)
+        openEvolution()
+        compose.onNodeWithTag("evolution-months").assertExists()
+        exists("Outubro 2026")
+        exists("Ganho R$ 240,00", part = true)
+        exists("2 aulas", part = true)
+    }
+
+    @Test
+    fun `AC-014-35 Evolucao filters by who and by place kind, with earned and received side by side`() {
+        given(6)
+        given(8)
+        openEvolution()
+        listOf("Ganho", "Recebido").forEach { exists(it) }
+        compose.onNodeWithTag("evo-who").performClick()
+        h.settle(compose)
+        compose.onAllNodes(matching("Ana Souza"), useUnmergedTree = true).onLast().performClick()
+        h.settle(compose)
+        exists("Ganho R$ 240,00", part = true)
+        compose.onNodeWithText("Casa do aluno").performClick()
+        h.settle(compose)
+        compose.onAllNodes(matching("Ganho R$ 240,00", part = true), useUnmergedTree = true).assertCountEquals(0)
     }
 }

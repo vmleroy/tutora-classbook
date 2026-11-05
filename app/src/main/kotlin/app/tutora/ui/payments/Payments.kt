@@ -37,6 +37,7 @@ import app.tutora.designsystem.components.Checkbox
 import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
+import app.tutora.designsystem.components.DurationField
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
@@ -52,7 +53,6 @@ import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.StatTone
-import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.Switch
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
@@ -91,7 +91,6 @@ import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
 import app.tutora.ui.catalog.DetailOverview
 import app.tutora.ui.catalog.DetailStat
-import app.tutora.ui.clockDuration
 import app.tutora.ui.localeOf
 import app.tutora.ui.minutesText
 import app.tutora.ui.placeName
@@ -559,14 +558,13 @@ private fun BonusSheet(
                 size = ControlSize.SM,
             )
             if (inMinutes) {
-                Stepper(
-                    minutes,
-                    { minutes = it },
+                // Bonus minutes are a length of time: hh:mm with − and + in 15-minute steps (AC-014-37).
+                DurationField(
+                    stringResource(R.string.pay_bonusMinutes),
+                    minutes.toInt(),
+                    { m -> m?.let { minutes = it.toLong() } },
                     step = 15,
-                    min = 0,
-                    max = 600,
-                    format = { if (clock) clockDuration(it.toInt()) else minutesTemplate.format(it.toString()) },
-                    valueLabel = stringResource(R.string.pay_bonusMinutes),
+                    maxMinutes = BONUS_MAX_MIN,
                 )
             } else {
                 MoneyField(stringResource(R.string.pay_bonusMoney), cents, { cents = it })
@@ -1135,3 +1133,6 @@ fun bonusOffer(lesson: Lesson): BonusOffer? {
         ).joinToString(" · ")
     return BonusOffer(payer, l.creditCents.coerceAtLeast(0), l.creditMinutes.coerceAtLeast(0), label)
 }
+
+/** The most minutes a bonus can give at once. */
+private const val BONUS_MAX_MIN = 600

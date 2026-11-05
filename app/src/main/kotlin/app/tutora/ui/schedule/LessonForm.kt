@@ -58,7 +58,7 @@ import app.tutora.domain.localOf
 import app.tutora.domain.travelFor
 import app.tutora.state.LocalServices
 import app.tutora.ui.ScreenScaffold
-import app.tutora.ui.catalog.DurationStepper
+import app.tutora.ui.catalog.DurationInput
 import app.tutora.ui.catalog.Field
 import app.tutora.ui.catalog.RequiredLegend
 import app.tutora.ui.clockTime
@@ -268,12 +268,7 @@ fun LessonForm(
         // A lesson given, or one marked done, has a real duration (AC-006-6).
         val durationLabel =
             stringResource(if (log == true || v.status == LessonStatus.DONE) R.string.lesson_realDuration else R.string.lesson_duration)
-        Field(durationLabel) {
-            DurationStepper(durationLabel, v.plannedMin, {
-                v =
-                    v.copy(plannedMin = it)
-            })
-        }
+        DurationInput(durationLabel, v.plannedMin, { v = v.copy(plannedMin = it) })
         // Value first, then this lesson's travel, then what the two add up to.
         val travel = place?.let { travelFor(it, v.travelFeeCents) } ?: 0
         MoneyField(

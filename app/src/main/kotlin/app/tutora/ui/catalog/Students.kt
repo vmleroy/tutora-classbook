@@ -53,10 +53,10 @@ import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.MoneyField
+import app.tutora.designsystem.components.NumberField
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
-import app.tutora.designsystem.components.Stepper
 import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.TagDot
 import app.tutora.designsystem.components.TextField
@@ -399,15 +399,13 @@ private fun StudentForm(
         // Pacote: how many classes and the price for all of them (AC-008-19).
         if (d.rateType == RateType.PACKAGE) {
             Card(Modifier.testTag("package-terms")) {
-                Text(stringResource(R.string.pay_packageLessons), style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
                 Text(stringResource(R.string.pay_packageHint), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
-                Stepper(
+                NumberField(
+                    stringResource(R.string.pay_packageLessons),
                     (d.packageLessons ?: PACKAGE_LESSONS).toLong(),
                     { d = d.copy(packageLessons = it.toInt()) },
-                    step = 1,
                     min = 1,
                     max = 100,
-                    valueLabel = stringResource(R.string.pay_packageLessons),
                 )
                 MoneyField(stringResource(R.string.pay_packagePrice), d.packagePriceCents, { d = d.copy(packagePriceCents = it) })
             }

@@ -3,13 +3,14 @@ package app.tutora.data
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Query
-import app.tutora.domain.Bar
 import app.tutora.domain.ClassRecord
 import app.tutora.domain.CreditEntry
 import app.tutora.domain.EarnedClass
 import app.tutora.domain.EarningsType
 import app.tutora.domain.EarningsView
+import app.tutora.domain.EvolutionFilter
 import app.tutora.domain.LessonStatus
+import app.tutora.domain.MonthDetail
 import app.tutora.domain.Payer
 import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
@@ -27,6 +28,7 @@ import app.tutora.domain.earningsType
 import app.tutora.domain.isoText
 import app.tutora.domain.localOf
 import app.tutora.domain.localToInstant
+import app.tutora.domain.monthDetails
 import app.tutora.domain.monthOf
 import app.tutora.domain.monthSpans
 import app.tutora.domain.periodSpans
@@ -204,7 +206,14 @@ class EarningsRepository(
                         r.groupId != null -> PayerRef(PayerKind.GROUP, r.groupId)
                         else -> PayerRef(PayerKind.PLACE, r.placeId.orEmpty())
                     }
-                Tip(localOf(r.paidAt, zone).date, cents, typeOf(r.kind), payer, r.payerName.orEmpty())
+                Tip(
+                    localOf(r.paidAt, zone).date,
+                    cents,
+                    typeOf(r.kind),
+                    payer,
+                    r.payerName.orEmpty(),
+                    r.kind?.let { PlaceKind.fromKey(it) },
+                )
             }
         }
 
@@ -259,14 +268,22 @@ class EarningsRepository(
         }
     }
 
-    /** Earned and received month by month from [firstMonth], for Evolução (AC-014-31). */
+    /** Who paid a payment row: its student, group or place. */
+    private fun ReceivedRow.payerRef(): PayerRef =
+        when {
+            studentId != null -> PayerRef(PayerKind.STUDENT, studentId)
+            groupId != null -> PayerRef(PayerKind.GROUP, groupId)
+            else -> PayerRef(PayerKind.PLACE, placeId.orEmpty())
+        }
+
+    /** Evolução: month by month from [firstMonth], with the filters, details and change (AC-014-31, 34, 35). */
     fun evolution(
         firstMonth: LocalDate,
         count: Int,
-        filter: TypeFilter,
+        filter: EvolutionFilter,
         today: LocalDate,
         zone: String,
-    ): Flow<List<Bar>> {
+    ): Flow<List<MonthDetail>> {
         val spans = monthSpans(firstMonth, count)
         val from = spans.first().first
         val to = spans.last().second
@@ -275,13 +292,17 @@ class EarningsRepository(
             dao.observeReceived(instant(from, zone), instant(to.plus(DatePeriod(days = 1)), zone)),
             dao.observeSchools(),
             tips(from, to, zone),
-        ) { all, paid, schools, tips ->
+            payments.leftByLesson(),
+        ) { all, paid, schools, tips, left ->
             val received =
                 paid.map { r ->
+                    val kind = r.kind?.let { PlaceKind.fromKey(it) }
                     Received(
                         localOf(r.paidAt, zone).date,
                         r.amountCents,
-                        r.kind?.let { earningsType(PlaceKind.fromKey(it)) } ?: EarningsType.PRIVATE,
+                        kind?.let { earningsType(it) } ?: EarningsType.PRIVATE,
+                        r.payerRef(),
+                        kind,
                     )
                 }
             val salaries =
@@ -294,7 +315,7 @@ class EarningsRepository(
                         s.archivedAt?.let { localOf(it, zone).date },
                     )
                 }
-            bars(spans, all, received, salaries, filter, today, tips)
+            monthDetails(spans, all, received, salaries, filter, today, left, tips)
         }
     }
 }

@@ -310,7 +310,13 @@ class PaymentScreensTest {
         click("Pacote")
         compose.onNodeWithTag("package-terms").assertExists()
         exists("Aulas no pacote")
-        exists("10")
+        // The number field holds 10 as its typed value.
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasText("10"),
+                useUnmergedTree = true,
+            ).assertExists()
         exists("Preço do pacote")
     }
 
@@ -552,7 +558,8 @@ class PaymentScreensTest {
         compose.onNodeWithContentDescription("Dar bônus").performScrollTo().performClick()
         h.settle(compose)
         click("Minutos", scroll = false)
-        repeat(2) { compose.onNodeWithContentDescription("Aumentar").performClick() }
+        compose.onNodeWithContentDescription("Aumentar Bônus em minutos").performScrollTo().performClick()
+        compose.onNodeWithContentDescription("Aumentar Bônus em minutos").performClick()
         h.settle(compose)
         compose.onAllNodes(matching("Dar bônus"), useUnmergedTree = true).onLast().performClick()
         h.awaitDb(compose) {
