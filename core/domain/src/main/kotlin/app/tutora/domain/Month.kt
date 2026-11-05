@@ -17,12 +17,14 @@ data class MonthCell(
     val inMonth: Boolean,
 )
 
-/** The weeks of [month], Monday to Sunday, padded with the days of the months around it (AC-016-16). */
+/**
+ * Six weeks around [month], Monday to Sunday, padded with the days of the months around it
+ * (AC-016-16). Always six, so the grid keeps its height from month to month (Victor, 4 Nov 2026).
+ */
 fun monthCells(month: YearMonth): List<MonthCell> {
     val first = month.firstDay
-    val last = month.lastDay
     val start = weekStart(first)
-    val end = weekStart(last).plus(DatePeriod(days = 6))
+    val end = start.plus(DatePeriod(days = 6 * 7 - 1))
     return generateSequence(start) { it.plus(DatePeriod(days = 1)) }
         .takeWhile { it <= end }
         .map { MonthCell(it, it.month == first.month && it.year == first.year) }

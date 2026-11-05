@@ -60,6 +60,11 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 - **AC-016-27.** What a payment gives on top of the classes it pays counts as earned and received on the day it was paid, in Ganhos (the period, the six months and De onde veio, under its payer) and on Hoje's card (Victor, 30 Oct 2026). A payment that paid no class reads just its date and method ("29/10 · Pix"), never "como crédito".
 - **AC-016-28.** Ganhos has a Dia period before Mês, Trimestre and Ano: what was earned, received and is still owed on one day ("Ganho hoje", or "Ganho no dia" for another day), titled "Qui, 29 out", with ‹ › moving a day and the period picker showing a month of days up to today. Hoje's earnings card opens Ganhos on today's Dia (Victor, 30 Oct 2026).
 
+### After review (Victor, 4 Nov 2026)
+
+- **AC-016-29.** Swiping the month grid left or right shows the next or previous month, sliding in from that side; it stops where ‹ › stop (AC-016-23), and with reduce motion the month changes without sliding.
+- **AC-016-30.** Mês always shows six weeks, so the grid keeps its height from month to month; its days are square tiles with small corners and room between weeks. Buttons and segments are drawn smaller (32, 40 or 48 dp) with lighter, centered labels, and each still answers on its full 48 dp (AC-016-8).
+
 ## Out of scope
 
 - New features on any screen, and changes to the theme colors themselves, the four themes, or how Suas cores derives its colors (002).

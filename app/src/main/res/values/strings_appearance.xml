@@ -84,4 +84,8 @@
     <string name="ap_p_cinza_claro">Light grey</string>
     <string name="ap_p_menta_clara">Light mint</string>
     <string name="ap_p_lavanda_clara">Light lavender</string>
+    <string name="ap_xlarge">Extra large</string>
+    <string name="ap_uiSize">Interface size</string>
+    <string name="ap_compact">Compact</string>
+    <string name="ap_zoomed">Enlarged</string>
 </resources>

@@ -3,6 +3,7 @@ package app.tutora.designsystem.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -65,22 +67,36 @@ fun Button(
     val fg = fgBase.copy(alpha = fgBase.alpha * dim)
     val height =
         when (size) {
-            ControlSize.SM -> Size.controlSm
-            ControlSize.MD -> Size.controlMd
-            ControlSize.LG -> Size.controlLg
+            ControlSize.SM -> Size.buttonSm
+            ControlSize.MD -> Size.buttonMd
+            ControlSize.LG -> Size.buttonLg
         }
     // Buttons are pills (spec 016).
     val shape = RoundedCornerShape(Radius.full)
+    // Pressed on the full touch size, drawn at [height] inside it (AC-002-12; Victor, 4 Nov 2026):
+    // the press area comes before the vertical padding, the pill and its ripple after it.
+    val press =
+        remember {
+            androidx.compose.foundation.interaction
+                .MutableInteractionSource()
+        }
     Row(
         modifier =
             modifier
                 .then(if (fullWidth) Modifier.fillMaxWidth() else Modifier)
-                .sizeIn(minWidth = Size.touch, minHeight = Size.touch)
-                .height(height)
+                .sizeIn(minWidth = Size.touch)
+                .height(maxOf(height, Size.touch))
+                .clickable(
+                    interactionSource = press,
+                    indication = null,
+                    enabled = enabled && !loading,
+                    role = Role.Button,
+                    onClick = onClick,
+                ).padding(vertical = (Size.touch - height).coerceAtLeast(androidx.compose.ui.unit.Dp.Hairline) / 2)
                 .clip(shape)
                 .background(bg, shape)
                 .then(if (line == Color.Transparent) Modifier else Modifier.border(Size.border, line.copy(alpha = line.alpha * dim), shape))
-                .clickable(enabled = enabled && !loading, role = Role.Button, onClick = onClick)
+                .indication(press, androidx.compose.material3.ripple())
                 .padding(horizontal = Spacing.s4),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s2, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
@@ -90,7 +106,20 @@ fun Button(
         } else if (icon != null) {
             Icon(icon, tint = fg, size = Size.iconSm)
         }
-        Text(text, style = TutoraTheme.type.button, color = fg)
+        Text(
+            text,
+            style =
+                if (size ==
+                    ControlSize.SM
+                ) {
+                    TutoraTheme.type.button.copy(fontSize = TutoraTheme.type.caption.fontSize)
+                } else {
+                    TutoraTheme.type.button
+                },
+            color = fg,
+            // Centered, also when a long label wraps (Victor, 4 Nov 2026).
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+        )
     }
 }
 

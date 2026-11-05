@@ -146,6 +146,26 @@ class AppearanceScreensTest {
     }
 
     @Test
+    fun `AC-013-21 Tamanho da interface grows buttons, spacing and icons together`() {
+        page()
+
+        fun swatch() =
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasContentDescription("Do tema"),
+                ).onFirst()
+                .fetchSemanticsNode()
+                .size.width
+        val before = swatch()
+        click("Ampliada")
+        h.awaitDb(compose) { settings().uiScale == "large" }
+        h.settle(compose)
+        val after = swatch()
+        assertTrue("$before -> $after", after > before * 1.1)
+    }
+
+    @Test
     fun `AC-013-11 Suas cores shows the preview, the seven parts and the chosen part's controls`() {
         h.show(compose)
         h.go(compose, CustomColors(CustomPart.HIGHLIGHT_BTN.key))

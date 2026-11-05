@@ -38,7 +38,14 @@ fun TutoraApp(
                 themeId = settings.themeId,
                 mode = settings.themeMode,
                 custom = settings.customColors,
-                largeText = settings.textScale == "large",
+                textScale =
+                    app.tutora.domain.TextSize
+                        .of(settings.textScale)
+                        .factor,
+                uiScale =
+                    app.tutora.domain.UiSize
+                        .of(settings.uiScale)
+                        .factor,
             ) {
                 // Reports leave the phone through the share sheet and the clipboard (spec 010).
                 val context = androidx.compose.ui.platform.LocalContext.current

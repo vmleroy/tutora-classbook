@@ -170,7 +170,7 @@ fun AppearanceSettingsRow(onClick: () -> Unit) {
     val extras =
         listOfNotNull(
             stringResource(R.string.ap_rowColors).takeIf { s.customColors.isNotEmpty() },
-            stringResource(R.string.ap_rowText).takeIf { s.textScale == "large" },
+            stringResource(R.string.ap_rowText).takeIf { s.textScale != "normal" || s.uiScale != "normal" },
         )
     val joiner = if (currentLanguage() == Language.PT_BR) " e " else " and "
     ListRow(
@@ -202,7 +202,15 @@ fun AppearancePreview(
                 Greeting.EVENING -> R.string.home_greeting_evening
             },
         )
-    TutoraTheme(themeId = s.themeId, mode = s.themeMode, custom = s.customColors, largeText = s.textScale == "large") {
+    TutoraTheme(
+        themeId = s.themeId,
+        mode = s.themeMode,
+        custom = s.customColors,
+        textScale =
+            app.tutora.domain.TextSize
+                .of(s.textScale)
+                .factor,
+    ) {
         val c = TutoraTheme.colors
         val shape = RoundedCornerShape(Radius.x2xl)
         Column(
@@ -473,13 +481,30 @@ fun AppearanceScreen(nav: NavHostController) {
                 variant = ButtonVariant.GHOST,
             )
         }
-        // Tamanho do texto (AC-013-10).
+        // Tamanho do texto and Tamanho da interface (AC-013-10, 21).
         SectionHeader(stringResource(R.string.ap_textSize))
         SegmentedControl(
-            listOf(false to stringResource(R.string.ap_normal), true to stringResource(R.string.ap_large)),
-            s.textScale == "large",
-            { large -> scope.launch { a.setTextSize(large) } },
+            listOf(
+                app.tutora.domain.TextSize.NORMAL to stringResource(R.string.ap_normal),
+                app.tutora.domain.TextSize.LARGE to stringResource(R.string.ap_large),
+                app.tutora.domain.TextSize.XLARGE to stringResource(R.string.ap_xlarge),
+            ),
+            app.tutora.domain.TextSize
+                .of(s.textScale),
+            { size -> scope.launch { a.setTextSize(size) } },
             stringResource(R.string.ap_textSize),
+        )
+        SectionHeader(stringResource(R.string.ap_uiSize))
+        SegmentedControl(
+            listOf(
+                app.tutora.domain.UiSize.COMPACT to stringResource(R.string.ap_compact),
+                app.tutora.domain.UiSize.NORMAL to stringResource(R.string.ap_normal),
+                app.tutora.domain.UiSize.LARGE to stringResource(R.string.ap_zoomed),
+            ),
+            app.tutora.domain.UiSize
+                .of(s.uiScale),
+            { size -> scope.launch { a.setUiSize(size) } },
+            stringResource(R.string.ap_uiSize),
         )
         ListGroup(
             listOf {

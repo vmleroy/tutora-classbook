@@ -42,7 +42,17 @@ class Harness(
     fun Content() {
         nav = rememberNavController()
         val settings by services.settings.collectAsState(initial = Settings(language = Language.PT_BR))
-        TutoraTheme(dark = false, largeText = settings.textScale == "large") {
+        TutoraTheme(
+            dark = false,
+            textScale =
+                app.tutora.domain.TextSize
+                    .of(settings.textScale)
+                    .factor,
+            uiScale =
+                app.tutora.domain.UiSize
+                    .of(settings.uiScale)
+                    .factor,
+        ) {
             CompositionLocalProvider(
                 LocalServices provides services,
                 app.tutora.adapters.export.LocalExports provides exports,

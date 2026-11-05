@@ -24,9 +24,10 @@ class MonthRulesTest {
     @Test
     fun `AC-016-16 a month is whole weeks from Monday, with the neighbors' days marked`() {
         val cells = monthCells(YearMonth(2026, Month.OCTOBER))
-        assertEquals(35, cells.size)
+        // Always six weeks, so the grid never changes height (Victor, 4 Nov 2026).
+        assertEquals(42, cells.size)
         assertEquals(LocalDate(2026, 9, 28), cells.first().date)
-        assertEquals(LocalDate(2026, 11, 1), cells.last().date)
+        assertEquals(LocalDate(2026, 11, 8), cells.last().date)
         assertEquals(31, cells.count { it.inMonth })
         assertFalse(cells.first().inMonth)
     }

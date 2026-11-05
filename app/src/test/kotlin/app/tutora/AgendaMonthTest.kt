@@ -268,4 +268,52 @@ class AgendaMonthTest {
         assertTrue("a day is ${day.width / density} dp wide", day.width / density >= 40f)
         compose.onNodeWithText("Ana Souza", useUnmergedTree = true).performScrollTo().assertExists()
     }
+
+    @Test
+    fun `AC-016-29 swiping the month shows the next or previous one, never past the horizon`() {
+        // The gesture is checked on a device; here its two named actions, which run the same change.
+        month()
+
+        fun swipe(name: String) {
+            compose
+                .onNode(
+                    androidx.compose.ui.test.SemanticsMatcher("has action $name") { n ->
+                        n.config.getOrNull(androidx.compose.ui.semantics.SemanticsActions.CustomActions)?.any { it.label == name } == true
+                    },
+                ).fetchSemanticsNode()
+                .config[androidx.compose.ui.semantics.SemanticsActions.CustomActions]
+                .first { it.label == name }
+                .action()
+            h.settle(compose)
+        }
+        swipe("Próximo mês")
+        exists("Novembro 2026")
+        swipe("Mês anterior")
+        exists("Outubro 2026")
+        // Past the horizon (8 weeks from 26 Oct) nothing moves.
+        swipe("Próximo mês")
+        swipe("Próximo mês")
+        swipe("Próximo mês")
+        exists("Dezembro 2026")
+    }
+
+    @Test
+    fun `AC-016-30 every month shows six weeks, so the grid keeps its height`() {
+        month()
+        val october =
+            compose
+                .onNodeWithTag("month-grid")
+                .fetchSemanticsNode()
+                .size.height
+        compose.onNodeWithContentDescription("Próximo mês").performClick()
+        h.settle(compose)
+        // November 2026 needs only five weeks; it still shows six.
+        assertEquals(
+            october,
+            compose
+                .onNodeWithTag("month-grid")
+                .fetchSemanticsNode()
+                .size.height,
+        )
+    }
 }

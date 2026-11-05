@@ -383,6 +383,13 @@ private fun MonthView(
         { onSelect(cells[it].date) },
         cells.take(7).map { weekdayNarrow(it.date, language) },
         monthYear(month.firstDay, language),
+        // Swiping changes month, within the same limits as ‹ › (AC-016-23; Victor, 4 Nov 2026).
+        page = month.year * 12 + month.month.ordinal,
+        swipeLabels = stringResource(R.string.schedule_prevMonth) to stringResource(R.string.schedule_nextMonth),
+        onSwipe = { step ->
+            val target = if (step > 0) month.plusMonth() else month.minusMonth()
+            if (step < 0 || canShowMonth(target, today)) onSelect(dayIn(target, today))
+        },
         legend =
             listOf(
                 DotTone.SECONDARY to stringResource(R.string.schedule_kindSchool),

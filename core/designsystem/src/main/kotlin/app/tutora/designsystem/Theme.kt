@@ -50,13 +50,24 @@ fun TutoraTheme(
     mode: ThemeMode = ThemeMode.SYSTEM,
     custom: CustomColors = emptyMap(),
     largeText: Boolean = false,
+    /** Tamanho do texto's factor; overrides [largeText] when given (AC-013-10). */
+    textScale: Float? = null,
+    /** Tamanho da interface: everything drawn grows or shrinks with it (AC-013-21). */
+    uiScale: Float = 1f,
     reduceMotion: Boolean = systemReduceMotion(),
     dark: Boolean? = null,
     content: @Composable () -> Unit,
 ) {
     val scheme = if (dark != null) (if (dark) Scheme.DARK else Scheme.LIGHT) else resolveScheme(mode, isSystemInDarkTheme())
     val colors = remember(themeId, scheme, custom) { TutoraColors.fromPalette(resolvePalette(themeId, scheme, custom)) }
-    val type = remember(largeText) { TutoraTypography(if (largeText) LARGE_TEXT_SCALE else 1f) }
+    val factor = textScale ?: if (largeText) LARGE_TEXT_SCALE else 1f
+    val type = remember(factor) { TutoraTypography(factor) }
+    val phone = androidx.compose.ui.platform.LocalDensity.current
+    val density =
+        remember(phone, uiScale) {
+            androidx.compose.ui.unit
+                .Density(phone.density * uiScale, phone.fontScale)
+        }
     // Material components read their ColorScheme; fill it from the same palette.
     val base = if (scheme == Scheme.DARK) darkColorScheme() else lightColorScheme()
     val material =
@@ -82,6 +93,7 @@ fun TutoraTheme(
             scrim = colors.scrim,
         )
     CompositionLocalProvider(
+        androidx.compose.ui.platform.LocalDensity provides density,
         LocalTutoraColors provides colors,
         LocalTutoraType provides type,
         LocalReduceMotion provides reduceMotion,

@@ -87,24 +87,34 @@ fun <T> SegmentedControl(
                 motionSpec(TutoraTheme.reduceMotion),
                 label = "segment",
             )
+            val drawn = if (size == ControlSize.SM) Size.buttonSm else Size.buttonMd
+            // Pressed on the full touch size, drawn at the button size inside it (Victor, 4 Nov 2026).
             Box(
                 modifier =
                     Modifier
                         .weight(1f)
                         .fillMaxHeight()
                         .heightIn(min = Size.touch)
-                        .clip(shape)
-                        .background(bg)
                         .selectable(selected = on, role = Role.RadioButton, onClick = { onChange(v) })
-                        .padding(horizontal = Spacing.s2, vertical = if (size == ControlSize.SM) Spacing.s2 else Spacing.s2_5),
+                        .padding(vertical = (Size.touch - drawn) / 2),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text,
-                    style = if (size == ControlSize.SM) TutoraTheme.type.caption else TutoraTheme.type.rowTitle,
-                    color = if (on) c.onBtnPrimary else c.ink,
-                    textAlign = TextAlign.Center,
-                )
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .clip(shape)
+                        .background(bg)
+                        .padding(horizontal = Spacing.s2, vertical = Spacing.s1),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text,
+                        style = if (size == ControlSize.SM) TutoraTheme.type.caption else TutoraTheme.type.button,
+                        color = if (on) c.onBtnPrimary else c.ink,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
     }

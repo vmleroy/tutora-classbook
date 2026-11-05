@@ -17,6 +17,8 @@ data class Settings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val setupDone: Boolean = false,
     val textScale: String = "normal",
+    /** Tamanho da interface: everything, not only text (Victor, 4 Nov 2026; AC-013-21). */
+    val uiScale: String = "normal",
     val showDefaultPlaces: Boolean = true,
     val customColors: Map<CustomPart, String> = emptyMap(),
     /** Ajustes › Aulas › Aula ao vivo; off hides Iniciar aula (AC-007-3, 17). */
@@ -46,6 +48,36 @@ data class SavedTheme(
     val themeId: String,
     val custom: Map<CustomPart, String>,
 )
+
+/** Tamanho do texto (AC-013-10). */
+enum class TextSize(
+    val key: String,
+    val factor: Float,
+) {
+    NORMAL("normal", 1f),
+    LARGE("large", 1.15f),
+    XLARGE("xlarge", 1.3f),
+    ;
+
+    companion object {
+        fun of(key: String?) = entries.firstOrNull { it.key == key } ?: NORMAL
+    }
+}
+
+/** Tamanho da interface: buttons, spacing, icons and text together, like a zoom (AC-013-21). */
+enum class UiSize(
+    val key: String,
+    val factor: Float,
+) {
+    COMPACT("compact", 0.9f),
+    NORMAL("normal", 1f),
+    LARGE("large", 1.15f),
+    ;
+
+    companion object {
+        fun of(key: String?) = entries.firstOrNull { it.key == key } ?: NORMAL
+    }
+}
 
 /** Custom colors that no saved theme holds: switching theme asks first (AC-013-6). */
 fun Settings.unsavedColors(): Boolean =

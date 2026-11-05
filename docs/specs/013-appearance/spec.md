@@ -41,7 +41,7 @@ Everything Tutora needs to repaint itself already exists since spec 002: four th
 
 ### Text size
 
-- **AC-013-10.** Tamanho do texto is Normal or Grande. Grande makes every text larger at once, in every screen, and nothing is cut off at 360 dp wide (AC-002-16).
+- **AC-013-10.** Tamanho do texto is Normal, Grande or Muito grande (Victor, 4 Nov 2026). Grande makes every text larger at once, in every screen, and nothing is cut off at 360 dp wide (AC-002-16).
 
 ### Suas cores
 
@@ -57,6 +57,8 @@ Everything Tutora needs to repaint itself already exists since spec 002: four th
 
 - **AC-013-19.** Tema also offers Floresta (forest green and honey), Oceano (sea blue and apricot), Lavanda (purple and pink) and Terracota (clay and mustard), after the four. Each has a light and a dark look, and in both every text on its colors reads at 4.5:1 or better (3:1 for big money figures), as for the first four (AC-002-2).
 - **AC-013-20.** Personalizar has "Cor de fundo": "Do tema", six light tones (Papel creme, Branco, Areia, Cinza claro, Menta clara, Lavanda clara) and a + that opens Suas cores on Fundo. Every tone keeps text at 4.5:1 or better; in dark mode the background stays dark with only a hint of the tone (as spec 002 decided).
+
+- **AC-013-21.** Tamanho da interface is Compacta, Normal or Ampliada (Victor, 4 Nov 2026): buttons, spacing, icons and text grow or shrink together, at once, in every screen; Normal at first.
 
 ### Language
 

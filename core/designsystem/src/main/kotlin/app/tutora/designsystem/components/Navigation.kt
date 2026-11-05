@@ -188,7 +188,8 @@ fun WeekStrip(
                         // Equal columns padded like the Agenda's blocks, so each day sits over its column.
                         .padding(horizontal = AgendaBlockGap)
                         .height(Size.weekDay)
-                        .clip(RoundedCornerShape(Radius.x2xl))
+                        // Small corners like the month's tiles, not a capsule (Victor, 4 Nov 2026).
+                        .clip(RoundedCornerShape(Radius.md))
                         .background(if (on) c.btnPrimary else c.surfaceSunken)
                         .selectable(selected = on, role = Role.Tab, onClick = { onSelect(i) })
                         .semantics { contentDescription = d.a11y ?: "${d.weekday} ${d.day}" },

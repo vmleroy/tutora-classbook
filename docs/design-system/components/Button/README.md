@@ -42,3 +42,6 @@ interface ButtonProps {
 
 ## 2026 look (spec 016)
 Every button is a pill (`radius-full`).
+
+## Sizes since 4 Nov 2026
+Drawn at `size-button-sm/md/lg` (32 / 40 / 48), pressed on the full `size-touch` area; label in `button` (14 px, 700), 13 px in size sm (Victor, 4 Nov 2026).

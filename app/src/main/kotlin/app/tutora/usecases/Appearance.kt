@@ -77,6 +77,9 @@ class Appearance(
     /** Restaurar: every part back to the theme's colors (AC-013-9, 16). */
     suspend fun restore() = change { it.copy(customColors = emptyMap()) }
 
-    /** Normal or Grande (AC-013-10). */
-    suspend fun setTextSize(large: Boolean) = change { it.copy(textScale = if (large) "large" else "normal") }
+    /** Normal, Grande or Muito grande (AC-013-10). */
+    suspend fun setTextSize(size: app.tutora.domain.TextSize) = change { it.copy(textScale = size.key) }
+
+    /** Compacta, Normal or Ampliada (AC-013-21). */
+    suspend fun setUiSize(size: app.tutora.domain.UiSize) = change { it.copy(uiScale = size.key) }
 }

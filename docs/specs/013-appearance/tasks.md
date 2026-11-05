@@ -10,9 +10,14 @@ Each task lists the criteria it proves and the test file that proves them. Check
 - [x] 6. Suas cores: parts, hex field, sliders, contrast line, dark-mode note, Restaurar, "Salvar assim?" on leaving. Test: `AppearanceScreensTest.kt`. (AC-013-11, AC-013-12, AC-013-14, AC-013-15)
 - [x] 7. More themes and Cor de fundo (Victor, 4 Nov 2026): `extraThemes` as a base theme plus fixed colors, resolved by `resolvePalette`; `backgroundPresets`; the Tema cards and the Cor de fundo row. Test: `AppearanceRulesTest.kt`, `AppearanceScreensTest.kt`. (AC-013-19, AC-013-20)
 - [x] 8. Live clock on one line with Large text (found in review). Test: `core/designsystem/src/test/kotlin/app/tutora/designsystem/DesignSystemTest.kt`. (AC-002-16)
+- [x] 10. Sizes after review (Victor, 4 Nov 2026): buttons and segments drawn at 32 / 40 / 48 dp inside a 48 dp press area, lighter centered labels; Mês always six weeks of square tiles with small corners; swiping changes month (with screen-reader actions); the week strip less round. Test: `AgendaMonthTest.kt`, `MonthRulesTest.kt`, `DesignSystemTest.kt`. (AC-016-29, AC-016-30)
+- [x] 11. Tamanho do texto with Muito grande, and Tamanho da interface (Compacta, Normal, Ampliada). Test: `AppearanceScreensTest.kt`. (AC-013-10, AC-013-21)
 - [x] 9. `./gradlew check`, update the roadmap status, and list the device checks as pending in the PR.
 
 ## Pending on a device
+
+- Muito grande text with Ampliada interface at 360 dp on every tab: nothing cut off (AC-013-10, AC-013-21).
+- The month swipe with a finger (checked on the emulator on 4 Nov 2026), and with TalkBack's actions (AC-016-29).
 
 - Grande at 360 dp on every tab and on both pages: nothing cut off (AC-013-10, AC-002-16).
 - Sistema following the phone's dark mode switch while the app is open (AC-013-3).

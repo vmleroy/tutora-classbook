@@ -11,3 +11,6 @@ A month as weeks of seven days, with a dot per class: the Agenda's Mês view (sp
 - Today is filled with `btnPrimary` and its dots turn `onBtnPrimary`; the chosen day is tinted `primarySoft`.
 - Each day is one element for screen readers, read as its date and number of classes.
 - The grid sits on a `surface` card with corners 28; a day is 52 dp tall.
+
+## Sizes since 4 Nov 2026
+Days are square tiles with `radius-sm` corners and `spacing-2` between them both ways (Victor, 4 Nov 2026).
