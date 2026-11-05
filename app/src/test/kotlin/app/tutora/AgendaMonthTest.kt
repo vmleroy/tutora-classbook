@@ -3,10 +3,12 @@ package app.tutora
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
@@ -136,18 +138,28 @@ class AgendaMonthTest {
     fun `AC-016-15 the switch reads Dia, Semana and Mes, with the week's dates over the strip`() {
         agenda()
         listOf("Dia", "Semana", "Mês", "Semana de 26 out a 1 nov").forEach { exists(it) }
-        // In Semana each day of the strip sits over its column: after the hour labels, seven equal columns.
+        compose.onNodeWithText("Hoje · 1 aula", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun `AC-016-31 Semana lists the days one under another, follows the strip, and the strip follows it`() {
+        agenda()
         compose.onNodeWithText("Semana").performClick()
         h.settle(compose)
-        val density =
-            compose
-                .onRoot()
-                .fetchSemanticsNode()
-                .layoutInfo.density.density
-        val grid = compose.onNodeWithTag("day-grid").fetchSemanticsNode().boundsInRoot
-        val column = (grid.width - 48 * density) / 7
-        val wednesday = compose.onNodeWithContentDescription("Qua 28").fetchSemanticsNode().boundsInRoot
-        assertEquals(grid.left + 48 * density + column * 2.5f, wednesday.center.x, 1.5f * density)
+        compose.onNodeWithTag("week-list").assertExists()
+        // Today first in view, with its class as a card: times, who and where, its value.
+        compose.onNodeWithTag("week-day-2026-10-26").assertIsDisplayed()
+        compose
+            .onAllNodes(
+                // Money is written with a no-break space after R$.
+                hasText("Ana Souza", substring = true) and hasText("120,00", substring = true),
+            ).onFirst()
+            .assertExists()
+        // Tapping Sunday on the strip scrolls the list to it.
+        compose.onNodeWithContentDescription("Dom 1").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("week-day-2026-11-01").assertIsDisplayed()
+        exists("Sem aulas")
     }
 
     @Test

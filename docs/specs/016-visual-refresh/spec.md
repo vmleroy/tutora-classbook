@@ -63,6 +63,7 @@ Tutora gets the 2026 look Victor chose on the canvas ("A · Quadro refinado"): t
 ### After review (Victor, 4 Nov 2026)
 
 - **AC-016-29.** Swiping the month grid left or right shows the next or previous month, sliding in from that side; it stops where ‹ › stop (AC-016-23), and with reduce motion the month changes without sliding.
+- **AC-016-31.** Semana lists the week's days one under another, like Teams' agenda in Tutora's look: each day's heading (the date on a small tile, filled for today; the weekday or Hoje; the count and expected value, or "Sem aulas") stays on top while its classes scroll under it, and each class is a card with its start and end, a bar in its color, who and where, and its value or state. Scrolling moves the strip to the day being read; tapping a day on the strip scrolls to it; "Próxima semana" ends the list until the horizon. This replaces the seven columns of AC-005-20 and AC-016-15 (Victor, 4 Nov 2026).
 - **AC-016-30.** Mês always shows six weeks, so the grid keeps its height from month to month; its days are square tiles with small corners and room between weeks. Buttons and segments are drawn smaller (32, 40 or 48 dp) with lighter, centered labels, and each still answers on its full 48 dp (AC-016-8).
 
 ## Out of scope

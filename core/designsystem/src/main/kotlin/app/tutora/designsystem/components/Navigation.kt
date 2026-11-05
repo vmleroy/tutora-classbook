@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
@@ -325,5 +327,144 @@ fun BusyBlock(
             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
         )
         if (!band && time != null) Text(time, style = TutoraTheme.type.caption, color = c.inkMuted, maxLines = 1)
+    }
+}
+
+/**
+ * A class in the Agenda's Semana list (Victor, 4 Nov 2026, after Teams' agenda): its start and end
+ * times, a bar in the student's color, who and where, and its value or state. NEXT and LIVE are
+ * outlined in the highlight color; MUTED (cancelled, missed) is struck through on a grey bar.
+ */
+@Composable
+fun AgendaCard(
+    start: String,
+    end: String,
+    tag: Tag,
+    title: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    trailing: String? = null,
+    status: Pair<BadgeTone, String>? = null,
+    state: BlockState = BlockState.DEFAULT,
+    onClick: (() -> Unit)? = null,
+) {
+    val c = TutoraTheme.colors
+    val shape = RoundedCornerShape(Radius.xl)
+    val outlined = state == BlockState.NEXT || state == BlockState.LIVE
+    val muted = state == BlockState.MUTED
+    val flag =
+        when (state) {
+            BlockState.NEXT -> stringResource(R.string.ds_next)
+            BlockState.LIVE -> stringResource(R.string.ds_live)
+            else -> null
+        }
+    androidx.compose.foundation.layout.Row(
+        modifier
+            .fillMaxWidth()
+            .height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+            .clip(shape)
+            .background(c.surface, shape)
+            .then(if (outlined) Modifier.border(Size.borderStrong, c.accent, shape) else Modifier)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = Spacing.s3, vertical = Spacing.s2_5),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.End) {
+            Text(
+                start,
+                style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
+                color = c.ink,
+                maxLines = 1,
+                softWrap = false,
+            )
+            Text(
+                end,
+                style = TutoraTheme.type.caption.copy(fontFeatureSettings = "tnum"),
+                color = c.inkMuted,
+                maxLines = 1,
+                softWrap = false,
+            )
+        }
+        Box(
+            Modifier
+                .width(Spacing.s1)
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(Radius.full))
+                .background(if (muted) c.lineStrong else tag.colors().fill),
+        )
+        androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
+            flag?.let { Text(it, style = TutoraTheme.type.badge, color = c.accentInk) }
+            Text(
+                title,
+                style =
+                    TutoraTheme.type.rowTitle.copy(
+                        textDecoration = if (muted) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
+                    ),
+                color = if (muted) c.inkMuted else c.ink,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+            subtitle?.let {
+                Text(
+                    it,
+                    style = TutoraTheme.type.meta,
+                    color = c.inkMuted,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
+        }
+        when {
+            status != null -> Badge(status.second, tone = status.first)
+            trailing != null ->
+                Text(
+                    trailing,
+                    style = TutoraTheme.type.caption.copy(fontFeatureSettings = "tnum"),
+                    color = c.inkMuted,
+                    maxLines = 1,
+                )
+        }
+    }
+}
+
+/**
+ * A day's heading in the Semana list, which stays on top while its classes scroll under it: the
+ * date on a small square like the month's tiles (filled for today), the day's name, and an aside.
+ */
+@Composable
+fun DayHeading(
+    day: Int,
+    title: String,
+    modifier: Modifier = Modifier,
+    aside: String? = null,
+    today: Boolean = false,
+) {
+    val c = TutoraTheme.colors
+    androidx.compose.foundation.layout.Row(
+        modifier
+            .fillMaxWidth()
+            .background(c.background)
+            .semantics(mergeDescendants = true) { heading() }
+            .padding(vertical = Spacing.s2),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .size(Size.tile)
+                .clip(RoundedCornerShape(Radius.sm))
+                .background(if (today) c.btnPrimary else c.surfaceSunken),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                day.toString(),
+                style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
+                color = if (today) c.onBtnPrimary else c.ink,
+            )
+        }
+        Text(title, style = TutoraTheme.type.section, color = c.ink, modifier = Modifier.weight(1f), maxLines = 1)
+        aside?.let { Text(it, style = TutoraTheme.type.caption.copy(fontFeatureSettings = "tnum"), color = c.inkMuted, maxLines = 1) }
     }
 }

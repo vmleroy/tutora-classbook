@@ -128,6 +128,8 @@ val galleryComponents =
         "WeekStrip",
         "AgendaBlock",
         "BusyBlock",
+        "AgendaCard",
+        "DayHeading",
         "BottomSheet",
         "EmptyState",
         "TimerRing",
@@ -470,6 +472,26 @@ fun GallerySections() {
     Section("ColorSlider") {
         app.tutora.designsystem.components
             .ColorSlider("Brilho", 40, {}, listOf(TutoraTheme.colors.ink, TutoraTheme.colors.surface))
+    }
+    Section("AgendaCard") {
+        BlockState.entries.forEach {
+            app.tutora.designsystem.components.AgendaCard(
+                "14:00",
+                "15:00",
+                Tag.GREEN,
+                "Ana Souza",
+                subtitle = "Matemática · Online",
+                trailing = "R$ 120,00",
+                state = it,
+                onClick = {},
+            )
+        }
+    }
+    Section("DayHeading") {
+        app.tutora.designsystem.components
+            .DayHeading(4, "Hoje", aside = "1 aula · R$ 80", today = true)
+        app.tutora.designsystem.components
+            .DayHeading(5, "Quinta", aside = "Sem aulas")
     }
     Section("BusyBlock") {
         BusyBlock("Dentista", time = "14:00 – 15:00", height = Size.agendaHour)

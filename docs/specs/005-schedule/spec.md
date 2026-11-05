@@ -51,7 +51,7 @@ The teacher puts their week into Tutora once: recurring classes (weekly or every
 - **AC-005-17.** Agenda shows the month and a week strip from Monday to Sunday, in both languages. Today is marked, each day with classes has a dot, and the teacher can move to the previous or next week.
 - **AC-005-18.** Dia shows the chosen day as a 24-hour grid, opening at the first class (or the current time on a day without classes), with a colored block per class: name, subject or place, and time. The next class is marked "Próxima".
 - **AC-005-19.** Above the grid the day reads "Hoje · 5 aulas" (or the date) and "Previsto R$ 380". Expected counts the classes with a price; when a class is covered by a salary, it adds "+ escola".
-- **AC-005-20.** Semana shows the seven days side by side with the same blocks.
+- **AC-005-20.** Semana shows the seven days of the week (since 4 Nov 2026 one under another, as AC-016-31 describes).
 - **AC-005-21.** Two classes at overlapping times are both visible, side by side.
 
 ### Hoje

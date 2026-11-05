@@ -481,7 +481,7 @@ class FeatureScreensTest {
     }
 
     @Test
-    fun `AC-005-20 Semana shows the seven days side by side`() {
+    fun `AC-005-20 Semana shows the week's days and their classes`() {
         seedClasses()
         h.show(compose)
         h.go(compose, ScheduleGraph)

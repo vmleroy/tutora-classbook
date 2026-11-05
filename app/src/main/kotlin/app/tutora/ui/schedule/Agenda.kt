@@ -246,6 +246,23 @@ fun AgendaScreen(nav: NavHostController) {
                             body = stringResource(R.string.empty_schedule_body),
                         )
                     }
+                // Semana: the days one under another, like Teams' agenda in Tutora's look (Victor, 4 Nov 2026).
+                view == AgendaView.WEEK ->
+                    WeekList(
+                        days = (0 until 7).map { monday.plus(DatePeriod(days = it)) },
+                        byDay = byDay,
+                        zone = zone,
+                        today = today,
+                        selected = selected,
+                        nextId = next?.id,
+                        onSelectDay = { selectedText = it.toString() },
+                        onOpen = { nav.navigate(LessonDetail(it.id)) },
+                        busy = { d -> busyFor(busyEvents, d, zone) },
+                        onNextWeek =
+                            monday.plus(DatePeriod(days = 7)).takeIf { it <= horizon }?.let { next ->
+                                { selectedText = next.toString() }
+                            },
+                    )
                 else ->
                     Column(Modifier.padding(horizontal = Spacing.s5, vertical = Spacing.s2)) {
                         DayGrid(
