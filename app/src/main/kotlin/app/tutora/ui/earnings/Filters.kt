@@ -3,20 +3,14 @@ package app.tutora.ui.earnings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import app.tutora.R
-import app.tutora.designsystem.components.BottomSheet
+import app.tutora.designsystem.components.Choice
+import app.tutora.designsystem.components.ChoiceField
 import app.tutora.designsystem.components.IconName
-import app.tutora.designsystem.components.ListGroup
-import app.tutora.designsystem.components.ListRow
-import app.tutora.designsystem.components.RowTrailing
-import app.tutora.designsystem.components.SelectField
 import app.tutora.domain.EarningsType
 import app.tutora.domain.PlaceKind
 import app.tutora.domain.Teaching
@@ -46,7 +40,7 @@ fun rememberTypeFilters(): List<Pair<TypeFilter, Int>> {
     )
 }
 
-/** "Tipo": Tudo, Particulares or Escola e emprego, as a dropdown on Ganhos and Evolução (AC-019-7, 11). */
+/** "Tipo": Tudo, Particulares or Escola e emprego, one of them, on Ganhos and Evolução (AC-019-7, 11). */
 @Composable
 fun TypeFilterField(
     filters: List<Pair<TypeFilter, Int>>,
@@ -56,11 +50,11 @@ fun TypeFilterField(
 ) {
     ChoiceField(
         stringResource(R.string.evo_type),
-        IconName.WALLET,
-        filters.map { (f, label) -> f to stringResource(label) },
-        value,
-        onChange,
+        filters.map { (f, label) -> Choice(f.name, stringResource(label)) },
+        setOf(value.name),
+        { chosen -> chosen.firstOrNull()?.let { onChange(TypeFilter.valueOf(it)) } },
         modifier.testTag("type-filter"),
+        icon = IconName.WALLET,
     )
 }
 
@@ -68,51 +62,21 @@ fun TypeFilterField(
 val EVOLUTION_KINDS =
     listOf(PlaceKind.ONLINE, PlaceKind.STUDENT_HOME, PlaceKind.SCHOOL, PlaceKind.SALINHA, PlaceKind.COURSE, PlaceKind.PRIVATE)
 
-/** "Local": Todos os locais or one kind of place, as a dropdown (AC-019-8). */
+/** "Local": any number of kinds of place; none is Todos os locais (AC-019-8). */
 @Composable
 fun PlaceKindField(
-    value: PlaceKind?,
-    onChange: (PlaceKind?) -> Unit,
+    value: Set<PlaceKind>,
+    onChange: (Set<PlaceKind>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ChoiceField(
         stringResource(R.string.evo_place),
-        IconName.PIN,
-        listOf<Pair<PlaceKind?, String>>(null to stringResource(R.string.evo_allPlaces)) + EVOLUTION_KINDS.map { it to kindName(it) },
-        value,
-        onChange,
+        EVOLUTION_KINDS.map { Choice(it.name, kindName(it)) },
+        value.map { it.name }.toSet(),
+        { chosen -> onChange(chosen.mapNotNull { k -> EVOLUTION_KINDS.firstOrNull { it.name == k } }.toSet()) },
         modifier.testTag("place-filter"),
+        multiple = true,
+        allLabel = stringResource(R.string.evo_allPlaces),
+        icon = IconName.PIN,
     )
-}
-
-/** A field showing the chosen option that opens a sheet of all of them. */
-@Composable
-private fun <T> ChoiceField(
-    label: String,
-    icon: IconName,
-    options: List<Pair<T, String>>,
-    value: T,
-    onChange: (T) -> Unit,
-    modifier: Modifier,
-) {
-    var open by rememberSaveable { mutableStateOf(false) }
-    SelectField(options.firstOrNull { it.first == value }?.second.orEmpty(), { open = true }, modifier, label = label, icon = icon)
-    if (open) {
-        BottomSheet(label, { open = false }) {
-            ListGroup(
-                options.map { (option, name) ->
-                    {
-                        ListRow(
-                            name,
-                            trailing = RowTrailing.NONE,
-                            onClick = {
-                                onChange(option)
-                                open = false
-                            },
-                        )
-                    }
-                },
-            )
-        }
-    }
 }

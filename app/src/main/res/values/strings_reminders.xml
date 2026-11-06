@@ -103,6 +103,7 @@
     <string name="evo_custom">Custom</string>
     <string name="evo_tooLong">A period can be at most 5 years.</string>
     <string name="evo_type">Type</string>
+    <string name="evo_search">Search students, groups or places</string>
     <string name="evo_place">Place</string>
     <string name="ntf_title">Notifications</string>
     <string name="ntf_now">Now</string>

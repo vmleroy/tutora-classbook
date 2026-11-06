@@ -27,3 +27,6 @@ A tab can carry a number on its icon (`TabItem.count`), such as the Agenda's cla
 
 ## Sideways (spec 017)
 When the phone is sideways the tabs move to `NavRail`, a column on the left with the same pieces.
+
+## What the count means (spec 019)
+`TabItem.countLabel` is read with the label instead of the bare number ("Agenda, 2 aulas para confirmar"); the Agenda also shows that line at its top.

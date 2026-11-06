@@ -190,8 +190,8 @@ class EarningsRulesTest {
 
         fun earned(f: EvolutionFilter) = monthDetails(span, classes, emptyList(), emptyList(), f, oct22, emptyMap()).single().bar.earned
         assertEquals(36_000L, earned(EvolutionFilter()))
-        assertEquals(24_000L, earned(EvolutionFilter(payer = ana)))
-        assertEquals(12_000L, earned(EvolutionFilter(payer = ana, kind = PlaceKind.STUDENT_HOME)))
+        assertEquals(24_000L, earned(EvolutionFilter(payers = setOf(ana))))
+        assertEquals(12_000L, earned(EvolutionFilter(payers = setOf(ana), kinds = setOf(PlaceKind.STUDENT_HOME))))
         assertEquals(0L, earned(EvolutionFilter(type = TypeFilter.JOB)))
     }
 
@@ -253,5 +253,22 @@ class EarningsRulesTest {
         val c = compareBars(rows.first().bar, rows.last().bar)
         assertEquals(12_000L, c.difference)
         assertEquals(100L, c.percent)
+    }
+
+    @Test
+    fun `AC-019-12 several payers and kinds add up together`() {
+        val bia = PayerRef(PayerKind.STUDENT, "bia")
+        val cid = PayerRef(PayerKind.STUDENT, "cid")
+        val classes =
+            listOfNotNull(
+                earnedOf(record(id = "a")),
+                earnedOf(record(id = "b").copy(payer = bia)),
+                earnedOf(record(id = "c", kind = PlaceKind.SCHOOL).copy(payer = cid)),
+            )
+
+        fun earned(f: EvolutionFilter) =
+            monthDetails(monthSpans(LocalDate(2026, 10, 1), 1), classes, emptyList(), emptyList(), f, oct22, emptyMap()).single().bar.earned
+        assertEquals(24_000L, earned(EvolutionFilter(payers = setOf(ana, bia))))
+        assertEquals(36_000L, earned(EvolutionFilter(kinds = setOf(PlaceKind.ONLINE, PlaceKind.SCHOOL))))
     }
 }

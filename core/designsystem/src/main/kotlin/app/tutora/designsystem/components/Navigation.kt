@@ -122,6 +122,8 @@ data class TabItem(
     val icon: IconName,
     /** A number on the icon, such as the Agenda's classes to confirm (AC-014-4); 0 shows none. */
     val count: Int = 0,
+    /** What the count means, read with the label ("Agenda, 2 aulas para confirmar"); null reads the number. */
+    val countLabel: String? = null,
 )
 
 private const val MAX_TAB_COUNT = 99
@@ -196,7 +198,7 @@ private fun TabButton(
                 .sizeIn(minHeight = Size.touch)
                 .testTag("tab-${tab.key}")
                 .selectable(selected = on, role = Role.Tab, onClick = onClick)
-                .semantics { contentDescription = if (tab.count > 0) "${tab.label}, ${tab.count}" else tab.label },
+                .semantics { contentDescription = if (tab.count > 0) "${tab.label}, ${tab.countLabel ?: tab.count}" else tab.label },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Spacing.s1, Alignment.CenterVertically),
     ) {

@@ -40,6 +40,8 @@ import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.CardElevation
 import app.tutora.designsystem.components.Checkbox
 import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.Choice
+import app.tutora.designsystem.components.ChoiceField
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.DotTone
@@ -100,7 +102,7 @@ import app.tutora.domain.ThemeMode
 import app.tutora.domain.theme.themeIds
 import kotlinx.datetime.LocalDate
 
-/** The 45 components, in a section each. */
+/** The 46 components, in a section each. */
 val galleryComponents =
     listOf(
         "Icon",
@@ -148,6 +150,7 @@ val galleryComponents =
         "ColorSlider",
         "UndoBar",
         "NumberField",
+        "ChoiceField",
     )
 
 /**
@@ -572,6 +575,19 @@ fun GallerySections() {
             .DayHeading(4, "Hoje", aside = "1 aula · R$ 80", today = true)
         app.tutora.designsystem.components
             .DayHeading(5, "Quinta", aside = "Sem aulas")
+    }
+    Section("ChoiceField") {
+        var chosen by remember { mutableStateOf(setOf("ana")) }
+        ChoiceField(
+            "Quem",
+            listOf(Choice("ana", "Ana Souza"), Choice("joao", "João Lima"), Choice("colegio", "Colégio Rio Branco")),
+            chosen,
+            { chosen = it },
+            multiple = true,
+            allLabel = "Todos",
+            searchLabel = "Buscar",
+            icon = IconName.USERS,
+        )
     }
     Section("NumberField") {
         var count by remember { mutableLongStateOf(10L) }

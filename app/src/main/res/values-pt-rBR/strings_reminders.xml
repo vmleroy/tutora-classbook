@@ -109,6 +109,7 @@
     <string name="evo_custom">Personalizado</string>
     <string name="evo_tooLong">O período vai até 5 anos.</string>
     <string name="evo_type">Tipo</string>
+    <string name="evo_search">Buscar aluno, turma ou local</string>
     <string name="evo_place">Local</string>
     <string name="ntf_title">Notificações</string>
     <string name="ntf_now">Agora</string>

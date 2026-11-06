@@ -10,6 +10,7 @@ Built on the spec 017 branch, as Victor asked (5 Nov 2026). Architecture referen
   - `EvolutionRange` gains `CUSTOM`. 6 meses, 12 meses and Ano become a (from, to) pair; Personalizado starts from the period on screen and shows De and Até `DateField`s, as the report's "Outro…".
   - A pick that breaks the rules keeps the last valid period and shows `evo_tooLong` (or clamps Até to today and to De).
   - Bars spanning more than one year carry the year in their label ("out 25").
+- **Combo box (added 5 Nov 2026):** `ChoiceField` in the design system: a `SelectField` that opens a sheet of choices, one or several (checkboxes, "Todos" first), with an optional search box that ignores accents and capitals. `EvolutionFilter` takes sets of payers and kinds.
 - **Dropdowns:** a shared `TypeFilterField` in `ui/earnings` (a `SelectField` "Tipo" opening a `BottomSheet` of choices) replaces the type chips on Ganhos and Evolução (AC-019-7, 11). `PlaceKindField` does the same for "Local" (AC-019-8). Both are built from existing components.
 - **Strings:** `evo_custom`, `evo_tooLong`, `evo_type`, `evo_place` in both languages (AC-019-10).
 

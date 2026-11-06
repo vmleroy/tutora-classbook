@@ -253,8 +253,9 @@ fun EarningsScreen(
                 ),
             receivedShare = if (s.earned > 0) s.received.toFloat() / s.earned else 0f,
             receivedLabel = stringResource(R.string.earn_received),
-            // A white card, as on Hoje (Victor, 29 Oct 2026).
+            // A white card, as on Hoje (Victor, 29 Oct 2026), with the cents (AC-019-14).
             onCard = true,
+            compactStats = false,
             footnote =
                 listOfNotNull(
                     s.commission.takeIf { it > 0 }?.let { stringResource(R.string.earn_commission, formatMoney(it, language)) },

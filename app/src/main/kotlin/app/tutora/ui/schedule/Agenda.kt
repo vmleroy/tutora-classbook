@@ -231,44 +231,51 @@ fun AgendaScreen(nav: NavHostController) {
                     .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s4, bottom = Spacing.s3),
                 verticalArrangement = Arrangement.spacedBy(if (landscape) Spacing.s2 else Spacing.s3),
             ) {
-                Row(
+                Column(
                     Modifier.then(if (landscape) collapse.modifier else Modifier),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+                    verticalArrangement = Arrangement.spacedBy(if (landscape) Spacing.s2 else Spacing.s3),
                 ) {
-                    // "Agenda" over the month and year, which opens the month picker (AC-016-13, 20).
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .testTag("header-title")
-                            .clip(RoundedCornerShape(Radius.lg))
-                            .clickable(role = Role.Button) { picking = true }
-                            .semantics(mergeDescendants = true) { contentDescription = pickLabel },
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
                     ) {
-                        Text(
-                            stringResource(R.string.tab_schedule),
-                            style = TutoraTheme.type.titleXl,
-                            color = c.ink,
-                            modifier = Modifier.semantics { heading() },
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-                            Text(title, style = TutoraTheme.type.bodyStrong, color = c.inkMuted)
-                            Icon(IconName.CHEVRON_DOWN, tint = c.inkMuted, size = Size.iconSm)
+                        // "Agenda" over the month and year, which opens the month picker (AC-016-13, 20).
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .testTag("header-title")
+                                .clip(RoundedCornerShape(Radius.lg))
+                                .clickable(role = Role.Button) { picking = true }
+                                .semantics(mergeDescendants = true) { contentDescription = pickLabel },
+                        ) {
+                            Text(
+                                stringResource(R.string.tab_schedule),
+                                style = TutoraTheme.type.titleXl,
+                                color = c.ink,
+                                modifier = Modifier.semantics { heading() },
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                                Text(title, style = TutoraTheme.type.bodyStrong, color = c.inkMuted)
+                                Icon(IconName.CHEVRON_DOWN, tint = c.inkMuted, size = Size.iconSm)
+                            }
                         }
+                        // Sideways the header is one row, leaving the height to the content (AC-017-8).
+                        if (landscape) viewSwitch(Modifier.weight(1.2f))
+                        Button(
+                            stringResource(R.string.schedule_today),
+                            { selectedText = today.toString() },
+                            variant = ButtonVariant.OUTLINE,
+                            size = ControlSize.SM,
+                        )
+                        // The bell to Lembretes (AC-014-32).
+                        app.tutora.ui.reminders.ReminderBell(
+                            nav,
+                            app.tutora.designsystem.components.IconButtonVariant.SUNKEN,
+                        )
                     }
-                    // Sideways the header is one row, leaving the height to the content (AC-017-8).
-                    if (landscape) viewSwitch(Modifier.weight(1.2f))
-                    Button(
-                        stringResource(R.string.schedule_today),
-                        { selectedText = today.toString() },
-                        variant = ButtonVariant.OUTLINE,
-                        size = ControlSize.SM,
-                    )
-                    // The bell to Lembretes (AC-014-32).
-                    app.tutora.ui.reminders.ReminderBell(
-                        nav,
-                        app.tutora.designsystem.components.IconButtonVariant.SUNKEN,
-                    )
+                    // What the Agenda tab's number counts, opening the list (AC-019-13).
+                    app.tutora.ui.confirm
+                        .ConfirmAlert(nav)
                 }
                 if (!landscape) viewSwitch(Modifier)
                 if (view != AgendaView.MONTH) WeekPicker(selected, today, { selectedText = it.toString() }, byDay)

@@ -25,3 +25,6 @@ interface MoneyProps {
   className?: string;
 }
 ```
+
+## Fit (spec 019)
+`fit = true` shrinks the amount to its column instead of cutting it, for full amounts with cents in narrow places such as Ganhos' summary.

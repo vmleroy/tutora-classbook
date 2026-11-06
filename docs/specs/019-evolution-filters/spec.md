@@ -6,7 +6,7 @@ Mockups: none. Built from the design system's components (Chip, DateField, Selec
 
 ## Goal
 
-Evolução, opened from Ganhos, shows only 6 months, 12 months or one calendar year. A teacher who wants to see two years, or one term from a given day to another, can't. Its filters are also three rows of chips that look alike and push the chart down. After this spec Evolução takes any period from one day to five years, chosen with De and Até as in the reports: the period is simply a gap of dates, and the chart shows what falls inside it, month by month. Its type and place-kind filters become dropdowns like "Quem", and Ganhos' type filter too. Nothing about the money changes.
+Evolução, opened from Ganhos, shows only 6 months, 12 months or one calendar year. A teacher who wants to see two years, or one term from a given day to another, can't. Its filters are also three rows of chips that look alike and push the chart down. After this spec Evolução takes any period from one day to five years, chosen with De and Até as in the reports: the period is simply a gap of dates, and the chart shows what falls inside it, month by month. Its type and place-kind filters become dropdowns like "Quem", and Ganhos' type filter too; Quem gains a search box, and Quem and Local take more than one choice. Nothing about the money changes.
 
 ## User stories
 
@@ -28,10 +28,16 @@ Evolução, opened from Ganhos, shows only 6 months, 12 months or one calendar y
 ### Filters as dropdowns
 
 - **AC-019-7.** "Tipo" is a dropdown field with Tudo, Particulares and Escola e emprego, the same choices and rules as Ganhos' (AC-014-19, 20). It opens a small sheet with the choices; the field shows the chosen one.
-- **AC-019-8.** "Local" is a dropdown field with Todos os locais and the place kinds (Online, Casa do Aluno, Escola, Salinha, Cursinho, Particular). The field shows the chosen one.
+- **AC-019-8.** "Local" is a dropdown field with the place kinds (Online, Casa do Aluno, Escola, Salinha, Cursinho, Particular); one or more can be checked, and none checked is Todos os locais. The field shows the chosen ones ("Online, Escola"), or the first two and how many more ("Online, Escola +1").
+- **AC-019-12.** "Quem" opens a list of every student, group and place with a search box: typing filters the list as it goes, ignoring accents and capitals ("joao" finds "João"). Any number of them can be checked, and the chart and list then show what came from all the checked ones together; none checked is Todos. The field shows them as Local does. *(This replaces AC-014-35's one payer; Victor, 5 Nov 2026.)*
 - **AC-019-9.** Tipo, Quem and Local sit together under the period, one per row, and combine as before (AC-014-35). With the phone sideways they keep the readable width (AC-017-4).
 
 - **AC-019-11.** Ganhos' type filter (AC-014-19, 20) is the same "Tipo" dropdown, so both screens match (Victor, 5 Nov 2026).
+
+### From the same emulator round (Victor, 5 Nov 2026)
+
+- **AC-019-13.** The number on the Agenda tab says what it counts: while classes wait to be confirmed, the Agenda shows "2 aulas para confirmar ›" at the top, opening the list (AC-014-6), and screen readers read the tab as "Agenda, 2 aulas para confirmar". Sideways the line slides away with the title row (AC-017-8).
+- **AC-019-14.** Ganhos' summary shows Recebido and A receber with their cents ("R$ 1.234,56"), like Ganho above them; an amount too long for its column gets smaller instead of being cut. Hoje's card keeps its rounded figures.
 
 ### Language
 
@@ -45,4 +51,4 @@ Evolução, opened from Ganhos, shows only 6 months, 12 months or one calendar y
 
 ## Open questions
 
-Answered by Victor on 5 Nov 2026: the period is just a gap of dates with the data inside it, month by month (no bars by day, week or year); 5 years is the longest period; Ganhos' type filter becomes the same dropdown. He asked to build it on the spec 017 branch.
+Answered by Victor on 5 Nov 2026: the period is just a gap of dates with the data inside it, month by month (no bars by day, week or year); 5 years is the longest period; Ganhos' type filter becomes the same dropdown. He asked to build it on the spec 017 branch. Later the same day: the dropdowns work like a combo box, with a text filter, and take more than one person, school or kind of place.

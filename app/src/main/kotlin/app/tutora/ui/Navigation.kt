@@ -268,7 +268,20 @@ fun TutoraNav(
     val landscape = TutoraTheme.landscape
     val tabItems =
         Tab.entries.map {
-            TabItem(it.key, stringResource(it.label), it.icon, count = if (it == Tab.SCHEDULE) toConfirm.size else 0)
+            TabItem(
+                it.key,
+                stringResource(it.label),
+                it.icon,
+                count = if (it == Tab.SCHEDULE) toConfirm.size else 0,
+                // The number says what it counts (AC-019-13).
+                countLabel =
+                    if (it == Tab.SCHEDULE) {
+                        androidx.compose.ui.res
+                            .pluralStringResource(R.plurals.confirm_count, toConfirm.size, toConfirm.size)
+                    } else {
+                        null
+                    },
+            )
         }
     val onTab: (String) -> Unit = { key -> nav.openTab(Tab.entries.first { it.key == key }.graph) }
     val panel = androidx.compose.runtime.remember { DetailPanel() }

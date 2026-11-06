@@ -4,6 +4,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
@@ -12,6 +14,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.Payer
@@ -296,10 +300,7 @@ class EarningsScreensTest {
         given(8)
         openEvolution()
         listOf("Ganho", "Recebido").forEach { exists(it) }
-        compose.onNodeWithTag("evo-who").performClick()
-        h.settle(compose)
-        compose.onAllNodes(matching("Ana Souza"), useUnmergedTree = true).onLast().performClick()
-        h.settle(compose)
+        choose("evo-who", "Ana Souza")
         exists("Ganho R$ 240,00", part = true)
         choose("place-filter", "Casa do aluno")
         compose.onAllNodes(matching("Ganho R$ 240,00", part = true), useUnmergedTree = true).assertCountEquals(0)
@@ -314,6 +315,11 @@ class EarningsScreensTest {
         h.settle(compose)
         compose.onAllNodes(matching(option), useUnmergedTree = true).onLast().performClick()
         h.settle(compose)
+        // A field with several choices stays open until Pronto.
+        if (compose.onAllNodes(matching("Pronto"), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()) {
+            compose.onAllNodes(matching("Pronto"), useUnmergedTree = true).onLast().performClick()
+            h.settle(compose)
+        }
     }
 
     @Test
@@ -356,13 +362,47 @@ class EarningsScreensTest {
     }
 
     @Test
-    fun `AC-019-8 Local is a dropdown with Todos os locais and the kinds of place`() {
+    fun `AC-019-8 Local is a dropdown of the kinds of place, one or more, none being Todos os locais`() {
         openEvolution()
         exists("Todos os locais")
-        choose("place-filter", "Online")
-        compose.onNodeWithTag("place-filter").assertExists()
-        exists("Online")
+        compose.onNodeWithTag("place-filter").performScrollTo().performClick()
+        h.settle(compose)
+        listOf("Online", "Escola").forEach { compose.onAllNodes(matching(it), useUnmergedTree = true).onLast().performClick() }
+        compose.onAllNodes(matching("Pronto"), useUnmergedTree = true).onLast().performClick()
+        h.settle(compose)
+        exists("Online, Escola")
         compose.onNodeWithText("Todos os locais").assertDoesNotExist()
+    }
+
+    private fun search() =
+        compose.onNode(
+            androidx.compose.ui.test
+                .hasSetTextAction() and
+                androidx.compose.ui.test
+                    .hasAnyAncestor(
+                        androidx.compose.ui.test
+                            .hasTestTag("choice-search"),
+                    ),
+        )
+
+    @Test
+    fun `AC-019-12 Quem is searched as typed, ignoring accents, and takes several at once`() {
+        given(6)
+        openEvolution()
+        compose.onNodeWithTag("evo-who").performScrollTo().performClick()
+        h.settle(compose)
+        search().performTextInput("ANA SOUZÁ")
+        h.settle(compose)
+        exists("Ana Souza")
+        compose.onAllNodes(matching("Online / Remoto"), useUnmergedTree = true).assertCountEquals(0)
+        search().performTextReplacement("")
+        h.settle(compose)
+        compose.onAllNodes(matching("Ana Souza"), useUnmergedTree = true).onLast().performClick()
+        compose.onAllNodes(matching("Online / Remoto"), useUnmergedTree = true).onLast().performClick()
+        compose.onAllNodes(matching("Pronto"), useUnmergedTree = true).onLast().performClick()
+        h.settle(compose)
+        exists("Ana Souza, Online / Remoto")
+        exists("Ganho R$ 120,00", part = true)
     }
 
     @Test
@@ -388,5 +428,23 @@ class EarningsScreensTest {
         compose.onNodeWithText("Particulares").assertDoesNotExist()
         choose("type-filter", "Particulares")
         exists("Particulares")
+    }
+
+    @Test
+    fun `AC-019-14 Ganhos' summary shows Recebido and A receber with their cents`() {
+        given(6)
+        openEarnings()
+        compose
+            .onAllNodes(
+                matching("R$ 120,00") and hasAnyAncestor(hasTestTag("earn-summary")),
+                useUnmergedTree = true,
+            ).onFirst()
+            .assertExists()
+        compose
+            .onAllNodes(
+                matching("R$ 0,00") and hasAnyAncestor(hasTestTag("earn-summary")),
+                useUnmergedTree = true,
+            ).onFirst()
+            .assertExists()
     }
 }

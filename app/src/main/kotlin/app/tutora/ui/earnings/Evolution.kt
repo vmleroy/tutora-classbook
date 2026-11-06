@@ -24,20 +24,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
-import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.Choice
+import app.tutora.designsystem.components.ChoiceField
 import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
-import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.MonthBar
 import app.tutora.designsystem.components.MonthBars
-import app.tutora.designsystem.components.RowTrailing
-import app.tutora.designsystem.components.SelectField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -85,19 +83,21 @@ fun EvolutionScreen(nav: NavHostController) {
     var range by rememberSaveable { mutableStateOf(EvolutionRange.SIX) }
     var year by rememberSaveable { mutableIntStateOf(today.year) }
     var filter by rememberSaveable { mutableStateOf(TypeFilter.ALL) }
-    var payerKey by rememberSaveable { mutableStateOf<String?>(null) }
-    var kind by rememberSaveable { mutableStateOf<PlaceKind?>(null) }
-    var choosingWho by rememberSaveable { mutableStateOf(false) }
+    // Any number of payers ("student:<id>") and place kinds; none is everyone (AC-019-8, 12).
+    var payerKeys by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var kindKeys by rememberSaveable { mutableStateOf(listOf<String>()) }
     // Personalizado's De and Até, kept through a turn of the phone (AC-019-6).
     var customFrom by rememberSaveable { mutableStateOf(today.toString()) }
     var customTo by rememberSaveable { mutableStateOf(today.toString()) }
     var tooLong by rememberSaveable { mutableStateOf(false) }
     var picked by rememberSaveable { mutableStateOf(listOf<Int>()) }
-    val payer =
-        payerKey?.let { k ->
-            PayerKind.entries.firstOrNull { k.startsWith(it.key + ":") }?.let { PayerRef(it, k.substringAfter(":")) }
-        }
     val payers = rememberPayers()
+    val chosenPayers =
+        payerKeys
+            .mapNotNull { k ->
+                PayerKind.entries.firstOrNull { k.startsWith(it.key + ":") }?.let { PayerRef(it, k.substringAfter(":")) }
+            }.toSet()
+    val chosenKinds = kindKeys.mapNotNull { k -> PlaceKind.entries.firstOrNull { it.name == k } }.toSet()
     val endOfMonth = monthOf(today).plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
     val (from, to) =
         when (range) {
@@ -120,8 +120,8 @@ fun EvolutionScreen(nav: NavHostController) {
         customTo = end.toString()
         picked = emptyList()
     }
-    val months by remember(from, to, filter, payer, kind) {
-        services.earningsRepo.evolution(from, to, EvolutionFilter(filter, payer, kind), today, zone)
+    val months by remember(from, to, filter, chosenPayers, chosenKinds) {
+        services.earningsRepo.evolution(from, to, EvolutionFilter(filter, chosenPayers, chosenKinds), today, zone)
     }.collectAsState(initial = emptyList())
     val bars = months.map { it.bar }
     ScreenScaffold(
@@ -201,15 +201,23 @@ fun EvolutionScreen(nav: NavHostController) {
             filter = it
             picked = emptyList()
         })
-        SelectField(
-            payers.firstOrNull { it.first == payer }?.second ?: stringResource(R.string.evo_everyone),
-            { choosingWho = true },
+        // Quem: search as you type and check any number (AC-019-12).
+        ChoiceField(
+            stringResource(R.string.evo_who),
+            payers.map { (p, name) -> Choice("${p.kind.key}:${p.id}", name) },
+            payerKeys.toSet(),
+            {
+                payerKeys = it.toList()
+                picked = emptyList()
+            },
             Modifier.testTag("evo-who"),
-            label = stringResource(R.string.evo_who),
+            multiple = true,
+            allLabel = stringResource(R.string.evo_everyone),
+            searchLabel = stringResource(R.string.evo_search),
             icon = IconName.USERS,
         )
-        PlaceKindField(kind, {
-            kind = it
+        PlaceKindField(chosenKinds, {
+            kindKeys = it.map { k -> k.name }
             picked = emptyList()
         })
         // Over more than one year a bar names its year too ("out 25").
@@ -235,25 +243,6 @@ fun EvolutionScreen(nav: NavHostController) {
             ListGroup(
                 months.reversed().map<MonthDetail, @Composable () -> Unit> { m -> { MonthRow(m) } },
                 Modifier.testTag("evolution-months"),
-            )
-        }
-    }
-    if (choosingWho) {
-        BottomSheet(stringResource(R.string.evo_who), { choosingWho = false }) {
-            ListGroup(
-                (listOf<Pair<PayerRef?, String>>(null to stringResource(R.string.evo_everyone)) + payers).map { (p, name) ->
-                    {
-                        ListRow(
-                            name,
-                            trailing = RowTrailing.NONE,
-                            onClick = {
-                                payerKey = p?.let { "${it.kind.key}:${it.id}" }
-                                picked = emptyList()
-                                choosingWho = false
-                            },
-                        )
-                    }
-                },
             )
         }
     }

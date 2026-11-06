@@ -5,6 +5,7 @@
     <string name="ds_close">Close</string>
     <string name="ds_back">Back</string>
     <string name="ds_next">Next</string>
+    <string name="ds_finish">Done</string>
     <string name="ds_done">Done</string>
     <string name="ds_week_days">Days of the week</string>
     <string name="ds_new_lesson">New lesson</string>
