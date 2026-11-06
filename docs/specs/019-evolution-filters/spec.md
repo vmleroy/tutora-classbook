@@ -39,6 +39,8 @@ Evolução, opened from Ganhos, shows only 6 months, 12 months or one calendar y
 - **AC-019-13.** The number on the Agenda tab says what it counts: while classes wait to be confirmed, the Agenda shows "2 aulas para confirmar ›" at the top, opening the list (AC-014-6), and screen readers read the tab as "Agenda, 2 aulas para confirmar". Sideways the line slides away with the title row (AC-017-8).
 - **AC-019-14.** Ganhos' summary shows Recebido and A receber with their cents ("R$ 1.234,56"), like Ganho above them; an amount too long for its column gets smaller instead of being cut. Hoje's card keeps its rounded figures.
 
+- **AC-019-15.** Seus dados has "Título no topo dos relatórios". What is typed there replaces "TUTORA · CONTROLE DE AULAS" at the top of every PDF report, the class reports and Ganhos' earnings report; left empty, the reports keep it (Victor, 5 Nov 2026).
+
 ### Language
 
 - **AC-019-10.** Every new word is in Português and English.

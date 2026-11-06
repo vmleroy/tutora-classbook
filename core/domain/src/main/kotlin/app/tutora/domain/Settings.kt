@@ -36,6 +36,8 @@ data class Settings(
     /** Ajustes › Relatórios: the teacher's name and Pix key, printed on reports when set (AC-010-16). */
     val teacherName: String = "",
     val pixKey: String = "",
+    /** The line at the top of the PDF reports; empty keeps "TUTORA · CONTROLE DE AULAS" (AC-019-15). */
+    val reportTitle: String = "",
     /** Themes of the teacher's own: a theme with custom colors, under a name (AC-013-5). */
     val savedThemes: List<SavedTheme> = emptyList(),
     /** The saved theme the current colors came from, if they still match it. */
