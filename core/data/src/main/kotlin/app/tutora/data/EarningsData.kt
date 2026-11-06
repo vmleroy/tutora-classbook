@@ -30,8 +30,8 @@ import app.tutora.domain.localOf
 import app.tutora.domain.localToInstant
 import app.tutora.domain.monthDetails
 import app.tutora.domain.monthOf
-import app.tutora.domain.monthSpans
 import app.tutora.domain.periodSpans
+import app.tutora.domain.rangeSpans
 import app.tutora.domain.sources
 import app.tutora.domain.summarize
 import app.tutora.domain.trend
@@ -276,15 +276,18 @@ class EarningsRepository(
             else -> PayerRef(PayerKind.PLACE, placeId.orEmpty())
         }
 
-    /** Evolução: month by month from [firstMonth], with the filters, details and change (AC-014-31, 34, 35). */
+    /**
+     * Evolução for the gap of dates [from]–[to], month by month, with the filters, details and
+     * change (AC-014-31, 34, 35, AC-019-3).
+     */
     fun evolution(
-        firstMonth: LocalDate,
-        count: Int,
+        from: LocalDate,
+        to: LocalDate,
         filter: EvolutionFilter,
         today: LocalDate,
         zone: String,
     ): Flow<List<MonthDetail>> {
-        val spans = monthSpans(firstMonth, count)
+        val spans = rangeSpans(from, to)
         val from = spans.first().first
         val to = spans.last().second
         return combine(

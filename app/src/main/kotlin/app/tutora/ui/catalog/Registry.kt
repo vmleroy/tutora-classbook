@@ -127,6 +127,7 @@ private fun StudentsPane(
     nav: NavHostController,
     owingFirst: Boolean,
 ) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val students by remember { services.catalogRepo.students() }.collectAsState(initial = emptyList())
     val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
@@ -189,7 +190,7 @@ private fun StudentsPane(
                     subtitle = listOfNotNull(subtitle, pkg?.let { packageUseText(it) }).joinToString(" · "),
                     avatar = initials(s.student.name) to s.student.color.tag(),
                     badge = balanceBadge(balances[PayerRef(PayerKind.STUDENT, s.student.id)] ?: 0),
-                    onClick = { nav.navigate(StudentDetail(s.student.id)) },
+                    onClick = { openPage(StudentDetail(s.student.id)) },
                 )
             }
         }
@@ -213,6 +214,7 @@ private fun StudentsPane(
 /** Turmas: active groups with search, each with its subject, place, size and price (AC-004-31). */
 @Composable
 private fun GroupsPane(nav: NavHostController) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
@@ -259,7 +261,7 @@ private fun GroupsPane(nav: NavHostController) {
                     subtitle = subtitle,
                     icon = IconName.USERS,
                     badge = balanceBadge(balances[PayerRef(PayerKind.GROUP, g.id)] ?: 0),
-                    onClick = { nav.navigate(GroupDetail(g.id)) },
+                    onClick = { openPage(GroupDetail(g.id)) },
                 )
             }
         }
@@ -276,6 +278,7 @@ private fun GroupsPane(nav: NavHostController) {
 
 @Composable
 private fun PlacesPane(nav: NavHostController) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val balances by remember { services.paymentRepo.balances() }.collectAsState(initial = emptyMap())
@@ -315,7 +318,7 @@ private fun PlacesPane(nav: NavHostController) {
                 subtitle = summary,
                 icon = IconName.PIN,
                 badge = badge,
-                onClick = { nav.navigate(PlaceDetail(p.place.id)) },
+                onClick = { openPage(PlaceDetail(p.place.id)) },
             )
         }
     }
@@ -347,6 +350,7 @@ private fun PlacesPane(nav: NavHostController) {
 /** Arquivados: everything hidden, each opening its form to restore or remove it (AC-004-23). */
 @Composable
 fun ArchivedScreen(nav: NavHostController) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val places by remember { services.catalogRepo.places(archived = true) }.collectAsState(initial = emptyList())
     val students by remember { services.catalogRepo.students(archived = true) }.collectAsState(initial = emptyList())
@@ -362,7 +366,7 @@ fun ArchivedScreen(nav: NavHostController) {
                         ListRow(
                             s.student.name,
                             avatar = initials(s.student.name) to s.student.color.tag(),
-                            onClick = { nav.navigate(StudentDetail(s.student.id)) },
+                            onClick = { openPage(StudentDetail(s.student.id)) },
                         )
                     }
                 },
@@ -372,7 +376,7 @@ fun ArchivedScreen(nav: NavHostController) {
         if (groups.isNotEmpty()) {
             ListGroup(
                 groups.map { g ->
-                    { ListRow(g.name, onClick = { nav.navigate(GroupDetail(g.id)) }) }
+                    { ListRow(g.name, onClick = { openPage(GroupDetail(g.id)) }) }
                 },
                 title = stringResource(R.string.places_groups),
             )
@@ -380,7 +384,7 @@ fun ArchivedScreen(nav: NavHostController) {
         if (places.isNotEmpty()) {
             ListGroup(
                 places.map { p ->
-                    { ListRow(placeName(p.place), onClick = { nav.navigate(PlaceDetail(p.place.id)) }) }
+                    { ListRow(placeName(p.place), onClick = { openPage(PlaceDetail(p.place.id)) }) }
                 },
                 title = stringResource(R.string.tab_places),
             )

@@ -7,20 +7,28 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -114,6 +122,8 @@ data class TabItem(
     val icon: IconName,
     /** A number on the icon, such as the Agenda's classes to confirm (AC-014-4); 0 shows none. */
     val count: Int = 0,
+    /** What the count means, read with the label ("Agenda, 2 aulas para confirmar"); null reads the number. */
+    val countLabel: String? = null,
 )
 
 private const val MAX_TAB_COUNT = 99
@@ -138,52 +148,91 @@ fun TabBar(
                 .selectableGroup(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        tabs.forEach { tab ->
-            val on = tab.key == active
-            Column(
-                modifier =
-                    Modifier
-                        .weight(1f)
-                        .sizeIn(minHeight = Size.touch)
-                        .testTag("tab-${tab.key}")
-                        .selectable(selected = on, role = Role.Tab, onClick = { onSelect(tab.key) })
-                        .semantics { contentDescription = if (tab.count > 0) "${tab.label}, ${tab.count}" else tab.label },
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(Spacing.s1),
-            ) {
-                Box(
-                    Modifier
-                        .testTag("tab-pill-${tab.key}")
-                        .clip(RoundedCornerShape(Radius.full))
-                        .background(if (on) c.tabActiveSoft else Color.Transparent)
-                        .padding(horizontal = Spacing.s4, vertical = Spacing.s1),
-                ) {
-                    Icon(tab.icon, tint = if (on) c.tabActive else c.inkMuted)
-                    if (tab.count > 0) {
-                        Text(
-                            if (tab.count > MAX_TAB_COUNT) "$MAX_TAB_COUNT+" else tab.count.toString(),
-                            style = TutoraTheme.type.badge.copy(fontFeatureSettings = "tnum"),
-                            color = c.surface,
-                            maxLines = 1,
-                            modifier =
-                                Modifier
-                                    .testTag("tab-count-${tab.key}")
-                                    .align(Alignment.TopEnd)
-                                    .offset(x = Spacing.s3, y = -Spacing.s0_5)
-                                    .clip(RoundedCornerShape(Radius.full))
-                                    .background(c.danger)
-                                    .padding(horizontal = Spacing.s1),
-                        )
-                    }
-                }
+        tabs.forEach { tab -> TabButton(tab, tab.key == active, Modifier.weight(1f)) { onSelect(tab.key) } }
+    }
+}
+
+/**
+ * The five tabs in a column on the left when the phone is sideways (spec 017): the same icons,
+ * labels, active pill and count as [TabBar], clear of the cut-out and the side navigation buttons.
+ */
+@Composable
+fun NavRail(
+    tabs: List<TabItem>,
+    active: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val c = TutoraTheme.colors
+    Column(
+        modifier =
+            modifier
+                .fillMaxHeight()
+                .testTag("nav-rail")
+                .background(c.surfaceSunken)
+                .windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Start + WindowInsetsSides.Vertical),
+                ).width(Size.rail)
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = Spacing.s2)
+                .selectableGroup(),
+        verticalArrangement = Arrangement.spacedBy(Spacing.s2, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        tabs.forEach { tab -> TabButton(tab, tab.key == active, Modifier.fillMaxWidth()) { onSelect(tab.key) } }
+    }
+}
+
+/** One tab of [TabBar] or [NavRail]: the icon on its pill with the count, over the label. */
+@Composable
+private fun TabButton(
+    tab: TabItem,
+    on: Boolean,
+    modifier: Modifier,
+    onClick: () -> Unit,
+) {
+    val c = TutoraTheme.colors
+    Column(
+        modifier =
+            modifier
+                .sizeIn(minHeight = Size.touch)
+                .testTag("tab-${tab.key}")
+                .selectable(selected = on, role = Role.Tab, onClick = onClick)
+                .semantics { contentDescription = if (tab.count > 0) "${tab.label}, ${tab.countLabel ?: tab.count}" else tab.label },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Spacing.s1, Alignment.CenterVertically),
+    ) {
+        Box(
+            Modifier
+                .testTag("tab-pill-${tab.key}")
+                .clip(RoundedCornerShape(Radius.full))
+                .background(if (on) c.tabActiveSoft else Color.Transparent)
+                .padding(horizontal = Spacing.s4, vertical = Spacing.s1),
+        ) {
+            Icon(tab.icon, tint = if (on) c.tabActive else c.inkMuted)
+            if (tab.count > 0) {
                 Text(
-                    tab.label,
-                    style = if (on) TutoraTheme.type.tab.copy(fontWeight = FontWeight.Black) else TutoraTheme.type.tab,
-                    color = if (on) c.ink else c.inkMuted,
+                    if (tab.count > MAX_TAB_COUNT) "$MAX_TAB_COUNT+" else tab.count.toString(),
+                    style = TutoraTheme.type.badge.copy(fontFeatureSettings = "tnum"),
+                    color = c.surface,
                     maxLines = 1,
+                    modifier =
+                        Modifier
+                            .testTag("tab-count-${tab.key}")
+                            .align(Alignment.TopEnd)
+                            .offset(x = Spacing.s3, y = -Spacing.s0_5)
+                            .clip(RoundedCornerShape(Radius.full))
+                            .background(c.danger)
+                            .padding(horizontal = Spacing.s1),
                 )
             }
         }
+        Text(
+            tab.label,
+            style = if (on) TutoraTheme.type.tab.copy(fontWeight = FontWeight.Black) else TutoraTheme.type.tab,
+            color = if (on) c.ink else c.inkMuted,
+            maxLines = 1,
+        )
     }
 }
 
@@ -210,8 +259,14 @@ fun WeekStrip(
     label: String = stringResource(R.string.ds_week_days),
 ) {
     val c = TutoraTheme.colors
+    val landscape = TutoraTheme.landscape
     Row(
-        modifier = modifier.fillMaxWidth().semantics { contentDescription = label }.selectableGroup(),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .testTag("week-strip")
+                .semantics { contentDescription = label }
+                .selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s1_5),
     ) {
         days.forEachIndexed { i, d ->
@@ -228,28 +283,47 @@ fun WeekStrip(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Spacing.s1),
             ) {
-                Text(d.weekday, style = TutoraTheme.type.badge, color = if (on || isToday) c.btnPrimary else c.inkMuted)
+                // Sideways the weekday sits inside the tile, beside the day (spec 017).
+                if (!landscape) Text(d.weekday, style = TutoraTheme.type.badge, color = if (on || isToday) c.btnPrimary else c.inkMuted)
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .aspectRatio(1f)
+                        // Sideways a square would take the height the hours need: a touch-high tile (spec 017).
+                        .then(if (landscape) Modifier.height(Size.touch) else Modifier.aspectRatio(1f))
                         .clip(shape)
                         .background(if (on) c.btnPrimary else c.surfaceSunken)
                         .then(if (isToday && !on) Modifier.border(Size.borderStrong, c.btnPrimary, shape) else Modifier),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        d.day.toString(),
-                        style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
-                        color =
-                            if (on) {
-                                c.onBtnPrimary
-                            } else if (isToday) {
-                                c.btnPrimary
-                            } else {
-                                c.ink
-                            },
-                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s1), verticalAlignment = Alignment.CenterVertically) {
+                        if (landscape) {
+                            Text(
+                                d.weekday,
+                                style = TutoraTheme.type.badge,
+                                color =
+                                    if (on) {
+                                        c.onBtnPrimary
+                                    } else if (isToday) {
+                                        c.btnPrimary
+                                    } else {
+                                        c.inkMuted
+                                    },
+                                maxLines = 1,
+                            )
+                        }
+                        Text(
+                            d.day.toString(),
+                            style = TutoraTheme.type.bodyStrong.copy(fontFeatureSettings = "tnum"),
+                            color =
+                                if (on) {
+                                    c.onBtnPrimary
+                                } else if (isToday) {
+                                    c.btnPrimary
+                                } else {
+                                    c.ink
+                                },
+                        )
+                    }
                 }
                 Box(Modifier.size(Size.weekDot).clip(CircleShape).background(d.dot?.colors()?.fill ?: Color.Transparent))
             }

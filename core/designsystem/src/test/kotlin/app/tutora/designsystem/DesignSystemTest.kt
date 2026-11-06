@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -18,6 +19,8 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -33,6 +36,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.designsystem.components.formatMoney
+import app.tutora.designsystem.components.readableWidth
 import app.tutora.designsystem.tokens.TutoraColors
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -119,8 +123,8 @@ class DesignSystemTest {
                 ) { Column(Modifier.verticalScroll(rememberScrollState())) { GallerySections() } }
             }
         }
-        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana), UndoBar and NumberField (014).
-        assertEquals(43, galleryComponents.size)
+        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana), UndoBar and NumberField (014), NavRail and SidePanel (017), ChoiceField (019).
+        assertEquals(46, galleryComponents.size)
         for (name in galleryComponents) compose.onNodeWithTag("section-$name").assertExists()
         isDark = true
         compose.waitForIdle()
@@ -404,5 +408,104 @@ class DesignSystemTest {
         compose.waitForIdle()
         assertEquals(55, minutes)
         compose.onNodeWithText("00:55").assertExists()
+    }
+
+    private val tabs =
+        listOf(
+            app.tutora.designsystem.components
+                .TabItem("today", "Hoje", app.tutora.designsystem.components.IconName.HOME),
+            app.tutora.designsystem.components
+                .TabItem("schedule", "Agenda", app.tutora.designsystem.components.IconName.CALENDAR, 2),
+            app.tutora.designsystem.components
+                .TabItem("registry", "Cadastro", app.tutora.designsystem.components.IconName.USERS),
+            app.tutora.designsystem.components
+                .TabItem("earnings", "Ganhos", app.tutora.designsystem.components.IconName.WALLET),
+            app.tutora.designsystem.components
+                .TabItem("settings", "Ajustes", app.tutora.designsystem.components.IconName.GEAR),
+        )
+
+    @Test
+    @Config(qualifiers = "w800dp-h360dp-land")
+    fun `AC-017-2 sideways the five tabs stand in a rail on the left with the same labels, pill and count`() {
+        var landscape = false
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                landscape = TutoraTheme.landscape
+                androidx.compose.foundation.layout.Row {
+                    app.tutora.designsystem.components
+                        .NavRail(tabs, active = "schedule", onSelect = {})
+                    Box(Modifier.weight(1f).size(Size.touch).testTag("content"))
+                }
+            }
+        }
+        assertTrue(landscape)
+        val rail = compose.onNodeWithTag("nav-rail").fetchSemanticsNode().boundsInRoot
+        assertEquals(0f, rail.left)
+        assertEquals(
+            Size.rail.value,
+            compose
+                .onNodeWithTag("nav-rail")
+                .fetchSemanticsNode()
+                .size.width / compose.density.density,
+            1f,
+        )
+        // One tab under the other, in order.
+        val tops =
+            tabs.map {
+                compose
+                    .onNodeWithTag("tab-${it.key}")
+                    .fetchSemanticsNode()
+                    .boundsInRoot.top
+            }
+        assertEquals(tops.sorted(), tops)
+        tabs.forEach { compose.onNodeWithText(it.label).assertExists() }
+        compose.onNodeWithTag("tab-pill-schedule", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("tab-count-schedule", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("tab-schedule").assertIsSelected()
+        // The content takes the rest of the width.
+        assertEquals(
+            rail.right,
+            compose
+                .onNodeWithTag("content")
+                .fetchSemanticsNode()
+                .boundsInRoot.left,
+        )
+    }
+
+    @Test
+    @Config(qualifiers = "w800dp-h360dp-land")
+    fun `AC-017-4 content wider than the readable width sits centered at it, with the background on both sides`() {
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                Box(Modifier.background(TutoraTheme.colors.background).testTag("screen")) {
+                    Column(Modifier.readableWidth().testTag("readable")) { Box(Modifier.size(Size.touch)) }
+                }
+            }
+        }
+        val screen = compose.onNodeWithTag("screen").fetchSemanticsNode().boundsInRoot
+        val content = compose.onNodeWithTag("readable").fetchSemanticsNode().boundsInRoot
+        val d = compose.density.density
+        assertEquals(Size.contentMax.value, content.width / d, 1f)
+        assertEquals(content.left - screen.left, screen.right - content.right, 1f)
+        assertTrue(content.left > 0f)
+    }
+
+    @Test
+    @Config(qualifiers = "w800dp-h360dp-land")
+    fun `AC-017-15 a sheet sideways opens at the readable width, centered, and its tall body scrolls`() {
+        compose.setContent {
+            TutoraTheme(dark = false) {
+                app.tutora.designsystem.components.BottomSheet("Pagamento", onDismiss = {}) {
+                    repeat(30) { Text("Linha $it", Modifier.testTag("line-$it")) }
+                }
+            }
+        }
+        compose.waitForIdle()
+        val sheet = compose.onNodeWithContentDescription("Pagamento").fetchSemanticsNode().boundsInRoot
+        val d = compose.density.density
+        assertTrue("sheet ${sheet.width / d} dp wide", sheet.width / d <= Size.contentMax.value + 1f)
+        // Centered in the 800 dp window: as much room on the left as on the right.
+        assertEquals(sheet.left / d, 800f - sheet.right / d, 2f)
+        compose.onNodeWithTag("line-29").performScrollTo().assertIsDisplayed()
     }
 }

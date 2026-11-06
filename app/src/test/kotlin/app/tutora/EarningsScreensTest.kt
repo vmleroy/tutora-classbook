@@ -4,6 +4,8 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
@@ -12,6 +14,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.Payer
@@ -28,6 +32,7 @@ import app.tutora.usecases.WhoId
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -295,13 +300,151 @@ class EarningsScreensTest {
         given(8)
         openEvolution()
         listOf("Ganho", "Recebido").forEach { exists(it) }
-        compose.onNodeWithTag("evo-who").performClick()
+        choose("evo-who", "Ana Souza")
+        exists("Ganho R$ 240,00", part = true)
+        choose("place-filter", "Casa do aluno")
+        compose.onAllNodes(matching("Ganho R$ 240,00", part = true), useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    /** Opens a dropdown field and picks [option] in its sheet. */
+    private fun choose(
+        field: String,
+        option: String,
+    ) {
+        compose.onNodeWithTag(field).performScrollTo().performClick()
+        h.settle(compose)
+        compose.onAllNodes(matching(option), useUnmergedTree = true).onLast().performClick()
+        h.settle(compose)
+        // A field with several choices stays open until Pronto.
+        if (compose.onAllNodes(matching("Pronto"), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()) {
+            compose.onAllNodes(matching("Pronto"), useUnmergedTree = true).onLast().performClick()
+            h.settle(compose)
+        }
+    }
+
+    @Test
+    fun `AC-019-1 Personalizado shows De and Ate, filled with the period on screen`() {
+        openEvolution()
+        listOf("6 meses", "12 meses", "Ano", "Personalizado").forEach { exists(it) }
+        compose.onNodeWithTag("evo-from").assertDoesNotExist()
+        compose.onNodeWithText("Personalizado").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("evo-from").assertExists()
+        exists("01/05/2026")
+        exists("26/10/2026")
+    }
+
+    @Test
+    fun `AC-019-6 the chosen period is kept through a turn of the phone`() {
+        openEvolution()
+        compose.onNodeWithText("Personalizado").performClick()
+        h.settle(compose)
+        h.landscape = true
+        h.settle(compose)
+        h.landscape = false
+        h.settle(compose)
+        compose.onNodeWithTag("evo-from").assertExists()
+        exists("01/05/2026")
+    }
+
+    @Test
+    fun `AC-019-7 Tipo is a dropdown with Tudo, Particulares and Escola e emprego`() {
+        given(6)
+        openEvolution()
+        compose.onNodeWithText("Particulares").assertDoesNotExist()
+        compose.onNodeWithTag("type-filter").performClick()
+        h.settle(compose)
+        listOf("Tudo", "Particulares", "Escola e emprego").forEach { exists(it) }
+        compose.onAllNodes(matching("Escola e emprego"), useUnmergedTree = true).onLast().performClick()
+        h.settle(compose)
+        exists("Escola e emprego")
+        compose.onAllNodes(matching("Ganho R$ 120,00", part = true), useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    @Test
+    fun `AC-019-8 Local is a dropdown of the kinds of place, one or more, none being Todos os locais`() {
+        openEvolution()
+        exists("Todos os locais")
+        compose.onNodeWithTag("place-filter").performScrollTo().performClick()
+        h.settle(compose)
+        listOf("Online", "Escola").forEach { compose.onAllNodes(matching(it), useUnmergedTree = true).onLast().performClick() }
+        compose.onAllNodes(matching("Pronto"), useUnmergedTree = true).onLast().performClick()
+        h.settle(compose)
+        exists("Online, Escola")
+        compose.onNodeWithText("Todos os locais").assertDoesNotExist()
+    }
+
+    private fun search() =
+        compose.onNode(
+            androidx.compose.ui.test
+                .hasSetTextAction() and
+                androidx.compose.ui.test
+                    .hasAnyAncestor(
+                        androidx.compose.ui.test
+                            .hasTestTag("choice-search"),
+                    ),
+        )
+
+    @Test
+    fun `AC-019-12 Quem is searched as typed, ignoring accents, and takes several at once`() {
+        given(6)
+        openEvolution()
+        compose.onNodeWithTag("evo-who").performScrollTo().performClick()
+        h.settle(compose)
+        search().performTextInput("ANA SOUZÁ")
+        h.settle(compose)
+        exists("Ana Souza")
+        compose.onAllNodes(matching("Online / Remoto"), useUnmergedTree = true).assertCountEquals(0)
+        search().performTextReplacement("")
         h.settle(compose)
         compose.onAllNodes(matching("Ana Souza"), useUnmergedTree = true).onLast().performClick()
+        compose.onAllNodes(matching("Online / Remoto"), useUnmergedTree = true).onLast().performClick()
+        compose.onAllNodes(matching("Pronto"), useUnmergedTree = true).onLast().performClick()
         h.settle(compose)
-        exists("Ganho R$ 240,00", part = true)
-        compose.onNodeWithText("Casa do aluno").performClick()
-        h.settle(compose)
-        compose.onAllNodes(matching("Ganho R$ 240,00", part = true), useUnmergedTree = true).assertCountEquals(0)
+        exists("Ana Souza, Online / Remoto")
+        exists("Ganho R$ 120,00", part = true)
+    }
+
+    @Test
+    fun `AC-019-9 Tipo, Quem and Local sit one under the other`() {
+        openEvolution()
+        val fields = listOf("type-filter", "evo-who", "place-filter").map { compose.onNodeWithTag(it).fetchSemanticsNode().boundsInRoot }
+        assertEquals(fields.map { it.top }.sorted(), fields.map { it.top })
+        fields.forEach { assertEquals(fields[0].left, it.left, 1f) }
+    }
+
+    @Test
+    @org.robolectric.annotation.Config(qualifiers = "en-w411dp-h2400dp")
+    fun `AC-019-10 the new words read in English`() {
+        runBlocking { h.services.saveSettings(h.services.currentSettings().copy(language = app.tutora.domain.Language.EN)) }
+        openEvolution()
+        listOf("Custom", "Type", "Place", "All places").forEach { exists(it) }
+    }
+
+    @Test
+    fun `AC-019-11 Ganhos' type filter is the same Tipo dropdown`() {
+        openEarnings()
+        compose.onNodeWithTag("type-filter").assertExists()
+        compose.onNodeWithText("Particulares").assertDoesNotExist()
+        choose("type-filter", "Particulares")
+        exists("Particulares")
+    }
+
+    @Test
+    fun `AC-019-14 Ganhos' summary shows Recebido and A receber with their cents`() {
+        given(6)
+        openEarnings()
+        compose
+            .onAllNodes(
+                matching("R$ 120,00") and hasAnyAncestor(hasTestTag("earn-summary")),
+                useUnmergedTree = true,
+            ).onFirst()
+            .assertExists()
+        compose
+            .onAllNodes(
+                matching("R$ 0,00") and hasAnyAncestor(hasTestTag("earn-summary")),
+                useUnmergedTree = true,
+            ).onFirst()
+            .assertExists()
     }
 }

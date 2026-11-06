@@ -79,6 +79,8 @@ import kotlinx.datetime.LocalTime
 fun LessonDetailScreen(
     nav: NavHostController,
     id: String,
+    /** Back, or closing the side panel when the phone is sideways (spec 017). */
+    onBack: () -> Unit = { nav.popBackStack() },
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
@@ -90,7 +92,7 @@ fun LessonDetailScreen(
         if (lesson != null) {
             seen = true
         } else if (seen) {
-            nav.popBackStack()
+            onBack()
         }
     }
     val l = lesson ?: return
@@ -153,7 +155,7 @@ fun LessonDetailScreen(
         stringResource(R.string.lesson_detail),
         "lesson-detail",
         variant = HeaderVariant.PUSH,
-        onBack = { nav.popBackStack() },
+        onBack = onBack,
         actions =
             listOf(
                 HeaderAction(IconName.TRASH, stringResource(R.string.lesson_remove)) { removing = true },

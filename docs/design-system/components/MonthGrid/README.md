@@ -17,3 +17,6 @@ Days are square tiles with `radius-sm` corners and `spacing-2` between them both
 
 ## Classes to confirm (spec 014)
 `MonthDay.pending` puts a `secondary` ring (`border-strong`) around a day that holds a class waiting to be confirmed (AC-014-5), so a forgotten week stands out. It sits with today's fill and the selected tint.
+
+## Sideways (spec 017)
+With the phone sideways each day is a `size-month-day` (52 dp) row instead of a square, so the weeks don't take the whole height; the grid sits at the readable width.

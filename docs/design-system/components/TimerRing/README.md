@@ -19,3 +19,6 @@ interface TimerRingProps {
   className?: string;
 }
 ```
+
+## Sideways (spec 017)
+The ring is at most `size-timer-ring` and shrinks, staying round, when its parent has less room. With `fill` it grows to the height of its place instead, as on the live class sideways (AC-017-12).

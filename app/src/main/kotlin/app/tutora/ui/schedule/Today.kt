@@ -43,6 +43,7 @@ import app.tutora.designsystem.components.LessonRow
 import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.currentLanguage
+import app.tutora.designsystem.components.readableWidth
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.Greeting
@@ -75,6 +76,7 @@ import kotlinx.coroutines.launch
 /** Hoje: the date and a greeting, the next class, and today's classes (AC-005-22 to 25). */
 @Composable
 fun TodayScreen(nav: NavHostController) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val language = currentLanguage()
     val zone = services.zone
@@ -135,6 +137,8 @@ fun TodayScreen(nav: NavHostController) {
             ) {
                 ScreenHeader(
                     stringResource(g),
+                    // Sideways Hoje keeps its one column at the readable width (AC-017-6).
+                    Modifier.readableWidth(),
                     variant = HeaderVariant.HERO,
                     eyebrow = longDate(local.date, language),
                     // The bell to Lembretes (AC-014-32).
@@ -156,10 +160,13 @@ fun TodayScreen(nav: NavHostController) {
                                     .Size(size.width, Size.touch.toPx()),
                         )
                     }.padding(horizontal = Spacing.s5),
-            ) { TodayEarnings(nav, lessons, local.date) }
+                contentAlignment = Alignment.TopCenter,
+            ) { Box(Modifier.readableWidth()) { TodayEarnings(nav, lessons, local.date) } }
             Column(
                 // The last class stays clear of the floating +.
-                Modifier.padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s4, bottom = Size.fab + Spacing.s7),
+                Modifier
+                    .readableWidth()
+                    .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s4, bottom = Size.fab + Spacing.s7),
                 verticalArrangement = Arrangement.spacedBy(Spacing.s4),
             ) {
                 LiveBanner(nav)
@@ -261,7 +268,7 @@ fun TodayScreen(nav: NavHostController) {
                                     subtitle = "${lessonSubtitle(l)} · ${minutesText(l.plannedMin)}",
                                     status = badge?.let { it.first to it.second },
                                     trailing = worthText(l.worth()),
-                                    onClick = { nav.navigate(LessonDetail(l.id)) },
+                                    onClick = { openPage(LessonDetail(l.id)) },
                                     statusIcon = badge?.third,
                                     card = true,
                                     pending = toConfirm,

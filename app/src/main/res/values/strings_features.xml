@@ -531,6 +531,7 @@
     <string name="rep_partPayments">Payments received</string>
     <string name="rep_settingsName">Your name</string>
     <string name="rep_settingsPix">Pix key</string>
+    <string name="rep_settingsTitle">Title at the top of reports</string>
     <string name="rep_personal">Your details</string>
     <string name="rep_personalHint">Name and Pix key for reports</string>
     <string name="rep_personalBody">Shown on report PDFs and copied text. Leave blank to leave them out.</string>

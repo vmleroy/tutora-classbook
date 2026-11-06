@@ -3,11 +3,13 @@ package app.tutora
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -104,6 +106,19 @@ class ConfirmScreensTest {
         compose.onNodeWithText("2 aulas para confirmar").assertExists()
         compose.onNodeWithTag("tab-count-schedule", useUnmergedTree = true).assertExists()
         compose.onNodeWithText("2 aulas para confirmar").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("confirm-screen").assertExists()
+    }
+
+    @Test
+    fun `AC-019-13 the Agenda says what its tab's number counts, and opens the list`() {
+        lesson(10)
+        lesson(14)
+        afternoon()
+        h.show(compose)
+        compose.onNodeWithContentDescription("Agenda, 2 aulas para confirmar").assertExists()
+        h.go(compose, ScheduleGraph)
+        compose.onNode(hasText("2 aulas para confirmar") and hasAnyAncestor(hasTestTag("schedule-screen"))).performClick()
         h.settle(compose)
         compose.onNodeWithTag("confirm-screen").assertExists()
     }

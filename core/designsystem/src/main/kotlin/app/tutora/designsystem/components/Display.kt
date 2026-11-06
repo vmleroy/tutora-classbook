@@ -128,6 +128,8 @@ fun Money(
     tone: MoneyTone = MoneyTone.DEFAULT,
     compact: Boolean = false,
     showSign: Boolean = false,
+    /** Shrink to fit the width instead of being cut, for full amounts in narrow columns (AC-019-14). */
+    fit: Boolean = false,
 ) {
     val c = TutoraTheme.colors
     val type = TutoraTheme.type
@@ -147,8 +149,21 @@ fun Money(
             MoneyTone.PAID -> c.successInk
             MoneyTone.ON_HEADER -> c.earningsOnHeader
         }
-    val text = formatMoney(cents, currentLanguage(), compact)
-    Text(if (showSign && cents > 0) "+ $text" else text, style = style, color = color, modifier = modifier, maxLines = 1)
+    val text = formatMoney(cents, currentLanguage(), compact).let { if (showSign && cents > 0) "+ $it" else it }
+    if (fit) {
+        androidx.compose.foundation.text.BasicText(
+            text,
+            modifier,
+            style = style.copy(color = color),
+            maxLines = 1,
+            softWrap = false,
+            autoSize =
+                androidx.compose.foundation.text.TextAutoSize
+                    .StepBased(maxFontSize = style.fontSize),
+        )
+    } else {
+        Text(text, style = style, color = color, modifier = modifier, maxLines = 1)
+    }
 }
 
 enum class ProgressTone { ACCENT, SUCCESS, PRIMARY, SECONDARY }
@@ -255,6 +270,8 @@ fun EarningsSummary(
     /** A line under the stats ("comissão dos locais: R$ 30,00"). */
     footnote: String? = null,
     onCard: Boolean = false,
+    /** The stats rounded to whole reais (Hoje), or with their cents (Ganhos, AC-019-14). */
+    compactStats: Boolean = true,
 ) {
     val c = TutoraTheme.colors
     val muted = if (onCard) c.inkMuted else c.onHeaderMuted
@@ -288,7 +305,7 @@ fun EarningsSummary(
                 stats.forEach { s ->
                     Column(Modifier.weight(1f).testTag("summary-stat")) {
                         Text(s.label, style = TutoraTheme.type.meta, color = c.inkMuted, maxLines = 1)
-                        Money(s.cents, size = MoneySize.MD, tone = s.tone, compact = true)
+                        Money(s.cents, size = MoneySize.MD, tone = s.tone, compact = compactStats, fit = !compactStats)
                     }
                 }
             }

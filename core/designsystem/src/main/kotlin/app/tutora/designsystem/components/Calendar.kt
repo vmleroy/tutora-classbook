@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -233,7 +234,8 @@ private fun DayCell(
     Column(
         // Square tiles with small corners, not tall capsules (Victor, 4 Nov 2026).
         modifier
-            .aspectRatio(1f)
+            // Sideways a square would be too tall for six weeks: a `size-month-day` row (spec 017).
+            .then(if (TutoraTheme.landscape) Modifier.height(Size.monthDay) else Modifier.aspectRatio(1f))
             .clip(RoundedCornerShape(Radius.sm))
             .background(bg)
             .then(

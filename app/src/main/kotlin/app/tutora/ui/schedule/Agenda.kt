@@ -30,6 +30,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -60,6 +63,7 @@ import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
+import app.tutora.designsystem.components.readableWidth
 import app.tutora.designsystem.tokens.TutoraTokens.Radius
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -100,6 +104,7 @@ import kotlinx.datetime.YearMonth
 import kotlinx.datetime.minusMonth
 import kotlinx.datetime.plus
 import kotlinx.datetime.plusMonth
+import kotlin.math.roundToInt
 
 enum class AgendaView { DAY, WEEK, MONTH }
 
@@ -137,8 +142,11 @@ fun AgendaScreen(nav: NavHostController) {
     var forecast by remember { mutableStateOf<Lesson?>(null) }
     val scope = rememberCoroutineScope()
 
+    // Sideways a class opens in the panel over the Agenda (AC-017-10).
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
+
     fun open(l: Lesson) {
-        if (l.forecast) forecast = l else nav.navigate(LessonDetail(l.id))
+        if (l.forecast) forecast = l else openPage(LessonDetail(l.id))
     }
     forecast?.let { l ->
         BottomSheet(
@@ -184,6 +192,23 @@ fun AgendaScreen(nav: NavHostController) {
     val title = monthYear(selected, language)
     val c = TutoraTheme.colors
     val pickLabel = stringResource(R.string.schedule_pickMonth, title)
+    val landscape = TutoraTheme.landscape
+
+    @Composable
+    fun viewSwitch(modifier: Modifier) {
+        SegmentedControl(
+            listOf(
+                AgendaView.DAY to stringResource(R.string.schedule_day),
+                AgendaView.WEEK to stringResource(R.string.schedule_week),
+                AgendaView.MONTH to stringResource(R.string.schedule_month),
+            ),
+            view,
+            { viewName = it.name },
+            stringResource(R.string.tab_schedule),
+            modifier,
+            size = ControlSize.SM,
+        )
+    }
     Box(
         Modifier
             .fillMaxSize()
@@ -191,7 +216,10 @@ fun AgendaScreen(nav: NavHostController) {
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
             .testTag("schedule-screen"),
     ) {
-        Column(Modifier.fillMaxSize()) {
+        // Sideways the title row slides away as the hours or days scroll up and comes back as they
+        // scroll down, leaving the week strip pinned and the height to the content (AC-017-8, 9).
+        val collapse = rememberCollapse()
+        Column(Modifier.fillMaxSize().then(if (landscape) Modifier.nestedScroll(collapse) else Modifier)) {
             // A white card on top holds the title, the month, the view switch and the week; its days
             // sit right over the grid's columns (Victor, 28 Oct 2026).
             Column(
@@ -201,52 +229,55 @@ fun AgendaScreen(nav: NavHostController) {
                     .background(c.surface)
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
                     .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s4, bottom = Spacing.s3),
-                verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+                verticalArrangement = Arrangement.spacedBy(if (landscape) Spacing.s2 else Spacing.s3),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                    // "Agenda" over the month and year, which opens the month picker (AC-016-13, 20).
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .testTag("header-title")
-                            .clip(RoundedCornerShape(Radius.lg))
-                            .clickable(role = Role.Button) { picking = true }
-                            .semantics(mergeDescendants = true) { contentDescription = pickLabel },
+                Column(
+                    Modifier.then(if (landscape) collapse.modifier else Modifier),
+                    verticalArrangement = Arrangement.spacedBy(if (landscape) Spacing.s2 else Spacing.s3),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
                     ) {
-                        Text(
-                            stringResource(R.string.tab_schedule),
-                            style = TutoraTheme.type.titleXl,
-                            color = c.ink,
-                            modifier = Modifier.semantics { heading() },
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
-                            Text(title, style = TutoraTheme.type.bodyStrong, color = c.inkMuted)
-                            Icon(IconName.CHEVRON_DOWN, tint = c.inkMuted, size = Size.iconSm)
+                        // "Agenda" over the month and year, which opens the month picker (AC-016-13, 20).
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .testTag("header-title")
+                                .clip(RoundedCornerShape(Radius.lg))
+                                .clickable(role = Role.Button) { picking = true }
+                                .semantics(mergeDescendants = true) { contentDescription = pickLabel },
+                        ) {
+                            Text(
+                                stringResource(R.string.tab_schedule),
+                                style = TutoraTheme.type.titleXl,
+                                color = c.ink,
+                                modifier = Modifier.semantics { heading() },
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+                                Text(title, style = TutoraTheme.type.bodyStrong, color = c.inkMuted)
+                                Icon(IconName.CHEVRON_DOWN, tint = c.inkMuted, size = Size.iconSm)
+                            }
                         }
+                        // Sideways the header is one row, leaving the height to the content (AC-017-8).
+                        if (landscape) viewSwitch(Modifier.weight(1.2f))
+                        Button(
+                            stringResource(R.string.schedule_today),
+                            { selectedText = today.toString() },
+                            variant = ButtonVariant.OUTLINE,
+                            size = ControlSize.SM,
+                        )
+                        // The bell to Lembretes (AC-014-32).
+                        app.tutora.ui.reminders.ReminderBell(
+                            nav,
+                            app.tutora.designsystem.components.IconButtonVariant.SUNKEN,
+                        )
                     }
-                    Button(
-                        stringResource(R.string.schedule_today),
-                        { selectedText = today.toString() },
-                        variant = ButtonVariant.OUTLINE,
-                        size = ControlSize.SM,
-                    )
-                    // The bell to Lembretes (AC-014-32).
-                    app.tutora.ui.reminders.ReminderBell(
-                        nav,
-                        app.tutora.designsystem.components.IconButtonVariant.SUNKEN,
-                    )
+                    // What the Agenda tab's number counts, opening the list (AC-019-13).
+                    app.tutora.ui.confirm
+                        .ConfirmAlert(nav)
                 }
-                SegmentedControl(
-                    listOf(
-                        AgendaView.DAY to stringResource(R.string.schedule_day),
-                        AgendaView.WEEK to stringResource(R.string.schedule_week),
-                        AgendaView.MONTH to stringResource(R.string.schedule_month),
-                    ),
-                    view,
-                    { viewName = it.name },
-                    stringResource(R.string.tab_schedule),
-                    size = ControlSize.SM,
-                )
+                if (!landscape) viewSwitch(Modifier)
                 if (view != AgendaView.MONTH) WeekPicker(selected, today, { selectedText = it.toString() }, byDay)
             }
             if (view == AgendaView.DAY) {
@@ -254,21 +285,21 @@ fun AgendaScreen(nav: NavHostController) {
             }
             when {
                 view == AgendaView.MONTH ->
-                    Column(
-                        // The last row stays clear of the floating +.
-                        Modifier
-                            .verticalScroll(rememberScrollState())
-                            .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3, bottom = Size.fab + Spacing.s7),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.s3),
-                    ) {
-                        MonthView(
-                            month,
-                            cells,
-                            selected,
-                            today,
-                            byDay,
-                            { selectedText = it.toString() },
-                        ) { open(it) }
+                    Box(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
+                        Column(
+                            // The last row stays clear of the floating +; sideways at the readable width.
+                            Modifier
+                                .readableWidth()
+                                .padding(start = Spacing.s5, end = Spacing.s5, top = Spacing.s3, bottom = Size.fab + Spacing.s7),
+                            verticalArrangement = Arrangement.spacedBy(Spacing.s3),
+                        ) {
+                            MonthView(month, cells, selected, today, byDay, { day ->
+                                selectedText = day.toString()
+                                // Sideways a tapped day opens its classes in the panel (AC-017-10).
+                                if (landscape) openPage(app.tutora.ui.AgendaDay(day.toString()))
+                            })
+                            MonthDayList(selected, today, byDay) { open(it) }
+                        }
                     }
                 // Semana: one endless list of days, like Teams' agenda in Tutora's look (Victor, 4 Nov 2026).
                 view == AgendaView.WEEK ->
@@ -281,8 +312,9 @@ fun AgendaScreen(nav: NavHostController) {
                         busyBetween = { a, b -> services.calendar.busy(a, b) },
                         onSelectDay = { selectedText = it.toString() },
                         onOpen = { open(it) },
-                        // Below the top card's rounded edge, so the pinned day is never cut.
-                        modifier = Modifier.padding(top = Spacing.s3),
+                        // Below the top card's rounded edge, so the pinned day is never cut; at the
+                        // readable width when the phone is sideways (AC-017-9).
+                        modifier = Modifier.readableWidth().padding(top = Spacing.s3),
                     )
                 lessons.isEmpty() && busyEvents.none { !it.marked } ->
                     Column(Modifier.padding(horizontal = Spacing.s5)) {
@@ -381,10 +413,8 @@ private fun MonthView(
     today: LocalDate,
     byDay: Map<LocalDate, List<Lesson>>,
     onSelect: (LocalDate) -> Unit,
-    onOpen: (Lesson) -> Unit,
 ) {
     val language = currentLanguage()
-    val zone = LocalServices.current.zone
     val pending = rememberToConfirm()
     val dots = dayDots(byDay, today)
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -447,7 +477,41 @@ private fun MonthView(
                 DotTone.VIOLET to stringResource(R.string.schedule_kindGroup),
             ),
     )
-    // The chosen day's classes, cancelled ones included, with their count and expected value.
+}
+
+/** A day of Mês in the panel when the phone is sideways: its classes, count and value (AC-017-10). */
+@Composable
+fun AgendaDayScreen(
+    nav: NavHostController,
+    date: LocalDate,
+    onBack: () -> Unit,
+) {
+    val services = LocalServices.current
+    val language = currentLanguage()
+    val today = remember { localOf(services.now(), services.zone).date }
+    val lessons by remember(date) { services.agendaBetween(date, date) }.collectAsState(initial = emptyList())
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
+    app.tutora.ui.ScreenScaffold(
+        dayMonthLong(date, language),
+        "agenda-day",
+        variant = app.tutora.designsystem.components.HeaderVariant.PUSH,
+        onBack = onBack,
+    ) {
+        MonthDayList(date, today, byLocalDay(lessons, services.zone)) { l -> if (!l.forecast) openPage(LessonDetail(l.id)) }
+    }
+}
+
+/** The chosen day's classes, cancelled ones included, with their count and expected value. */
+@Composable
+private fun MonthDayList(
+    selected: LocalDate,
+    today: LocalDate,
+    byDay: Map<LocalDate, List<Lesson>>,
+    onOpen: (Lesson) -> Unit,
+) {
+    val language = currentLanguage()
+    val zone = LocalServices.current.zone
+    val pending = rememberToConfirm()
     val dayLessons = byDay[selected].orEmpty()
     val previsto = expected(dayLessons.mapNotNull { it.counted() })
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -542,3 +606,37 @@ private fun MonthPickerSheet(
         )
     }
 }
+
+/**
+ * A header part that slides away while the content under it scrolls up and comes back as it
+ * scrolls down: [modifier] goes on the part, the connection on the column holding both (spec 017).
+ */
+private class Collapse : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {
+    private var height = 0
+    private var offset by androidx.compose.runtime.mutableFloatStateOf(0f)
+
+    private fun take(dy: Float): androidx.compose.ui.geometry.Offset {
+        val next = (offset + dy).coerceIn(-height.toFloat(), 0f)
+        val used = next - offset
+        offset = next
+        return androidx.compose.ui.geometry
+            .Offset(0f, used)
+    }
+
+    // Either way the header moves first: up it hides, down it comes back at once.
+    override fun onPreScroll(
+        available: androidx.compose.ui.geometry.Offset,
+        source: androidx.compose.ui.input.nestedscroll.NestedScrollSource,
+    ) = take(available.y)
+
+    val modifier =
+        Modifier.clipToBounds().layout { measurable, constraints ->
+            val placeable = measurable.measure(constraints)
+            height = placeable.height
+            val shift = offset.roundToInt().coerceAtLeast(-placeable.height)
+            layout(placeable.width, placeable.height + shift) { placeable.place(0, shift) }
+        }
+}
+
+@Composable
+private fun rememberCollapse() = remember { Collapse() }

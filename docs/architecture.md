@@ -77,7 +77,7 @@ SQLite is the single source of truth; nothing in memory is authoritative except 
 | --- | --- | --- | --- |
 | Stored data | Room, read as `Flow` in repositories | Lessons of a day, a student's balance, earnings for a period | A use case writes; Room re-emits every Flow that reads those tables |
 | App settings | `settings` table, exposed as one `Flow<Settings>` | Language, theme, custom colors, default places | Written by a use case; theme and language follow at once |
-| Screen state | `ViewModel` `StateFlow`, `rememberSaveable` | Form drafts, open sheet, selected week | Local; survives rotation and process death where it matters |
+| Screen state | `ViewModel` `StateFlow`, `rememberSaveable` | Form drafts, open sheet, selected week | Local; survives process death where it matters. Turning the phone never recreates the activity (`configChanges` in the manifest, spec 017), so every `remember` survives it too |
 
 Rules the specs assume:
 

@@ -190,8 +190,85 @@ class EarningsRulesTest {
 
         fun earned(f: EvolutionFilter) = monthDetails(span, classes, emptyList(), emptyList(), f, oct22, emptyMap()).single().bar.earned
         assertEquals(36_000L, earned(EvolutionFilter()))
-        assertEquals(24_000L, earned(EvolutionFilter(payer = ana)))
-        assertEquals(12_000L, earned(EvolutionFilter(payer = ana, kind = PlaceKind.STUDENT_HOME)))
+        assertEquals(24_000L, earned(EvolutionFilter(payers = setOf(ana))))
+        assertEquals(12_000L, earned(EvolutionFilter(payers = setOf(ana), kinds = setOf(PlaceKind.STUDENT_HOME))))
         assertEquals(0L, earned(EvolutionFilter(type = TypeFilter.JOB)))
+    }
+
+    @Test
+    fun `AC-019-2 a period runs from De to Ate, never past today, and at most 5 years`() {
+        val today = LocalDate(2026, 11, 5)
+        assertTrue(evolutionPeriodOk(LocalDate(2024, 11, 6), today, today))
+        assertTrue(evolutionPeriodOk(today, today, today))
+        assertFalse("Até before De", evolutionPeriodOk(LocalDate(2026, 11, 2), LocalDate(2026, 11, 1), today))
+        assertFalse("Até after today", evolutionPeriodOk(LocalDate(2026, 10, 1), LocalDate(2026, 11, 6), today))
+        assertTrue("5 years", evolutionPeriodOk(LocalDate(2021, 11, 6), today, today))
+        assertFalse("over 5 years", evolutionPeriodOk(LocalDate(2021, 11, 5), today, today))
+    }
+
+    @Test
+    fun `AC-019-3 a gap of dates is shown month by month, the first and last month cut to it`() {
+        assertEquals(
+            listOf(
+                LocalDate(2026, 3, 15) to LocalDate(2026, 3, 31),
+                LocalDate(2026, 4, 1) to LocalDate(2026, 4, 30),
+                LocalDate(2026, 5, 1) to LocalDate(2026, 5, 10),
+            ),
+            rangeSpans(LocalDate(2026, 3, 15), LocalDate(2026, 5, 10)),
+        )
+        assertEquals(listOf(LocalDate(2026, 10, 5) to LocalDate(2026, 10, 9)), rangeSpans(LocalDate(2026, 10, 5), LocalDate(2026, 10, 9)))
+        assertEquals(24, rangeSpans(LocalDate(2024, 11, 1), LocalDate(2026, 10, 31)).size)
+    }
+
+    @Test
+    fun `AC-019-4 each month's row counts only the classes inside the gap`() {
+        val classes =
+            listOfNotNull(
+                earnedOf(record(id = "before", day = LocalDate(2026, 10, 2))),
+                earnedOf(record(id = "inside", day = LocalDate(2026, 10, 22))),
+            )
+        val rows =
+            monthDetails(
+                rangeSpans(LocalDate(2026, 10, 10), oct22),
+                classes,
+                emptyList(),
+                emptyList(),
+                EvolutionFilter(),
+                oct22,
+                emptyMap(),
+            )
+        assertEquals(1, rows.single().classes)
+        assertEquals(12_000L, rows.single().bar.earned)
+    }
+
+    @Test
+    fun `AC-019-5 a 2-year period compares any two of its 24 months`() {
+        val classes =
+            listOfNotNull(
+                earnedOf(record(id = "old", day = LocalDate(2024, 11, 20))),
+                earnedOf(record(id = "new", day = oct22, rate = 24_000)),
+            )
+        val rows =
+            monthDetails(rangeSpans(LocalDate(2024, 11, 1), oct22), classes, emptyList(), emptyList(), EvolutionFilter(), oct22, emptyMap())
+        val c = compareBars(rows.first().bar, rows.last().bar)
+        assertEquals(12_000L, c.difference)
+        assertEquals(100L, c.percent)
+    }
+
+    @Test
+    fun `AC-019-12 several payers and kinds add up together`() {
+        val bia = PayerRef(PayerKind.STUDENT, "bia")
+        val cid = PayerRef(PayerKind.STUDENT, "cid")
+        val classes =
+            listOfNotNull(
+                earnedOf(record(id = "a")),
+                earnedOf(record(id = "b").copy(payer = bia)),
+                earnedOf(record(id = "c", kind = PlaceKind.SCHOOL).copy(payer = cid)),
+            )
+
+        fun earned(f: EvolutionFilter) =
+            monthDetails(monthSpans(LocalDate(2026, 10, 1), 1), classes, emptyList(), emptyList(), f, oct22, emptyMap()).single().bar.earned
+        assertEquals(24_000L, earned(EvolutionFilter(payers = setOf(ana, bia))))
+        assertEquals(36_000L, earned(EvolutionFilter(kinds = setOf(PlaceKind.ONLINE, PlaceKind.SCHOOL))))
     }
 }

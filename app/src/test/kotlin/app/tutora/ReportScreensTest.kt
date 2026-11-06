@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
@@ -184,5 +185,41 @@ class ReportScreensTest {
         compose.onNodeWithContentDescription("Report").performClick()
         h.settle(compose)
         listOf("This month", "Export this report", "Copy as text", "R$120.00").forEach { exists(it) }
+    }
+
+    @Test
+    fun `AC-019-15 the title typed in Seus dados replaces Tutora's at the top of the PDF, and empty keeps it`() {
+        openReport()
+        click("PDF")
+        assertTrue(
+            String(
+                h.exports.shared
+                    .last()
+                    .second,
+            ).contains("brand=TUTORA · CONTROLE DE AULAS"),
+        )
+        h.go(compose, app.tutora.ui.PersonalData)
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasSetTextAction() and
+                    androidx.compose.ui.test
+                        .hasAnyAncestor(
+                            androidx.compose.ui.test
+                                .hasTestTag("report-title"),
+                        ),
+            ).performTextInput("Aulas da Profa. Ana")
+        h.awaitDb(compose) { h.services.currentSettings().reportTitle == "Aulas da Profa. Ana" }
+        h.go(compose, StudentDetail(ana.id))
+        compose.onNodeWithContentDescription("Relatório").performClick()
+        h.settle(compose)
+        click("PDF")
+        assertTrue(
+            String(
+                h.exports.shared
+                    .last()
+                    .second,
+            ).contains("brand=Aulas da Profa. Ana"),
+        )
     }
 }

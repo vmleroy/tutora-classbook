@@ -102,26 +102,25 @@ fun WeekPicker(
     val language = currentLanguage()
     val monday = weekStart(selected)
     val days = (0 until 7).map { monday.plus(DatePeriod(days = it)) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.schedule_prevWeek), {
-                onSelect(selected.minus(DatePeriod(days = 7)))
-            }, variant = IconButtonVariant.PLAIN)
-            Text(
-                weekRange(monday, days.last(), language),
-                style = TutoraTheme.type.bodyStrong,
-                color = TutoraTheme.colors.ink,
-                modifier = Modifier.weight(1f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            )
-            IconButton(
-                IconName.CHEVRON_RIGHT,
-                stringResource(R.string.schedule_nextWeek),
-                { onSelect(selected.plus(DatePeriod(days = 7)).let { if (horizon != null && it > horizon) horizon else it }) },
-                variant = IconButtonVariant.PLAIN,
-                enabled = horizon == null || monday.plus(DatePeriod(days = 7)) <= horizon,
-            )
-        }
+
+    @Composable
+    fun previous() =
+        IconButton(IconName.CHEVRON_LEFT, stringResource(R.string.schedule_prevWeek), {
+            onSelect(selected.minus(DatePeriod(days = 7)))
+        }, variant = IconButtonVariant.PLAIN)
+
+    @Composable
+    fun next() =
+        IconButton(
+            IconName.CHEVRON_RIGHT,
+            stringResource(R.string.schedule_nextWeek),
+            { onSelect(selected.plus(DatePeriod(days = 7)).let { if (horizon != null && it > horizon) horizon else it }) },
+            variant = IconButtonVariant.PLAIN,
+            enabled = horizon == null || monday.plus(DatePeriod(days = 7)) <= horizon,
+        )
+
+    @Composable
+    fun strip(modifier: Modifier) =
         WeekStrip(
             days =
                 days.map { d ->
@@ -130,8 +129,31 @@ fun WeekPicker(
                 },
             selected = days.indexOf(selected),
             onSelect = { onSelect(days[it]) },
+            modifier = modifier,
             today = days.indexOf(today).takeIf { it >= 0 },
         )
+    if (TutoraTheme.landscape) {
+        // Sideways the arrows sit beside the strip, leaving the height to the hours (AC-017-8).
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s1)) {
+            previous()
+            strip(Modifier.weight(1f))
+            next()
+        }
+        return
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            previous()
+            Text(
+                weekRange(monday, days.last(), language),
+                style = TutoraTheme.type.bodyStrong,
+                color = TutoraTheme.colors.ink,
+                modifier = Modifier.weight(1f),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            )
+            next()
+        }
+        strip(Modifier)
     }
 }
 

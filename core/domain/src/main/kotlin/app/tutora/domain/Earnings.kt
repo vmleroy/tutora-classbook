@@ -302,6 +302,29 @@ fun monthSpans(
         m to m.plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
     }
 
+/** The longest period Evolução shows (AC-019-2). */
+const val EVOLUTION_MAX_YEARS = 5
+
+/**
+ * The months of a gap of dates, from [from] to [to] (both included), the first and last cut to
+ * it: Evolução shows only what falls inside the gap, month by month (AC-019-3).
+ */
+fun rangeSpans(
+    from: LocalDate,
+    to: LocalDate,
+): List<Pair<LocalDate, LocalDate>> =
+    generateSequence(monthOf(from)) { it.plus(DatePeriod(months = 1)) }
+        .takeWhile { it <= to }
+        .map { m -> maxOf(m, from) to minOf(m.plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1)), to) }
+        .toList()
+
+/** De never after Até, Até never after [today], and at most [EVOLUTION_MAX_YEARS] (AC-019-2). */
+fun evolutionPeriodOk(
+    from: LocalDate,
+    to: LocalDate,
+    today: LocalDate,
+): Boolean = from <= to && to <= today && to < from.plus(DatePeriod(years = EVOLUTION_MAX_YEARS))
+
 /**
  * Earned and received in each span, following [filter]. A school's salary counts in the span
  * holding its month's first day, once that month has begun (AC-009-5, AC-014-30).
@@ -353,16 +376,19 @@ data class Comparison(
     val percent: Long?,
 )
 
-/** Evolução's filters: the type, one payer (student, group or place) and a place kind; null is any (AC-014-35). */
+/**
+ * Evolução's filters: the type, any number of payers (students, groups, places) and of place
+ * kinds; an empty set is any (AC-014-35, AC-019-8, AC-019-12).
+ */
 data class EvolutionFilter(
     val type: TypeFilter = TypeFilter.ALL,
-    val payer: PayerRef? = null,
-    val kind: PlaceKind? = null,
+    val payers: Set<PayerRef> = emptySet(),
+    val kinds: Set<PlaceKind> = emptySet(),
 ) {
     private fun fits(
         p: PayerRef?,
         k: PlaceKind?,
-    ) = (payer == null || p == payer) && (kind == null || k == kind)
+    ) = (payers.isEmpty() || p in payers) && (kinds.isEmpty() || k in kinds)
 
     fun classes(list: List<EarnedClass>) = list.filter { fits(it.payer, it.placeKind) }
 

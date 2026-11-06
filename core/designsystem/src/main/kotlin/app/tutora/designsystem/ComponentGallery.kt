@@ -2,6 +2,7 @@ package app.tutora.designsystem
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
@@ -39,6 +40,8 @@ import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.CardElevation
 import app.tutora.designsystem.components.Checkbox
 import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.Choice
+import app.tutora.designsystem.components.ChoiceField
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.DotTone
@@ -66,6 +69,7 @@ import app.tutora.designsystem.components.MonthBars
 import app.tutora.designsystem.components.MonthDay
 import app.tutora.designsystem.components.MonthGrid
 import app.tutora.designsystem.components.MonthPicker
+import app.tutora.designsystem.components.NavRail
 import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.ProgressBar
 import app.tutora.designsystem.components.RowTrailing
@@ -73,6 +77,7 @@ import app.tutora.designsystem.components.ScreenHeader
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.SelectField
+import app.tutora.designsystem.components.SidePanel
 import app.tutora.designsystem.components.StatTile
 import app.tutora.designsystem.components.StatTone
 import app.tutora.designsystem.components.Stepper
@@ -97,7 +102,7 @@ import app.tutora.domain.ThemeMode
 import app.tutora.domain.theme.themeIds
 import kotlinx.datetime.LocalDate
 
-/** The 30 components, in a section each. */
+/** The 46 components, in a section each. */
 val galleryComponents =
     listOf(
         "Icon",
@@ -126,6 +131,8 @@ val galleryComponents =
         "AlertBanner",
         "ScreenHeader",
         "TabBar",
+        "NavRail",
+        "SidePanel",
         "WeekStrip",
         "AgendaBlock",
         "BusyBlock",
@@ -143,6 +150,7 @@ val galleryComponents =
         "ColorSlider",
         "UndoBar",
         "NumberField",
+        "ChoiceField",
     )
 
 /**
@@ -482,6 +490,29 @@ fun GallerySections() {
             onSelect = {},
         )
     }
+    Section("NavRail") {
+        Box(Modifier.height(Size.rail * 5)) {
+            NavRail(
+                listOf(
+                    TabItem("today", "Hoje", IconName.HOME),
+                    TabItem("schedule", "Agenda", IconName.CALENDAR, count = 3),
+                    TabItem("registry", "Cadastro", IconName.USERS),
+                    TabItem("earnings", "Ganhos", IconName.WALLET),
+                    TabItem("settings", "Ajustes", IconName.GEAR),
+                ),
+                active = "schedule",
+                onSelect = {},
+            )
+        }
+    }
+    Section("SidePanel") {
+        Box(Modifier.height(Size.rail * 2)) {
+            Card { Text("Cadastro", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink) }
+            SidePanel(visible = true, onDismiss = {}) {
+                Card { Text("Ana Souza", style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink) }
+            }
+        }
+    }
     Section("WeekStrip") {
         WeekStrip(
             listOf("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom").mapIndexed { i, w ->
@@ -544,6 +575,19 @@ fun GallerySections() {
             .DayHeading(4, "Hoje", aside = "1 aula · R$ 80", today = true)
         app.tutora.designsystem.components
             .DayHeading(5, "Quinta", aside = "Sem aulas")
+    }
+    Section("ChoiceField") {
+        var chosen by remember { mutableStateOf(setOf("ana")) }
+        ChoiceField(
+            "Quem",
+            listOf(Choice("ana", "Ana Souza"), Choice("joao", "João Lima"), Choice("colegio", "Colégio Rio Branco")),
+            chosen,
+            { chosen = it },
+            multiple = true,
+            allLabel = "Todos",
+            searchLabel = "Buscar",
+            icon = IconName.USERS,
+        )
     }
     Section("NumberField") {
         var count by remember { mutableLongStateOf(10L) }

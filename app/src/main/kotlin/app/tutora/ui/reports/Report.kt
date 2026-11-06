@@ -66,7 +66,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
-private fun pattern(
+/** A date in [p], such as "dd/MM/yyyy", in the app language (reports and Evolução). */
+internal fun pattern(
     p: String,
     language: Language,
     d: LocalDate,
@@ -90,8 +91,17 @@ fun rememberReportWords(): ReportWords {
         app.tutora.domain.PayMethod.entries
             .associateWith { methodName(it) }
     val minutesTemplate = stringResource(R.string.places_minutes)
+    // The teacher's own top line, or Tutora's (AC-019-15).
+    val settings by app.tutora.state.LocalServices.current.settings
+        .collectAsState(initial = null)
+    val brand =
+        settings
+            ?.reportTitle
+            ?.trim()
+            .orEmpty()
+            .ifEmpty { stringResource(R.string.rep_brand) }
     return ReportWords(
-        brand = stringResource(R.string.rep_brand),
+        brand = brand,
         subjectTitle = stringResource(R.string.rep_title),
         earningsTitle = stringResource(R.string.rep_earningsTitle),
         teacher = stringResource(R.string.rep_teacher),

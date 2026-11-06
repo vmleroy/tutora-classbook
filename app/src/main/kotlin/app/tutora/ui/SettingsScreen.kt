@@ -496,5 +496,13 @@ fun PersonalDataScreen(onBack: () -> Unit) {
             }
         })
         TextField(stringResource(R.string.rep_settingsPix), s.pixKey, { v -> scope.launch { services.saveSettings(s.copy(pixKey = v)) } })
+        // The reports' top line; empty keeps Tutora's (AC-019-15).
+        TextField(
+            stringResource(R.string.rep_settingsTitle),
+            s.reportTitle,
+            { v -> scope.launch { services.saveSettings(s.copy(reportTitle = v)) } },
+            Modifier.testTag("report-title"),
+            placeholder = stringResource(R.string.rep_brand),
+        )
     }
 }

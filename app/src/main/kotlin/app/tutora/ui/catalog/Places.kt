@@ -87,7 +87,10 @@ import kotlinx.coroutines.launch
 fun PlaceDetailScreen(
     nav: NavHostController,
     id: String,
+    /** Back, or closing Cadastro's right side when the phone is sideways (AC-017-11). */
+    onBack: () -> Unit = { nav.popBackStack() },
 ) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
     val place by remember(id) { services.catalogRepo.place(id) }.collectAsState(initial = null)
@@ -105,13 +108,13 @@ fun PlaceDetailScreen(
         stringResource(R.string.places_detail),
         "place-detail",
         variant = HeaderVariant.PUSH,
-        onBack = { nav.popBackStack() },
+        onBack = onBack,
         // Arquivar sits beside the pencil; built-in places can't be archived (AC-004-2, 23).
         actions =
             listOfNotNull(
                 if (p.builtin == null && p.archivedAt == null) {
                     HeaderAction(IconName.ARCHIVE, stringResource(R.string.catalog_archive)) {
-                        scope.launch { services.catalog.archive(Kind.PLACE, p.id).also { nav.popBackStack() } }
+                        scope.launch { services.catalog.archive(Kind.PLACE, p.id).also { onBack() } }
                     }
                 } else {
                     null
@@ -194,7 +197,7 @@ fun PlaceDetailScreen(
             stringResource(R.string.connections_noStudents),
             if (archived) null else stringResource(R.string.groups_addStudent),
             { picking = "students" },
-            { nav.navigate(StudentDetail(it.id)) },
+            { openPage(StudentDetail(it.id)) },
             { c -> scope.launch { services.catalog.unlinkStudentFromPlace(c.id, p.id) } },
         ) { c -> unlinkConfirm(c.title, placeName(p), here.filter { c.id in it.memberIds }.map { it.name }) }
         // A group always has a place: × here archives it; adding moves one in or creates one.
@@ -212,7 +215,7 @@ fun PlaceDetailScreen(
             stringResource(R.string.connections_noGroups),
             if (archived) null else stringResource(R.string.connections_addGroup),
             { picking = "groups" },
-            { nav.navigate(GroupDetail(it.id)) },
+            { openPage(GroupDetail(it.id)) },
             { c -> scope.launch { services.catalog.archive(Kind.GROUP, c.id) } },
         ) { c ->
             RemoveConfirm(

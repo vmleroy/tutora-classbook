@@ -3,7 +3,6 @@ package app.tutora.ui.earnings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,7 +32,6 @@ import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
-import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.EarningsStat
 import app.tutora.designsystem.components.EarningsSummary
@@ -123,6 +121,7 @@ fun EarningsScreen(
     asked: String? = null,
     onAsked: () -> Unit = {},
 ) {
+    val openPage = app.tutora.ui.rememberOpenPage(nav)
     val services = LocalServices.current
     val language = currentLanguage()
     val zone = services.zone
@@ -206,29 +205,9 @@ fun EarningsScreen(
                 enabled = !period.isCurrent(today),
             )
         }
-        // Escola e emprego and Particulares follow "Como você dá aula", unless there are earnings of that kind (AC-014-19, 20).
-        val settings by services.settings.collectAsState(initial = null)
-        val inUse by remember { services.kindsInUse() }.collectAsState(initial = emptySet())
-        val chosen =
-            settings?.teaching ?: app.tutora.domain.Teaching.entries
-                .toSet()
-        val filters =
-            listOfNotNull(
-                TypeFilter.ALL to R.string.earn_all,
-                (TypeFilter.PRIVATE to R.string.earn_private).takeIf {
-                    app.tutora.domain.Teaching.PRIVATE in chosen ||
-                        inUse.any { app.tutora.domain.earningsType(it) == app.tutora.domain.EarningsType.PRIVATE }
-                },
-                (TypeFilter.JOB to R.string.earn_job).takeIf {
-                    app.tutora.domain.Teaching.SCHOOL in chosen ||
-                        inUse.any { app.tutora.domain.earningsType(it) == app.tutora.domain.EarningsType.JOB }
-                },
-            )
-        if (filters.size > 1) {
-            FlowRow(Modifier.testTag("earn-filters"), horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                filters.forEach { (f, label) -> Chip(stringResource(label), filter == f, { filter = f }) }
-            }
-        }
+        // Tipo as a dropdown, as on Evolução (AC-019-11); its choices follow "Como você dá aula" (AC-014-19, 20).
+        val filters = rememberTypeFilters()
+        if (filters.size > 1) TypeFilterField(filters, filter, { filter = it })
         if (picking) {
             PeriodPickerSheet(period, today, { picking = false }) {
                 anchor = it.toString()
@@ -274,8 +253,9 @@ fun EarningsScreen(
                 ),
             receivedShare = if (s.earned > 0) s.received.toFloat() / s.earned else 0f,
             receivedLabel = stringResource(R.string.earn_received),
-            // A white card, as on Hoje (Victor, 29 Oct 2026).
+            // A white card, as on Hoje (Victor, 29 Oct 2026), with the cents (AC-019-14).
             onCard = true,
+            compactStats = false,
             footnote =
                 listOfNotNull(
                     s.commission.takeIf { it > 0 }?.let { stringResource(R.string.earn_commission, formatMoney(it, language)) },
@@ -310,7 +290,7 @@ fun EarningsScreen(
                             Column(
                                 Modifier
                                     .fillMaxWidth()
-                                    .clickable(role = Role.Button) { nav.navigate(payerRoute(src.payer)) }
+                                    .clickable(role = Role.Button) { openPage(payerRoute(src.payer)) }
                                     .semantics(mergeDescendants = true) {}
                                     .padding(horizontal = Spacing.s4, vertical = Spacing.s3),
                                 verticalArrangement = Arrangement.spacedBy(Spacing.s1_5),

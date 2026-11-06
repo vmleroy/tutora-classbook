@@ -27,3 +27,6 @@ interface BottomSheetProps {
   className?: string;
 }
 ```
+
+## Sideways (spec 017)
+A sheet is never wider than `size-content-max` (600 dp), centered, and its body scrolls when taller than the phone (AC-017-15).

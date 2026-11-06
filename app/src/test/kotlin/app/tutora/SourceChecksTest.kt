@@ -63,4 +63,37 @@ class SourceChecksTest {
                 .map { it.name }
         assertEquals(emptyList<String>(), offenders)
     }
+
+    @Test
+    fun `AC-017-1 turning the phone never recreates the screen, so nothing typed, chosen or open is lost`() {
+        val manifest = File("src/main/AndroidManifest.xml").readText()
+        val main = Regex("""<activity[^>]*android:name="\.MainActivity"[^>]*>""").find(manifest)?.value.orEmpty()
+        val changes =
+            Regex("""android:configChanges="([^"]*)"""")
+                .find(main)
+                ?.groupValues
+                ?.get(1)
+                .orEmpty()
+                .split("|")
+                .toSet()
+        assertEquals(emptySet<String>(), setOf("orientation", "screenSize", "screenLayout", "smallestScreenSize") - changes)
+    }
+
+    @Test
+    fun `AC-017-5 the rail and every screen keep clear of the cut-out and the side navigation buttons`() {
+        val rail = File("../core/designsystem/src/main/kotlin/app/tutora/designsystem/components/Navigation.kt").readText()
+        val navRail = rail.substring(rail.indexOf("fun NavRail("), rail.indexOf("private fun TabButton("))
+        org.junit.Assert.assertTrue(
+            "NavRail pads for the start insets",
+            Regex("""WindowInsets\.safeDrawing\.only\(WindowInsetsSides\.Start""").containsMatchIn(navRail),
+        )
+        val scaffold = File("src/main/kotlin/app/tutora/ui/Screens.kt").readText()
+        val screen = scaffold.substring(scaffold.indexOf("fun ScreenScaffold("), scaffold.indexOf("fun StartupError("))
+        org.junit.Assert.assertTrue("ScreenScaffold pads for the safe-drawing insets", ".safeDrawingPadding()" in screen)
+        // The screens that draw their own ground pad for the sides themselves.
+        listOf("schedule/Today.kt", "schedule/Agenda.kt").forEach {
+            val text = File("src/main/kotlin/app/tutora/ui/$it").readText()
+            org.junit.Assert.assertTrue("$it pads for the sides", "WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal" in text)
+        }
+    }
 }

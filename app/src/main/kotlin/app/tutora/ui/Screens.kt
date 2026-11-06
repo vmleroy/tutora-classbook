@@ -23,6 +23,7 @@ import app.tutora.designsystem.components.Fab
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.ScreenHeader
+import app.tutora.designsystem.components.readableWidth
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
@@ -55,29 +56,45 @@ fun ScreenScaffold(
             .testTag(tag),
     ) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader(title, variant = variant, eyebrow = eyebrow, actions = actions, onBack = onBack, trailing = trailing)
-            Column(
+            // The title lines up with the body at the readable width.
+            ScreenHeader(
+                title,
+                Modifier.readableWidth(),
+                variant = variant,
+                eyebrow = eyebrow,
+                actions = actions,
+                onBack = onBack,
+                trailing = trailing,
+            )
+            // The body keeps the readable width; past it the background shows on both sides (AC-017-4).
+            Box(
                 Modifier
                     .then(if (bottomBar != null) Modifier.weight(1f) else Modifier)
-                    .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier)
-                    // The last item stays clear of the floating +.
-                    .padding(
-                        start = Spacing.s5,
-                        end = Spacing.s5,
-                        top = Spacing.s2,
-                        bottom = if (fab != null) Size.fab + Spacing.s7 else Spacing.s2,
-                    ),
-                verticalArrangement = Arrangement.spacedBy(Spacing.s4),
-                content = content,
-            )
+                    .fillMaxWidth()
+                    .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                Column(
+                    Modifier
+                        .readableWidth()
+                        // The last item stays clear of the floating +.
+                        .padding(
+                            start = Spacing.s5,
+                            end = Spacing.s5,
+                            top = Spacing.s2,
+                            bottom = if (fab != null) Size.fab + Spacing.s7 else Spacing.s2,
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.s4),
+                    content = content,
+                )
+            }
             // A form's main action stays in reach, above the keyboard, however long the form is.
             if (bottomBar != null) {
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .background(TutoraTheme.colors.surface)
-                        .padding(horizontal = Spacing.s5, vertical = Spacing.s3),
-                ) { bottomBar() }
+                        .background(TutoraTheme.colors.surface),
+                ) { Box(Modifier.readableWidth().padding(horizontal = Spacing.s5, vertical = Spacing.s3)) { bottomBar() } }
             }
         }
         if (fab != null) Fab(fab, Modifier.align(Alignment.BottomEnd).padding(Spacing.s4), label = fabLabel)
