@@ -37,6 +37,18 @@ class Harness(
 
     /** Whether exact alarms are allowed, and whether their page was opened (AC-014-27). */
     val exactAlarm = FakeExactAlarm()
+
+    /** The phone's unlock (spec 015): whether a screen lock is set and what asking answers. */
+    val unlock = FakeDeviceUnlock()
+
+    /** The time since boot the app lock reads, moved by the tests. */
+    var clockMs = 1_000_000L
+
+    /** The app lock over the screens, as in the app (spec 015). */
+    val lock =
+        app.tutora.lock
+            .AppLock { clockMs }
+            .also { it.device = unlock }
     lateinit var nav: NavHostController
 
     /**
@@ -104,7 +116,8 @@ class Harness(
                 app.tutora.ui.calendar.LocalCalendarPermission provides calendarPermission,
                 app.tutora.ui.reminders.LocalNotificationPermission provides notificationPermission,
                 app.tutora.ui.reminders.LocalExactAlarmPermission provides exactAlarm,
-            ) { TutoraNav(AppInfo("1.1.0", "7"), services.schemaVersion, nav = nav) }
+                app.tutora.lock.LocalAppLock provides lock,
+            ) { app.tutora.lock.LockGate { TutoraNav(AppInfo("1.1.0", "7"), services.schemaVersion, nav = nav) } }
         }
     }
 
@@ -153,6 +166,24 @@ class FakeBackupPicker : app.tutora.ui.backup.BackupPicker {
     override fun folder(onPicked: (String?) -> Unit) = onPicked(folderAnswer)
 
     override fun file(onPicked: (String?) -> Unit) = onPicked(fileAnswer)
+}
+
+class FakeDeviceUnlock : app.tutora.lock.DeviceUnlock {
+    var available = true
+    var answer = true
+    var asks = 0
+    var settingsOpened = false
+
+    override fun available() = available
+
+    override fun ask(onResult: (Boolean) -> Unit) {
+        asks++
+        onResult(answer)
+    }
+
+    override fun openSecuritySettings() {
+        settingsOpened = true
+    }
 }
 
 class FakeCalendarPermission : app.tutora.ui.calendar.CalendarPermission {

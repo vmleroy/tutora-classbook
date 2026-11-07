@@ -545,4 +545,28 @@
     <string name="rep_personal">Seus dados</string>
     <string name="rep_personalHint">Nome e chave Pix para os relatórios</string>
     <string name="rep_personalBody">Aparecem no PDF e no texto copiado dos relatórios. Deixe em branco para não mostrar.</string>
+    <!-- Spec 015: app lock -->
+    <string name="lock_promptTitle">Desbloquear o Tutora</string>
+    <string name="lock_body">Desbloqueie para continuar</string>
+    <string name="lock_unlock">Desbloquear</string>
+    <string name="lock_onLine">Bloqueio ligado</string>
+    <string name="lock_section">Privacidade</string>
+    <string name="lock_title">Bloquear o Tutora</string>
+    <string name="lock_hint">Pede o desbloqueio do celular ao abrir o Tutora</string>
+    <string name="lock_noScreenLock">Defina um bloqueio de tela no celular para usar</string>
+    <string name="lock_openSettings">Abrir configurações</string>
+    <string name="lock_after">Bloquear após</string>
+    <string name="lock_afterNow">Imediatamente</string>
+    <string name="lock_after1">1 minuto</string>
+    <string name="lock_after5">5 minutos</string>
+    <string name="lock_offerTitle">Proteger o Tutora?</string>
+    <string name="lock_offerBody">Sua chave Pix fica no app. Quer proteger o Tutora com o bloqueio do celular?</string>
+    <string name="lock_offerYes">Ativar</string>
+    <string name="lock_offerNo">Agora não</string>
+    <string name="lock_setup">Bloquear o Tutora</string>
+    <string name="lock_setupHint">Pede o desbloqueio do celular ao abrir o Tutora</string>
+    <string name="lock_saveWhere">Salvar o backup em %1$s?</string>
+    <string name="lock_saveWhereBody">O backup tem todos os seus dados.</string>
+    <string name="lock_save">Salvar</string>
+    <string name="lock_startClass">Iniciar aula</string>
 </resources>

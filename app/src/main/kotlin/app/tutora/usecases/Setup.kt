@@ -19,6 +19,8 @@ data class SetupChoices(
     /** "Fixo": the amount typed, R$ 20,00 at first (AC-014-25). */
     val travelCents: Cents = SETUP_TRAVEL_CENTS,
     val remind: Boolean = true,
+    /** Bloquear o Tutora, offered in step 4 (AC-015-5); off at first. */
+    val appLock: Boolean = false,
 )
 
 const val SETUP_ONLINE_CENTS = 10_000L
@@ -49,6 +51,7 @@ class Setup(
                     language = c.language,
                     teaching = c.teaching,
                     remindBefore = if (c.remind) REMIND_BEFORE_DEFAULT else 0,
+                    appLock = c.appLock,
                     setupDone = true,
                 ),
                 ctx.now(),

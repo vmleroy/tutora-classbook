@@ -19,6 +19,9 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.tutora.domain.Language
 import app.tutora.live.AndroidLiveNotifier
+import app.tutora.lock.AndroidDeviceUnlock
+import app.tutora.lock.Gate
+import app.tutora.lock.applyPrivacy
 import app.tutora.reminders.AndroidReminderAlarm
 import app.tutora.ui.ConfirmClasses
 import app.tutora.ui.LessonDetail
@@ -74,7 +77,13 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) takeLiveRequest(intent)
         watchAutoStart()
         // The splash covers everything until settings and migrations are ready (AC-001-4).
-        installSplashScreen().setKeepOnScreenCondition { app.state.value == AppState.Loading }
+        // The phone's unlock for the app lock, asked over this activity (spec 015).
+        container.lock.device =
+            AndroidDeviceUnlock(this)
+        installSplashScreen().setKeepOnScreenCondition {
+            app.state.value == AppState.Loading ||
+                (app.state.value is AppState.Ready && container.lock.gate.value == Gate.UNKNOWN)
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
@@ -85,7 +94,12 @@ class MainActivity : AppCompatActivity() {
                     // screen in the new language with no app restart (AC-001-6, AC-003-12, 13).
                     val services = app.services
                     if (services != null) {
-                        LaunchedEffect(services) { services.settings.collect { applyLanguage(it.language) } }
+                        LaunchedEffect(services) {
+                            services.settings.collect {
+                                applyLanguage(it.language)
+                                applyPrivacy(this@MainActivity, container.lock.active(it))
+                            }
+                        }
                     }
                 }
                 is AppState.Failed -> applyLanguage(s.result.language)
@@ -93,7 +107,16 @@ class MainActivity : AppCompatActivity() {
             }
             val request by liveRequest.collectAsStateWithLifecycle()
             val open by openRequest.collectAsStateWithLifecycle()
-            TutoraApp(state, container.appInfo, app.services, request, open, { openRequest.value = null }) { liveRequest.value = null }
+            TutoraApp(
+                state,
+                container.appInfo,
+                app.services,
+                request,
+                open,
+                { openRequest.value = null },
+                { liveRequest.value = null },
+                container.lock,
+            )
         }
     }
 
@@ -108,6 +131,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        container.lock.back()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Recreated for a new language is not leaving; turning the phone never recreates it (spec 017).
+        if (!isChangingConfigurations) container.lock.left()
     }
 
     override fun onResume() {

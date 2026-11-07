@@ -22,6 +22,7 @@ import app.tutora.usecases.WhoId
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -134,6 +135,7 @@ class BackupScreensTest {
         h.show(compose)
         h.go(compose, BackupHome)
         click("Backup completo (.json)")
+        compose.onNodeWithText("Salvar").performClick()
         h.awaitDb(compose) {
             h.t.folder.files
                 .isNotEmpty()
@@ -146,6 +148,35 @@ class BackupScreensTest {
                 .startsWith("Tutora backup 2026-10-26"),
         )
         assertTrue(h.exports.shared.isEmpty())
+    }
+
+    @Test
+    fun `AC-015-15 Backup completo into the folder asks where it goes first, and Cancelar saves nothing, with no unlock`() {
+        runBlocking {
+            h.services.backups.setFolder("content://tree/downloads", "Download")
+            h.services.saveSettings(h.services.currentSettings().copy(appLock = true))
+        }
+        h.show(compose)
+        h.lock.unlock()
+        h.settle(compose)
+        val asks = h.unlock.asks
+        h.go(compose, BackupHome)
+        click("Backup completo (.json)")
+        compose.onNodeWithText("Salvar o backup em Download?").assertExists()
+        compose.onNodeWithText("Cancelar").performClick()
+        h.settle(compose)
+        assertTrue(
+            h.t.folder.files
+                .isEmpty(),
+        )
+        click("Backup completo (.json)")
+        compose.onNodeWithText("Salvar").performClick()
+        h.awaitDb(compose) {
+            h.t.folder.files
+                .isNotEmpty()
+        }
+        assertEquals(1, h.t.folder.files.size)
+        assertEquals(asks, h.unlock.asks)
     }
 
     @Test

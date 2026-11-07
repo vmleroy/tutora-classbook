@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.data.SettingsRepository
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.CancelReason
+import app.tutora.domain.LessonStatus
 import app.tutora.domain.OwedSummary
 import app.tutora.domain.PastClasses
 import app.tutora.domain.PlaceLink
@@ -33,6 +34,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -97,6 +99,48 @@ class RemindersTest {
             settings { it.copy(remindBefore = 0) }
             reminders.plan()
             assertNull(t.reminders.set[ReminderKind.CLASS])
+        }
+
+    @Test
+    fun `AC-015-13 the reminder offers Iniciar aula, which starts the class without opening Tutora`() =
+        runTest {
+            settings { it.copy(remindBefore = 15) }
+            val a = lesson(14)
+            val b = lesson(16)
+            val notice = reminders.fire(ReminderKind.CLASS, a) as ReminderNotice.Class
+            assertTrue(notice.canStart)
+            // The button is a broadcast: it starts the class in the background.
+            val context =
+                androidx.test.core.app.ApplicationProvider
+                    .getApplicationContext<android.app.Application>()
+            org.robolectric.Shadows
+                .shadowOf(context)
+                .grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
+            app.tutora.reminders
+                .ReminderNotifier(context)
+                .post(notice, app.tutora.domain.Language.PT_BR, 15, "America/Sao_Paulo")
+            val manager = context.getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            val start =
+                org.robolectric.Shadows
+                    .shadowOf(manager)
+                    .allNotifications
+                    .single()
+                    .actions
+                    .single { it.title.toString() == "Iniciar aula" }
+            assertTrue(start.actionIntent.isBroadcast)
+            assertEquals(app.tutora.usecases.LiveResult.Ok, reminders.startClass(a))
+            assertEquals(
+                LessonStatus.LIVE.key,
+                t.db
+                    .schedule()
+                    .lesson(a)
+                    ?.status,
+            )
+            // With a class live, or Aula ao vivo off, it isn't offered.
+            assertFalse((reminders.fire(ReminderKind.CLASS, b) as ReminderNotice.Class).canStart)
+            settings { it.copy(liveTimer = false) }
+            t.live.discard(a)
+            assertFalse((reminders.fire(ReminderKind.CLASS, b) as ReminderNotice.Class).canStart)
         }
 
     @Test

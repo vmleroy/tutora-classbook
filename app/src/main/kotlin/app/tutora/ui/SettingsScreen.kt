@@ -78,12 +78,18 @@ fun SettingsScreen(
             listOf(
                 // Seus dados: name and Pix key for reports (AC-010-16).
                 {
+                    // The Pix key never in full here (AC-015-16); the lock said when on (AC-015-1).
                     ListRow(
                         stringResource(R.string.rep_personal),
                         subtitle =
-                            listOf(s.teacherName, s.pixKey).filter { it.isNotBlank() }.joinToString(" · ").ifEmpty {
-                                stringResource(R.string.rep_personalHint)
-                            },
+                            (
+                                listOf(s.teacherName, app.tutora.domain.maskPix(s.pixKey)) +
+                                    listOfNotNull(stringResource(R.string.lock_onLine).takeIf { s.appLock })
+                            ).filter { it.isNotBlank() }
+                                .joinToString(" · ")
+                                .ifEmpty {
+                                    stringResource(R.string.rep_personalHint)
+                                },
                         icon = IconName.USERS,
                         onClick = { onOpen(PersonalData) },
                     )
@@ -495,7 +501,21 @@ fun PersonalDataScreen(onBack: () -> Unit) {
                 services.saveSettings(s.copy(teacherName = v))
             }
         })
-        TextField(stringResource(R.string.rep_settingsPix), s.pixKey, { v -> scope.launch { services.saveSettings(s.copy(pixKey = v)) } })
+        // Masked, with the eye to show it (AC-015-16); offered the lock once when first saved (AC-015-5).
+        val lock = app.tutora.lock.LocalAppLock.current
+        var offer by rememberSaveable { mutableStateOf(false) }
+        TextField(
+            stringResource(R.string.rep_settingsPix),
+            s.pixKey,
+            { v -> scope.launch { services.saveSettings(s.copy(pixKey = v)) } },
+            Modifier.testTag("pix-key"),
+            // E-mail and random keys keep their letters as typed.
+            capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.None,
+            secret = { app.tutora.domain.maskPix(it) },
+            onFocusLost = {
+                if (s.pixKey.isNotBlank() && !s.appLock && !s.lockOffered && lock.device.available()) offer = true
+            },
+        )
         // The reports' top line; empty keeps Tutora's (AC-019-15).
         TextField(
             stringResource(R.string.rep_settingsTitle),
@@ -504,5 +524,87 @@ fun PersonalDataScreen(onBack: () -> Unit) {
             Modifier.testTag("report-title"),
             placeholder = stringResource(R.string.rep_brand),
         )
+        LockSettings(s)
+        if (offer) {
+            fun answer(on: Boolean) {
+                offer = false
+                if (on) {
+                    lock.ask { ok -> scope.launch { services.saveSettings(s.copy(appLock = ok, lockOffered = true)) } }
+                } else {
+                    scope.launch { services.saveSettings(s.copy(lockOffered = true)) }
+                }
+            }
+            BottomSheet(
+                stringResource(R.string.lock_offerTitle),
+                { answer(false) },
+                Modifier.testTag("lock-offer"),
+                subtitle = stringResource(R.string.lock_offerBody),
+                actions =
+                    listOf(
+                        { m -> Button(stringResource(R.string.lock_offerYes), { answer(true) }, m) },
+                        { m -> Button(stringResource(R.string.lock_offerNo), { answer(false) }, m, variant = ButtonVariant.GHOST) },
+                    ),
+            )
+        }
+    }
+}
+
+/**
+ * Privacidade: Bloquear o Tutora, asking the phone's unlock to turn it on and off (AC-015-1, 3),
+ * Bloquear após (AC-015-4), and what to do on a phone with no screen lock (AC-015-2).
+ */
+@Composable
+private fun LockSettings(s: Settings) {
+    val services = LocalServices.current
+    val lock = app.tutora.lock.LocalAppLock.current
+    val scope = rememberCoroutineScope()
+    val c = TutoraTheme.colors
+    val available = lock.device.available()
+    app.tutora.designsystem.components
+        .SectionHeader(stringResource(R.string.lock_section))
+    ListGroup(
+        listOf(
+            {
+                ListRow(
+                    stringResource(R.string.lock_title),
+                    Modifier.testTag("lock-switch"),
+                    subtitle = stringResource(if (available) R.string.lock_hint else R.string.lock_noScreenLock),
+                    icon = IconName.LOCK,
+                    trailing = if (available) RowTrailing.SWITCH else RowTrailing.NONE,
+                    switchValue = s.appLock && available,
+                    onSwitchChange = { on ->
+                        lock.ask { ok -> if (ok) scope.launch { services.saveSettings(s.copy(appLock = on)) } }
+                    },
+                )
+            },
+        ),
+    )
+    if (!available) {
+        Button(
+            stringResource(R.string.lock_openSettings),
+            { lock.device.openSecuritySettings() },
+            Modifier.testTag("lock-open-settings"),
+            variant = ButtonVariant.OUTLINE,
+        )
+    }
+    if (s.appLock && available) {
+        Text(stringResource(R.string.lock_after), style = TutoraTheme.type.bodyStrong, color = c.ink)
+        androidx.compose.foundation.layout.FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s2),
+        ) {
+            listOf(
+                app.tutora.domain.LockAfter.IMMEDIATELY to R.string.lock_afterNow,
+                app.tutora.domain.LockAfter.ONE_MINUTE to R.string.lock_after1,
+                app.tutora.domain.LockAfter.FIVE_MINUTES to R.string.lock_after5,
+            ).forEach { (after, label) ->
+                app.tutora.designsystem.components
+                    .Chip(
+                        stringResource(label),
+                        s.lockAfter == after,
+                        { scope.launch { services.saveSettings(s.copy(lockAfter = after)) } },
+                    )
+            }
+        }
     }
 }

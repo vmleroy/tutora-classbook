@@ -76,6 +76,7 @@ class AndroidReminderAlarm(
     companion object {
         const val ACTION = "app.tutora.reminders.REMIND"
         const val ACTION_CONFIRM_ALL = "app.tutora.reminders.CONFIRM_ALL"
+        const val ACTION_START_LESSON = "app.tutora.reminders.START_LESSON"
         const val EXTRA_KIND = "kind"
         const val EXTRA_LESSON = "lesson"
 
@@ -178,6 +179,21 @@ class ReminderNotifier(
                         .setContentText(
                             res.getString(R.string.remind_classText, who, clockTime(localOf(l.startAt, zone).time, language), place),
                         ).setContentIntent(open(AndroidReminderAlarm.OPEN_LESSON, l.id))
+                    // Iniciar aula, straight from the reminder (AC-015-13).
+                    if (notice.canStart) {
+                        b.addAction(
+                            0,
+                            res.getString(R.string.lock_startClass),
+                            PendingIntent.getBroadcast(
+                                context,
+                                ID_CLASS,
+                                Intent(context, ReminderReceiver::class.java)
+                                    .setAction(AndroidReminderAlarm.ACTION_START_LESSON)
+                                    .putExtra(AndroidReminderAlarm.EXTRA_LESSON, l.id),
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                            ),
+                        )
+                    }
                     ID_CLASS
                 }
                 is ReminderNotice.Owed -> {
@@ -220,6 +236,8 @@ class ReminderNotifier(
 
     fun cancelConfirm() = NotificationManagerCompat.from(context).cancel(ID_CONFIRM)
 
+    fun cancelClass() = NotificationManagerCompat.from(context).cancel(ID_CLASS)
+
     companion object {
         const val CHANNEL = "reminders"
         private const val ID_CLASS = 21
@@ -253,6 +271,14 @@ class ReminderReceiver : BroadcastReceiver() {
                     AndroidReminderAlarm.ACTION_CONFIRM_ALL -> {
                         container.confirming.confirmAll()
                         container.reminderNotifier.cancelConfirm()
+                    }
+                    // Iniciar aula: the live notification takes the reminder's place (AC-015-13). With
+                    // another class live by then, the reminder stays, and tapping it opens the class.
+                    AndroidReminderAlarm.ACTION_START_LESSON -> {
+                        val id = intent.getStringExtra(AndroidReminderAlarm.EXTRA_LESSON) ?: return@launch
+                        if (container.reminders.startClass(id) == app.tutora.usecases.LiveResult.Ok) {
+                            container.reminderNotifier.cancelClass()
+                        }
                     }
                     // After a restart, or once exact alarms are allowed, the reminders are set again.
                     Intent.ACTION_BOOT_COMPLETED, AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED ->

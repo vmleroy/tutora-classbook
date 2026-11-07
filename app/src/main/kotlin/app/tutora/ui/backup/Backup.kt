@@ -427,6 +427,8 @@ fun BackupScreen(nav: NavHostController) {
     var savedIn by rememberSaveable { mutableStateOf<String?>(null) }
     var removing by remember { mutableStateOf<BackupLogEntry?>(null) }
     var opened by remember { mutableStateOf<BackupLogEntry?>(null) }
+    // Backup completo into the folder says first where it goes (AC-015-15).
+    var savingWhere by rememberSaveable { mutableStateOf(false) }
     val words = rememberSheetWords()
     val sheetBase = stringResource(R.string.bk_sheetFile)
     val s = state ?: return
@@ -493,6 +495,25 @@ fun BackupScreen(nav: NavHostController) {
             val (name, bytes) = withContext(Dispatchers.IO) { services.backups.makeBackup() }
             exports.share(name, "application/json", bytes)
         }
+
+    if (savingWhere) {
+        BottomSheet(
+            stringResource(R.string.lock_saveWhere, s.folderName),
+            { savingWhere = false },
+            Modifier.testTag("backup-save-where"),
+            subtitle = stringResource(R.string.lock_saveWhereBody),
+            actions =
+                listOf(
+                    { m -> Button(stringResource(R.string.catalog_cancel), { savingWhere = false }, m, variant = ButtonVariant.OUTLINE) },
+                    { m ->
+                        Button(stringResource(R.string.lock_save), {
+                            savingWhere = false
+                            scope.launch { savedIn = withContext(Dispatchers.IO) { services.backups.saveToFolder() } }
+                        }, m)
+                    },
+                ),
+        )
+    }
 
     // A backup from Recentes: what can be done with it (AC-011-11).
     opened?.let { e ->
@@ -696,7 +717,7 @@ fun BackupScreen(nav: NavHostController) {
             if (s.folderUri.isEmpty()) {
                 share()
             } else {
-                scope.launch { savedIn = withContext(Dispatchers.IO) { services.backups.saveToFolder() } }
+                savingWhere = true
             }
         }, fullWidth = true, icon = IconName.CLOUD)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {

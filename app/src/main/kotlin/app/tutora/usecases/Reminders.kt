@@ -65,6 +65,8 @@ sealed interface ReminderNotice {
     /** "Ana Souza · 14:00 · Online / Remoto"; tapping opens the class (AC-014-12). */
     data class Class(
         val lesson: Lesson,
+        /** "Iniciar aula" on it: Aula ao vivo on and no class live (AC-015-13). */
+        val canStart: Boolean = false,
     ) : ReminderNotice
 
     /** "3 alunos te devem R$ 480,00"; tapping opens Cadastro on those who owe (AC-014-13). */
@@ -115,6 +117,12 @@ class Reminders(
     private fun dailyAlarm(s: Settings) = (s.confirmDaily && s.pastClasses == PastClasses.ASK) || s.pastClasses == PastClasses.AUTO
 
     /**
+     * "Iniciar aula" on the reminder: starts the class as Iniciar aula does in the app, without
+     * opening Tutora, whatever the app lock (AC-015-13). The live notification takes its place.
+     */
+    suspend fun startClass(lessonId: String): LiveResult = Live(ctx).start(lessonId)
+
+    /**
      * An alarm went off: what to post, or null when there is nothing to say (the class was
      * cancelled, no one owes, nothing to confirm, or the reminder was turned off). The alarm of
      * that kind is set again either way.
@@ -132,7 +140,7 @@ class Reminders(
                         ?.let { id -> ctx.db.schedule().lesson(id) }
                         ?.takeIf { it.status == LessonStatus.SCHEDULED.key }
                         ?.let { ScheduleRepository(ctx.db).load(it) }
-                        ?.let { ReminderNotice.Class(it) }
+                        ?.let { ReminderNotice.Class(it, s.liveTimer && ctx.db.schedule().liveLesson() == null) }
                 ReminderKind.OWED ->
                     if (s.owedWeekly) {
                         val owing = PaymentRepository(ctx.db).balances().first().filterValues { it > 0 }
