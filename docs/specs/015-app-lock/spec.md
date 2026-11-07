@@ -1,6 +1,6 @@
 # Spec 015: App lock
 
-Status: ready
+Status: in progress
 Depends on: 010 Reports and 019 (Seus dados: name, Pix key, report title), 007 Live timer (the ongoing notification), 011 Backup (restore), 014 (Ajustes in pages, the reminders' notifications, the setup's "Seus dados, seguros"), 017 Landscape (the side panel, turning the phone, the screen kept on during a live class)
 Mockups: none yet. The lock screen and the new rows follow the design system (ListRow with a Switch, SelectField, an EmptyState-like centred screen); a board can be added before `/plan`.
 
@@ -43,7 +43,7 @@ Tutora holds things the teacher may not want anyone who picks up the phone to se
 
 - **AC-015-14.** With the lock on, Tutora's screen is hidden in the recent-apps screen where the phone allows it without blocking screenshots. Screenshots are always allowed, with the lock on or off (Victor, 7 Nov 2026).
 - **AC-015-15.** Backup completo asks nothing about the lock, since Tutora is already unlocked. Saving it into the backup folder asks first where it goes: "Salvar o backup em Tutora Backups?", with Salvar and Cancelar; Cancelar saves nothing. Without a folder the share sheet is already the choice, and the automatic backup never asks (Victor, 7 Nov 2026).
-- **AC-015-16.** With the lock on or off, the Pix key never shows in full until asked: Ajustes' line for Seus dados shows it masked ("•••• 9876"), and on Seus dados the field is masked with an eye button that shows it, to read or edit, while the page is open (Victor, 7 Nov 2026).
+- **AC-015-16.** With the lock on or off, the Pix key never shows in full until asked: Ajustes' line for Seus dados shows it masked the way banks do, for every kind of key ("•••.982.247-••", "(••) •••••-4321", "vi•••@gmail.com"), and on Seus dados the field is masked with an eye button that shows it, to read or edit, while the page is open (Victor, 7 Nov 2026).
 
 ### Language
 

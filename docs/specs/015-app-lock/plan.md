@@ -33,7 +33,7 @@ The lock is a gate in front of the app's content, not a separate screen in the n
 - **Notifications.**
   - Pausar, Retomar and Marcar todas como dadas already go through broadcast receivers that never open the activity, so they keep working while Tutora is locked without any change (AC-015-12).
   - Encerrar opens the activity, which lands behind the gate and then opens the end sheet (AC-015-10).
-  - `ReminderNotice.Class` gains `canStart` (Aula ao vivo on and no class live). `AndroidReminders` adds "Iniciar aula", a broadcast to `ReminderReceiver` (`ACTION_START_LESSON`) that calls `Live.start(id)` from the container (architecture, rule 5). That posts the live notification and cancels the reminder (AC-015-13). If another class went live in the meantime, it opens the class instead, as AC-007-2 does in the app.
+  - `ReminderNotice.Class` gains `canStart` (Aula ao vivo on and no class live). `AndroidReminders` adds "Iniciar aula", a broadcast to `ReminderReceiver` (`ACTION_START_LESSON`) that calls `Live.start(id)` from the container (architecture, rule 5). That posts the live notification and cancels the reminder (AC-015-13). If another class went live in the meantime, nothing starts and the reminder stays, so tapping it opens the class (Android doesn't let a notification button open an app from the background).
 
 ## Data
 
@@ -95,3 +95,4 @@ Lean, on the JVM, one test per criterion:
 - **A restored lock with no screen lock.** A backup restored onto a phone with no screen lock would lock Tutora with no way in. To avoid it, a lock that is on counts as off until the phone has a screen lock (see Approach).
 - **`androidx.biometric`.** New dependency: `androidx.biometric:biometric` 1.1.0, the latest stable release, in `libs.versions.toml`. It works offline and needs `FragmentActivity`, which `AppCompatActivity` already is. On Android 9 and 10, BiometricPrompt with the device credential shows the system's PIN screen as a separate activity; `AppLock` ignores the stop it causes.
 - **Robolectric and BiometricPrompt.** The prompt can't run under Robolectric, so tests use `FakeDeviceUnlock`. The real prompt is a pending device check.
+- **Sheets over the lock.** A sheet or the date picker opens in a window of its own, above the gate. While locked they draw nothing (`LocalCovered` in the design system) and come back once unlocked; what is typed inside a sheet comes back only where the screen keeps it, as most do.
