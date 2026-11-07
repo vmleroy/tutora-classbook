@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.lerp
@@ -56,6 +57,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -243,24 +245,52 @@ fun TextField(
     onPrimary: Boolean = false,
     errorKey: Any? = null,
     required: Boolean = false,
+    /**
+     * A private value (the Pix key, AC-015-16): shown through this mask, not editable, until
+     * the eye beside it shows it while the field stays on screen.
+     */
+    secret: ((String) -> String)? = null,
+    onFocusLost: (() -> Unit)? = null,
 ) {
     // The field keeps its own selection, so the cursor can be placed anywhere to fix a typo.
     var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
     if (field.text != value) field = TextFieldValue(value, TextRange(value.length))
-    Column(modifier) {
-        FieldFrame(label, helper, error, onPrimary, errorKey, required) { m ->
-            Input(
-                field,
-                {
-                    field = it
-                    if (it.text != value) onValueChange(it.text)
-                },
-                m,
-                placeholder,
-                keyboardType,
-                onPrimary,
-                imeAction = imeAction,
-                capitalization = capitalization,
+    // A key typed for the first time stays in sight while it is typed; a saved one opens masked.
+    var shown by remember { mutableStateOf(value.isEmpty()) }
+    val hidden = secret != null && !shown && value.isNotEmpty()
+    var focused by remember { mutableStateOf(false) }
+    Row(modifier, verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        Column(Modifier.weight(1f)) {
+            FieldFrame(label, helper, error, onPrimary, errorKey, required) { m ->
+                if (hidden) {
+                    Box(m.semantics(mergeDescendants = true) {}.testTag("secret-masked"), contentAlignment = Alignment.CenterStart) {
+                        Text(secret(value), style = TutoraTheme.type.body, color = TutoraTheme.colors.ink)
+                    }
+                } else {
+                    Input(
+                        field,
+                        {
+                            field = it
+                            if (it.text != value) onValueChange(it.text)
+                        },
+                        m.onFocusChanged {
+                            if (focused && !it.isFocused) onFocusLost?.invoke()
+                            focused = it.isFocused
+                        },
+                        placeholder,
+                        keyboardType,
+                        onPrimary,
+                        imeAction = imeAction,
+                        capitalization = capitalization,
+                    )
+                }
+            }
+        }
+        if (secret != null && value.isNotEmpty()) {
+            IconButton(
+                if (shown) IconName.EYE_OFF else IconName.EYE,
+                stringResource(if (shown) R.string.ds_hide else R.string.ds_show),
+                { shown = !shown },
             )
         }
     }
@@ -636,7 +666,7 @@ fun DateField(
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
     SelectField(text, { open = true }, modifier, label = label, icon = IconName.CALENDAR)
-    if (open) {
+    if (open && !LocalCovered.current) {
         // The calendar counts in UTC milliseconds at midnight.
         val state = rememberDatePickerState(initialSelectedDateMillis = date.toEpochDays() * DAY_MILLIS)
         val c = TutoraTheme.colors

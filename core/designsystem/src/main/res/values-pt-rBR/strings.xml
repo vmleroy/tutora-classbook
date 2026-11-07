@@ -23,4 +23,6 @@
     <string name="ds_number_min">No mínimo %1$s</string>
     <string name="ds_toConfirm">A confirmar</string>
     <string name="ds_live">Ao vivo</string>
+    <string name="ds_show">Mostrar</string>
+    <string name="ds_hide">Ocultar</string>
 </resources>

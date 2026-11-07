@@ -50,6 +50,9 @@ enum class IconName(
     ARCHIVE(R.drawable.ic_archive),
     PENCIL(R.drawable.ic_pencil),
     TRASH(R.drawable.ic_trash),
+    LOCK(R.drawable.ic_lock),
+    EYE(R.drawable.ic_eye),
+    EYE_OFF(R.drawable.ic_eye_off),
 }
 
 /** A line icon tinted with a token color; decorative unless it has a [label]. */

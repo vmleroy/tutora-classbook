@@ -44,6 +44,13 @@ import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 
 /**
+ * True while the app lock covers the screen (spec 015). Sheets and dialogs open in windows of
+ * their own, over everything, so they hide themselves while it is true; whoever opened them
+ * keeps them open, and they show again once unlocked (AC-015-9, 10).
+ */
+val LocalCovered = androidx.compose.runtime.compositionLocalOf { false }
+
+/**
  * A panel from the bottom over a scrim, for choices, confirmations and pickers. It covers the
  * whole screen wherever it is placed, rises above the keyboard, and closes on the scrim or
  * the back button. With reduce motion it appears without sliding (AC-002-17).
@@ -58,6 +65,7 @@ fun BottomSheet(
     actions: List<@Composable (Modifier) -> Unit> = emptyList(),
     content: @Composable () -> Unit = {},
 ) {
+    if (LocalCovered.current) return
     val c = TutoraTheme.colors
     val state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(

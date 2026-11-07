@@ -30,3 +30,7 @@ interface BottomSheetProps {
 
 ## Sideways (spec 017)
 A sheet is never wider than `size-content-max` (600 dp), centered, and its body scrolls when taller than the phone (AC-017-15).
+
+## While the app is locked
+
+A sheet opens in a window of its own, over the app. While the app lock covers the screen (`LocalCovered`, spec 015) it draws nothing; whoever opened it keeps it open, and it shows again once unlocked. `DateField`'s calendar does the same.
