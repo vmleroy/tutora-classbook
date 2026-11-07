@@ -6,7 +6,7 @@ Mockups: none yet. The lock screen and the new rows follow the design system (Li
 
 ## Goal
 
-Tutora holds things the teacher may not want anyone who picks up the phone to see: students' names and phones, what each one owes, earnings, and the teacher's own Pix key. The teacher can turn on a lock so that Tutora asks for the phone's own unlock (fingerprint, face or the phone's PIN, pattern or password) when it is opened, and again once it has been closed or left in the background for a while. Once unlocked, Tutora is used as today, with no more asking, except before the few things that take everything off the phone or replace it. Tutora is hidden in the recent-apps screen; screenshots and notifications stay as they are. Nothing leaves the phone: the lock uses what the phone already has (constitution rules 1 and 2).
+Tutora holds things the teacher may not want anyone who picks up the phone to see: students' names and phones, what each one owes, earnings, and the teacher's own Pix key. The teacher can turn on a lock so that Tutora asks for the phone's own unlock (fingerprint, face or the phone's PIN, pattern or password) when it is opened, and again once it has been closed or left in the background for a while. Once unlocked, Tutora is used as today, with no more asking, except to turn the lock off. Tutora is hidden in the recent-apps screen; screenshots and notifications stay as they are. Nothing leaves the phone: the lock uses what the phone already has (constitution rules 1 and 2).
 
 ## User stories
 
@@ -28,7 +28,7 @@ Tutora holds things the teacher may not want anyone who picks up the phone to se
 ### Locking and unlocking
 
 - **AC-015-6.** With the lock on, opening Tutora shows a lock screen with the app's name and "Desbloquear" before any of its content. It asks for the fingerprint or face, and falls back to the phone's PIN, pattern or password. Tutora has no PIN of its own (Victor, 7 Nov 2026).
-- **AC-015-7.** Once unlocked, nothing in the app asks again while it is in use (Victor, 7 Nov 2026), except AC-015-3 and AC-015-15.
+- **AC-015-7.** Once unlocked, nothing in the app asks again while it is in use (Victor, 7 Nov 2026), except turning the lock off (AC-015-3).
 - **AC-015-8.** After Tutora has been closed or in the background longer than "Bloquear após", it locks again. Coming back sooner doesn't ask. Turning the phone upright or sideways is not leaving: it never locks or asks again (AC-017-1). A live class locks like any other time; its timer keeps counting (AC-007-6).
 - **AC-015-9.** Cancelling the unlock leaves the lock screen in place, with "Desbloquear" to try again. Nothing behind it can be seen or reached: not a screen, an open sheet, the side panel (AC-017-6 to 11), nor what a notification or a shared file would open.
 - **AC-015-10.** Once unlocked, Tutora is exactly where it was: the tab, the screen, an open panel or sheet, and anything typed (as AC-017-1). Opened from a notification, it goes on to what the notification opens (a class, Aulas para confirmar, Cadastro on who owes, the live class, the end sheet).
@@ -41,8 +41,8 @@ Tutora holds things the teacher may not want anyone who picks up the phone to se
 
 ### Nothing private in sight
 
-- **AC-015-14.** With the lock on, Tutora's screen is hidden in the recent-apps screen where the phone allows it without blocking screenshots. Screenshots are never blocked (Victor, 7 Nov 2026).
-- **AC-015-15.** With the lock on, Backup completo, Planilha .xlsx and Restaurar backup (AC-011) ask for the phone's unlock before they start; cancelling it does nothing (Victor, 7 Nov 2026).
+- **AC-015-14.** With the lock on, Tutora's screen is hidden in the recent-apps screen where the phone allows it without blocking screenshots. Screenshots are always allowed, with the lock on or off (Victor, 7 Nov 2026).
+- **AC-015-15.** Backup completo asks nothing about the lock, since Tutora is already unlocked. Saving it into the backup folder asks first where it goes: "Salvar o backup em Tutora Backups?", with Salvar and Cancelar; Cancelar saves nothing. Without a folder the share sheet is already the choice, and the automatic backup never asks (Victor, 7 Nov 2026).
 - **AC-015-16.** With the lock on or off, the Pix key never shows in full until asked: Ajustes' line for Seus dados shows it masked ("•••• 9876"), and on Seus dados the field is masked with an eye button that shows it, to read or edit, while the page is open (Victor, 7 Nov 2026).
 
 ### Language
@@ -61,4 +61,4 @@ Tutora holds things the teacher may not want anyone who picks up the phone to se
 
 ## Open questions
 
-Answered by Victor on 7 Nov 2026: the phone's unlock only; Bloquear após Imediatamente, 1 or 5 minutos, 5 at first, with the switch turning it off; off at first, offered in the setup and when the Pix key is first saved; screenshots stay allowed; notifications stay as they are; the Pix key hidden behind an eye button; backups and the spreadsheet ask for the unlock. The lock is a guard at the door: it asks when Tutora is opened and after it was closed or idle, never again while in use. A live class can be started and paused from notifications, so its timer runs whatever the lock.
+Answered by Victor on 7 Nov 2026: the phone's unlock only; Bloquear após Imediatamente, 1 or 5 minutos, 5 at first, with the switch turning it off; off at first, offered in the setup and when the Pix key is first saved; screenshots stay allowed; notifications stay as they are; the Pix key hidden behind an eye button; Backup completo confirms where it saves instead of asking for the unlock, and turning the lock off asks for the unlock again to confirm; screenshots are allowed at all times (Victor, 7 Nov 2026). The lock is a guard at the door: it asks when Tutora is opened and after it was closed or idle, never again while in use. A live class can be started and paused from notifications, so its timer runs whatever the lock.

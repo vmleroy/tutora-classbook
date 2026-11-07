@@ -22,12 +22,12 @@ The lock is a gate in front of the app's content, not a separate screen in the n
   - `locked: StateFlow<Boolean>` starts true and stays true until the first settings arrive. A cold start therefore never shows a frame of content (AC-015-6), and the splash screen covers that moment as it already does.
   - `left(nowMs)` and `back(nowMs)` are called from `MainActivity.onStop` and `onStart`.
   - `unlock()` asks through `DeviceUnlock`.
-  - `confirm(action)` asks first when the lock is on, then runs `action`; with the lock off it just runs it (AC-015-3, 15).
+  - `confirm(action)` asks for the unlock, then runs `action`; used only to turn the lock off (AC-015-3).
 
   Turning the phone never stops the activity (`configChanges`, spec 017), so it never counts as leaving (AC-015-8). While Tutora's own unlock prompt is open, `left` is ignored; otherwise the PIN screen on older phones would lock it again behind itself. A lock that is on while the phone has no screen lock (for example after restoring a backup from another phone) counts as off, and Ajustes shows AC-015-2's row.
 - **Screens.**
   - `TutoraApp` wraps its content in `LockGate`. While locked, the content stays composed but is drawn invisibly, is removed from accessibility and gets no touches. The lock screen sits over it, and Back moves the task to the background. Requests from notifications are still handled behind the gate, so the app opens on them once unlocked (AC-015-9, 10).
-  - `MainActivity` turns off the recent-apps thumbnail (`setRecentsScreenshotEnabled(false)`, Android 13+) while the lock is on. `FLAG_SECURE` is never used, so screenshots stay allowed (AC-015-14).
+  - `MainActivity` turns off the recent-apps thumbnail (`setRecentsScreenshotEnabled(false)`, Android 13+) while the lock is on. `FLAG_SECURE` is never used, so screenshots are allowed at all times (AC-015-14).
   - Seus dados gets the Privacidade group, the masked Pix field and the one-time offer.
   - Ajustes' line, the setup's step 4 and the backup page call `AppLock.confirm`.
 - **Notifications.**
@@ -71,7 +71,7 @@ The unlock itself writes nothing: whether Tutora is locked is kept in memory onl
 - **Pix offer:** a `BottomSheet` shown once, when the Pix field loses focus with a key, the lock off and the phone having a screen lock. It has "Ativar" (which asks for the unlock, as AC-015-1 does) and "Agora não". Either answer sets `lockOffered`.
 - **Ajustes:** Seus dados' line reads the name, `maskPix`, and "Bloqueio ligado" when the lock is on.
 - **Setup step 4:** a third `ListRow` with a `Switch`. Turning it on asks for the unlock; with no screen lock it is disabled and says so.
-- **Backup e planilha:** Backup completo, Planilha .xlsx, Restaurar backup, and Restaurar or Compartilhar on a recent backup go through `AppLock.confirm`. The automatic backup never asks.
+- **Backup e planilha:** Backup completo with a folder set shows a `BottomSheet` "Salvar o backup em <folder name>?" with Salvar and Cancelar before `saveToFolder`; without a folder it goes to the share sheet as today. No unlock is asked; the automatic backup never asks (AC-015-15).
 - **Strings:** every string goes in `strings_features.xml` (both languages), including the reminder's "Iniciar aula" (AC-015-17).
 
 ## Test strategy
