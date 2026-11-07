@@ -4,7 +4,7 @@ Tutora is built spec by spec. Each folder holds `spec.md` (what and why), `plan.
 
 ## Roadmap
 
-Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + Compose: the Expo version of 001–005 is archived at the `expo-final` tag, and those specs are re-planned (`/plan`) and implemented again in Kotlin. 001 to 014, 016, 017 and 019 are written so far, and 015 is a draft; write the next one with `/spec` when its turn comes.
+Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + Compose: the Expo version of 001–005 is archived at the `expo-final` tag, and those specs are re-planned (`/plan`) and implemented again in Kotlin. 001 to 017 and 019 are written so far; write the next one with `/spec` when its turn comes.
 
 | # | Spec | Status | Mockups |
 | --- | --- | --- | --- |
@@ -22,7 +22,7 @@ Each spec ships on its own APK. On 27 Oct 2026 Tutora moved to native Kotlin + C
 | 012 | [Calendar sync and .ics](012-calendar/spec.md): classes of the next 8 weeks in a "Tutora – Aulas" calendar, updated on every change; other appointments as busy time on the Agenda; .ics export | done | Calendar, Settings |
 | 013 | [Appearance](013-appearance/spec.md): Aparência with a live preview, mode, theme, quick main and highlight colors, text size; Suas cores for the seven parts with hex, sliders and contrast | done | Theme, ColorPicker, Settings |
 | 014 | [Reminders, confirming classes and first-run setup](014-reminders-setup/spec.md): a reminder before each class, a weekly "who owes you" and a daily "to confirm"; past classes "A confirmar", confirmed one by one or all at once (takes in the draft 018); four skippable setup steps that also hide what doesn't apply | done | Setup, Settings |
-| 015 | [App lock](015-app-lock/spec.md): lock Tutora with the phone's own unlock (fingerprint, face, PIN), lock again after a while in the background, nothing private in recent apps or on the phone's lock screen, Pix key masked | draft | none yet |
+| 015 | [App lock](015-app-lock/spec.md): lock Tutora with the phone's own unlock (fingerprint, face, PIN), asked when opened and after a while closed or idle, hidden in recent apps, Pix key masked, backups behind the unlock, Iniciar aula on the class reminder | ready | none yet |
 | 016 | [Visual refresh 2026](016-visual-refresh/spec.md): the "Quadro refinado" look on every screen, built only from theme colors; Agenda titled by month and year, a Mês view and a month/year picker | done | DirA, A_Agenda, A_AgendaMes, A_AgendaAno, A_Aluno, A_Ganhos, A_Ajustes, A_Estilo |
 | 017 | [Landscape](017-landscape/spec.md): every screen sideways; tabs on the side, the upright screens at a readable width with what is tapped opening in a side panel; the live class with its clock on the left; nothing lost when turning; screen on during a live class | done | none yet |
 | 019 | [Evolução, any period and tidier filters](019-evolution-filters/spec.md): De and Até for any period up to 5 years, month by month; type and place kind as dropdowns, on Ganhos too; Quem searchable and Quem and Local with several choices; the Agenda's count explained; cents on Ganhos' summary; the reports' header title in Seus dados | done | none |
