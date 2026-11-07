@@ -1,6 +1,6 @@
 # Spec 015: App lock
 
-Status: in progress
+Status: done
 Depends on: 010 Reports and 019 (Seus dados: name, Pix key, report title), 007 Live timer (the ongoing notification), 011 Backup (restore), 014 (Ajustes in pages, the reminders' notifications, the setup's "Seus dados, seguros"), 017 Landscape (the side panel, turning the phone, the screen kept on during a live class)
 Mockups: none yet. The lock screen and the new rows follow the design system (ListRow with a Switch, SelectField, an EmptyState-like centred screen); a board can be added before `/plan`.
 
@@ -19,7 +19,7 @@ Tutora holds things the teacher may not want anyone who picks up the phone to se
 
 ### Turning it on
 
-- **AC-015-1.** Ajustes › Seus dados has a "Privacidade" group under the name, Pix key and report title, with "Bloquear o Tutora", off at first. Turning it on asks for the phone's unlock once, to prove it works, before it takes effect. Ajustes' line for Seus dados then also says "Bloqueio ligado".
+- **AC-015-1.** Ajustes has its own page "Privacidade", next to Seus dados and Backup e planilha, whose line says "Desligado" or "Bloqueio ligado · 5 minutos" (Victor, 7 Nov 2026). It holds "Bloquear o Tutora", off at first. Turning it on asks for the phone's unlock once, to prove it works, before it takes effect.
 - **AC-015-2.** On a phone with no screen lock set, the switch can't be turned on. The row says "Defina um bloqueio de tela no celular para usar" and offers to open the phone's security settings.
 - **AC-015-3.** Turning it off asks for the phone's unlock first; then Tutora never locks until it is turned on again.
 - **AC-015-4.** With the lock on, "Bloquear após" shows under it: Imediatamente, 1 minuto or 5 minutos (at first) (Victor, 7 Nov 2026).

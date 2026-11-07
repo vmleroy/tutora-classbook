@@ -549,6 +549,7 @@
     <string name="lock_promptTitle">Desbloquear o Tutora</string>
     <string name="lock_body">Desbloqueie para continuar</string>
     <string name="lock_unlock">Desbloquear</string>
+    <string name="lock_offLine">Desligado</string>
     <string name="lock_onLine">Bloqueio ligado</string>
     <string name="lock_section">Privacidade</string>
     <string name="lock_title">Bloquear o Tutora</string>

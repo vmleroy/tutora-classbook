@@ -61,8 +61,8 @@ private fun stringIn(
 }
 
 /**
- * Ajustes: only its pages, each with a line of what is set (AC-014-28). Seus dados and Backup e
- * planilha first; Geral, Aulas, Lembretes and Pagamentos; then Sobre.
+ * Ajustes: only its pages, each with a line of what is set (AC-014-28). Seus dados, Backup e
+ * planilha and Privacidade first; Geral, Aulas, Lembretes and Pagamentos; then Sobre.
  */
 @Composable
 fun SettingsScreen(
@@ -78,14 +78,12 @@ fun SettingsScreen(
             listOf(
                 // Seus dados: name and Pix key for reports (AC-010-16).
                 {
-                    // The Pix key never in full here (AC-015-16); the lock said when on (AC-015-1).
+                    // The Pix key never in full here (AC-015-16).
                     ListRow(
                         stringResource(R.string.rep_personal),
                         subtitle =
-                            (
-                                listOf(s.teacherName, app.tutora.domain.maskPix(s.pixKey)) +
-                                    listOfNotNull(stringResource(R.string.lock_onLine).takeIf { s.appLock })
-                            ).filter { it.isNotBlank() }
+                            listOf(s.teacherName, app.tutora.domain.maskPix(s.pixKey))
+                                .filter { it.isNotBlank() }
                                 .joinToString(" · ")
                                 .ifEmpty {
                                     stringResource(R.string.rep_personalHint)
@@ -98,6 +96,19 @@ fun SettingsScreen(
                 {
                     app.tutora.ui.backup
                         .BackupSettingsRow { onOpen(BackupHome) }
+                },
+                // Privacidade, with the lock's state (AC-015-1; on Ajustes itself, Victor, 7 Nov 2026).
+                {
+                    PageRow(
+                        stringResource(R.string.lock_section),
+                        if (s.appLock) {
+                            stringResource(R.string.lock_onLine) + " · " + stringResource(lockAfterLabel(s.lockAfter)).lowercase()
+                        } else {
+                            stringResource(R.string.lock_offLine)
+                        },
+                        IconName.LOCK,
+                        "page-privacy",
+                    ) { onOpen(SettingsPrivacy) }
                 },
             ),
         )
@@ -524,7 +535,6 @@ fun PersonalDataScreen(onBack: () -> Unit) {
             Modifier.testTag("report-title"),
             placeholder = stringResource(R.string.rep_brand),
         )
-        LockSettings(s)
         if (offer) {
             fun answer(on: Boolean) {
                 offer = false
@@ -549,6 +559,26 @@ fun PersonalDataScreen(onBack: () -> Unit) {
     }
 }
 
+private fun lockAfterLabel(after: app.tutora.domain.LockAfter) =
+    when (after) {
+        app.tutora.domain.LockAfter.IMMEDIATELY -> R.string.lock_afterNow
+        app.tutora.domain.LockAfter.ONE_MINUTE -> R.string.lock_after1
+        app.tutora.domain.LockAfter.FIVE_MINUTES -> R.string.lock_after5
+    }
+
+/** Ajustes › Privacidade, its own page on Ajustes (AC-015-1). */
+@Composable
+fun SettingsPrivacyScreen(nav: NavHostController) {
+    val services = LocalServices.current
+    val settings by services.settings.collectAsState(initial = null)
+    val s = settings ?: return
+    ScreenScaffold(stringResource(R.string.lock_section), "settings-privacy", variant = HeaderVariant.PUSH, onBack = {
+        nav.popBackStack()
+    }) {
+        LockSettings(s)
+    }
+}
+
 /**
  * Privacidade: Bloquear o Tutora, asking the phone's unlock to turn it on and off (AC-015-1, 3),
  * Bloquear após (AC-015-4), and what to do on a phone with no screen lock (AC-015-2).
@@ -560,8 +590,6 @@ private fun LockSettings(s: Settings) {
     val scope = rememberCoroutineScope()
     val c = TutoraTheme.colors
     val available = lock.device.available()
-    app.tutora.designsystem.components
-        .SectionHeader(stringResource(R.string.lock_section))
     ListGroup(
         listOf(
             {
@@ -593,14 +621,10 @@ private fun LockSettings(s: Settings) {
             horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
             verticalArrangement = Arrangement.spacedBy(Spacing.s2),
         ) {
-            listOf(
-                app.tutora.domain.LockAfter.IMMEDIATELY to R.string.lock_afterNow,
-                app.tutora.domain.LockAfter.ONE_MINUTE to R.string.lock_after1,
-                app.tutora.domain.LockAfter.FIVE_MINUTES to R.string.lock_after5,
-            ).forEach { (after, label) ->
+            app.tutora.domain.LockAfter.entries.forEach { after ->
                 app.tutora.designsystem.components
                     .Chip(
-                        stringResource(label),
+                        stringResource(lockAfterLabel(after)),
                         s.lockAfter == after,
                         { scope.launch { services.saveSettings(s.copy(lockAfter = after)) } },
                     )

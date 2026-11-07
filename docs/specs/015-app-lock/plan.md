@@ -28,7 +28,7 @@ The lock is a gate in front of the app's content, not a separate screen in the n
 - **Screens.**
   - `TutoraApp` wraps its content in `LockGate`. While locked, the content stays composed but is drawn invisibly, is removed from accessibility and gets no touches. The lock screen sits over it, and Back moves the task to the background. Requests from notifications are still handled behind the gate, so the app opens on them once unlocked (AC-015-9, 10).
   - `MainActivity` turns off the recent-apps thumbnail (`setRecentsScreenshotEnabled(false)`, Android 13+) while the lock is on. `FLAG_SECURE` is never used, so screenshots are allowed at all times (AC-015-14).
-  - Seus dados gets the Privacidade group, the masked Pix field and the one-time offer.
+  - Ajustes gets its own Privacidade page; Seus dados gets the masked Pix field and the one-time offer.
   - Ajustes' line, the setup's step 4 and the backup page call `AppLock.confirm`.
 - **Notifications.**
   - Pausar, Retomar and Marcar todas como dadas already go through broadcast receivers that never open the activity, so they keep working while Tutora is locked without any change (AC-015-12).
@@ -60,8 +60,8 @@ The unlock itself writes nothing: whether Tutora is locked is kept in memory onl
 ## Screens and components
 
 - **Lock screen:** `EmptyState` (icon `LOCK`, title "Tutora", body "Desbloqueie para continuar", action `Button` "Desbloquear") centred on `background`. It works upright and sideways, at every text and interface size, in every theme (AC-015-11). It's built from existing components, so there's no new one.
-- **Seus dados:**
-  - A `SectionHeader` "Privacidade" heads a `ListGroup` holding a `ListRow` "Bloquear o Tutora" with a `Switch`.
+- **Privacidade (its own page on Ajustes):**
+  - A `ListGroup` holding a `ListRow` "Bloquear o Tutora" with a `Switch`.
   - Under it, "Bloquear após" uses `Chip`s, as "Pedir confirmação" does.
   - With no screen lock, the row is disabled, says AC-015-2's text and has "Abrir configurações".
 - **Pix field:** `TextField` gains `secret: Boolean`. When secret, it shows `maskPix` and isn't editable until the eye `IconButton` reveals it. The reveal lasts while the page is open. This is a change to the design-system component, so it needs:

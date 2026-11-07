@@ -30,6 +30,7 @@ import app.tutora.ui.BackupHome
 import app.tutora.ui.PersonalData
 import app.tutora.ui.RegistryGraph
 import app.tutora.ui.SettingsGraph
+import app.tutora.ui.SettingsPrivacy
 import app.tutora.usecases.LiveNote
 import app.tutora.usecases.ReminderNotice
 import kotlinx.coroutines.runBlocking
@@ -82,11 +83,17 @@ class AppLockTest {
         h.go(compose, PersonalData)
     }
 
+    private fun privacy() {
+        h.go(compose, SettingsPrivacy)
+    }
+
     @Test
-    fun `AC-015-1 Bloquear o Tutora is off at first, asks the phone's unlock once to turn on, and Ajustes then says so`() {
+    fun `AC-015-1 Privacidade on Ajustes holds Bloquear o Tutora, off at first, asking the phone's unlock once to turn on`() {
         h.show(compose)
-        personal()
-        compose.onNodeWithText("Privacidade").performScrollTo().assertExists()
+        h.go(compose, SettingsGraph)
+        compose.onNodeWithTag("page-privacy").performScrollTo().assertExists()
+        compose.onNodeWithText("Desligado").assertExists()
+        privacy()
         assertFalse(settings().appLock)
         h.unlock.answer = false
         compose.onNodeWithContentDescription("Bloquear o Tutora").performScrollTo().performClick()
@@ -101,14 +108,14 @@ class AppLockTest {
         assertEquals(Gate.OPEN, h.lock.gate.value)
         compose.runOnIdle { h.nav.popBackStack() }
         h.go(compose, SettingsGraph)
-        compose.onNodeWithText("Bloqueio ligado", substring = true).assertExists()
+        compose.onNodeWithText("Bloqueio ligado · 5 minutos").assertExists()
     }
 
     @Test
     fun `AC-015-2 with no screen lock on the phone the switch can't be turned on and offers the phone's settings`() {
         h.unlock.available = false
         h.show(compose)
-        personal()
+        privacy()
         compose.onNodeWithText("Defina um bloqueio de tela no celular para usar").performScrollTo().assertExists()
         compose.onNodeWithContentDescription("Bloquear o Tutora").assertDoesNotExist()
         compose.onNodeWithText("Abrir configurações").performScrollTo().performClick()
@@ -119,7 +126,7 @@ class AppLockTest {
     @Test
     fun `AC-015-3 turning the lock off asks the phone's unlock first, then it never locks`() {
         lockedStart(answer = true)
-        personal()
+        privacy()
         val asks = h.unlock.asks
         h.unlock.answer = false
         compose.onNodeWithContentDescription("Bloquear o Tutora").performScrollTo().performClick()
@@ -136,7 +143,7 @@ class AppLockTest {
     @Test
     fun `AC-015-4 Bloquear apos shows under the switch once on, 5 minutos at first`() {
         lockedStart(answer = true)
-        personal()
+        privacy()
         compose.onNodeWithText("Bloquear após").performScrollTo().assertExists()
         listOf("Imediatamente", "1 minuto", "5 minutos").forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
         assertEquals(LockAfter.FIVE_MINUTES, settings().lockAfter)
@@ -321,8 +328,9 @@ class AppLockTest {
         h.unlock.answer = true
         compose.onNodeWithText("Unlock").performClick()
         h.settle(compose)
-        personal()
-        listOf("Privacy", "Lock after", "Immediately", "5 minutes").forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
+        privacy()
+        listOf("Lock after", "Immediately", "5 minutes").forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
+        compose.onNodeWithText("Privacy").assertExists()
         compose.onNodeWithContentDescription("Lock Tutora").assertExists()
     }
 }

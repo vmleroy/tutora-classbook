@@ -539,6 +539,7 @@
     <string name="lock_promptTitle">Unlock Tutora</string>
     <string name="lock_body">Unlock to continue</string>
     <string name="lock_unlock">Unlock</string>
+    <string name="lock_offLine">Off</string>
     <string name="lock_onLine">Lock on</string>
     <string name="lock_section">Privacy</string>
     <string name="lock_title">Lock Tutora</string>
