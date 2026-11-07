@@ -30,6 +30,9 @@ class AppContainer(
 
     fun newId(): String = uuidv7(System.currentTimeMillis(), ByteArray(10).also(random::nextBytes))
 
+    /** The app lock (spec 015): one per process, so a new process starts locked. */
+    val lock = app.tutora.lock.AppLock()
+
     /** The live notification, shared by the screens and the notification's own buttons. */
     val notifier = AndroidLiveNotifier(context)
 

@@ -535,4 +535,29 @@
     <string name="rep_personal">Your details</string>
     <string name="rep_personalHint">Name and Pix key for reports</string>
     <string name="rep_personalBody">Shown on report PDFs and copied text. Leave blank to leave them out.</string>
+    <!-- Spec 015: app lock -->
+    <string name="lock_promptTitle">Unlock Tutora</string>
+    <string name="lock_body">Unlock to continue</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_offLine">Off</string>
+    <string name="lock_onLine">Lock on</string>
+    <string name="lock_section">Privacy</string>
+    <string name="lock_title">Lock Tutora</string>
+    <string name="lock_hint">Asks for the phone\'s unlock when Tutora opens</string>
+    <string name="lock_noScreenLock">Set a screen lock on the phone to use it</string>
+    <string name="lock_openSettings">Open settings</string>
+    <string name="lock_after">Lock after</string>
+    <string name="lock_afterNow">Immediately</string>
+    <string name="lock_after1">1 minute</string>
+    <string name="lock_after5">5 minutes</string>
+    <string name="lock_offerTitle">Protect Tutora?</string>
+    <string name="lock_offerBody">Your Pix key stays in the app. Want to protect Tutora with the phone\'s lock?</string>
+    <string name="lock_offerYes">Turn on</string>
+    <string name="lock_offerNo">Not now</string>
+    <string name="lock_setup">Lock Tutora</string>
+    <string name="lock_setupHint">Asks for the phone\'s unlock when Tutora opens</string>
+    <string name="lock_saveWhere">Save the backup in %1$s?</string>
+    <string name="lock_saveWhereBody">The backup has all your data.</string>
+    <string name="lock_save">Save</string>
+    <string name="lock_startClass">Start class</string>
 </resources>

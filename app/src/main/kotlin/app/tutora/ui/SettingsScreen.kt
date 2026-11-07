@@ -61,8 +61,8 @@ private fun stringIn(
 }
 
 /**
- * Ajustes: only its pages, each with a line of what is set (AC-014-28). Seus dados and Backup e
- * planilha first; Geral, Aulas, Lembretes and Pagamentos; then Sobre.
+ * Ajustes: only its pages, each with a line of what is set (AC-014-28). Seus dados, Backup e
+ * planilha and Privacidade first; Geral, Aulas, Lembretes and Pagamentos; then Sobre.
  */
 @Composable
 fun SettingsScreen(
@@ -78,12 +78,16 @@ fun SettingsScreen(
             listOf(
                 // Seus dados: name and Pix key for reports (AC-010-16).
                 {
+                    // The Pix key never in full here (AC-015-16).
                     ListRow(
                         stringResource(R.string.rep_personal),
                         subtitle =
-                            listOf(s.teacherName, s.pixKey).filter { it.isNotBlank() }.joinToString(" · ").ifEmpty {
-                                stringResource(R.string.rep_personalHint)
-                            },
+                            listOf(s.teacherName, app.tutora.domain.maskPix(s.pixKey))
+                                .filter { it.isNotBlank() }
+                                .joinToString(" · ")
+                                .ifEmpty {
+                                    stringResource(R.string.rep_personalHint)
+                                },
                         icon = IconName.USERS,
                         onClick = { onOpen(PersonalData) },
                     )
@@ -92,6 +96,19 @@ fun SettingsScreen(
                 {
                     app.tutora.ui.backup
                         .BackupSettingsRow { onOpen(BackupHome) }
+                },
+                // Privacidade, with the lock's state (AC-015-1; on Ajustes itself, Victor, 7 Nov 2026).
+                {
+                    PageRow(
+                        stringResource(R.string.lock_section),
+                        if (s.appLock) {
+                            stringResource(R.string.lock_onLine) + " · " + stringResource(lockAfterLabel(s.lockAfter)).lowercase()
+                        } else {
+                            stringResource(R.string.lock_offLine)
+                        },
+                        IconName.LOCK,
+                        "page-privacy",
+                    ) { onOpen(SettingsPrivacy) }
                 },
             ),
         )
@@ -495,7 +512,21 @@ fun PersonalDataScreen(onBack: () -> Unit) {
                 services.saveSettings(s.copy(teacherName = v))
             }
         })
-        TextField(stringResource(R.string.rep_settingsPix), s.pixKey, { v -> scope.launch { services.saveSettings(s.copy(pixKey = v)) } })
+        // Masked, with the eye to show it (AC-015-16); offered the lock once when first saved (AC-015-5).
+        val lock = app.tutora.lock.LocalAppLock.current
+        var offer by rememberSaveable { mutableStateOf(false) }
+        TextField(
+            stringResource(R.string.rep_settingsPix),
+            s.pixKey,
+            { v -> scope.launch { services.saveSettings(s.copy(pixKey = v)) } },
+            Modifier.testTag("pix-key"),
+            // E-mail and random keys keep their letters as typed.
+            capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.None,
+            secret = { app.tutora.domain.maskPix(it) },
+            onFocusLost = {
+                if (s.pixKey.isNotBlank() && !s.appLock && !s.lockOffered && lock.device.available()) offer = true
+            },
+        )
         // The reports' top line; empty keeps Tutora's (AC-019-15).
         TextField(
             stringResource(R.string.rep_settingsTitle),
@@ -504,5 +535,100 @@ fun PersonalDataScreen(onBack: () -> Unit) {
             Modifier.testTag("report-title"),
             placeholder = stringResource(R.string.rep_brand),
         )
+        if (offer) {
+            fun answer(on: Boolean) {
+                offer = false
+                if (on) {
+                    lock.ask { ok -> scope.launch { services.saveSettings(s.copy(appLock = ok, lockOffered = true)) } }
+                } else {
+                    scope.launch { services.saveSettings(s.copy(lockOffered = true)) }
+                }
+            }
+            BottomSheet(
+                stringResource(R.string.lock_offerTitle),
+                { answer(false) },
+                Modifier.testTag("lock-offer"),
+                subtitle = stringResource(R.string.lock_offerBody),
+                actions =
+                    listOf(
+                        { m -> Button(stringResource(R.string.lock_offerYes), { answer(true) }, m) },
+                        { m -> Button(stringResource(R.string.lock_offerNo), { answer(false) }, m, variant = ButtonVariant.GHOST) },
+                    ),
+            )
+        }
+    }
+}
+
+private fun lockAfterLabel(after: app.tutora.domain.LockAfter) =
+    when (after) {
+        app.tutora.domain.LockAfter.IMMEDIATELY -> R.string.lock_afterNow
+        app.tutora.domain.LockAfter.ONE_MINUTE -> R.string.lock_after1
+        app.tutora.domain.LockAfter.FIVE_MINUTES -> R.string.lock_after5
+    }
+
+/** Ajustes › Privacidade, its own page on Ajustes (AC-015-1). */
+@Composable
+fun SettingsPrivacyScreen(nav: NavHostController) {
+    val services = LocalServices.current
+    val settings by services.settings.collectAsState(initial = null)
+    val s = settings ?: return
+    ScreenScaffold(stringResource(R.string.lock_section), "settings-privacy", variant = HeaderVariant.PUSH, onBack = {
+        nav.popBackStack()
+    }) {
+        LockSettings(s)
+    }
+}
+
+/**
+ * Privacidade: Bloquear o Tutora, asking the phone's unlock to turn it on and off (AC-015-1, 3),
+ * Bloquear após (AC-015-4), and what to do on a phone with no screen lock (AC-015-2).
+ */
+@Composable
+private fun LockSettings(s: Settings) {
+    val services = LocalServices.current
+    val lock = app.tutora.lock.LocalAppLock.current
+    val scope = rememberCoroutineScope()
+    val c = TutoraTheme.colors
+    val available = lock.device.available()
+    ListGroup(
+        listOf(
+            {
+                ListRow(
+                    stringResource(R.string.lock_title),
+                    Modifier.testTag("lock-switch"),
+                    subtitle = stringResource(if (available) R.string.lock_hint else R.string.lock_noScreenLock),
+                    icon = IconName.LOCK,
+                    trailing = if (available) RowTrailing.SWITCH else RowTrailing.NONE,
+                    switchValue = s.appLock && available,
+                    onSwitchChange = { on ->
+                        lock.ask { ok -> if (ok) scope.launch { services.saveSettings(s.copy(appLock = on)) } }
+                    },
+                )
+            },
+        ),
+    )
+    if (!available) {
+        Button(
+            stringResource(R.string.lock_openSettings),
+            { lock.device.openSecuritySettings() },
+            Modifier.testTag("lock-open-settings"),
+            variant = ButtonVariant.OUTLINE,
+        )
+    }
+    if (s.appLock && available) {
+        Text(stringResource(R.string.lock_after), style = TutoraTheme.type.bodyStrong, color = c.ink)
+        androidx.compose.foundation.layout.FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
+            verticalArrangement = Arrangement.spacedBy(Spacing.s2),
+        ) {
+            app.tutora.domain.LockAfter.entries.forEach { after ->
+                app.tutora.designsystem.components
+                    .Chip(
+                        stringResource(lockAfterLabel(after)),
+                        s.lockAfter == after,
+                        { scope.launch { services.saveSettings(s.copy(lockAfter = after)) } },
+                    )
+            }
+        }
     }
 }

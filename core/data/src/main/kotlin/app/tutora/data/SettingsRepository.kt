@@ -3,6 +3,7 @@ package app.tutora.data
 import app.tutora.domain.AutoStart
 import app.tutora.domain.ConfirmWhen
 import app.tutora.domain.Language
+import app.tutora.domain.LockAfter
 import app.tutora.domain.PastClasses
 import app.tutora.domain.SavedTheme
 import app.tutora.domain.Settings
@@ -80,6 +81,9 @@ class SettingsRepository(
                 "confirm_hour" to s.confirmHour.toString(),
                 "confirm_minute" to s.confirmMinute.toString(),
                 "teaching" to org.json.JSONArray(s.teaching.map { it.key }.sorted()).toString(),
+                "app_lock" to s.appLock.toString(),
+                "lock_after" to s.lockAfter.minutes.toString(),
+                "lock_offered" to s.lockOffered.toString(),
             ).map { (k, v) -> SettingRow(k, v, now) }
 
         /** Themes of the teacher's own (spec 013), as a JSON list. */
@@ -150,6 +154,9 @@ class SettingsRepository(
                 confirmHour = v["confirm_hour"]?.toIntOrNull() ?: 20,
                 confirmMinute = v["confirm_minute"]?.toIntOrNull()?.coerceIn(0, 59) ?: 0,
                 teaching = v["teaching"]?.let(::skipped)?.mapNotNull(Teaching::fromKey)?.toSet() ?: Teaching.entries.toSet(),
+                appLock = v["app_lock"] == "true",
+                lockAfter = LockAfter.of(v["lock_after"]?.toIntOrNull()),
+                lockOffered = v["lock_offered"] == "true",
             )
         }
     }

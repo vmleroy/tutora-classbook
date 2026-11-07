@@ -150,9 +150,11 @@ fun SetupScreen(nav: NavHostController) {
     var travel by rememberSaveable { mutableStateOf(TravelMode.VARIES) }
     var travelCents by rememberSaveable { mutableLongStateOf(SETUP_TRAVEL_CENTS) }
     var remind by rememberSaveable { mutableStateOf(true) }
+    var appLock by rememberSaveable { mutableStateOf(false) }
+    val lock = app.tutora.lock.LocalAppLock.current
     val chosen = teaching.mapNotNull(Teaching::fromKey).toSet()
 
-    fun choices() = SetupChoices(language, chosen, online, home, travel, travelCents, remind)
+    fun choices() = SetupChoices(language, chosen, online, home, travel, travelCents, remind, appLock)
 
     fun finish(then: Any?) =
         scope.launch {
@@ -302,6 +304,19 @@ fun SetupScreen(nav: NavHostController) {
                                 trailing = RowTrailing.SWITCH,
                                 switchValue = remind,
                                 onSwitchChange = { remind = it },
+                            )
+                        },
+                        // The app lock, asking the phone's unlock to turn it on (AC-015-5, AC-015-1, 2).
+                        {
+                            val available = lock.device.available()
+                            ListRow(
+                                stringResource(R.string.lock_setup),
+                                Modifier.testTag("setup-lock"),
+                                subtitle = stringResource(if (available) R.string.lock_setupHint else R.string.lock_noScreenLock),
+                                icon = IconName.LOCK,
+                                trailing = if (available) RowTrailing.SWITCH else RowTrailing.NONE,
+                                switchValue = appLock,
+                                onSwitchChange = { on -> if (on) lock.ask { ok -> appLock = ok } else appLock = false },
                             )
                         },
                     ),

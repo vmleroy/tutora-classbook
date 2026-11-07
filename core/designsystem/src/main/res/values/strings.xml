@@ -23,4 +23,6 @@
     <string name="ds_number_min">At least %1$s</string>
     <string name="ds_toConfirm">To confirm</string>
     <string name="ds_live">Live</string>
+    <string name="ds_show">Show</string>
+    <string name="ds_hide">Hide</string>
 </resources>

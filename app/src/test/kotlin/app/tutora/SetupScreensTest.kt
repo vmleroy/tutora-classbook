@@ -157,4 +157,17 @@ class SetupScreensTest {
         h.settle(compose)
         compose.onNodeWithTag("today-screen").assertExists()
     }
+
+    @Test
+    fun `AC-015-5 step 4 offers Bloquear o Tutora, asking the phone's unlock to turn it on`() {
+        firstRun()
+        compose.onNodeWithTag("setup-skip").performClick()
+        h.settle(compose)
+        compose.onNodeWithContentDescription("Bloquear o Tutora").performScrollTo().performClick()
+        h.settle(compose)
+        assertEquals(1, h.unlock.asks)
+        tap("Ir para Hoje")
+        h.awaitDb(compose) { h.services.currentSettings().setupDone }
+        assertTrue(settings().appLock)
+    }
 }

@@ -59,6 +59,12 @@ data class Settings(
     val confirmMinute: Int = 0,
     /** Como você dá aula (AC-014-19); all three for teachers from before spec 014. */
     val teaching: Set<Teaching> = Teaching.entries.toSet(),
+    /** Bloquear o Tutora (AC-015-1), off at first. */
+    val appLock: Boolean = false,
+    /** Bloquear após (AC-015-4). */
+    val lockAfter: LockAfter = LockAfter.DEFAULT,
+    /** The offer made once when the Pix key is first saved (AC-015-5). */
+    val lockOffered: Boolean = false,
 )
 
 data class SavedTheme(

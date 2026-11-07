@@ -261,6 +261,7 @@ fun GallerySections() {
     Section("TextField") {
         TextField("Nome", name, { name = it }, placeholder = "Ex.: Ana Souza", helper = "Como aparece nos relatórios")
         TextField("Telefone", "(11) 9", {}, error = "Número incompleto")
+        TextField("Chave Pix", "11987659876", {}, secret = { "•••• " + it.takeLast(4) })
         MoneyField("Valor da aula", cents, { cents = it ?: 0 })
         MoneyField("Preço por aula", null, {}, placeholder = "Sem preço")
         DurationField("Duração", 90, {})

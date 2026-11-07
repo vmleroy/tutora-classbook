@@ -25,6 +25,7 @@ fun TutoraApp(
     openRequest: Any? = null,
     onOpenRequestHandled: () -> Unit = {},
     onLiveRequestHandled: () -> Unit = {},
+    lock: app.tutora.lock.AppLock? = null,
 ) {
     // Test tags double as resource ids so Maestro flows can find them.
     val root = Modifier.semantics { testTagsAsResourceId = true }
@@ -56,16 +57,24 @@ fun TutoraApp(
                         app.tutora.adapters.export
                             .AndroidExports(context)
                     }
-                CompositionLocalProvider(LocalServices provides s, app.tutora.adapters.export.LocalExports provides exports) {
-                    TutoraNav(
-                        appInfo,
-                        s.schemaVersion,
-                        root,
-                        liveRequest = liveRequest,
-                        onLiveRequestHandled = onLiveRequestHandled,
-                        openRequest = openRequest,
-                        onOpenRequestHandled = onOpenRequestHandled,
-                    )
+                CompositionLocalProvider(
+                    LocalServices provides s,
+                    app.tutora.adapters.export.LocalExports provides exports,
+                    app.tutora.lock.LocalAppLock provides (lock ?: app.tutora.lock.LocalAppLock.current),
+                ) {
+                    // The app lock stands in front of everything; requests from notifications are
+                    // still handled behind it, so Tutora opens on them once unlocked (AC-015-10).
+                    app.tutora.lock.LockGate {
+                        TutoraNav(
+                            appInfo,
+                            s.schemaVersion,
+                            root,
+                            liveRequest = liveRequest,
+                            onLiveRequestHandled = onLiveRequestHandled,
+                            openRequest = openRequest,
+                            onOpenRequestHandled = onOpenRequestHandled,
+                        )
+                    }
                 }
             }
         }

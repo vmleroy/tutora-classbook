@@ -108,6 +108,8 @@ fun NavHostController.openTab(graph: Any) {
 
 @Serializable data object SettingsPayments
 
+@Serializable data object SettingsPrivacy
+
 @Serializable data object SettingsAbout
 
 /** Ajustes › Seus dados (spec 010). */
@@ -347,6 +349,7 @@ fun TutoraNav(
                             composable<SettingsGeneral> { SettingsGeneralScreen(nav) }
                             composable<SettingsLessons> { SettingsLessonsScreen(nav) }
                             composable<SettingsPayments> { SettingsPaymentsScreen(nav) }
+                            composable<SettingsPrivacy> { SettingsPrivacyScreen(nav) }
                             composable<SettingsAbout> { SettingsAboutScreen(nav, appInfo, schemaVersion) }
                             composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
                         }
