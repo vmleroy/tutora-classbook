@@ -27,6 +27,7 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 ### Choosing what to send
 
 - **AC-020-1.** Relatório (AC-010-1, 2, 3) keeps its subject, period, on-screen totals and "Exportar este relatório" (PDF, Excel, copy as text), unchanged. Under them, "Enviar" offers two kinds side by side: "Fatura" ("Para receber: valor e Pix") and "Relatório detalhado" ("Cada aula com dia, horário e deslocamento").
+- **AC-020-29.** Relatório is only for the student, group or place it was opened from: the Aluno, Turma and Local switch and the list of names are gone, and its period, totals, export and Enviar are for that one alone. This replaces AC-010-2 (Victor, 13 Nov 2026: the list doesn't scale to many students).
 - **AC-020-2.** Fatura is shared as PDF or copied as text; Relatório detalhado as PDF or Excel. File names say which ("Ana Souza - fatura - outubro 2026.pdf", "Ana Souza - relatório detalhado - outubro 2026.pdf").
 
 ### What every class row shows

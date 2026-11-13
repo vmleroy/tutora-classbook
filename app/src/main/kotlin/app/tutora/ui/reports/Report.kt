@@ -41,7 +41,6 @@ import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
-import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -222,8 +221,9 @@ fun ReportScreen(
     val language = currentLanguage()
     val zone = services.zone
     val today = remember { localOf(services.now(), zone).date }
-    var kind by rememberSaveable { mutableStateOf(SubjectKind.valueOf(startKind)) }
-    var id by rememberSaveable { mutableStateOf(startId) }
+    // Only the student, group or place it was opened from (AC-020-29).
+    val kind = SubjectKind.valueOf(startKind)
+    val id = startId
     var range by rememberSaveable { mutableStateOf("month") }
     var customFrom by rememberSaveable { mutableStateOf(today.toString()) }
     var customTo by rememberSaveable { mutableStateOf(today.toString()) }
@@ -278,25 +278,6 @@ fun ReportScreen(
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
     ) {
-        SegmentedControl(
-            listOf(
-                SubjectKind.STUDENT to stringResource(R.string.rep_student),
-                SubjectKind.GROUP to stringResource(R.string.rep_group),
-                SubjectKind.PLACE to stringResource(R.string.rep_place),
-            ),
-            kind,
-            { k ->
-                if (k != kind) {
-                    kind = k
-                    id = ""
-                }
-            },
-            stringResource(R.string.rep_screen),
-        )
-        // Which one: switching keeps the period (AC-010-2).
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            options.forEach { (oid, name, _) -> Chip(name, oid == id, { id = oid }) }
-        }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             listOf(
                 "month" to R.string.rep_thisMonth,

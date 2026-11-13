@@ -31,6 +31,8 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 
 - [x] 18. Seus dados in three sections with a line each: Você, Pix, Relatórios. Test: `SettingsPagesTest.kt`. (AC-020-28)
 
+- [x] 19. Relatório only for the one it was opened from: no subject switch or name list. Test: `ReportScreensTest.kt`. (AC-020-29)
+
 ### Finish
 
 - [x] 17. Product doc: Reports feature and the "Send a monthly report" flow mention Fatura, Relatório detalhado and Faturas do mês; data model lists `student.guardian`. `./gradlew check` green once. Spec status in progress → done at `/verify`.

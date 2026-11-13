@@ -3,6 +3,7 @@ package app.tutora
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -110,12 +111,14 @@ class ReportScreensTest {
     }
 
     @Test
-    fun `AC-010-2 switching between Aluno, Turma and Local keeps the period`() {
+    fun `AC-020-29 Relatorio is only for the one it was opened from, with no switch or list of names`() {
         openReport()
         click("Mês passado", scroll = false)
-        click("Local", scroll = false)
         exists("01/09/2026")
-        exists("Online / Remoto")
+        exists("Ana Souza")
+        listOf("Aluno", "Turma", "Local").forEach {
+            compose.onAllNodes(matching(it), useUnmergedTree = true).assertCountEquals(0)
+        }
     }
 
     @Test
