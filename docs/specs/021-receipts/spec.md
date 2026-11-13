@@ -1,8 +1,8 @@
 # Spec 021: Comprovantes
 
-Status: draft
+Status: ready
 Depends on: 008 Payments and packages (payments, the payment detail), 010 Reports and 020 Fatura and detailed report (what is sent), 011 Backup and restore (the full backup), 015 App lock (what is private)
-Mockups: none yet; the plan adds them for the payment sheet, the payment detail and the receipt viewer.
+Mockups: PaymentSheet, PaymentDetail and Receipt (made in the plan's first task).
 
 ## Goal
 
@@ -19,20 +19,20 @@ When a student, a parent or a place pays by Pix or transfer, the teacher gets a 
 
 ### Adding a comprovante
 
-- **AC-021-1.** Registrar pagamento and Editar pagamento have "Comprovante": Tirar foto, Escolher da galeria, or Escolher arquivo (an image or a PDF). One payment holds up to 3 comprovantes.
+- **AC-021-1.** Registrar pagamento and Editar pagamento have "Comprovante": Tirar foto, Escolher da galeria, or Escolher arquivo (an image or a PDF). One payment holds as many comprovantes as the teacher wants (Victor, 13 Nov 2026).
 - **AC-021-2.** Tutora keeps its own copy of each one in its private storage, so deleting the original from the gallery, Downloads or WhatsApp doesn't lose it. A photo larger than 2000 px on its longer side is reduced to that before it is kept; a PDF is kept as it is, up to 10 MB.
-- **AC-021-3.** Sharing an image or a PDF to Tutora from another app (Compartilhar › Tutora) opens "Anexar comprovante": the payments of the last 60 days without a comprovante, newest first, each with payer, date, method and amount, and "Registrar novo pagamento", which opens Registrar pagamento with it attached. With the app lock on, Tutora asks to unlock first (015).
+- **AC-021-3.** Sharing an image or a PDF to Tutora from another app (Compartilhar › Tutora) opens "Anexar comprovante": the payments of the last 60 days, newest first, each with payer, date, method and amount (those that already have a comprovante with its mark, since a payment can hold more than one), and "Registrar novo pagamento", which opens Registrar pagamento with it attached. With the app lock on, Tutora asks to unlock first (015).
 
 ### Seeing it
 
-- **AC-021-4.** A payment with a comprovante shows a small mark wherever the payment is listed (the payer's Pagamentos, Hoje's recent payments) and its thumbnail on the payment detail.
+- **AC-021-4.** A payment with a comprovante shows a small mark wherever the payment is listed (today the payer's Pagamentos; Hoje lists no payments) and its thumbnail on the payment detail.
 - **AC-021-5.** Tapping the thumbnail opens the comprovante full screen: an image with pinch to zoom, a PDF page by page. From there: Compartilhar, Substituir and Remover (which asks first, constitution rule 3).
-- **AC-021-6.** Removing a payment removes its comprovantes with it, after the same confirmation; Desfazer brings both back.
+- **AC-021-6.** Removing a payment removes its comprovantes with it, after the same confirmation; Desfazer brings both back (new for payments: Excluir pagamento gains Desfazer).
 
 ### Sending them
 
-- **AC-021-7.** The Fatura and Relatório detalhado sheets (AC-020-1) have "Incluir comprovantes", off at first and shown only when a payment in the period has one. On, the PDF ends with a "Comprovantes" section: one per page, each headed by its payment ("16/10/2026 · Pix · R$ 540,00"), an image fitted to the page, a PDF's pages after it.
-- **AC-021-8.** The Excel files (AC-010-10, AC-020-19) get a "Comprovante" column in Pagamentos: Sim or Não. The files themselves never go into the spreadsheet.
+- **AC-021-7.** The Fatura and Relatório detalhado sheets (AC-020-1) both have (Victor, 13 Nov 2026) "Incluir comprovantes", off at first and shown only when a payment in the period has one. On, the PDF ends with a "Comprovantes" section: one per page, each headed by its payment ("16/10/2026 · Pix · R$ 540,00"), an image fitted to the page, a PDF's pages after it.
+- **AC-021-8.** The Excel files (AC-010-10, AC-020-19, and Backup e planilha's spreadsheet, AC-011-19) get a "Comprovante" column in Pagamentos: Sim or Não. The files themselves never go into the spreadsheet.
 - **AC-021-9.** Copiar como texto never carries a comprovante.
 
 ### Keeping them safe
@@ -59,7 +59,10 @@ Answered by Victor, 13 Nov 2026:
 - The full backup **becomes a .zip** with the .json and the comprovantes; older .json backups still restore (AC-021-10).
 - **Compartilhar › Tutora** from the bank app is in scope (AC-021-3).
 
-Still open, for Victor (each with the assumption written above):
+- **How many:** as many as the teacher wants per payment, images and PDFs (AC-021-1).
+- **On the Fatura:** both the Fatura and the Relatório detalhado can carry them (AC-021-7).
 
-1. **How many.** Up to 3 per payment (AC-021-1), and PDFs as well as images?
-2. **On the Fatura.** May a Fatura carry comprovantes (it is mostly about what is still to pay), or only the Relatório detalhado?
+Settled in the plan (technical):
+
+- Hoje has no list of recent payments, so the mark shows on the payer's Pagamentos (AC-021-4); 022's detail pages reuse that row.
+- With no limit per payment, Anexar comprovante lists every payment of the last 60 days, not only those without one (AC-021-3).
