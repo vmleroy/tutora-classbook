@@ -1,6 +1,6 @@
 # Spec 021: Comprovantes
 
-Status: in progress
+Status: done
 Depends on: 008 Payments and packages (payments, the payment detail), 010 Reports and 020 Fatura and detailed report (what is sent), 011 Backup and restore (the full backup), 015 App lock (what is private)
 Mockups: PaymentSheet, PaymentDetail and Receipt (made in the plan's first task).
 
