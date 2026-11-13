@@ -25,7 +25,7 @@ Tutora is an offline-first mobile app that lets a teacher see, in one place, wha
 
 - Accounts, login, cloud sync or a backend.
 - Publishing to the Play Store or App Store (installed by APK only).
-- Student-facing features, invoicing, tax reports.
+- Student-facing features (an app or page for students) and tax reports. Invoices made on the phone and shared are in (spec 020).
 - Multiple devices sharing the same data.
 
 ## Features
