@@ -174,4 +174,98 @@ class InvoiceDocsTest {
         assertEquals(en.keys, pt.keys)
         assertEquals("Amount due" to "Valor a pagar", en["inv_toPay"] to pt["inv_toPay"])
     }
+
+    // Spec 021: comprovantes in the documents.
+
+    private fun receipt(
+        id: String,
+        kind: app.tutora.domain.ReceiptKind,
+    ) = app.tutora.domain.Receipt(
+        id,
+        "p1",
+        kind,
+        if (kind ==
+            app.tutora.domain.ReceiptKind.PDF
+        ) {
+            "application/pdf"
+        } else {
+            "image/jpeg"
+        },
+        "$id.x",
+        100,
+        0,
+    )
+
+    private val withProof =
+        subjectReport(
+            LocalDate(2026, 10, 1),
+            LocalDate(2026, 10, 31),
+            listOf(cls(5), cls(19, left = 12_000)),
+            listOf(
+                app.tutora.domain.ReportPayment(
+                    LocalDate(2026, 10, 16),
+                    app.tutora.domain.PayMethod.PIX,
+                    54_000,
+                    emptyList(),
+                    "p1",
+                    listOf(receipt("a", app.tutora.domain.ReceiptKind.IMAGE), receipt("b", app.tutora.domain.ReceiptKind.PDF)),
+                ),
+                app.tutora.domain.ReportPayment(LocalDate(2026, 10, 2), app.tutora.domain.PayMethod.CASH, 12_000, emptyList(), "p2"),
+            ),
+        )
+
+    @Test
+    fun `AC-021-7 the documents end with each comprovante headed by its payment, a PDF one with its pages`() {
+        assertTrue(
+            app.tutora.ui.reports
+                .hasReceipts(withProof),
+        )
+        assertFalse(
+            app.tutora.ui.reports
+                .hasReceipts(owing),
+        )
+        val receipts =
+            app.tutora.ui.reports
+                .receiptsOf(withProof, w, { "/files/${it.file}" }, { if (it.id == "b") 2 else 1 })
+        assertEquals(
+            listOf("16/10/2026 · Pix · R$ 540,00", "16/10/2026 · Pix · R$ 540,00"),
+            receipts.map { it.heading.replace('\u00A0', ' ') },
+        )
+        assertEquals(listOf(false to 1, true to 2), receipts.map { it.pdf to it.pages })
+        assertEquals("/files/a.x", receipts.first().path)
+    }
+
+    @Test
+    fun `AC-021-8 the Excel's Pagamentos has a Comprovante column with Sim or Nao, never the file`() {
+        val pagamentos = detailSheets(withProof, w, iw, false)[1]
+        assertEquals(listOf("Data", "Forma", "Valor", "Comprovante"), pagamentos.header)
+        assertEquals(
+            listOf(Cell.Text("Sim"), Cell.Text("Não")),
+            pagamentos.rows.map { it.last() },
+        )
+    }
+
+    @Test
+    fun `AC-021-9 the copied text never carries a comprovante`() {
+        val plain = withProof.copy(payments = withProof.payments.map { it.copy(receipts = emptyList()) })
+        assertEquals(
+            invoiceText(invoiceOf(plain, false), w, iw, teacher, city, "outubro 2026", null),
+            invoiceText(invoiceOf(withProof, false), w, iw, teacher, city, "outubro 2026", null),
+        )
+    }
+
+    @Test
+    fun `AC-021-13 every word about comprovantes is in English and Portuguese`() {
+        fun names(path: String) =
+            Regex("<(?:string|plurals) name=\"((?:rc|pay)_[A-Za-z]+)\"")
+                .findAll(File(path).readText())
+                .map { it.groupValues[1] }
+                .toSet()
+        val en = names("src/main/res/values/strings_receipts.xml")
+        val pt = names("src/main/res/values-pt-rBR/strings_receipts.xml")
+        assertTrue(en.size >= 45)
+        assertEquals(en, pt)
+        assertTrue(File("src/main/res/values/strings_receipts.xml").readText().contains(">Attach receipt<"))
+        assertTrue(File("src/main/res/values-pt-rBR/strings_receipts.xml").readText().contains(">Anexar comprovante<"))
+    }
 }

@@ -30,6 +30,9 @@ data class BackupFile(
 
 const val BACKUP_APP = "tutora"
 
+/** A full backup is a zip with the JSON and the comprovantes since spec 021 (AC-021-10). */
+const val BACKUP_EXTENSION = "zip"
+
 sealed interface BackupRead {
     data class Ok(
         val file: BackupFile,
@@ -103,6 +106,8 @@ val backupUpgrades: Map<Int, (Map<String, List<BackupRow>>) -> Map<String, List<
         7 to { t -> t },
         // 020: a split group's shares of each class, starting empty.
         8 to { t -> t + ("lesson_share" to t["lesson_share"].orEmpty()) },
+        // 021: comprovantes, none in an older backup.
+        9 to { t -> t + ("payment_receipt" to t["payment_receipt"].orEmpty()) },
     )
 
 fun upgradeBackup(
@@ -253,11 +258,12 @@ fun backupFileName(
     at: Instant,
     zone: String,
     base: String,
+    extension: String = BACKUP_EXTENSION,
 ): String {
     val t = at.toLocalDateTime(kotlinx.datetime.TimeZone.of(zone))
     val hh = t.hour.toString().padStart(2, '0')
     val mm = t.minute.toString().padStart(2, '0')
-    return "$base ${t.date} $hh-$mm.json"
+    return "$base ${t.date} $hh-$mm.$extension"
 }
 
 /** The local date of [at], for spreadsheet ranges and the file name. */

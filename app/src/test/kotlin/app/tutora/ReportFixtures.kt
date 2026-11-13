@@ -58,6 +58,9 @@ fun testWords() =
         sheetSources = "Por aluno e local",
         method = "Forma",
         amount = "Valor",
+        receiptColumn = "Comprovante",
+        yes = "Sim",
+        no = "Não",
     )
 
 /** Keeps what was shared and copied; a PDF is its plan's text, so tests can read it. */

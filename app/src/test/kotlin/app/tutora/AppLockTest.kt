@@ -219,14 +219,14 @@ class AppLockTest {
         runBlocking { h.services.backups.setFolder("content://tree/downloads", "Download") }
         lockedStart(answer = true)
         h.go(compose, BackupHome)
-        compose.onNodeWithText("Backup completo (.json)").performScrollTo().performClick()
+        compose.onNodeWithText("Backup completo (.zip)").performScrollTo().performClick()
         h.settle(compose)
         compose.onNodeWithText("Salvar o backup em Download?").assertExists()
         h.unlock.answer = false
         away(10 * minute)
         compose.onNodeWithTag("lock-screen").assertExists()
         compose.onNodeWithText("Salvar o backup em Download?").assertDoesNotExist()
-        compose.onNodeWithText("Backup completo (.json)").assertDoesNotExist()
+        compose.onNodeWithText("Backup completo (.zip)").assertDoesNotExist()
         compose.onNodeWithText("Desbloquear").performClick()
         h.settle(compose)
         compose.onNodeWithTag("lock-screen").assertExists()
@@ -248,13 +248,13 @@ class AppLockTest {
         compose.onNodeWithText("Desbloquear").performClick()
         h.settle(compose)
         compose.onNodeWithTag("lock-screen").assertDoesNotExist()
-        compose.onNodeWithText("Backup completo (.json)").performScrollTo().assertExists()
+        compose.onNodeWithText("Backup completo (.zip)").performScrollTo().assertExists()
         compose.runOnIdle { h.nav.popBackStack() }
         h.settle(compose)
         compose.onNodeWithText("Victor").assertExists()
         // An open sheet comes back too.
         h.go(compose, BackupHome)
-        compose.onNodeWithText("Backup completo (.json)").performScrollTo().performClick()
+        compose.onNodeWithText("Backup completo (.zip)").performScrollTo().performClick()
         h.settle(compose)
         h.unlock.answer = false
         away(10 * minute)
@@ -332,5 +332,34 @@ class AppLockTest {
         listOf("Lock after", "Immediately", "5 minutes").forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
         compose.onNodeWithText("Privacy").assertExists()
         compose.onNodeWithContentDescription("Lock Tutora").assertExists()
+    }
+
+    @Test
+    fun `AC-021-3 AC-021-11 a file shared while locked waits behind the lock, and so does the comprovante viewer`() {
+        val photo = java.io.File(tmp.newFolder(), "pix.jpg").apply { writeBytes(ByteArray(200) { 3 }) }
+        val staged = (h.services.receipts.stage(photo.path) as app.tutora.usecases.StageResult.Ok).staged
+        lockedStart(answer = false)
+        compose.runOnIdle {
+            h.nav.navigate(
+                app.tutora.ui.receipts
+                    .attachRoute(
+                        listOf(
+                            app.tutora.usecases.StageResult
+                                .Ok(staged),
+                        ),
+                    ),
+            )
+        }
+        h.settle(compose)
+        compose.onNodeWithTag("lock-screen").assertExists()
+        compose.onNodeWithTag("attach-receipt").assertDoesNotExist()
+        compose.onNodeWithText("Anexar comprovante").assertDoesNotExist()
+        compose.runOnIdle { h.nav.navigate(app.tutora.ui.ReceiptViewer("any", 0)) }
+        h.settle(compose)
+        compose.onNodeWithTag("receipt-viewer").assertDoesNotExist()
+        h.unlock.answer = true
+        compose.onNodeWithText("Desbloquear").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("lock-screen").assertDoesNotExist()
     }
 }

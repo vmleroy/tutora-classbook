@@ -63,11 +63,15 @@ class ReportsRepository(
                 with(earnings) { instant(from, zone) },
                 with(earnings) { instant(to.plus(DatePeriod(days = 1)), zone) },
             ),
-            combine(db.payments().observeAllCredits(), db.payments().observeShareRows()) { c, sh -> c to sh },
+            combine(
+                db.payments().observeAllCredits(),
+                db.payments().observeShareRows(),
+                ReceiptRepository(db).byPayment(),
+            ) { c, sh, rc -> Triple(c, sh, rc) },
             payments.leftByLesson(),
             payments.ledger(payer),
             db.places().observeOne(if (s.kind == SubjectKind.PLACE) s.id else ""),
-        ) { rows, (credits, shareRows), left, ledger, placeRow ->
+        ) { rows, (credits, shareRows, receipts), left, ledger, placeRow ->
             val cover = coverOf(credits)
             // A student's share of each split group's class (AC-020-36).
             val myShares =
@@ -121,6 +125,9 @@ class ReportsRepository(
                             ledger.allocation.paidBy[p.id]
                                 .orEmpty()
                                 .mapNotNull(starts::get),
+                            // Its comprovantes, which a Fatura or Relatório detalhado can carry (AC-021-7).
+                            id = p.id,
+                            receipts = receipts[p.id].orEmpty(),
                         )
                     }.filter { it.day in from..to }
             val place = placeRow?.toPlace()

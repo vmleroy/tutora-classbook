@@ -124,4 +124,21 @@ class SourceChecksTest {
         // The payment method is a dropdown field, since four segments cut "Transferência".
         assertTrue(src("payments/Payments.kt").substringAfter("fun MethodControl(").substringBefore("\n}").contains("ChoiceField("))
     }
+
+    @Test
+    fun `AC-021-11 comprovantes never leave the phone by themselves - no network, and other apps reach only shared copies`() {
+        val manifest = File("src/main/AndroidManifest.xml").readText()
+        assertTrue("android.permission.INTERNET" !in manifest)
+        assertTrue("android:allowBackup=\"false\"" in manifest)
+        // The file provider exposes only the cache (reports being shared, a photo being taken),
+        // never Tutora's own files where comprovantes are kept.
+        val paths = File("src/main/res/xml/file_paths.xml").readText()
+        assertTrue("<cache-path" in paths)
+        assertTrue(listOf("<files-path", "<external-path", "<root-path").none { it in paths })
+        // The viewer and Anexar comprovante are routes under the app lock's gate like every page.
+        val nav = File("src/main/kotlin/app/tutora/ui/Navigation.kt").readText()
+        assertTrue("composable<ReceiptViewer>" in nav && "composable<AttachReceipt>" in nav)
+        // Tutora's own documents never come back into it as a comprovante through the share sheet.
+        assertTrue("EXTRA_EXCLUDE_COMPONENTS" in File("src/main/kotlin/app/tutora/adapters/export/Exports.kt").readText())
+    }
 }

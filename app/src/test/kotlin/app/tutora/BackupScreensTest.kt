@@ -1,6 +1,7 @@
 package app.tutora
 
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -91,7 +92,7 @@ class BackupScreensTest {
         h.go(compose, SettingsGraph)
         exists("Nenhum backup ainda")
         click("Backup e planilha")
-        listOf("Backup automático", "Fazer agora", "Backup completo (.json)", "Planilha .xlsx", "Restaurar backup").forEach(::exists)
+        listOf("Backup automático", "Fazer agora", "Backup completo (.zip)", "Planilha .xlsx", "Restaurar backup").forEach(::exists)
     }
 
     @Test
@@ -134,7 +135,7 @@ class BackupScreensTest {
         runBlocking { h.services.backups.setFolder("content://tree/downloads", "Download") }
         h.show(compose)
         h.go(compose, BackupHome)
-        click("Backup completo (.json)")
+        click("Backup completo (.zip)")
         compose.onNodeWithText("Salvar").performClick()
         h.awaitDb(compose) {
             h.t.folder.files
@@ -161,7 +162,7 @@ class BackupScreensTest {
         h.settle(compose)
         val asks = h.unlock.asks
         h.go(compose, BackupHome)
-        click("Backup completo (.json)")
+        click("Backup completo (.zip)")
         compose.onNodeWithText("Salvar o backup em Download?").assertExists()
         compose.onNodeWithText("Cancelar").performClick()
         h.settle(compose)
@@ -169,7 +170,7 @@ class BackupScreensTest {
             h.t.folder.files
                 .isEmpty(),
         )
-        click("Backup completo (.json)")
+        click("Backup completo (.zip)")
         compose.onNodeWithText("Salvar").performClick()
         h.awaitDb(compose) {
             h.t.folder.files
@@ -328,7 +329,37 @@ class BackupScreensTest {
     fun `AC-011-21 the page follows the app language`() {
         h.show(compose)
         h.go(compose, BackupHome)
-        listOf("Automatic backup", "Off · manual backups only", "Full backup (.json)", "Restore backup").forEach(::exists)
+        listOf("Automatic backup", "Off · manual backups only", "Full backup (.zip)", "Restore backup").forEach(::exists)
+    }
+
+    @Test
+    fun `AC-021-12 Backup e planilha shows how much room the comprovantes take`() {
+        h.show(compose)
+        h.go(compose, BackupHome)
+        compose.onNodeWithTag("receipt-usage").assertDoesNotExist()
+        runBlocking {
+            val r = app.tutora.usecases.Receipts(h.t.ctx)
+            val staged =
+                (1..2).map { i ->
+                    val f = java.io.File(tmp.newFolder(), "pix$i.jpg").apply { writeBytes(ByteArray(2_100_000)) }
+                    (r.stage(f.path) as app.tutora.usecases.StageResult.Ok).staged
+                }
+            h.services.payments.record(
+                app.tutora.usecases.PaymentDraft(
+                    app.tutora.domain.PayerRef(app.tutora.domain.PayerKind.STUDENT, ana.id),
+                    12_000,
+                    app.tutora.domain.PayMethod.PIX,
+                    LocalDate(2026, 10, 26),
+                    receipts =
+                        staged.map {
+                            app.tutora.usecases.ReceiptRef
+                                .New(it)
+                        },
+                ),
+            )
+        }
+        h.awaitDb(compose) { compose.onAllNodesWithTag("receipt-usage").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("2 comprovantes · 4,2 MB").performScrollTo().assertExists()
     }
 }
 

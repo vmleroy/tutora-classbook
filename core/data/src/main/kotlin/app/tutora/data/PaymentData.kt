@@ -151,6 +151,12 @@ interface PaymentDao {
     @Query("DELETE FROM payment_lesson WHERE payment_id = :paymentId")
     suspend fun clearChosen(paymentId: String)
 
+    @Query("SELECT * FROM payment_lesson WHERE payment_id = :paymentId")
+    suspend fun chosenOf(paymentId: String): List<PaymentLessonRow>
+
+    @Query("SELECT * FROM package WHERE id = :id")
+    suspend fun packageRow(id: String): PackageRow?
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertChosen(rows: List<PaymentLessonRow>)
 
@@ -371,7 +377,12 @@ class PaymentRepository(
             dao.observePayments(payer.kind.key, payer.id),
             dao.observeChosen(payer.kind.key, payer.id),
             dao.observeCredits(payer.kind.key, payer.id),
-        ) { owed, payments, chosen, credits -> ledgerOf(owed, payments, chosen, credits) }
+            ReceiptRepository(db).counts(),
+        ) { owed, payments, chosen, credits, receipts ->
+            // How many comprovantes each payment holds, for the mark on its row (AC-021-4).
+            val ledger = ledgerOf(owed, payments, chosen, credits)
+            ledger.copy(payments = ledger.payments.map { it.copy(receipts = receipts[it.id] ?: 0) })
+        }
 
     suspend fun ledgerNow(payer: PayerRef): Ledger =
         ledgerOf(
@@ -391,6 +402,12 @@ class PaymentRepository(
         }
 
     fun payment(id: String): Flow<PaymentRecord?> = dao.observePayment(id).map { it?.toPayment(emptyList()) }
+
+    /** Every payment with how many comprovantes it holds, for Anexar comprovante (AC-021-3). */
+    fun allPayments(): Flow<List<PaymentRecord>> =
+        combine(dao.observeAllPayments(), ReceiptRepository(db).counts()) { rows, counts ->
+            rows.map { it.toPayment(emptyList()).copy(receipts = counts[it.id] ?: 0) }
+        }
 
     /** The student's latest package and how many classes have used it. */
     fun lastPackage(studentId: String): Flow<PackageState?> =

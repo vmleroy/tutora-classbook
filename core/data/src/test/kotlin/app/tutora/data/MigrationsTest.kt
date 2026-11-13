@@ -224,4 +224,24 @@ class MigrationsTest {
             assertEquals(emptyList<Any>(), db.payments().observeShareRows().first())
             db.close()
         }
+
+    @Test
+    fun `AC-021-10 migration 9 to 10 keeps the payments, with no comprovantes yet`() =
+        runTest {
+            val file = File(tmp.root, "tutora.db")
+            val t = "'2026-11-13T12:00:00.000Z'"
+            createAt(
+                9,
+                file,
+                listOf(
+                    "INSERT INTO student (id, name, color, rate_type, created_at, updated_at) VALUES ('s', 'Ana', 'AMBER', 'HOUR', $t, $t)",
+                    "INSERT INTO payment (id, student_id, amount_cents, method, paid_at, created_at, updated_at) " +
+                        "VALUES ('pay', 's', 24000, 'pix', $t, $t, $t)",
+                ),
+            )
+            val (db, _) = openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver())
+            assertEquals(24000L, db.payments().payment("pay")?.amountCents)
+            assertEquals(emptyList<Any>(), db.receipts().forPayment("pay"))
+            db.close()
+        }
 }

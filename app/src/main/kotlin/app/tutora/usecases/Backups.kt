@@ -180,10 +180,26 @@ class Backups(
 
     private suspend fun current(): BackupFile = BackupFile(BACKUP_APP, TutoraDatabase.VERSION, ctx.now(), store.dump())
 
+    /** Tutora's comprovantes, and where they wait while a restore can still be undone (AC-021-10). */
+    private val receipts = ReceiptStore(ctx.privateDir)
+    private val receiptsBefore get() = File(ctx.privateDir, "${ReceiptStore.RECEIPT_DIR}-before-restore")
+
+    /** The zip: every table and every comprovante on a payment (AC-021-10). */
+    private fun archive(file: BackupFile): ByteArray = BackupArchive.write(encodeBackup(file), receiptFiles(file).map(receipts::file))
+
+    private fun receiptFiles(file: BackupFile): Set<String> =
+        file.tables["payment_receipt"]
+            .orEmpty()
+            .mapNotNull { it.text("file") }
+            .toSet()
+
+    /** The last file read for a restore, so its comprovantes come with it. */
+    private var inspected: Pair<BackupFile, ByteArray>? = null
+
     /** A backup made by hand, named with the day and time, for the share sheet (AC-011-2, 4). */
     suspend fun makeBackup(): Pair<String, ByteArray> {
         val file = current()
-        val bytes = encodeBackup(file).encodeToByteArray()
+        val bytes = archive(file)
         val name = backupFileName(instantOf(file.exportedAt), ctx.zone(), BACKUP_NAME)
         shared.mkdirs()
         File(shared, name).writeBytes(bytes)
@@ -212,7 +228,7 @@ class Backups(
         auto: Boolean,
     ): Boolean {
         val file = current()
-        val bytes = encodeBackup(file).encodeToByteArray()
+        val bytes = archive(file)
         val name = backupFileName(instantOf(file.exportedAt), ctx.zone(), BACKUP_NAME)
         val size = runCatching { ctx.backupFolder.write(s.folderUri, name, bytes) }.getOrNull()
         if (size == null) {
@@ -300,6 +316,7 @@ class Backups(
         val log = (listOf(entry) + s.log).take(BACKUP_LOG_SIZE)
         store.save(s.copy(lastBackupAt = entry.at, log = log, restoreUndo = false), ctx.now())
         undoFile.delete()
+        receiptsBefore.deleteRecursively()
         // Only the copies Recentes still lists are kept.
         val listed = log.filter { it.isShared() }.map { it.name }.toSet()
         shared.listFiles()?.filter { it.name !in listed }?.forEach { it.delete() }
@@ -321,7 +338,17 @@ class Backups(
     }
 
     /** Reads a picked file: a backup this app can restore, or why not (AC-011-12, 15, 20). */
-    fun inspect(bytes: ByteArray): BackupRead = readBackup(bytes, TutoraDatabase.VERSION)
+    fun inspect(bytes: ByteArray): BackupRead {
+        val json = BackupArchive.json(bytes) ?: return BackupRead.NotTutora
+        return readBackup(json, TutoraDatabase.VERSION).also { inspected = (it as? BackupRead.Ok)?.let { ok -> ok.file to bytes } }
+    }
+
+    /** How many comprovantes a backup just read holds, and how many of them its file lacks (AC-021-10). */
+    fun receiptsIn(file: BackupFile): Pair<Int, Int> {
+        val wanted = receiptFiles(file)
+        val bytes = inspected?.takeIf { it.first === file }?.second ?: return wanted.size to wanted.size
+        return wanted.size to (wanted - BackupArchive.receiptNames(bytes)).size
+    }
 
     /**
      * Replaces all data with [file]'s (AC-011-14): the current data goes aside first (AC-011-16),
@@ -332,7 +359,19 @@ class Backups(
         val before = encodeBackup(current())
         undoFile.parentFile?.mkdirs()
         undoFile.writeText(before)
+        // Today's comprovantes wait aside with today's data, for Desfazer restauração.
+        receiptsBefore.deleteRecursively()
+        if (receipts.dir.exists()) receipts.dir.renameTo(receiptsBefore)
+        val archive = inspected?.takeIf { it.first === file }?.second
         replace(file)
+        // The backup's comprovantes come back on their payments; a row whose file is missing is left out (AC-021-10).
+        val wanted = receiptFiles(file)
+        val written = archive?.let { BackupArchive.extract(it, receipts.dir, wanted) }.orEmpty()
+        file.tables["payment_receipt"]
+            .orEmpty()
+            .filter { it.text("file") !in written }
+            .forEach { row -> row.text("id")?.let { db.receipts().delete(it) } }
+        inspected = null
         store.save(store.load().copy(restoreUndo = true), ctx.now())
         return RestoreResult.Ok
     }
@@ -342,6 +381,8 @@ class Backups(
         if (store.liveCount() > 0) return RestoreResult.LiveClass
         val read = undoFile.takeIf { it.exists() }?.readBytes()?.let(::inspect) as? BackupRead.Ok ?: return RestoreResult.NoUndo
         replace(read.file)
+        receipts.dir.deleteRecursively()
+        if (receiptsBefore.exists()) receiptsBefore.renameTo(receipts.dir)
         store.save(store.load().copy(restoreUndo = false), ctx.now())
         undoFile.delete()
         return RestoreResult.Ok

@@ -89,6 +89,9 @@ data class ReportPayment(
     val method: PayMethod,
     val cents: Cents,
     val classDays: List<LocalDate>,
+    /** The payment's id and its comprovantes, which a Fatura or Relatório detalhado can carry (AC-021-7, 8). */
+    val id: String = "",
+    val receipts: List<Receipt> = emptyList(),
 )
 
 /** A day a school's classes were given, for a salary report (AC-010-6). */

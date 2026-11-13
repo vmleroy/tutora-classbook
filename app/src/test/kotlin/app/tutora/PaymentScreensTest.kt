@@ -9,6 +9,7 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -649,5 +650,132 @@ class PaymentScreensTest {
                     .owedCents
             },
         )
+    }
+
+    // Spec 021: comprovantes.
+
+    /** A file in another app (the gallery, a bank's PDF), as the picker answers it. */
+    private fun outside(name: String) =
+        java.io
+            .File(tmp.newFolder(), name)
+            .apply { writeBytes(ByteArray(300) { 1 }) }
+            .path
+
+    private fun receiptsOf(paymentId: String) =
+        runBlocking {
+            h.services.receiptRepo
+                .forPayment(paymentId)
+                .first()
+        }
+
+    /** A payment of R$ 120,00 with one comprovante already on it. */
+    private fun paidWithReceipt(): String =
+        runBlocking {
+            val staged = (h.services.receipts.stage(outside("pix.jpg")) as app.tutora.usecases.StageResult.Ok).staged
+            val r =
+                h.services.payments.record(
+                    PaymentDraft(
+                        anaRef,
+                        12_000,
+                        PayMethod.PIX,
+                        today,
+                        receipts =
+                            listOf(
+                                app.tutora.usecases.ReceiptRef
+                                    .New(staged),
+                            ),
+                    ),
+                )
+            (r as app.tutora.usecases.PaymentResult.Ok).paymentId
+        }
+
+    @Test
+    fun `AC-021-1 Registrar pagamento takes comprovantes from the camera, the gallery or a file, as many as wanted`() {
+        given(22)
+        openAna()
+        click("Registrar pagamento")
+        exists("Comprovante")
+        compose.onNodeWithTag("thumbnail-add").performScrollTo().performClick()
+        h.settle(compose)
+        listOf("Tirar foto", "Escolher da galeria", "Escolher arquivo").forEach { exists(it) }
+        h.receiptPicker.answer = listOf(outside("pix.jpg"), outside("banco.pdf"), outside("print.png"))
+        click("Escolher da galeria", scroll = false)
+        h.awaitDb(compose) { compose.onAllNodesWithTag("thumbnail").fetchSemanticsNodes().size == 3 }
+        compose.onAllNodesWithTag("thumbnail").assertCountEquals(3)
+        click("Registrar · R$ 120,00", scroll = false)
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .ledger(anaRef)
+                .first()
+                .payments
+                .firstOrNull()
+                ?.receipts == 3
+        }
+        org.junit.Assert.assertEquals(
+            3,
+            runBlocking {
+                h.services.paymentRepo
+                    .ledger(anaRef)
+                    .first()
+                    .payments
+                    .single()
+                    .receipts
+            },
+        )
+    }
+
+    @Test
+    fun `AC-021-4 a payment with a comprovante has the mark in Pagamentos and its thumbnail on the detail`() {
+        given(22)
+        val id = paidWithReceipt()
+        openAna()
+        h.awaitDb(compose) { compose.onAllNodesWithTag("row-mark", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.onAllNodesWithTag("row-mark", useUnmergedTree = true).assertCountEquals(1)
+        h.go(compose, app.tutora.ui.PaymentDetail(id))
+        exists("Comprovante · 1")
+        compose.onNodeWithTag("payment-receipts").assertExists()
+    }
+
+    @Test
+    fun `AC-021-5 the viewer shares, and Remover asks before taking the comprovante off`() {
+        given(22)
+        val id = paidWithReceipt()
+        h.show(compose)
+        h.go(compose, app.tutora.ui.ReceiptViewer(id, 0))
+        exists("1 de 1 · Pince para ampliar")
+        compose.onNodeWithContentDescription("Substituir").assertExists()
+        compose.onNodeWithContentDescription("Compartilhar").performClick()
+        h.awaitDb(compose) { h.exports.shared.isNotEmpty() }
+        org.junit.Assert.assertEquals(1, h.exports.shared.size)
+        compose.onNodeWithContentDescription("Remover").performClick()
+        h.settle(compose)
+        exists("Remover este comprovante?")
+        org.junit.Assert.assertEquals(1, receiptsOf(id).size)
+        compose.onNodeWithTag("receipt-remove-confirm").performClick()
+        h.awaitDb(compose) { receiptsOf(id).isEmpty() }
+        org.junit.Assert.assertEquals(0, receiptsOf(id).size)
+    }
+
+    @Test
+    fun `AC-021-6 Excluir pagamento asks first, then Desfazer brings the payment and its comprovante back`() {
+        given(22)
+        val id = paidWithReceipt()
+        val before = receiptsOf(id)
+        openAna()
+        h.go(compose, app.tutora.ui.PaymentDetail(id))
+        compose.onNodeWithContentDescription("Excluir").performClick()
+        h.settle(compose)
+        compose.onAllNodes(matching("Excluir"), useUnmergedTree = true).onLast().performClick()
+        h.awaitDb(compose) {
+            runBlocking {
+                h.services.paymentRepo
+                    .payment(id)
+                    .first()
+            } == null
+        }
+        exists("Pagamento de R$ 120,00 excluído")
+        click("Desfazer", scroll = false)
+        h.awaitDb(compose) { receiptsOf(id).isNotEmpty() }
+        org.junit.Assert.assertEquals(before, receiptsOf(id))
     }
 }

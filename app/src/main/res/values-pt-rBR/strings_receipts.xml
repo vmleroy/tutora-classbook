@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 021: comprovantes on payments. -->
+<resources>
+    <string name="rc_receipt">Comprovante</string>
+    <string name="rc_add">Adicionar</string>
+    <string name="rc_addTitle">Adicionar comprovante</string>
+    <string name="rc_camera">Tirar foto</string>
+    <string name="rc_cameraSub">Com a câmera do celular</string>
+    <string name="rc_gallery">Escolher da galeria</string>
+    <string name="rc_gallerySub">Um print ou foto do comprovante</string>
+    <string name="rc_file">Escolher arquivo</string>
+    <string name="rc_fileSub">Imagem ou PDF, até 10 MB</string>
+    <string name="rc_refusedUnsupported">Esse arquivo não é uma imagem nem um PDF.</string>
+    <string name="rc_refusedTooLarge">Esse PDF passa de 10 MB. Envie um print do comprovante.</string>
+    <string name="rc_refusedUnreadable">Este arquivo não pode ser aberto (tem senha ou está danificado). Envie um print do comprovante.</string>
+    <string name="rc_item">Comprovante %1$d de %2$d</string>
+    <string name="rc_pdf">PDF</string>
+    <string name="rc_withReceipt">Com comprovante</string>
+    <string name="rc_viewer">Comprovante</string>
+    <string name="rc_nOfM">%1$d de %2$d</string>
+    <string name="rc_pinch">Pince para ampliar</string>
+    <string name="rc_share">Compartilhar</string>
+    <string name="rc_replace">Substituir</string>
+    <string name="rc_remove">Remover</string>
+    <string name="rc_removeTitle">Remover este comprovante?</string>
+    <string name="rc_removeBody">O pagamento continua registrado; só o arquivo sai do Tutora.</string>
+    <string name="rc_cancel">Cancelar</string>
+    <string name="rc_page">Página %1$d de %2$d</string>
+    <string name="rc_attachTitle">Anexar comprovante</string>
+    <string name="rc_which">De qual pagamento ele é?</string>
+    <string name="rc_last60">Últimos 60 dias</string>
+    <string name="rc_noneRecent">Nenhum pagamento nos últimos 60 dias</string>
+    <string name="rc_newPayment">Registrar novo pagamento</string>
+    <string name="rc_whoPaid">Quem pagou?</string>
+    <string name="rc_search">Buscar aluno, turma ou local</string>
+    <string name="rc_kindStudent">Aluno</string>
+    <string name="rc_kindGroup">Turma</string>
+    <string name="rc_kindPlace">Local</string>
+    <string name="rc_whoHint">Depois, Registrar pagamento abre com o comprovante já anexado.</string>
+    <string name="rc_nothingShared">Nenhum arquivo recebido pôde ser usado como comprovante.</string>
+    <string name="rc_include">Incluir comprovantes</string>
+    <string name="rc_includeSub">No fim do PDF, um por página</string>
+    <string name="rc_section">Comprovantes</string>
+    <string name="rc_column">Comprovante</string>
+    <string name="rc_yes">Sim</string>
+    <string name="rc_no">Não</string>
+    <string name="rc_usage">%1$s · %2$s MB</string>
+    <string name="pay_deleted">Pagamento de %1$s excluído</string>
+    <string name="pay_undo">Desfazer</string>
+    <plurals name="rc_listTitle">
+        <item quantity="one">Comprovante · %1$d</item>
+        <item quantity="many">Comprovantes · %1$d</item>
+        <item quantity="other">Comprovantes · %1$d</item>
+    </plurals>
+    <plurals name="rc_received">
+        <item quantity="one">%1$d comprovante recebido</item>
+        <item quantity="many">%1$d comprovantes recebidos</item>
+        <item quantity="other">%1$d comprovantes recebidos</item>
+    </plurals>
+    <plurals name="rc_count">
+        <item quantity="one">%1$d comprovante</item>
+        <item quantity="many">%1$d comprovantes</item>
+        <item quantity="other">%1$d comprovantes</item>
+    </plurals>
+    <plurals name="rc_restoreMissing">
+        <item quantity="one">%1$d comprovante não está no arquivo e fica de fora</item>
+        <item quantity="many">%1$d comprovantes não estão no arquivo e ficam de fora</item>
+        <item quantity="other">%1$d comprovantes não estão no arquivo e ficam de fora</item>
+    </plurals>
+</resources>
