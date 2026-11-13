@@ -130,7 +130,11 @@ class PaymentScreensTest {
         given(22)
         openAna()
         click("Registrar pagamento")
-        listOf("Pix", "Dinheiro", "Transferência", "Cartão", "Observação", "Registrar · R$ 240,00").forEach { exists(it) }
+        listOf("Forma de pagamento", "Pix", "Observação", "Registrar · R$ 240,00").forEach { exists(it) }
+        // The four methods are in the Forma de pagamento field (AC-020-32).
+        compose.onNodeWithTag("pay-method").performScrollTo().performClick()
+        h.settle(compose)
+        listOf("Pix", "Dinheiro", "Transferência", "Cartão").forEach { exists(it) }
     }
 
     @Test

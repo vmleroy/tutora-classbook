@@ -648,7 +648,12 @@
     <string name="places_choose">Escolha o local</string>
     <string name="pay_byGroup">a turma paga</string>
     <string name="pay_groupBefore">A turma (aulas antes da divisão)</string>
-    <string name="pay_memberOwes">%1$s · deve %2$s</string>
-    <string name="pay_amountOf">Valor de %1$s</string>
     <string name="pay_refused">Nada foi salvo: confira os valores e a data.</string>
+    <string name="pay_methodLabel">Forma de pagamento</string>
+    <string name="pay_whoPaid">Quem pagou</string>
+    <string name="pay_owesShort">deve %1$s</string>
+    <string name="pay_nobodyYet">Escolha quem pagou</string>
+    <string name="pay_searchMember">Buscar aluno</string>
+    <string name="pay_allPaid">Todos pagaram</string>
+    <string name="pay_removeFrom">Tirar %1$s</string>
 </resources>

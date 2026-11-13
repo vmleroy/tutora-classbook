@@ -387,7 +387,7 @@ class ReportScreensTest {
     }
 
     @Test
-    fun `AC-020-40 Registrar pagamento on a split group ticks each member with what they owe and saves them together`() {
+    fun `AC-020-40 Registrar pagamento on a split group adds who paid, or everyone at once, and saves them together`() {
         val gid =
             runBlocking {
                 h.t.catalog.saveStudent(
@@ -412,8 +412,12 @@ class ReportScreensTest {
         h.go(compose, app.tutora.ui.GroupDetail(gid))
         click("Registrar pagamento", scroll = false)
         compose.onNodeWithTag("group-pay").assertExists()
-        exists("Ana Souza · deve R$ 50,00", part = true)
-        exists("Bia Lima · deve R$ 50,00", part = true)
+        // Todos pagaram adds everyone who owes, each with what they owe.
+        compose.onNodeWithTag("group-pay-all").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("group-pay-Ana Souza").assertExists()
+        compose.onNodeWithTag("group-pay-Bia Lima").assertExists()
+        exists("Registrar · R$ 100,00", part = true)
         compose.onNodeWithTag("group-pay-save").performClick()
         // Both shares paid; Ana's own private class from the setup stays hers to pay.
         h.awaitDb(compose) {

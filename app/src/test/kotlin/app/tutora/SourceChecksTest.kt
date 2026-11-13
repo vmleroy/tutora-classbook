@@ -1,6 +1,7 @@
 package app.tutora
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
@@ -120,9 +121,7 @@ class SourceChecksTest {
                 "backup/Backup.kt" to "Chip(",
             ).filter { (file, old) -> src(file).contains(old) }
         assertEquals(emptyList<Pair<String, String>>(), chipRows)
-        assertEquals(
-            3,
-            ui.walkTopDown().filter { it.extension == "kt" }.sumOf { Regex("MethodControl\\(").findAll(it.readText()).count() } - 1,
-        )
+        // The payment method is a dropdown field, since four segments cut "Transferência".
+        assertTrue(src("payments/Payments.kt").substringAfter("fun MethodControl(").substringBefore("\n}").contains("ChoiceField("))
     }
 }
