@@ -52,10 +52,12 @@ The detail of a student, a group and a place has grown one section at a time: th
 
 ## Open questions
 
-For Victor, before this is marked ready:
+Answered by Victor, 13 Nov 2026:
 
-1. **Parts as tabs or one scroll.** Resumo, Aulas, Pagamentos and Ligações as tabs at the top of the detail (one at a time, shorter screen), or one scroll with each part titled and collapsible?
-2. **What is in Resumo.** Which figures belong there for a student, a group and a place? Today: Deve, Aulas no mês, Preço. Any to add or drop?
-3. **Packages, credits and bonuses.** Do they stay in Resumo when in use, or move into Pagamentos?
-4. **The main action.** Is Registrar pagamento the main button on every detail, or should it depend on the status (Nova aula when nothing is owed)?
-5. **Two directions.** May the plan bring two mockup directions for you to pick from (for example tabs vs. one scroll), before it is marked ready?
+- **Tabs or one scroll:** the plan brings **two mockup directions** (tabs vs. one scroll with titled parts), and Victor picks one before anything is built.
+
+Still open, for Victor:
+
+1. **What is in Resumo.** Which figures belong there for a student, a group and a place? Today: Deve, Aulas no mês, Preço. Any to add or drop?
+2. **Packages, credits and bonuses.** Do they stay in Resumo when in use, or move into Pagamentos?
+3. **The main action.** Is Registrar pagamento the main button on every detail, or should it depend on the status (Nova aula when nothing is owed)?

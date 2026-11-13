@@ -53,10 +53,13 @@ When a student, a parent or a place pays by Pix or transfer, the teacher gets a 
 
 ## Open questions
 
-For Victor, before this is marked ready (each with the assumption written above):
+Answered by Victor, 13 Nov 2026:
 
-1. **Sending.** Should the comprovantes go inside the PDF, at its end (AC-021-7), or as separate files shared with it (the PDF plus the images)?
-2. **Backup format.** The full backup is one .json file today. With comprovantes it becomes a .zip holding that .json and the files. Is that fine, or should images stay out of the backup (lighter, but lost with the phone)?
-3. **Compartilhar › Tutora.** Is receiving a comprovante from the bank app in scope (AC-021-3), or only adding it from inside Tutora?
-4. **How many.** Up to 3 per payment (AC-021-1), and PDFs as well as images?
-5. **On the Fatura.** May a Fatura carry comprovantes (it is mostly about what is still to pay), or only the Relatório detalhado?
+- The comprovantes go **inside the PDF**, at its end, one per page (AC-021-7).
+- The full backup **becomes a .zip** with the .json and the comprovantes; older .json backups still restore (AC-021-10).
+- **Compartilhar › Tutora** from the bank app is in scope (AC-021-3).
+
+Still open, for Victor (each with the assumption written above):
+
+1. **How many.** Up to 3 per payment (AC-021-1), and PDFs as well as images?
+2. **On the Fatura.** May a Fatura carry comprovantes (it is mostly about what is still to pay), or only the Relatório detalhado?
