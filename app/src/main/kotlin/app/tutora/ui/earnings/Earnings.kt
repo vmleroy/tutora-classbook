@@ -153,6 +153,17 @@ fun EarningsScreen(
                     nav.navigate(app.tutora.ui.Evolution)
                 }, Modifier.testTag("see-evolution"), size = ControlSize.SM)
                 IconButton(
+                    IconName.WALLET,
+                    stringResource(R.string.inv_monthTitle),
+                    {
+                        nav.navigate(
+                            app.tutora.ui.Invoices(period.first.toString(), period.last.toString(), rangeLabel(period, language)),
+                        )
+                    },
+                    Modifier.testTag("open-invoices"),
+                    size = ControlSize.SM,
+                )
+                IconButton(
                     IconName.FILE,
                     stringResource(R.string.rep_screen),
                     { reporting = true },

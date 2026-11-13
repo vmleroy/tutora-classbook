@@ -15,10 +15,12 @@ import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.MoneyField
 import app.tutora.designsystem.components.RowTrailing
+import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
@@ -82,9 +84,15 @@ fun CancelSheet(
             ),
     ) {
         Field(stringResource(R.string.cancel_what)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                reasons.forEach { r -> Chip(reasonLabel(r), reason == r, { reason = r }) }
-            }
+            SegmentedControl(
+                reasons.map {
+                    it to reasonLabel(it)
+                },
+                reason,
+                { reason = it },
+                stringResource(R.string.cancel_what),
+                size = ControlSize.SM,
+            )
         }
         TextField(stringResource(R.string.cancel_note), note, { note = it }, imeAction = ImeAction.Done)
         // A class the teacher cancels is never charged (AC-006-20).

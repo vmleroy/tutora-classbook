@@ -291,4 +291,27 @@ class CatalogTest {
             assertEquals(online, repo.group(g.id)?.placeId)
             assertEquals(setOf(s), members(g.id))
         }
+
+    @Test
+    fun `AC-020-17 a student keeps an optional Responsavel, and a blank one is none`() =
+        runTest {
+            val id = studentId(listOf(PlaceLink(online, true, null)), ana.copy(guardian = " Maria Souza "))
+            assertEquals(
+                "Maria Souza",
+                repo
+                    .student(id)
+                    .first()
+                    ?.student
+                    ?.guardian,
+            )
+            val none = studentId(listOf(PlaceLink(online, true, null)), ana.copy(name = "Bia", guardian = "  "))
+            assertEquals(
+                null,
+                repo
+                    .student(none)
+                    .first()
+                    ?.student
+                    ?.guardian,
+            )
+        }
 }

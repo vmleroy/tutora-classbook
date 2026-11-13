@@ -82,3 +82,46 @@ class FakeExports : Exports {
         copied += text
     }
 }
+
+/** Portuguese words of the Fatura and the detailed report, without Android resources. */
+fun testInvoiceWords() =
+    app.tutora.ui.reports.InvoiceWords(
+        invoiceTitle = "Fatura",
+        detailTitle = "Relatório detalhado",
+        to = "Para:",
+        guardianOf = "responsável por %1\$s",
+        madeOn = "Emitida em %1\$s",
+        name = "Nome",
+        dayCol = "Dia",
+        scheduled = "Horário",
+        ends = "Término",
+        inClass = "Em aula",
+        place = "Local",
+        travel = "Deslocamento",
+        charge = "Cobrança extra",
+        subtotal = "Subtotal",
+        salary = "Salário",
+        periodTotal = "Total do período",
+        alreadyPaid = "Já pago",
+        toPay = "Valor a pagar",
+        settled = "Pago, obrigado",
+        dueOn = "Vencimento: %1\$s",
+        payWithPix = "Pague com Pix",
+        copyPaste = "Pix copia e cola",
+        lessonsValue = "Aulas (valor)",
+        extraCharges = "Cobranças extras",
+        notes = "Observações",
+        hello = "Olá!",
+        invoiceOf = "Fatura de %1\$s",
+        totalToPay = "Total a pagar: %1\$s",
+        until = "até %1\$s",
+        pixWithName = "Pix: %1\$s (%2\$s)",
+        thanks = "Obrigado!",
+        settledText = "Tudo pago neste período. Obrigado!",
+        weekday = { d ->
+            val names = listOf("seg", "ter", "qua", "qui", "sex", "sáb", "dom")
+            "${names[d.dayOfWeek.ordinal]} ${d.day.toString().padStart(2, '0')}/${(d.month.ordinal + 1).toString().padStart(2, '0')}"
+        },
+        time = { t -> "${t.hour.toString().padStart(2, '0')}:${t.minute.toString().padStart(2, '0')}" },
+        builtinPlaces = mapOf(app.tutora.domain.BuiltinPlace.ONLINE.id to "Online / Remoto"),
+    )

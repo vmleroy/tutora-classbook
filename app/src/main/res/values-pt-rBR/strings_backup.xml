@@ -87,7 +87,6 @@
     <string name="bk_confirm">Restaurar</string>
     <string name="bk_thisYear">Este ano</string>
     <string name="bk_all">Tudo</string>
-    <string name="bk_custom">Personalizado</string>
     <string name="bk_generate">Gerar planilha</string>
     <string name="bk_sheetFile">Tutora planilha</string>
     <string name="bk_sheetStudents">Alunos</string>

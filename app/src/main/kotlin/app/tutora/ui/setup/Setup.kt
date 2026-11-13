@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,7 +29,6 @@ import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
-import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
@@ -235,13 +233,17 @@ fun SetupScreen(nav: NavHostController) {
                 PriceRow(stringResource(R.string.places_builtin_online), online) { online = it }
                 PriceRow(stringResource(R.string.places_builtin_student_home), home) { home = it }
                 Text(stringResource(R.string.setup_travel), style = TutoraTheme.type.bodyStrong, color = TutoraTheme.colors.ink)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                SegmentedControl(
                     listOf(
                         TravelMode.VARIES to stringResource(R.string.setup_travelVaries),
                         TravelMode.FIXED to stringResource(R.string.setup_travelFixed),
                         TravelMode.NONE to stringResource(R.string.setup_travelNone),
-                    ).forEach { (m, label) -> Chip(label, travel == m, { travel = m }) }
-                }
+                    ),
+                    travel,
+                    { travel = it },
+                    stringResource(R.string.setup_travel),
+                    size = ControlSize.SM,
+                )
                 // Fixo takes the amount typed, R$ 20,00 at first (AC-014-25).
                 if (travel == TravelMode.FIXED) {
                     MoneyField(

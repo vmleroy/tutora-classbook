@@ -2,6 +2,7 @@ package app.tutora.domain
 
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
@@ -65,8 +66,21 @@ data class ReportClass(
     val charged: Boolean,
     val bonus: Cents,
     val left: Cents,
+    /** The scheduled start; ending a class never moves it (AC-020-3). */
+    val start: LocalTime = LocalTime(0, 0),
+    /** The travel inside [value], and a cancellation's charge (which is all of [value]) (AC-020-16). */
+    val travel: Cents = 0,
+    val charge: Cents = 0,
+    val placeId: String = "",
+    val placeName: String? = null,
+    val notes: String? = null,
+    /** The group a class belongs to, for a member's share of a split group (AC-020-36). */
+    val groupId: String? = null,
 ) {
     val paid: Boolean get() = left == 0L
+
+    /** The scheduled end: the start plus the time in class, real when the class was timed (AC-020-4, 15). */
+    val end: LocalTime get() = LocalTime.fromSecondOfDay((start.toSecondOfDay() + minutes * 60) % 86_400)
 }
 
 /** A payment on a report, with the days of the classes it paid. */
@@ -94,6 +108,8 @@ data class SubjectReport(
     val total: Cents,
     val paid: Cents,
     val left: Cents,
+    /** For a school paid by salary: each month in the period and its salary (AC-020-13). */
+    val salaryMonths: List<Pair<LocalDate, Cents>> = emptyList(),
 ) {
     val count: Int get() = days?.sumOf { it.classes } ?: classes.size
     val minutes: Int get() = classes.sumOf { it.minutes }
@@ -114,9 +130,10 @@ fun subjectReport(
 ): SubjectReport {
     val sorted = classes.sortedByDescending { it.day }
     if (salary != null) {
-        val total = salary.cents * salaryMonths(salary, monthsBetween(from, to, today)).size
+        val months = salaryMonths(salary, monthsBetween(from, to, today))
+        val total = salary.cents * months.size
         val days = sorted.groupBy { it.day }.map { (d, list) -> TaughtDay(d, list.size) }
-        return SubjectReport(from, to, sorted, emptyList(), days, total, total, 0)
+        return SubjectReport(from, to, sorted, emptyList(), days, total, total, 0, months.map { it to salary.cents })
     }
     val total = sum(sorted.map { it.value })
     val left = sum(sorted.map { it.left })

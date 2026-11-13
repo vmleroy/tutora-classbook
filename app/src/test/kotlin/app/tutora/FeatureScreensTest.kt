@@ -487,8 +487,10 @@ class FeatureScreensTest {
         h.show(compose)
         h.go(compose, ScheduleGraph)
         compose.onNodeWithText("Semana").performClick()
-        // The week list reads its own days from the database.
+        // The week list reads its own days from the database, on Room's own thread: wait until they
+        // are in, as a slower machine (CI) needs longer than one settle.
         h.settle(compose)
+        h.awaitDb(compose) { compose.onAllNodesWithText("Ana Souza", useUnmergedTree = true).fetchSemanticsNodes().size >= 2 }
         // This week's two classes, Monday's and Wednesday's, each under its day.
         assertTrue(compose.onAllNodesWithText("Ana Souza", useUnmergedTree = true).fetchSemanticsNodes().size >= 2)
         compose.onAllNodesWithText("14:00", useUnmergedTree = true).onFirst().assertExists()
@@ -568,5 +570,30 @@ class FeatureScreensTest {
                     .size
             }
         assertEquals(10, count)
+    }
+
+    @Test
+    fun `AC-020-38 a group's place is one field with a search box, not a row of chips`() {
+        salinha()
+        h.show(compose)
+        h.go(compose, app.tutora.ui.GroupEdit())
+        compose.onNodeWithTag("group-place").performClick()
+        h.settle(compose)
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasSetTextAction() and
+                    androidx.compose.ui.test
+                        .hasAnyAncestor(
+                            androidx.compose.ui.test
+                                .hasTestTag("choice-search"),
+                        ),
+            ).performTextInput("aprend")
+        h.settle(compose)
+        compose.onNode(hasPlainText("Salinha Aprender+"), useUnmergedTree = true).assertExists()
+        compose.onAllNodes(hasPlainText("Casa do Aluno"), useUnmergedTree = true).assertCountEquals(0)
+        compose.onNode(hasPlainText("Salinha Aprender+"), useUnmergedTree = true).performClick()
+        h.settle(compose)
+        compose.onNode(hasPlainText("Salinha Aprender+"), useUnmergedTree = true).assertExists()
     }
 }

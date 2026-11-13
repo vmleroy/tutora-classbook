@@ -3,13 +3,18 @@ package app.tutora
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.data.PaymentRepository
 import app.tutora.domain.BuiltinPlace
+import app.tutora.domain.Group
 import app.tutora.domain.PayMethod
+import app.tutora.domain.Payer
 import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
+import app.tutora.domain.PlaceKind
 import app.tutora.domain.PlaceLink
 import app.tutora.domain.RateType
 import app.tutora.domain.Student
+import app.tutora.domain.SubjectKind
 import app.tutora.domain.TagColor
+import app.tutora.domain.builtinPlace
 import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.PaymentDraft
 import app.tutora.usecases.PaymentError
@@ -20,8 +25,10 @@ import app.tutora.usecases.ScheduleResult
 import app.tutora.usecases.WhoId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.plus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -248,5 +255,97 @@ class PaymentsTest {
             payments.removeCredit(bonus)
             assertEquals(12_000L, balance())
             assertEquals(0L, repo.ledgerNow(anaRef).creditCents)
+        }
+
+    /** Ana and Bia in a group at Online, R$ 100,00 a class; split from 20 Oct 09:00 when [split]. */
+    private suspend fun splitGroup(split: Boolean = true): Pair<String, PayerRef> {
+        val bia =
+            (
+                t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                ) as Result.Ok
+            ).value
+        val g = (t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, listOf(ana.id, bia.id), null)) as Result.Ok).value
+        if (split) {
+            t.now = "2026-10-20T12:00:00.000Z"
+            t.catalog.setSplit(g.id, true)
+            t.now = "2026-10-26T12:00:00.000Z"
+        }
+        return g.id to PayerRef(PayerKind.STUDENT, bia.id)
+    }
+
+    private suspend fun groupClass(
+        groupId: String,
+        day: Int,
+    ) = t.lessons.logLesson(
+        LessonDraft(WhoId.OfGroup(groupId), online, LocalDate(2026, 10, day), LocalTime(8, 0), 60, null, null, null),
+    )
+
+    @Test
+    fun `AC-020-34 a split group's class is owed by each member, and the group owes nothing for it`() =
+        runTest {
+            val (gid, bia) = splitGroup()
+            groupClass(gid, 22)
+            val balances = repo.balances().first()
+            assertEquals(5_000L, balances[anaRef])
+            assertEquals(5_000L, balances[bia])
+            assertEquals(0L, balances[PayerRef(PayerKind.GROUP, gid)] ?: 0L)
+        }
+
+    @Test
+    fun `AC-020-36 a member pays their share on their own, and it shows on their report and in Faturas do mes`() =
+        runTest {
+            val (gid, bia) = splitGroup()
+            groupClass(gid, 22)
+            payments.record(PaymentDraft(anaRef, 5_000, PayMethod.PIX, today))
+            val balances = repo.balances().first()
+            assertEquals(0L, balances[anaRef] ?: 0L)
+            assertEquals(5_000L, balances[bia])
+            val reports = app.tutora.data.ReportsRepository(t.db)
+            val biaReport =
+                reports.subjectNow(app.tutora.data.Subject(SubjectKind.STUDENT, bia.id), LocalDate(2026, 10, 1), today, today, t.zone)
+            assertEquals(listOf(5_000L to 5_000L), biaReport.classes.map { it.value to it.left })
+            assertEquals(gid, biaReport.classes.single().groupId)
+            val due = reports.due(LocalDate(2026, 10, 1), today, t.zone, false).first()
+            assertEquals(listOf("Bia Lima" to 5_000L), due.map { it.name to it.toPay })
+        }
+
+    @Test
+    fun `AC-020-37 classes given before the split was turned on stay owed by the group`() =
+        runTest {
+            val (gid, bia) = splitGroup()
+            groupClass(gid, 15)
+            val balances = repo.balances().first()
+            assertEquals(10_000L, balances[PayerRef(PayerKind.GROUP, gid)])
+            assertEquals(0L, balances[bia] ?: 0L)
+        }
+
+    @Test
+    fun `AC-020-40 one payment on a split group pays several members at once, or nothing when one is refused`() =
+        runTest {
+            val (gid, bia) = splitGroup()
+            groupClass(gid, 22)
+            val debts = repo.memberDebts(gid).first()
+            assertEquals(5_000L, debts.getValue(ana.id).first)
+            val refused =
+                payments.recordAll(
+                    listOf(
+                        PaymentDraft(anaRef, 5_000, PayMethod.PIX, today, chosen = debts.getValue(ana.id).second),
+                        PaymentDraft(bia, 5_000, PayMethod.PIX, today.plus(DatePeriod(days = 3))),
+                    ),
+                )
+            assertTrue(refused is PaymentResult.Err)
+            assertEquals(5_000L, balance())
+            val ok =
+                payments.recordAll(
+                    listOf(
+                        PaymentDraft(anaRef, 5_000, PayMethod.PIX, today, chosen = debts.getValue(ana.id).second),
+                        PaymentDraft(bia, 5_000, PayMethod.CASH, today, chosen = debts.getValue(bia.id).second),
+                    ),
+                )
+            assertTrue(ok.toString(), ok is PaymentResult.Ok)
+            assertEquals(0L, balance())
+            assertEquals(0L, repo.balances().first()[bia] ?: 0L)
         }
 }

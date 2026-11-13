@@ -42,7 +42,8 @@ import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.CardElevation
-import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.Choice
+import app.tutora.designsystem.components.ChoiceField
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.FieldError
 import app.tutora.designsystem.components.HeaderAction
@@ -66,6 +67,7 @@ import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.CatalogError
 import app.tutora.domain.Group
+import app.tutora.domain.MemberShare
 import app.tutora.domain.Payer
 import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
@@ -76,9 +78,12 @@ import app.tutora.domain.RateType
 import app.tutora.domain.Student
 import app.tutora.domain.TagColor
 import app.tutora.domain.Who
+import app.tutora.domain.canSplit
 import app.tutora.domain.initials
+import app.tutora.domain.memberDues
 import app.tutora.domain.randomTag
 import app.tutora.domain.resolvePrice
+import app.tutora.domain.sum
 import app.tutora.domain.unlink
 import app.tutora.domain.withDefault
 import app.tutora.state.LocalServices
@@ -89,6 +94,7 @@ import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
 import app.tutora.ui.errorText
+import app.tutora.ui.kindName
 import app.tutora.ui.payments.CreditsSection
 import app.tutora.ui.payments.PackageCard
 import app.tutora.ui.payments.PayerBalance
@@ -159,6 +165,9 @@ fun StudentDetailScreen(
         // As on the StudentDetail mockup: who, three figures, then the actions (Victor, 29 Oct 2026).
         DetailIdentity(s.student.name, listOfNotNull(s.student.subject, s.student.phone).joinToString(" · ")) {
             Avatar(initials(s.student.name), s.student.color.tag(), size = AvatarSize.LG)
+        }
+        s.student.guardian?.let {
+            Text(stringResource(R.string.stu_guardianLine, it), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
         }
         s.student.notes?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted) }
         val defaultLink = s.links.firstOrNull { it.isDefault } ?: s.links.firstOrNull()
@@ -378,6 +387,19 @@ private fun StudentForm(
         TextField(stringResource(R.string.students_phone), d.phone.orEmpty(), {
             d = d.copy(phone = it.ifEmpty { null })
         }, keyboardType = KeyboardType.Phone, capitalization = KeyboardCapitalization.None)
+        // Responsável: who the Fatura is for, when not the student (AC-020-17).
+        TextField(
+            stringResource(R.string.stu_guardian),
+            d.guardian.orEmpty(),
+            {
+                d = d.copy(guardian = it.ifEmpty { null })
+            },
+            Modifier.testTag(
+                "student-guardian",
+            ),
+            helper = stringResource(R.string.stu_guardianHint),
+            capitalization = KeyboardCapitalization.Words,
+        )
         SectionHeader(stringResource(R.string.students_wherePays), aside = stringResource(R.string.students_starHint), required = true)
         SegmentedControl(
             listOf(
@@ -560,6 +582,7 @@ fun GroupDetailScreen(
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     var picking by rememberSaveable { mutableStateOf<String?>(null) }
     var moving by rememberSaveable { mutableStateOf<String?>(null) }
+    var sharing by rememberSaveable { mutableStateOf<String?>(null) }
     val g = group ?: return
     val place by remember(g.placeId) { services.catalogRepo.place(g.placeId) }.collectAsState(initial = null)
     val archived = g.archivedAt != null
@@ -607,7 +630,17 @@ fun GroupDetailScreen(
         val newLesson = { nav.navigate(app.tutora.ui.LessonNew()) }
         // A group owes as one, unless its place pays the teacher or a salary covers it (AC-008-1).
         val groupOwes = place?.let { it.payer == Payer.PLACE || it.kind == PlaceKind.SCHOOL } == false
-        if (groupOwes) {
+        if (groupOwes && g.splitSince != null) {
+            // Split: what the members owe for this group, paid by several at once (AC-020-40).
+            app.tutora.ui.payments.GroupSplitBalance(
+                id,
+                byName(members).map { it.id to it.name },
+                stringResource(R.string.pay_record),
+                listOf(month, price),
+                report,
+                newLesson,
+            )
+        } else if (groupOwes) {
             PayerBalance(
                 PayerRef(PayerKind.GROUP, id),
                 stringResource(R.string.pay_record),
@@ -638,6 +671,10 @@ fun GroupDetailScreen(
             { openPage(StudentDetail(it.id)) },
             { c -> scope.launch { services.catalog.removeMember(id, c.id) } },
         ) { c -> RemoveConfirm(stringResource(R.string.connections_leaveGroupTitle, c.title, g.name)) }
+        // The price split between the members, each with an equal part or their own (AC-020-34, 35).
+        if (groupOwes && !archived && place?.let { canSplit(members.size, it.kind, it.payer) } == true) {
+            SplitSection(g, members, language) { sharing = it }
+        }
         if (groupOwes) PayerHistory(nav, PayerRef(PayerKind.GROUP, id))
     }
     when (picking) {
@@ -667,6 +704,13 @@ fun GroupDetailScreen(
                     picking = null
                 },
             )
+    }
+    sharing?.let { sid ->
+        val member = members.firstOrNull { it.id == sid } ?: return@let
+        ShareSheet(member.name, g.shares[sid], g.rateCents ?: 0, { sharing = null }) { share ->
+            scope.launch { services.catalog.setShare(id, sid, share) }
+            sharing = null
+        }
     }
     moving?.let { target ->
         val to = places.firstOrNull { it.place.id == target }?.place ?: return@let
@@ -756,12 +800,21 @@ private fun GroupForm(
         RequiredLegend()
         // A new group picks its place; an existing one moves from its detail (AC-004-35, 37).
         if (id == null) {
-            Field(stringResource(R.string.lesson_groupPlace), required = true) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                    places.forEach { p -> Chip(placeName(p.place), d.placeId == p.place.id, { d = d.copy(placeId = p.place.id) }) }
-                }
-                if (error == CatalogError.PLACE_REQUIRED) FieldError(errorText(CatalogError.PLACE_REQUIRED), key = tries)
-            }
+            // A list that grows: one field with a search box, not a row of chips (AC-020-38).
+            ChoiceField(
+                stringResource(R.string.lesson_groupPlace),
+                places.map { p -> Choice(p.place.id, placeName(p.place), kindName(p.place.kind)) },
+                setOfNotNull(d.placeId.takeIf { it.isNotEmpty() }),
+                { picked -> picked.firstOrNull()?.let { d = d.copy(placeId = it) } },
+                Modifier.testTag("group-place"),
+                allLabel = stringResource(R.string.places_choose),
+                searchLabel = stringResource(R.string.places_search),
+                icon = IconName.PIN,
+                required = true,
+                isError = error == CatalogError.PLACE_REQUIRED,
+                errorKey = tries,
+            )
+            if (error == CatalogError.PLACE_REQUIRED) FieldError(errorText(CatalogError.PLACE_REQUIRED), key = tries)
         } else {
             place?.let { Text(placeName(it), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted) }
         }
@@ -790,6 +843,151 @@ private fun GroupForm(
                 placeholder = stringResource(R.string.places_noPrice),
                 helper = stringResource(R.string.places_perLessonOption),
             )
+        }
+    }
+}
+
+/** Members sorted as people read names, as the split orders them (AC-020-34). */
+private fun byName(members: List<Student>) =
+    members.sortedBy {
+        java.text.Normalizer
+            .normalize(it.name, java.text.Normalizer.Form.NFD)
+            .replace(Regex("\\p{M}"), "")
+            .lowercase()
+    }
+
+/**
+ * "Dividir o valor entre os alunos": on, every class given from now on is owed by the members,
+ * each their share; each member's row says what they owe per class and opens their share (AC-020-34, 35).
+ */
+@Composable
+private fun SplitSection(
+    g: Group,
+    members: List<Student>,
+    language: app.tutora.domain.Language,
+    onShare: (String) -> Unit,
+) {
+    val services = LocalServices.current
+    val scope = rememberCoroutineScope()
+    val on = g.splitSince != null
+    val price = g.rateCents ?: 0
+    val sorted = byName(members)
+    val dues = memberDues(price, sorted.map { it.id }, g.shares)
+    SectionHeader(stringResource(R.string.grp_splitTitle))
+    val shareLabels =
+        sorted.associate { st ->
+            st.id to
+                when (val share = g.shares[st.id]) {
+                    is MemberShare.Percent -> "${share.bp / 100}%"
+                    is MemberShare.Amount -> stringResource(R.string.grp_shareAmount)
+                    null -> stringResource(R.string.grp_shareEqual)
+                }
+        }
+    val perLesson = stringResource(R.string.places_perLesson, "%s")
+    val rows: List<@Composable () -> Unit> =
+        listOf<@Composable () -> Unit> {
+            ListRow(
+                stringResource(R.string.grp_split),
+                Modifier.testTag("group-split"),
+                subtitle = stringResource(if (on) R.string.grp_splitHint else R.string.grp_splitOffHint),
+                trailing = RowTrailing.SWITCH,
+                switchValue = on,
+                onSwitchChange = { v -> scope.launch { services.catalog.setSplit(g.id, v) } },
+            )
+        } +
+            if (on) {
+                sorted.map { st ->
+                    @Composable {
+                        ListRow(
+                            st.name,
+                            Modifier.testTag("share-${st.name}"),
+                            subtitle = "${shareLabels[st.id]} · ${perLesson.replace("%s", formatMoney(dues[st.id] ?: 0, language))}",
+                            avatar = initials(st.name) to st.color.tag(),
+                            onClick = { onShare(st.id) },
+                        )
+                    }
+                }
+            } else {
+                emptyList()
+            }
+    ListGroup(rows)
+    if (on) {
+        val custom = sorted.filter { it.id in g.shares }
+        val covered = dues.values.sum()
+        when {
+            custom.isNotEmpty() && custom.size == sorted.size && covered < price ->
+                Text(
+                    stringResource(R.string.grp_uncovered, rateMoney(price - covered, language)),
+                    style = TutoraTheme.type.meta,
+                    color = TutoraTheme.colors.dangerInk,
+                )
+            custom.isNotEmpty() && sum(custom.map { dues[it.id] ?: 0 }) >= price && custom.size < sorted.size ->
+                Text(stringResource(R.string.grp_over), style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
+        }
+    }
+}
+
+/** A member's share: an equal part, a percentage of each class or a set amount (AC-020-35). */
+@Composable
+private fun ShareSheet(
+    name: String,
+    current: MemberShare?,
+    price: Long,
+    onDismiss: () -> Unit,
+    onSave: (MemberShare?) -> Unit,
+) {
+    var kind by rememberSaveable {
+        mutableStateOf(
+            when (current) {
+                is MemberShare.Percent -> "percent"
+                is MemberShare.Amount -> "amount"
+                null -> "equal"
+            },
+        )
+    }
+    var percent by rememberSaveable { mutableStateOf(((current as? MemberShare.Percent)?.bp ?: 5_000) / 100L) }
+    var amount by rememberSaveable { mutableStateOf((current as? MemberShare.Amount)?.cents ?: price / 2) }
+    BottomSheet(
+        stringResource(R.string.grp_shareTitle, name),
+        onDismiss,
+        actions =
+            listOf { m ->
+                Button(stringResource(R.string.catalog_save), {
+                    onSave(
+                        when (kind) {
+                            "percent" -> MemberShare.Percent((percent * 100).toInt())
+                            "amount" -> MemberShare.Amount(amount)
+                            else -> null
+                        },
+                    )
+                }, m.testTag("share-save"))
+            },
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            SegmentedControl(
+                listOf(
+                    "equal" to stringResource(R.string.grp_shareEqual),
+                    "percent" to stringResource(R.string.grp_sharePercent),
+                    "amount" to stringResource(R.string.grp_shareAmount),
+                ),
+                kind,
+                { kind = it },
+                stringResource(R.string.grp_shareTitle, name),
+                size = ControlSize.SM,
+            )
+            when (kind) {
+                "percent" ->
+                    NumberField(
+                        stringResource(R.string.grp_percentLabel),
+                        percent,
+                        { percent = it },
+                        min = 1,
+                        max = 100,
+                        suffix = "%",
+                    )
+                "amount" -> MoneyField(stringResource(R.string.grp_amountLabel), amount, { amount = it ?: 0 })
+                else -> Text(stringResource(R.string.grp_equalHint), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+            }
         }
     }
 }

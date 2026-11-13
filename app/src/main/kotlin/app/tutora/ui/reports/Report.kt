@@ -2,7 +2,6 @@ package app.tutora.ui.reports
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,14 +30,14 @@ import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Checkbox
-import app.tutora.designsystem.components.Chip
-import app.tutora.designsystem.components.DateField
+import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyTone
+import app.tutora.designsystem.components.PeriodField
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
@@ -50,6 +49,7 @@ import app.tutora.domain.Language
 import app.tutora.domain.ReportRange
 import app.tutora.domain.SubjectKind
 import app.tutora.domain.SubjectReport
+import app.tutora.domain.canSplit
 import app.tutora.domain.localOf
 import app.tutora.state.LocalServices
 import app.tutora.ui.LocalClockDurations
@@ -221,8 +221,9 @@ fun ReportScreen(
     val language = currentLanguage()
     val zone = services.zone
     val today = remember { localOf(services.now(), zone).date }
-    var kind by rememberSaveable { mutableStateOf(SubjectKind.valueOf(startKind)) }
-    var id by rememberSaveable { mutableStateOf(startId) }
+    // Only the student, group or place it was opened from (AC-020-29).
+    val kind = SubjectKind.valueOf(startKind)
+    val id = startId
     var range by rememberSaveable { mutableStateOf("month") }
     var customFrom by rememberSaveable { mutableStateOf(today.toString()) }
     var customTo by rememberSaveable { mutableStateOf(today.toString()) }
@@ -232,6 +233,7 @@ fun ReportScreen(
     val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val settings by services.settings.collectAsState(initial = null)
+    val members by remember { services.reportsRepo.members() }.collectAsState(initial = emptyMap())
     val report by remember(kind, id, from, to) {
         services.reportsRepo.subject(app.tutora.data.Subject(kind, id), from, to, today, zone)
     }.collectAsState(initial = null)
@@ -276,45 +278,35 @@ fun ReportScreen(
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
     ) {
-        SegmentedControl(
+        // The period as a filter: quick periods over De and Até; dates picked by hand light none (AC-020-30, 31).
+        PeriodField(
+            stringResource(R.string.rep_period),
             listOf(
-                SubjectKind.STUDENT to stringResource(R.string.rep_student),
-                SubjectKind.GROUP to stringResource(R.string.rep_group),
-                SubjectKind.PLACE to stringResource(R.string.rep_place),
+                "month" to stringResource(R.string.rep_thisMonth),
+                "last" to stringResource(R.string.rep_lastMonth),
+                "three" to stringResource(R.string.rep_threeMonths),
             ),
-            kind,
-            { k ->
-                if (k != kind) {
-                    kind = k
-                    id = ""
-                }
-            },
-            stringResource(R.string.rep_screen),
-        )
-        // Which one: switching keeps the period (AC-010-2).
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            options.forEach { (oid, name, _) -> Chip(name, oid == id, { id = oid }) }
-        }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            listOf(
-                "month" to R.string.rep_thisMonth,
-                "last" to R.string.rep_lastMonth,
-                "three" to R.string.rep_threeMonths,
-                "custom" to R.string.rep_custom,
-            ).forEach { (k, label) -> Chip(stringResource(label), range == k, { range = k }) }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            DateField(stringResource(R.string.rep_from), pattern("dd/MM/yyyy", language, from), from, {
+            range.takeIf { it != "custom" },
+            { range = it },
+            from,
+            pattern("dd/MM/yyyy", language, from),
+            {
                 range = "custom"
                 customFrom = it.toString()
                 customTo = to.toString()
-            }, Modifier.weight(1f))
-            DateField(stringResource(R.string.rep_to), pattern("dd/MM/yyyy", language, to), to, {
+            },
+            to,
+            pattern("dd/MM/yyyy", language, to),
+            {
                 range = "custom"
                 customFrom = from.toString()
                 customTo = it.toString()
-            }, Modifier.weight(1f))
-        }
+            },
+            stringResource(R.string.rep_from),
+            stringResource(R.string.rep_to),
+            tag = "report-period",
+            latest = today,
+        )
         val r = report
         if (subject == null || r == null) return@ScreenScaffold
         Card(Modifier.testTag("report-summary")) {
@@ -355,6 +347,26 @@ fun ReportScreen(
             },
             variant = ButtonVariant.GHOST,
             fullWidth = true,
+        )
+        // Enviar: the Fatura and the Relatório detalhado (spec 020).
+        val group = if (kind == SubjectKind.GROUP) groups.firstOrNull { it.id == id } else null
+        val groupPlace = group?.let { g -> places.firstOrNull { it.place.id == g.placeId }?.place }
+        val splitMembers =
+            group?.let { g ->
+                members[g.id]?.takeIf { groupPlace != null && canSplit(it.size, groupPlace.kind, groupPlace.payer) }
+            }
+        SendSection(
+            nav,
+            r,
+            SendSubject(
+                kind,
+                name,
+                subject.third,
+                subjectLabel,
+                if (kind == SubjectKind.STUDENT) students.firstOrNull { it.student.id == id }?.student?.guardian else null,
+                splitMembers,
+                group?.takeIf { it.splitSince != null }?.id,
+            ),
         )
     }
 }
@@ -446,10 +458,13 @@ fun EarningsReportSheet(
             ),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                Chip(stringResource(R.string.rep_pdf), pdf, { pdf = true })
-                Chip(stringResource(R.string.rep_excel), !pdf, { pdf = false })
-            }
+            SegmentedControl(
+                listOf(true to stringResource(R.string.rep_pdf), false to stringResource(R.string.rep_excel)),
+                pdf,
+                { pdf = it },
+                stringResource(R.string.rep_earningsTitle),
+                size = ControlSize.SM,
+            )
             Checkbox(stringResource(R.string.rep_partSources), parts.bySource, { parts = parts.copy(bySource = it) })
             Checkbox(stringResource(R.string.rep_partClasses), parts.classes, { parts = parts.copy(classes = it) })
             Checkbox(stringResource(R.string.rep_partPayments), parts.payments, { parts = parts.copy(payments = it) })

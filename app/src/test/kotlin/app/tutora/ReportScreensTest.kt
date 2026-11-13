@@ -3,6 +3,7 @@ package app.tutora
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -13,6 +14,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
+import app.tutora.domain.Group
 import app.tutora.domain.PlaceLink
 import app.tutora.domain.RateType
 import app.tutora.domain.Student
@@ -23,6 +25,7 @@ import app.tutora.ui.StudentDetail
 import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.Result
 import app.tutora.usecases.WhoId
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -108,12 +111,14 @@ class ReportScreensTest {
     }
 
     @Test
-    fun `AC-010-2 switching between Aluno, Turma and Local keeps the period`() {
+    fun `AC-020-29 Relatorio is only for the one it was opened from, with no switch or list of names`() {
         openReport()
         click("Mês passado", scroll = false)
-        click("Local", scroll = false)
         exists("01/09/2026")
-        exists("Online / Remoto")
+        exists("Ana Souza")
+        listOf("Aluno", "Turma", "Local").forEach {
+            compose.onAllNodes(matching(it), useUnmergedTree = true).assertCountEquals(0)
+        }
     }
 
     @Test
@@ -220,6 +225,270 @@ class ReportScreensTest {
                     .last()
                     .second,
             ).contains("brand=Aulas da Profa. Ana"),
+        )
+    }
+
+    @Test
+    fun `AC-020-1 Relatorio keeps its export and adds Enviar with the Fatura and the detailed report`() {
+        openReport()
+        listOf(
+            "Exportar este relatório",
+            "Enviar",
+            "Fatura",
+            "Para receber: valor e Pix",
+            "Relatório detalhado",
+            "Cada aula com dia, horário e deslocamento",
+        ).forEach { exists(it) }
+    }
+
+    @Test
+    fun `AC-020-2 the Fatura and the detailed report are shared under names that say which`() {
+        openReport()
+        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("sheet-pdf").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("send-detail").performScrollTo().performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("sheet-pdf").performClick()
+        h.settle(compose)
+        assertEquals(
+            listOf("Ana Souza - fatura - outubro 2026.pdf", "Ana Souza - relatório detalhado - outubro 2026.pdf"),
+            h.exports.shared.map { it.first },
+        )
+    }
+
+    @Test
+    fun `AC-020-11 without a Pix key Relatorio asks for one in Seus dados`() {
+        openReport()
+        click("Adicione sua chave Pix em Seus dados")
+        compose.onNodeWithTag("personal-screen").assertExists()
+    }
+
+    private fun groupReport() {
+        val gid =
+            runBlocking {
+                h.t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                )
+                val ids =
+                    h.services.catalogRepo
+                        .students()
+                        .first()
+                        .map { it.student.id }
+                val g = (h.t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, ids, null)) as Result.Ok).value
+                h.t.lessons.logLesson(
+                    LessonDraft(WhoId.OfGroup(g.id), online, LocalDate(2026, 10, 20), LocalTime(9, 0), 60, null, null, null),
+                )
+                g.id
+            }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.Report("GROUP", gid))
+    }
+
+    @Test
+    fun `AC-020-20 a private group's Fatura goes to the whole group or split by student`() {
+        groupReport()
+        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        h.settle(compose)
+        exists("Turma inteira")
+        exists("Dividir por aluno")
+        compose.onNodeWithTag("sheet-pdf").performClick()
+        h.settle(compose)
+        assertEquals(
+            "Inglês B - fatura - outubro 2026.pdf",
+            h.exports.shared
+                .single()
+                .first,
+        )
+    }
+
+    @Test
+    fun `AC-020-21 split by student, each member gets their own Fatura for their share`() {
+        groupReport()
+        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        h.settle(compose)
+        click("Dividir por aluno", scroll = false)
+        compose.onNodeWithTag("member-first-Bia Lima").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("member-second-Ana Souza").performClick()
+        h.settle(compose)
+        assertEquals(
+            "Bia Lima - fatura - outubro 2026.pdf",
+            h.exports.shared
+                .single()
+                .first,
+        )
+        val text = plain(h.exports.copied.single())
+        assertTrue(text, text.contains("Total a pagar: R$ 50,00"))
+    }
+
+    @Test
+    fun `AC-020-30 the period is one row over De and Ate, and dates picked by hand light none of it`() {
+        openReport()
+        compose.onNodeWithTag("report-period").assertExists()
+        compose.onAllNodes(matching("Outro…"), useUnmergedTree = true).assertCountEquals(0)
+
+        fun lit() =
+            listOf("Este mês", "Mês passado", "3 meses").filter { label ->
+                compose
+                    .onAllNodes(matching(label), useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .any { n -> generateSequence(n) { it.parent }.any { it.config.getOrNull(SemanticsProperties.Selected) == true } }
+            }
+        assertEquals(listOf("Este mês"), lit())
+        // De: the picker opens on 01/10/2026; OK keeps it, which is now a period of its own.
+        click("01/10/2026")
+        click("OK", scroll = false)
+        assertEquals(emptyList<String>(), lit())
+        exists("01/10/2026")
+    }
+
+    @Test
+    fun `AC-020-35 the group's detail splits the price, and each member's share can be a percentage or an amount`() {
+        val gid =
+            runBlocking {
+                h.t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                )
+                val ids =
+                    h.services.catalogRepo
+                        .students()
+                        .first()
+                        .map { it.student.id }
+                (h.t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, ids, null)) as Result.Ok).value.id
+            }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.GroupDetail(gid))
+        compose.onNodeWithTag("group-split").performScrollTo()
+        compose.onNodeWithContentDescription("Dividir o valor entre os alunos").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .group(gid)
+                ?.splitSince != null
+        }
+        h.settle(compose)
+        exists("Parte igual · R$ 50,00/aula", part = true)
+        compose.onNodeWithTag("share-Ana Souza").performScrollTo().performClick()
+        h.settle(compose)
+        click("Porcentagem", scroll = false)
+        compose.onNodeWithTag("share-save").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .group(gid)
+                ?.shares
+                ?.isNotEmpty() == true
+        }
+        h.settle(compose)
+        // Ana at 50% (the sheet's start) pays R$ 50,00, and Bia the rest.
+        exists("50% · R$ 50,00/aula", part = true)
+    }
+
+    @Test
+    fun `AC-020-40 Registrar pagamento on a split group adds who paid, or everyone at once, and saves them together`() {
+        val gid =
+            runBlocking {
+                h.t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                )
+                val ids =
+                    h.services.catalogRepo
+                        .students()
+                        .first()
+                        .map { it.student.id }
+                val g = (h.t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, ids, null)) as Result.Ok).value
+                h.t.now = "2026-10-20T12:00:00.000Z"
+                h.t.catalog.setSplit(g.id, true)
+                h.t.now = "2026-10-26T12:00:00.000Z"
+                h.t.lessons.logLesson(
+                    LessonDraft(WhoId.OfGroup(g.id), online, LocalDate(2026, 10, 21), LocalTime(9, 0), 60, null, null, null),
+                )
+                g.id
+            }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.GroupDetail(gid))
+        click("Registrar pagamento", scroll = false)
+        compose.onNodeWithTag("group-pay").assertExists()
+        // Nobody picked is Todos pagaram: everyone who owes, the whole amount at first.
+        exists("Todos pagaram · R$ 100,00", part = true)
+        exists("Ana Souza R$ 50,00 · Bia Lima R$ 50,00", part = true)
+        exists("Registrar · R$ 100,00", part = true)
+        compose.onNodeWithTag("group-pay-save").performClick()
+        // Both shares paid; Ana's own private class from the setup stays hers to pay.
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .memberDebts(gid)
+                .first()
+                .values
+                .all { it.first == 0L }
+        }
+        assertTrue(
+            runBlocking {
+                h.services.paymentRepo
+                    .memberDebts(gid)
+                    .first()
+                    .values
+                    .all { it.first == 0L }
+            },
+        )
+    }
+
+    @Test
+    fun `AC-020-41 Todos pagaram takes one amount and divides it by what each member owes`() {
+        val gid =
+            runBlocking {
+                h.t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                )
+                val ids =
+                    h.services.catalogRepo
+                        .students()
+                        .first()
+                        .map { it.student.id }
+                val g = (h.t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, ids, null)) as Result.Ok).value
+                h.t.now = "2026-10-20T12:00:00.000Z"
+                h.t.catalog.setSplit(g.id, true)
+                h.t.now = "2026-10-26T12:00:00.000Z"
+                h.t.lessons.logLesson(
+                    LessonDraft(WhoId.OfGroup(g.id), online, LocalDate(2026, 10, 21), LocalTime(9, 0), 60, null, null, null),
+                )
+                g.id
+            }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.GroupDetail(gid))
+        click("Registrar pagamento", scroll = false)
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasSetTextAction() and
+                    androidx.compose.ui.test
+                        .hasAnyAncestor(
+                            androidx.compose.ui.test
+                                .hasTestTag("group-pay-total"),
+                        ),
+            ).performTextReplacement("6000")
+        h.settle(compose)
+        exists("Ana Souza R$ 30,00 · Bia Lima R$ 30,00", part = true)
+        compose.onNodeWithTag("group-pay-save").performClick()
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .memberDebts(gid)
+                .first()
+                .values
+                .all { it.first == 2_000L }
+        }
+        assertTrue(
+            runBlocking {
+                h.services.paymentRepo
+                    .memberDebts(gid)
+                    .first()
+                    .values
+                    .all { it.first == 2_000L }
+            },
         )
     }
 }

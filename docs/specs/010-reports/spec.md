@@ -20,8 +20,8 @@ The teacher can send someone what they owe and what they took: pick a student, a
 ### Opening a report
 
 - **AC-010-1.** The detail of a student, a group and a place has Relatório. It opens the report for that one, for this month.
-- **AC-010-2.** The report has Aluno, Turma and Local at the top, then a list to pick which one; switching keeps the period.
-- **AC-010-3.** The period is Este mês, Mês passado, 3 meses or Outro…, with De and Até dates shown. Outro… lets both dates be picked, Até never before De and never after today.
+- **AC-010-2.** ~~The report has Aluno, Turma and Local at the top, then a list to pick which one; switching keeps the period.~~ *(Replaced by AC-020-29 on 13 Nov 2026: the report is only for the one it was opened from.)*
+- **AC-010-3.** *(13 Nov 2026: "Outro…" removed, picking the dates is enough; see AC-020-30.)* The period is Este mês, Mês passado, 3 meses or Outro…, with De and Até dates shown. Outro… lets both dates be picked, Até never before De and never after today.
 
 ### What it shows
 

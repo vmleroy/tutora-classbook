@@ -36,6 +36,7 @@ import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.RowTrailing
+import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.TextField
 import app.tutora.designsystem.components.formatMoney
@@ -419,19 +420,17 @@ private fun PastClassesRow(
             color = c.inkMuted,
         )
         Text(stringResource(R.string.set_confirmWhen), style = TutoraTheme.type.bodyStrong, color = c.ink)
-        androidx.compose.foundation.layout.FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-            verticalArrangement = Arrangement.spacedBy(Spacing.s2),
-        ) {
+        SegmentedControl(
             listOf(
-                ConfirmWhen.END to R.string.set_confirmEnd,
-                ConfirmWhen.HOUR to R.string.set_confirmHour,
-                ConfirmWhen.NEXT_DAY to R.string.set_confirmNextDay,
-            ).forEach { (w, label) ->
-                app.tutora.designsystem.components
-                    .Chip(stringResource(label), s.confirmWhen == w, { onChange(s.copy(confirmWhen = w)) })
-            }
-        }
+                ConfirmWhen.END to stringResource(R.string.set_confirmEnd),
+                ConfirmWhen.HOUR to stringResource(R.string.set_confirmHour),
+                ConfirmWhen.NEXT_DAY to stringResource(R.string.set_confirmNextDay),
+            ),
+            s.confirmWhen,
+            { onChange(s.copy(confirmWhen = it)) },
+            stringResource(R.string.set_confirmWhen),
+            size = ControlSize.SM,
+        )
     }
 }
 
@@ -498,7 +497,7 @@ private fun LanguageRow(
     }
 }
 
-/** Seus dados: the teacher's name and Pix key, printed on reports when set (AC-010-16). */
+/** Seus dados: the teacher's name, Pix and the reports' title, in three sections (AC-010-16, AC-020-28). */
 @Composable
 fun PersonalDataScreen(onBack: () -> Unit) {
     val services = LocalServices.current
@@ -507,11 +506,14 @@ fun PersonalDataScreen(onBack: () -> Unit) {
     val s = settings ?: return
     ScreenScaffold(stringResource(R.string.rep_personal), "personal-screen", variant = HeaderVariant.PUSH, onBack = onBack) {
         Text(stringResource(R.string.rep_personalBody), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+        // Three sections, each saying what its fields are for (AC-020-28).
+        PersonalSection(R.string.rep_sectionYou, R.string.rep_sectionYouBody, "section-you")
         TextField(stringResource(R.string.rep_settingsName), s.teacherName, { v ->
             scope.launch {
                 services.saveSettings(s.copy(teacherName = v))
             }
         })
+        PersonalSection(R.string.rep_sectionPix, R.string.rep_sectionPixBody, "section-pix")
         // Masked, with the eye to show it (AC-015-16); offered the lock once when first saved (AC-015-5).
         val lock = app.tutora.lock.LocalAppLock.current
         var offer by rememberSaveable { mutableStateOf(false) }
@@ -527,6 +529,16 @@ fun PersonalDataScreen(onBack: () -> Unit) {
                 if (s.pixKey.isNotBlank() && !s.appLock && !s.lockOffered && lock.device.available()) offer = true
             },
         )
+        // Cidade: the Pix QR code needs it with the name and key (AC-020-18).
+        TextField(
+            stringResource(R.string.rep_settingsCity),
+            s.pixCity,
+            { v -> scope.launch { services.saveSettings(s.copy(pixCity = v)) } },
+            Modifier.testTag("pix-city"),
+            helper = stringResource(R.string.rep_settingsCityHint),
+            capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Words,
+        )
+        PersonalSection(R.string.rep_sectionReports, R.string.rep_sectionReportsBody, "section-reports")
         // The reports' top line; empty keeps Tutora's (AC-019-15).
         TextField(
             stringResource(R.string.rep_settingsTitle),
@@ -557,6 +569,17 @@ fun PersonalDataScreen(onBack: () -> Unit) {
             )
         }
     }
+}
+
+/** A section of Seus dados: its title and one line on what it is for (AC-020-28). */
+@Composable
+private fun PersonalSection(
+    title: Int,
+    body: Int,
+    tag: String,
+) {
+    SectionHeader(stringResource(title), Modifier.testTag(tag))
+    Text(stringResource(body), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
 }
 
 private fun lockAfterLabel(after: app.tutora.domain.LockAfter) =
@@ -617,18 +640,13 @@ private fun LockSettings(s: Settings) {
     }
     if (s.appLock && available) {
         Text(stringResource(R.string.lock_after), style = TutoraTheme.type.bodyStrong, color = c.ink)
-        androidx.compose.foundation.layout.FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-            verticalArrangement = Arrangement.spacedBy(Spacing.s2),
-        ) {
-            app.tutora.domain.LockAfter.entries.forEach { after ->
-                app.tutora.designsystem.components
-                    .Chip(
-                        stringResource(lockAfterLabel(after)),
-                        s.lockAfter == after,
-                        { scope.launch { services.saveSettings(s.copy(lockAfter = after)) } },
-                    )
-            }
-        }
+        SegmentedControl(
+            app.tutora.domain.LockAfter.entries
+                .map { it to stringResource(lockAfterLabel(it)) },
+            s.lockAfter,
+            { after -> scope.launch { services.saveSettings(s.copy(lockAfter = after)) } },
+            stringResource(R.string.lock_after),
+            size = ControlSize.SM,
+        )
     }
 }

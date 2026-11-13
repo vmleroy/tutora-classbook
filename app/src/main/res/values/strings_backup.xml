@@ -81,7 +81,6 @@
     <string name="bk_confirm">Restore</string>
     <string name="bk_thisYear">This year</string>
     <string name="bk_all">All</string>
-    <string name="bk_custom">Custom</string>
     <string name="bk_generate">Create spreadsheet</string>
     <string name="bk_sheetFile">Tutora spreadsheet</string>
     <string name="bk_sheetStudents">Students</string>

@@ -462,13 +462,17 @@ private fun PlaceForm(
             }
             if (d.payer == Payer.PLACE) {
                 Field(stringResource(R.string.places_cycle)) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    SegmentedControl(
                         listOf(
-                            PayCycle.LESSON to R.string.places_cycles_lesson,
-                            PayCycle.WEEKLY to R.string.places_cycles_weekly,
-                            PayCycle.MONTHLY to R.string.places_cycles_monthly,
-                        ).forEach { (c, label) -> Chip(stringResource(label), d.payCycle == c, { d = d.copy(payCycle = c) }) }
-                    }
+                            PayCycle.LESSON to stringResource(R.string.places_cycles_lesson),
+                            PayCycle.WEEKLY to stringResource(R.string.places_cycles_weekly),
+                            PayCycle.MONTHLY to stringResource(R.string.places_cycles_monthly),
+                        ),
+                        d.payCycle,
+                        { d = d.copy(payCycle = it) },
+                        stringResource(R.string.places_cycle),
+                        size = ControlSize.SM,
+                    )
                 }
             }
         }

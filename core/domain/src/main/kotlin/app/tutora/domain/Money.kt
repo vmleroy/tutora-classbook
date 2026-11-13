@@ -77,3 +77,37 @@ fun typedCents(
     val value = if (digits.isEmpty()) 0L else digits.toLong()
     return if (value > max) previous else value
 }
+
+/**
+ * [cents] split equally into [parts] whole-cent shares: the leftover cents go one each to the
+ * first parts, so the shares always add up to [cents] and differ by at most one cent (AC-020-21).
+ */
+fun splitShares(
+    cents: Cents,
+    parts: Int,
+): List<Cents> {
+    require(parts > 0) { "splitShares needs at least one part" }
+    val base = cents / parts
+    val rest = cents % parts
+    return List(parts) { i -> base + if (i < rest) 1 else 0 }
+}
+
+/**
+ * [cents] divided in proportion to [weights] (what each member owes), in whole cents: each takes
+ * its floor, and the leftover cents go to the largest remainders (the first on a tie), so the
+ * parts always add up to [cents] (AC-020-41). With no weight at all, it is split equally.
+ */
+fun proportionalShares(
+    cents: Cents,
+    weights: List<Cents>,
+): List<Cents> {
+    if (weights.isEmpty()) return emptyList()
+    val total = sum(weights)
+    if (total <= 0) return splitShares(cents, weights.size)
+    val exact = weights.map { Math.multiplyExact(cents, it) }
+    val floors = exact.map { it / total }
+    val rest = cents - sum(floors)
+    val order = exact.indices.sortedWith(compareByDescending<Int> { exact[it] % total }.thenBy { it })
+    val extra = order.take(rest.toInt()).toSet()
+    return floors.mapIndexed { i, f -> f + if (i in extra) 1 else 0 }
+}

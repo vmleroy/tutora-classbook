@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -34,12 +33,15 @@ import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Checkbox
-import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.Choice
+import app.tutora.designsystem.components.ChoiceField
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.DurationField
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
+import app.tutora.designsystem.components.IconButton
+import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
@@ -80,6 +82,8 @@ import app.tutora.domain.Who
 import app.tutora.domain.balanceOf
 import app.tutora.domain.localOf
 import app.tutora.domain.payerOf
+import app.tutora.domain.proportionalShares
+import app.tutora.domain.sum
 import app.tutora.state.LocalServices
 import app.tutora.ui.GroupDetail
 import app.tutora.ui.LessonDetail
@@ -355,7 +359,9 @@ private fun PayerClassRow(
         subtitle =
             listOfNotNull(
                 minutesText(c.owed.minutes),
-                formatMoney(c.owed.dueCents, language),
+                c.owed.dueCents
+                    .takeIf { it > 0 }
+                    ?.let { formatMoney(it, language) },
                 c.placePays?.let { stringResource(R.string.pay_byPlace) },
             ).joinToString(" · "),
         badge = leftBadge(c.left, c.owed.dueCents),
@@ -429,10 +435,18 @@ fun PayerLessonsScreen(
         onBack = { nav.popBackStack() },
     ) {
         val classes = payerClasses(payer) ?: return@ScreenScaffold
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            val filters = listOf("all" to R.string.pay_filterAll, "owed" to R.string.pay_filterOwed, "paid" to R.string.pay_filterPaid)
-            filters.forEach { (k, label) -> Chip(stringResource(label), filter == k, { filter = k }) }
-        }
+        // Short fixed choices as one segmented row (AC-020-32).
+        SegmentedControl(
+            listOf(
+                "all" to stringResource(R.string.pay_filterAll),
+                "owed" to stringResource(R.string.pay_filterOwed),
+                "paid" to stringResource(R.string.pay_filterPaid),
+            ),
+            filter,
+            { filter = it },
+            stringResource(R.string.pay_lessonsAll),
+            size = ControlSize.SM,
+        )
         val shown =
             classes.filter {
                 when (filter) {
@@ -700,9 +714,7 @@ fun PaymentSheet(
                     tone = AlertTone.ACCENT,
                 )
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                PayMethod.entries.forEach { mth -> Chip(methodName(mth), method == mth, { method = mth }) }
-            }
+            MethodControl(method) { method = it }
             DateField(stringResource(R.string.lesson_date), dayMonth(picked, language), picked, { if (it <= today) date = it.toString() })
             TextField(stringResource(R.string.pay_note), note, { note = it })
             // Escolher aulas is a switch: off pays the oldest first, on lists the classes (Victor, 29 Oct 2026).
@@ -882,9 +894,7 @@ fun PackageCard(
                 },
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                    PayMethod.entries.forEach { mth -> Chip(methodName(mth), method == mth, { method = mth }) }
-                }
+                MethodControl(method) { method = it }
                 DateField(stringResource(R.string.lesson_date), dayMonth(picked, language), picked, {
                     if (it <=
                         today
@@ -1136,3 +1146,177 @@ fun bonusOffer(lesson: Lesson): BonusOffer? {
 
 /** The most minutes a bonus can give at once. */
 private const val BONUS_MAX_MIN = 600
+
+/** Dinheiro, Pix, Transferência or Cartão, as a dropdown field (AC-020-32). */
+@Composable
+fun MethodControl(
+    method: PayMethod,
+    onChange: (PayMethod) -> Unit,
+) {
+    // A field like Tipo: four segments are too narrow for "Transferência" (AC-020-32).
+    ChoiceField(
+        stringResource(R.string.pay_methodLabel),
+        PayMethod.entries.map { Choice(it.name, methodName(it)) },
+        setOf(method.name),
+        { picked -> picked.firstOrNull()?.let { onChange(PayMethod.valueOf(it)) } },
+        Modifier.testTag("pay-method"),
+        icon = IconName.WALLET,
+    )
+}
+
+/**
+ * A split group's balance: what its members still owe for its classes, plus what the group owes
+ * from before the split. "Registrar pagamento" pays several members at once (AC-020-40).
+ */
+@Composable
+fun GroupSplitBalance(
+    groupId: String,
+    members: List<Pair<String, String>>,
+    payLabel: String,
+    stats: List<DetailStat>,
+    onReport: () -> Unit,
+    onNewLesson: () -> Unit,
+) {
+    val services = LocalServices.current
+    val language = currentLanguage()
+    val group = PayerRef(PayerKind.GROUP, groupId)
+    val debts by remember(groupId) { services.paymentRepo.memberDebts(groupId) }.collectAsState(initial = emptyMap())
+    val ledger by remember(groupId) { services.paymentRepo.ledger(group) }.collectAsState(initial = null)
+    var paying by rememberSaveable { mutableStateOf(false) }
+    val l = ledger ?: return
+    val owes = l.owedCents + debts.values.sumOf { it.first }
+    val owed =
+        if (owes > 0) {
+            DetailStat(stringResource(R.string.pay_owesLabel), formatMoney(owes, language), StatTone.OWED)
+        } else {
+            DetailStat(stringResource(R.string.pay_settled), formatMoney(0, language), StatTone.PAID)
+        }
+    Box(Modifier.testTag("balance")) {
+        DetailOverview(listOf(owed) + stats, payLabel to { paying = true }, onReport, onNewLesson)
+    }
+    if (paying) GroupPaySheet(groupId, members, debts, l.owedCents) { paying = false }
+}
+
+/**
+ * Registrar pagamento on a split group: "Quem pagou" starts at "Todos pagaram" with the total,
+ * everyone who owes listed with their amount; picking students in it (with a search box) narrows
+ * the list to them, and an × takes one out. One method and one date; each becomes that
+ * student's payment, paying this group's classes first. The group's own debt from before the split
+ * is one more choice (AC-020-40).
+ */
+@Composable
+private fun GroupPaySheet(
+    groupId: String,
+    members: List<Pair<String, String>>,
+    debts: Map<String, Pair<Cents, List<String>>>,
+    groupOwes: Cents,
+    onDismiss: () -> Unit,
+) {
+    val services = LocalServices.current
+    val scope = rememberCoroutineScope()
+    val language = currentLanguage()
+    val today = localOf(services.now(), services.zone).date
+    val groupKey = "group"
+    val names = members.toMap() + if (groupOwes > 0) mapOf(groupKey to stringResource(R.string.pay_groupBefore)) else emptyMap()
+    val owedBy = members.associate { (id, _) -> id to (debts[id]?.first ?: 0L) } + (groupKey to groupOwes)
+    var picked by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var amounts by remember { mutableStateOf(mapOf<String, Cents>()) }
+    var method by rememberSaveable { mutableStateOf(PayMethod.PIX) }
+    var date by rememberSaveable { mutableStateOf(today.toString()) }
+    var refused by remember { mutableStateOf(false) }
+
+    val owing = names.keys.filter { (owedBy[it] ?: 0) > 0 }
+    // Nobody picked is everyone who owes: "Todos pagaram".
+    val paying = picked.ifEmpty { owing }
+
+    fun choose(ids: Collection<String>) {
+        picked = names.keys.filter { it in ids }
+    }
+    // Todos pagaram: one amount for everyone, divided by what each owes (AC-020-41).
+    val everyone = picked.isEmpty()
+    var together by remember(debts, groupOwes) { mutableStateOf<Cents?>(sum(owing.map { owedBy[it] ?: 0 })) }
+    val split = proportionalShares(together ?: 0, owing.map { owedBy[it] ?: 0 }).let { parts -> owing.zip(parts).toMap() }
+    val amountOf = { id: String -> if (everyone) split[id] ?: 0 else amounts[id] ?: owedBy[id] ?: 0 }
+    val total = paying.sumOf { amountOf(it) }
+    val owesText = { id: String -> (owedBy[id] ?: 0).takeIf { it > 0 }?.let { formatMoney(it, language) } }
+    val owesLabel = stringResource(R.string.pay_owesShort, "%s")
+    BottomSheet(
+        stringResource(R.string.pay_record),
+        onDismiss,
+        Modifier.testTag("group-pay"),
+        actions =
+            listOf { m ->
+                Button(stringResource(R.string.pay_save, formatMoney(total, language)), {
+                    val drafts =
+                        paying.filter { amountOf(it) > 0 }.map { id ->
+                            if (id == groupKey) {
+                                PaymentDraft(PayerRef(PayerKind.GROUP, groupId), amountOf(id), method, LocalDate.parse(date))
+                            } else {
+                                PaymentDraft(
+                                    PayerRef(PayerKind.STUDENT, id),
+                                    amountOf(id),
+                                    method,
+                                    LocalDate.parse(date),
+                                    chosen = debts[id]?.second.orEmpty(),
+                                )
+                            }
+                        }
+                    scope.launch {
+                        when (services.payments.recordAll(drafts)) {
+                            is app.tutora.usecases.PaymentResult.Ok -> onDismiss()
+                            is app.tutora.usecases.PaymentResult.Err -> refused = true
+                        }
+                    }
+                }, m.testTag("group-pay-save"), enabled = total > 0)
+            },
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            ChoiceField(
+                stringResource(R.string.pay_whoPaid),
+                names.map { (id, name) -> Choice(id, name, owesText(id)?.let { owesLabel.replace("%s", it) }) },
+                picked.toSet(),
+                { choose(it) },
+                Modifier.testTag("group-pay-who"),
+                multiple = true,
+                allLabel = stringResource(R.string.pay_allPaidTotal, formatMoney(sum(owing.map { owedBy[it] ?: 0 }), language)),
+                searchLabel = stringResource(R.string.pay_searchMember),
+                icon = IconName.USERS,
+            )
+            if (everyone) {
+                MoneyField(
+                    stringResource(R.string.pay_paidTogether),
+                    together,
+                    { together = it },
+                    Modifier.testTag("group-pay-total"),
+                    helper = owing.joinToString(" · ") { "${names[it].orEmpty()} ${formatMoney(split[it] ?: 0, language)}" },
+                )
+            } else {
+                paying.forEach { id ->
+                    val name = names[id].orEmpty()
+                    // What they owe goes in the label, so nothing hangs under the box and the small ×
+                    // lines up with it.
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s1), verticalAlignment = Alignment.Bottom) {
+                        MoneyField(
+                            listOfNotNull(name, owesText(id)?.let { owesLabel.replace("%s", it) }).joinToString(" · "),
+                            amountOf(id),
+                            { amounts = amounts + (id to (it ?: 0)) },
+                            Modifier.weight(1f).testTag("group-pay-$name"),
+                        )
+                        IconButton(
+                            IconName.CLOSE,
+                            stringResource(R.string.pay_removeFrom, name),
+                            { choose(paying - id) },
+                            variant = IconButtonVariant.PLAIN,
+                            size = ControlSize.SM,
+                        )
+                    }
+                }
+            }
+            MethodControl(method) { method = it }
+            DateField(stringResource(R.string.lesson_date), dayMonth(LocalDate.parse(date), language), LocalDate.parse(date), {
+                if (it <= today) date = it.toString()
+            }, latest = today)
+            if (refused) Text(stringResource(R.string.pay_refused), style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
+        }
+    }
+}

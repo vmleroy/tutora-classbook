@@ -25,7 +25,7 @@ Tutora is an offline-first mobile app that lets a teacher see, in one place, wha
 
 - Accounts, login, cloud sync or a backend.
 - Publishing to the Play Store or App Store (installed by APK only).
-- Student-facing features, invoicing, tax reports.
+- Student-facing features (an app or page for students) and tax reports. Invoices made on the phone and shared are in (spec 020).
 - Multiple devices sharing the same data.
 
 ## Features
@@ -41,7 +41,7 @@ Nine must-have areas make up v1. Every lesson can be entered by hand or by the l
 | Live earnings (optional) | Start a timer when a lesson begins; the screen shows elapsed time and money earned, updating every second; stop or pause; the final amount is saved to the lesson. Can be turned off in Settings for teachers who only manage the schedule | Must |
 | Payments | Record payments (cash, Pix, transfer), see pending balance per student, mark lessons as paid in bulk, prepaid lesson packages, optional late-cancellation and no-show fees | Must |
 | Earnings dashboard | Today, this week and this month earned vs. expected, school salary and formal jobs counted alongside private lessons, with a filter for all, private lessons, or school and formal job, and a 6-month trend; works the same whether lessons came from the timer or manual entry | Must |
-| Reports per student or place | Pick a student or a place and a date range (this month, last month, 3 months or custom dates) to see lessons, hours, total, paid and owed; export it as a PDF to send to the student, parent or salinha, or as Excel, or as a short text for WhatsApp | Must |
+| Reports per student or place | Pick a student or a place and a date range (this month, last month, 3 months or custom dates) to see lessons, hours, total, paid and owed; export it as a PDF to send to the student, parent or salinha, or as Excel, or as a short text for WhatsApp. Send a Fatura (each class, what is still to pay, an optional due date, the Pix key with a QR code) or a detailed report (times, time in class, travel, charges, notes); a private group whole or split per student; Faturas do mês on Earnings lists everyone who owes (spec 020) | Must |
 | Backup | Full backup as a JSON file and restore from it; export an Excel spreadsheet (.xlsx) with one sheet each for lessons, payments, students, places and a monthly summary, filtered by period; share either file to Google Drive or any app via the system share sheet; optional automatic backup (daily, weekly or monthly) to a folder chosen once, such as a Google Drive folder, keeping the last few copies | Must |
 | Calendar sync | Copy classes into Google Calendar, Outlook or a local calendar through the phone's own calendar, and optionally show other appointments as busy time on the Agenda; export an .ics file as a fallback | Should |
 | Themes and customization | 4 themes (Quadro-negro, Caderno azul, Biblioteca, Giz pastel), each with light, dark or follow-the-system; pick any color (presets, a hex code, or hue, intensity and brightness sliders) for each part of the app: header, main buttons, highlight button, earnings numbers, background, cards and active menu; normal or large text | Should |
@@ -163,6 +163,7 @@ The timer is optional: any lesson can be marked done from the schedule with its 
 1. Open the student or the place (from the Students or Places tab, or a row on Earnings) and tap Report.
 2. Pick the period: This month, Last month, 3 months, or set custom From and To dates.
 3. Check the totals, then tap Generate PDF; the share sheet opens so you can send it on WhatsApp or email, or save it to Drive.
+4. Or, under Send, pick Fatura (to get paid: amount, due date, Pix and its QR code) or Detailed report (each class with its times, travel and notes). At month end, Faturas do mês on Earnings lists everyone who owes, one tap each.
 
 **Record a payment**
 
@@ -188,7 +189,7 @@ Ten SQLite tables plus one link table cover v1; money is stored as integer cents
 | Table | Key columns | Relations |
 | --- | --- | --- |
 | place | id, builtin (student\_home / online, name comes from the app language), name, kind (school / salinha / course / private / student\_home / online; school and course count as school and formal job), address, default\_duration\_min, rate\_type (hour / lesson), rate\_cents (empty = no price yet), payer (place / student), commission\_bp, travel\_mode (varies / fixed / none), travel\_fee\_cents, pay\_cycle (lesson / weekly / monthly), monthly\_salary\_cents, archived\_at, fee\_rule (006) | has many groups and lessons; can be the payer on payments |
-| student | id, name, subject, phone, rate\_type (hour / lesson; package in 008), color, notes, archived\_at, fee\_rule (006) | has many lessons, payments, packages; linked to places through student\_place (student\_id, place\_id, is\_default, rate\_cents: the student's own price there, empty to use the place's), many to many |
+| student | id, name, subject, phone, guardian (Responsável, 020), rate\_type (hour / lesson; package in 008), color, notes, archived\_at, fee\_rule (006) | has many lessons, payments, packages; linked to places through student\_place (student\_id, place\_id, is\_default, rate\_cents: the student's own price there, empty to use the place's), many to many |
 | group\_class | id, place\_id, name (e.g. "9th grade B"), subject, rate\_cents (empty at a school: the salary covers it), archived\_at | belongs to place; optional members through group\_member (group\_id, student\_id), drawn from the place's students; has many lessons |
 | schedule\_rule | id, student\_id or group\_id, weekday, start\_time, duration\_min, repeat (weekly / biweekly), starts\_on, ends\_on | generates lessons |
 | lesson | id, rule\_id (nullable), student\_id or group\_id, place\_id, start\_at, end\_at, status (scheduled / live / done / cancelled / missed), rate\_type, rate\_cents, earned\_cents, travel\_fee\_cents, fee\_cents, fee\_waived, paid, source (manual / timer), calendar\_event\_id, notes | belongs to student or group; optional rule |

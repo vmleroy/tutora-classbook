@@ -105,6 +105,8 @@ class PaymentScreensTest {
         text: String,
         part: Boolean = false,
     ) {
+        // The screens read Room on its own thread; wait for the text before looking (slower on CI).
+        h.awaitDb(compose) { compose.onAllNodes(matching(text, part), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
         compose.onAllNodes(matching(text, part), useUnmergedTree = true).onFirst().assertExists()
     }
 
@@ -130,7 +132,11 @@ class PaymentScreensTest {
         given(22)
         openAna()
         click("Registrar pagamento")
-        listOf("Pix", "Dinheiro", "Transferência", "Cartão", "Observação", "Registrar · R$ 240,00").forEach { exists(it) }
+        listOf("Forma de pagamento", "Pix", "Observação", "Registrar · R$ 240,00").forEach { exists(it) }
+        // The four methods are in the Forma de pagamento field (AC-020-32).
+        compose.onNodeWithTag("pay-method").performScrollTo().performClick()
+        h.settle(compose)
+        listOf("Pix", "Dinheiro", "Transferência", "Cartão").forEach { exists(it) }
     }
 
     @Test

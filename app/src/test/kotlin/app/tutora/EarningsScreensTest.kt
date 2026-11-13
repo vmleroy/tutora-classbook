@@ -323,22 +323,57 @@ class EarningsScreensTest {
     }
 
     @Test
-    fun `AC-019-1 Personalizado shows De and Ate, filled with the period on screen`() {
+    fun `AC-019-1 De and Ate always show the period on screen, under the quick periods`() {
         openEvolution()
-        listOf("6 meses", "12 meses", "Ano", "Personalizado").forEach { exists(it) }
-        compose.onNodeWithTag("evo-from").assertDoesNotExist()
-        compose.onNodeWithText("Personalizado").performClick()
-        h.settle(compose)
+        listOf("6 meses", "12 meses", "Ano").forEach { exists(it) }
         compose.onNodeWithTag("evo-from").assertExists()
         exists("01/05/2026")
         exists("26/10/2026")
     }
 
     @Test
+    fun `AC-020-33 Ate never shows or takes a day after today, so picking De leaves it where it was`() {
+        openEvolution()
+        // 6 meses runs to the end of October, but Até shows today.
+        exists("26/10/2026")
+        compose.onAllNodes(matching("31/10/2026"), useUnmergedTree = true).assertCountEquals(0)
+        pickFrom()
+        exists("01/05/2026")
+        exists("26/10/2026")
+        compose.onNodeWithTag("evo-too-long").assertDoesNotExist()
+    }
+
+    private fun lit(vararg labels: String) =
+        labels.filter { label ->
+            compose
+                .onAllNodes(matching(label), useUnmergedTree = true)
+                .fetchSemanticsNodes()
+                .any { n -> generateSequence(n) { it.parent }.any { it.config.getOrNull(SemanticsProperties.Selected) == true } }
+        }
+
+    /** De's picker opens on the date shown; OK keeps it, which makes the period one picked by hand. */
+    private fun pickFrom() {
+        compose.onNodeWithTag("evo-from").performClick()
+        h.settle(compose)
+        compose.onAllNodes(matching("OK"), useUnmergedTree = true).onLast().performClick()
+        h.settle(compose)
+    }
+
+    @Test
+    fun `AC-020-31 the period is one field, Periodo, and dates picked by hand light no quick period`() {
+        openEvolution()
+        exists("Período")
+        compose.onAllNodes(matching("Personalizado"), useUnmergedTree = true).assertCountEquals(0)
+        assertEquals(listOf("6 meses"), lit("6 meses", "12 meses", "Ano"))
+        pickFrom()
+        assertEquals(emptyList<String>(), lit("6 meses", "12 meses", "Ano"))
+        exists("01/05/2026")
+    }
+
+    @Test
     fun `AC-019-6 the chosen period is kept through a turn of the phone`() {
         openEvolution()
-        compose.onNodeWithText("Personalizado").performClick()
-        h.settle(compose)
+        pickFrom()
         h.landscape = true
         h.settle(compose)
         h.landscape = false
@@ -418,7 +453,7 @@ class EarningsScreensTest {
     fun `AC-019-10 the new words read in English`() {
         runBlocking { h.services.saveSettings(h.services.currentSettings().copy(language = app.tutora.domain.Language.EN)) }
         openEvolution()
-        listOf("Custom", "Type", "Place", "All places").forEach { exists(it) }
+        listOf("Period", "Type", "Place", "All places").forEach { exists(it) }
     }
 
     @Test

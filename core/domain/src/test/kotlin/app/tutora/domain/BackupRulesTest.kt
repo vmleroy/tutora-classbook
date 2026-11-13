@@ -81,4 +81,19 @@ class BackupRulesTest {
         assertEquals(file.tables["student"], read.file.tables["student"])
         assertEquals(BackupRead.Newer(8), readBackup(encodeBackup(file.copy(schemaVersion = 8)).encodeToByteArray(), 7))
     }
+
+    @Test
+    fun `AC-020-17 a backup from before the Responsável is brought up to version 8 unchanged`() {
+        val old = encodeBackup(file.copy(schemaVersion = 7))
+        val read = readBackup(old.encodeToByteArray(), 8) as BackupRead.Ok
+        assertEquals(8, read.file.schemaVersion)
+        assertEquals(file.tables["student"], read.file.tables["student"])
+    }
+
+    @Test
+    fun `AC-020-34 a backup from before split groups gets an empty list of shares`() {
+        val read = readBackup(encodeBackup(file.copy(schemaVersion = 8)).encodeToByteArray(), 9) as BackupRead.Ok
+        assertEquals(9, read.file.schemaVersion)
+        assertTrue("lesson_share" in read.file.tables)
+    }
 }

@@ -70,6 +70,8 @@ data class Student(
     /** The package terms when [rateType] is PACKAGE: how many classes, for what price (AC-008-19). */
     val packageLessons: Int? = null,
     val packagePriceCents: Cents? = null,
+    /** Responsável: a parent or whoever pays, named on the Fatura (AC-020-17). */
+    val guardian: String? = null,
 )
 
 /** A student's link to a place; `rateCents` null = the place's price ("Do local"). */
@@ -87,6 +89,10 @@ data class Group(
     val rateCents: Cents?,
     val memberIds: List<String>,
     val archivedAt: String?,
+    /** Since when each class's value is split between the members; null = the group owes as one (AC-020-34). */
+    val splitSince: String? = null,
+    /** Members with their own share; the others split what is left equally (AC-020-35). */
+    val shares: Map<String, MemberShare> = emptyMap(),
 )
 
 const val DEFAULT_DURATION_MIN = 60

@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.ui.SettingsGraph
 import org.junit.Before
@@ -66,5 +67,26 @@ class SettingsPagesTest {
         back()
         open("page-about")
         compose.onNodeWithTag("settings-about").assertExists()
+    }
+
+    @Test
+    fun `AC-020-18 Seus dados has an optional Cidade, used in the Pix QR code`() {
+        h.show(compose)
+        h.go(compose, app.tutora.ui.PersonalData)
+        compose.onNodeWithText("Usada no QR code do Pix").performScrollTo().assertExists()
+        compose.onNodeWithContentDescription("Cidade").performTextReplacement("Recife")
+        h.awaitDb(compose) { h.services.currentSettings().pixCity == "Recife" }
+    }
+
+    @Test
+    fun `AC-020-28 Seus dados is in three sections, each saying what it is for`() {
+        h.show(compose)
+        h.go(compose, app.tutora.ui.PersonalData)
+        listOf("section-you", "section-pix", "section-reports").forEach { compose.onNodeWithTag(it).performScrollTo().assertExists() }
+        listOf(
+            "Seu nome vai no topo das faturas e relatórios e no fim do texto copiado.",
+            "Para receber: a chave vai inteira nas faturas. Com seu nome e a cidade, a fatura ganha também um QR code com o valor.",
+            "A linha no topo de cada PDF. Vazia, fica a do Tutora.",
+        ).forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
     }
 }
