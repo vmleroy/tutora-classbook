@@ -151,7 +151,9 @@ class Payments(
 
     /** Inside a transaction: the chosen classes must be owed by this payer (AC-008-7, 8). */
     private suspend fun checkChosen(draft: PaymentDraft): PaymentError? {
-        val owed = dao.owed(draft.payer.kind.key, draft.payer.id).map { it.lesson.id }.toSet()
+        // A student's shares of split groups' classes count as theirs (AC-020-36).
+        val shares = if (draft.payer.kind == PayerKind.STUDENT) dao.shares(draft.payer.id).map { it.lesson.id } else emptyList()
+        val owed = dao.owed(draft.payer.kind.key, draft.payer.id).map { it.lesson.id }.toSet() + shares
         return if (owed.containsAll(draft.chosen)) null else PaymentError.NOT_OWED
     }
 
@@ -164,6 +166,31 @@ class Payments(
     }
 
     /** Registrar pagamento / Receber da salinha (AC-008-5 to 8, 10). */
+
+    /**
+     * Several students' payments at once, from a split group's "Registrar pagamento": all of them
+     * or none (AC-020-40).
+     */
+    suspend fun recordAll(drafts: List<PaymentDraft>): PaymentResult {
+        var refused: PaymentError? = null
+        return runCatching {
+            db.inTransaction {
+                val ids =
+                    drafts.map { d ->
+                        when (val r = record(d)) {
+                            is PaymentResult.Ok -> r.paymentId
+                            is PaymentResult.Err -> {
+                                refused = r.error
+                                // Throwing undoes the payments already written in this transaction.
+                                error("refused")
+                            }
+                        }
+                    }
+                PaymentResult.Ok(ids.joinToString(","))
+            }
+        }.getOrElse { PaymentResult.Err(refused ?: throw it) }
+    }
+
     suspend fun record(draft: PaymentDraft): PaymentResult =
         db.inTransaction {
             check(draft)?.let { return@inTransaction PaymentResult.Err(it) }

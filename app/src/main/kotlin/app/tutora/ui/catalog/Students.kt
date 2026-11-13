@@ -630,7 +630,17 @@ fun GroupDetailScreen(
         val newLesson = { nav.navigate(app.tutora.ui.LessonNew()) }
         // A group owes as one, unless its place pays the teacher or a salary covers it (AC-008-1).
         val groupOwes = place?.let { it.payer == Payer.PLACE || it.kind == PlaceKind.SCHOOL } == false
-        if (groupOwes) {
+        if (groupOwes && g.splitSince != null) {
+            // Split: what the members owe for this group, paid by several at once (AC-020-40).
+            app.tutora.ui.payments.GroupSplitBalance(
+                id,
+                byName(members).map { it.id to it.name },
+                stringResource(R.string.pay_record),
+                listOf(month, price),
+                report,
+                newLesson,
+            )
+        } else if (groupOwes) {
             PayerBalance(
                 PayerRef(PayerKind.GROUP, id),
                 stringResource(R.string.pay_record),

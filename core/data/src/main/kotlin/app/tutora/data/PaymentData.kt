@@ -19,6 +19,7 @@ import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
 import app.tutora.domain.PaymentRecord
 import app.tutora.domain.ledgerOf
+import app.tutora.domain.sum
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -224,6 +225,17 @@ interface PaymentDao {
     @Query(SHARE_SELECT)
     fun observeAllShares(): Flow<List<ShareOwedRow>>
 
+    /**
+     * The classes of every group a student is in that aren't theirs to pay: owed by the group as
+     * one, by a place, or covered by a salary; their own shares are in their ledger (AC-020-39).
+     */
+    @Query(
+        "$OWED_SELECT WHERE lesson.group_id IN (SELECT group_id FROM group_member WHERE student_id = :studentId) " +
+            "AND (lesson.status = 'done' OR lesson.due_cents > 0) AND lesson.payer IS NOT NULL " +
+            "AND lesson.id NOT IN (SELECT lesson_id FROM lesson_share WHERE student_id = :studentId)",
+    )
+    fun observeGroupLessons(studentId: String): Flow<List<OwedRow>>
+
     @Query("$SHARE_SELECT AND sh.student_id = :studentId ORDER BY lesson.start_at")
     fun observeShares(studentId: String): Flow<List<ShareOwedRow>>
 
@@ -396,6 +408,34 @@ class PaymentRepository(
         // The balances read the lesson table, so the count is read again whenever a class changes.
         combine(dao.observeLastPackage(studentId), dao.observeBalances()) { row, _ -> row }
             .map { row -> row?.let { PackageState(it.id, it.lessonsTotal, dao.packageUsed(it.id)) } }
+
+    /**
+     * Every class of a student's groups that someone else pays, with who and what is still owed on
+     * it, so a student's list holds everything they took part in (AC-020-39).
+     */
+    fun groupClasses(studentId: String): Flow<List<OwedElsewhere>> =
+        combine(dao.observeGroupLessons(studentId), leftByPayer()) { rows, left ->
+            rows.map { r ->
+                val payer = r.payerRef() ?: PayerRef(PayerKind.PLACE, r.lesson.placeId)
+                OwedElsewhere(r.toOwed(), left[payer]?.get(r.lesson.id) ?: 0, payer)
+            }
+        }
+
+    /**
+     * What each member still owes for one split group's classes, with those classes, so one
+     * "Registrar pagamento" on the group can pay each member's part (AC-020-40).
+     */
+    fun memberDebts(groupId: String): Flow<Map<String, Pair<Cents, List<String>>>> =
+        combine(dao.observeAllShares(), leftByPayer()) { shares, left ->
+            shares
+                .filter { it.lesson.groupId == groupId }
+                .groupBy { it.studentId }
+                .mapValues { (sid, rows) ->
+                    val mine = left[PayerRef(PayerKind.STUDENT, sid)].orEmpty()
+                    val open = rows.filter { (mine[it.lesson.id] ?: 0) > 0 }.sortedBy { it.lesson.startAt }
+                    sum(open.map { mine[it.lesson.id] ?: 0 }) to open.map { it.lesson.id }
+                }
+        }
 
     /** A student's classes that their places owe instead of them, by place id. */
     fun paidByPlace(studentId: String): Flow<Map<String, List<String>>> =

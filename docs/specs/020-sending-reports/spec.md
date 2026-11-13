@@ -84,6 +84,8 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 - **AC-020-36.** A member's share is theirs everywhere: their balance, Hoje's and Cadastro's lists, Registrar pagamento (which pays it, oldest first or chosen), their report and Fatura, and Faturas do mês, which lists them with it. The group's report shows what is still left across the shares, and its Enviar › Dividir por aluno uses each member's real share.
 - **AC-020-37.** Classes given before the split was turned on stay owed by the group, so nothing already paid moves.
 
+- **AC-020-39.** A student's list of classes holds every class they took part in: their own, their shares, and every class of each group they are in, also groups paid by a school, salinha or cursinho. A class someone else pays carries the group's name and who pays it ("a turma paga", "o local te paga") with that payer's Pago or A receber; only what is theirs counts in their balance (Victor, 13 Nov 2026).
+- **AC-020-40.** "Registrar pagamento" on a split group lists its members, each ticked with what they owe for this group and their own amount, and a row for what the group still owes from before the split; one method and one date. Saving records each ticked amount as that student's payment, paying this group's classes first, all together or none (Victor, 13 Nov 2026).
 - **AC-020-38.** Choosing a place from the places you have (a new group's place, a class's place) is one field that opens the list with a search box, each place with its kind under it, like Quem; never a row of chips, which doesn't scale (Victor, 13 Nov 2026).
 
 ### Language

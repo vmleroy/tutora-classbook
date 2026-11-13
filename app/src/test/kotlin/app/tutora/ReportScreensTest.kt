@@ -385,4 +385,52 @@ class ReportScreensTest {
         // Ana at 50% (the sheet's start) pays R$ 50,00, and Bia the rest.
         exists("50% · R$ 50,00/aula", part = true)
     }
+
+    @Test
+    fun `AC-020-40 Registrar pagamento on a split group ticks each member with what they owe and saves them together`() {
+        val gid =
+            runBlocking {
+                h.t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                )
+                val ids =
+                    h.services.catalogRepo
+                        .students()
+                        .first()
+                        .map { it.student.id }
+                val g = (h.t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, ids, null)) as Result.Ok).value
+                h.t.now = "2026-10-20T12:00:00.000Z"
+                h.t.catalog.setSplit(g.id, true)
+                h.t.now = "2026-10-26T12:00:00.000Z"
+                h.t.lessons.logLesson(
+                    LessonDraft(WhoId.OfGroup(g.id), online, LocalDate(2026, 10, 21), LocalTime(9, 0), 60, null, null, null),
+                )
+                g.id
+            }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.GroupDetail(gid))
+        click("Registrar pagamento", scroll = false)
+        compose.onNodeWithTag("group-pay").assertExists()
+        exists("Ana Souza · deve R$ 50,00", part = true)
+        exists("Bia Lima · deve R$ 50,00", part = true)
+        compose.onNodeWithTag("group-pay-save").performClick()
+        // Both shares paid; Ana's own private class from the setup stays hers to pay.
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .memberDebts(gid)
+                .first()
+                .values
+                .all { it.first == 0L }
+        }
+        assertTrue(
+            runBlocking {
+                h.services.paymentRepo
+                    .memberDebts(gid)
+                    .first()
+                    .values
+                    .all { it.first == 0L }
+            },
+        )
+    }
 }
