@@ -99,6 +99,8 @@ val backupUpgrades: Map<Int, (Map<String, List<BackupRow>>) -> Map<String, List<
         5 to { t -> t },
         // 014: the notifications sent, starting empty.
         6 to { t -> t + ("notice" to t["notice"].orEmpty()) },
+        // 020: a student's Responsável, a nullable column.
+        7 to { t -> t },
     )
 
 fun upgradeBackup(

@@ -57,6 +57,10 @@ interface StudentDao {
     @Query("SELECT * FROM student WHERE id = :id")
     suspend fun get(id: String): StudentRow?
 
+    /** Every student, archived or not: a group's members and the Faturas name them all (spec 020). */
+    @Query("SELECT * FROM student")
+    fun observeEvery(): Flow<List<StudentRow>>
+
     @Query("SELECT * FROM student WHERE id = :id")
     fun observeOne(id: String): Flow<StudentRow?>
 

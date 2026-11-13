@@ -77,3 +77,17 @@ fun typedCents(
     val value = if (digits.isEmpty()) 0L else digits.toLong()
     return if (value > max) previous else value
 }
+
+/**
+ * [cents] split equally into [parts] whole-cent shares: the leftover cents go one each to the
+ * first parts, so the shares always add up to [cents] and differ by at most one cent (AC-020-21).
+ */
+fun splitShares(
+    cents: Cents,
+    parts: Int,
+): List<Cents> {
+    require(parts > 0) { "splitShares needs at least one part" }
+    val base = cents / parts
+    val rest = cents % parts
+    return List(parts) { i -> base + if (i < rest) 1 else 0 }
+}

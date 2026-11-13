@@ -1,6 +1,10 @@
 package app.tutora.data
 
+import app.tutora.domain.DueRow
+import app.tutora.domain.DueSource
 import app.tutora.domain.LessonStatus
+import app.tutora.domain.Member
+import app.tutora.domain.Payer
 import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
 import app.tutora.domain.PlaceKind
@@ -9,15 +13,20 @@ import app.tutora.domain.ReportPayment
 import app.tutora.domain.Salary
 import app.tutora.domain.SubjectKind
 import app.tutora.domain.SubjectReport
+import app.tutora.domain.canSplit
 import app.tutora.domain.earnedOf
+import app.tutora.domain.invoicesDue
 import app.tutora.domain.localOf
 import app.tutora.domain.subjectReport
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
+import java.text.Normalizer
 
 /** A report's subject: a student, a group or a place. */
 data class Subject(
@@ -81,6 +90,12 @@ class ReportsRepository(
                         charged = record.status != LessonStatus.DONE,
                         bonus = cover[r.id] ?: 0,
                         left = left[r.id] ?: 0,
+                        start = localOf(r.startAt, zone).time.let { LocalTime(it.hour, it.minute) },
+                        travel = if (record.status == LessonStatus.DONE) r.travelFeeCents ?: 0 else 0,
+                        charge = if (record.status == LessonStatus.DONE) 0 else earned.gross,
+                        placeId = r.placeId,
+                        placeName = r.placeName,
+                        notes = r.notes?.trim()?.takeIf { it.isNotEmpty() },
                     )
                 }
             val starts = ledger.owed.associate { it.lessonId to localOf(it.startAt, zone).date }
@@ -121,4 +136,74 @@ class ReportsRepository(
         today: LocalDate,
         zone: String,
     ): SubjectReport = subject(s, from, to, today, zone).first()
+
+    /** Every group's members, sorted by name ignoring accents and capitals, as splits use them (AC-020-21). */
+    fun members(): Flow<Map<String, List<Member>>> =
+        combine(db.groups().observeMembers(), db.students().observeEvery()) { links, students ->
+            val byId = students.associateBy { it.id }
+            links
+                .groupBy { it.groupId }
+                .mapValues { (_, ls) ->
+                    ls
+                        .mapNotNull { l -> byId[l.studentId]?.let { Member(it.id, it.name, it.guardian) } }
+                        .sortedBy { fold(it.name) }
+                }
+        }
+
+    /** Each student's Responsável, for "Para:" on a Fatura (AC-020-6, 17). */
+    fun guardians(): Flow<Map<String, String>> =
+        db.students().observeEvery().map { rows -> rows.mapNotNull { r -> r.guardian?.let { r.id to it } }.toMap() }
+
+    /**
+     * Faturas do mês: who still owes for the period's classes, with what is left on each class,
+     * from the same rows and ledgers as each report (AC-020-23, 26).
+     */
+    fun due(
+        from: LocalDate,
+        to: LocalDate,
+        zone: String,
+        splitGroups: Boolean,
+    ): Flow<List<DueRow>> =
+        combine(
+            db.earnings().observeClasses(
+                with(earnings) { instant(from, zone) },
+                with(earnings) { instant(to.plus(DatePeriod(days = 1)), zone) },
+            ),
+            payments.leftByLesson(),
+            members(),
+            guardians(),
+        ) { rows, left, members, guardians ->
+            val sources =
+                rows
+                    .mapNotNull { r ->
+                        val record = with(earnings) { r.record(zone) }
+                        earnedOf(record) ?: return@mapNotNull null
+                        val payer = record.payer ?: return@mapNotNull null
+                        Triple(payer, r, left[r.id] ?: 0L)
+                    }.groupBy { it.first }
+                    .map { (payer, list) ->
+                        val r = list.first().second
+                        val kind =
+                            when (payer.kind) {
+                                PayerKind.STUDENT -> SubjectKind.STUDENT
+                                PayerKind.GROUP -> SubjectKind.GROUP
+                                PayerKind.PLACE -> SubjectKind.PLACE
+                            }
+                        val split =
+                            members[payer.id]?.takeIf {
+                                kind == SubjectKind.GROUP && canSplit(it.size, PlaceKind.fromKey(r.placeKind), Payer.valueOf(r.placePayer))
+                            }
+                        DueSource(
+                            kind,
+                            payer.id,
+                            if (kind == SubjectKind.PLACE) r.placeName.orEmpty() else r.whoName.orEmpty(),
+                            list.map { it.third },
+                            split,
+                            guardians[payer.id],
+                        )
+                    }
+            invoicesDue(sources, splitGroups)
+        }
 }
+
+private fun fold(s: String) = Normalizer.normalize(s, Normalizer.Form.NFD).replace(Regex("\\p{M}"), "").lowercase()

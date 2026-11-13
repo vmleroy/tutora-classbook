@@ -70,6 +70,8 @@ data class Student(
     /** The package terms when [rateType] is PACKAGE: how many classes, for what price (AC-008-19). */
     val packageLessons: Int? = null,
     val packagePriceCents: Cents? = null,
+    /** Responsável: a parent or whoever pays, named on the Fatura (AC-020-17). */
+    val guardian: String? = null,
 )
 
 /** A student's link to a place; `rateCents` null = the place's price ("Do local"). */

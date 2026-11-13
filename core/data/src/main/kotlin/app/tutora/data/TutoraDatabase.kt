@@ -113,10 +113,11 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 7
+        const val VERSION = 8
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+        val MIGRATIONS: Array<Migration> =
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
     }
 }
 
@@ -219,5 +220,13 @@ val MIGRATION_6_7 =
                     "NOT NULL, `cents` INTEGER NOT NULL, `minutes` INTEGER NOT NULL, `only_students` INTEGER NOT NULL, `at` TEXT NOT " +
                     "NULL, `seen` INTEGER NOT NULL, PRIMARY KEY(`id`))",
             )
+        }
+    }
+
+/** Spec 020: a student's Responsável, empty for everyone at first (AC-020-17). */
+val MIGRATION_7_8 =
+    object : Migration(7, 8) {
+        override fun migrate(connection: SQLiteConnection) {
+            connection.execSQL("ALTER TABLE student ADD COLUMN guardian TEXT")
         }
     }

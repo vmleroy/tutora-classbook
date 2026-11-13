@@ -64,6 +64,8 @@ data class EarnedRow(
     @ColumnInfo(name = "commission_bp") val commissionBp: Int,
     @ColumnInfo(name = "who_name") val whoName: String?,
     @ColumnInfo(name = "place_name") val placeName: String?,
+    /** The class's notes, for the detailed report (AC-020-15). */
+    val notes: String? = null,
 )
 
 /** A payment with the type of the place it comes from, if any, and who paid it. */
@@ -91,7 +93,7 @@ interface EarningsDao {
     @Query(
         """SELECT l.id, l.start_at, l.status, l.planned_min, l.value_cents, l.rate_cents, l.rate_type, l.travel_fee_cents,
              l.fee_cents, l.payer, l.student_id, l.group_id, l.place_id, p.kind AS place_kind, p.payer AS place_payer,
-             p.commission_bp, COALESCE(s.name, g.name) AS who_name, p.name AS place_name
+             p.commission_bp, COALESCE(s.name, g.name) AS who_name, p.name AS place_name, l.notes
            FROM lesson l JOIN place p ON p.id = l.place_id
            LEFT JOIN student s ON s.id = l.student_id LEFT JOIN group_class g ON g.id = l.group_id
            WHERE l.status IN ('done', 'cancelled', 'missed') AND l.start_at >= :from AND l.start_at < :to""",

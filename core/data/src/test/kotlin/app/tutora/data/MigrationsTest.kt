@@ -186,4 +186,23 @@ class MigrationsTest {
             assertEquals(1, db.notices().observeUnseen("2026-10-01T00:00:00.000Z").first())
             db.close()
         }
+
+    @Test
+    fun `AC-020-17 migration 7 to 8 keeps the students, with no Responsável yet`() =
+        runTest {
+            val file = File(tmp.root, "tutora.db")
+            val t = "'2026-11-13T12:00:00.000Z'"
+            createAt(
+                7,
+                file,
+                listOf(
+                    "INSERT INTO student (id, name, color, rate_type, created_at, updated_at) VALUES ('s', 'Ana', 'AMBER', 'HOUR', $t, $t)",
+                ),
+            )
+            val (db, _) = openTutoraDatabase(ApplicationProvider.getApplicationContext(), file, AndroidSQLiteDriver())
+            val ana = db.students().get("s")
+            assertEquals("Ana", ana?.name)
+            assertEquals(null, ana?.guardian)
+            db.close()
+        }
 }

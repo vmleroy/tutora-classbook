@@ -44,6 +44,8 @@ data class StudentRow(
     @ColumnInfo(name = "updated_at") val updatedAt: String,
     @ColumnInfo(name = "package_lessons") val packageLessons: Int? = null,
     @ColumnInfo(name = "package_price_cents") val packagePriceCents: Long? = null,
+    /** Responsável: who the Fatura is addressed to, when set (AC-020-17). */
+    val guardian: String? = null,
 )
 
 @Entity(
