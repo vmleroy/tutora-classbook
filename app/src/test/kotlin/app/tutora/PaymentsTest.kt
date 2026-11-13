@@ -322,28 +322,6 @@ class PaymentsTest {
         }
 
     @Test
-    fun `AC-020-39 a student's list holds their groups' classes too, with who pays them`() =
-        runTest {
-            val (gid, _) = splitGroup(split = false)
-            groupClass(gid, 22)
-            val salinha =
-                (
-                    t.catalog.savePlace(
-                        builtinPlace(
-                            BuiltinPlace.ONLINE,
-                        ).copy(id = "", builtin = null, name = "Salinha", kind = PlaceKind.SALINHA, payer = Payer.PLACE, rateCents = 6_000),
-                    ) as Result.Ok
-                ).value.id
-            val org = (t.catalog.saveGroup(Group("", salinha, "Turma da salinha", null, null, listOf(ana.id), null)) as Result.Ok).value
-            t.lessons.logLesson(LessonDraft(WhoId.OfGroup(org.id), salinha, LocalDate(2026, 10, 23), LocalTime(8, 0), 60, null, null, null))
-            val classes = repo.groupClasses(ana.id).first()
-            assertEquals(setOf(PayerKind.GROUP, PayerKind.PLACE), classes.map { it.payer.kind }.toSet())
-            assertEquals(setOf("Inglês B", "Turma da salinha"), classes.map { it.owed.who }.toSet())
-            // They are tracked, not owed: Ana's balance stays her own.
-            assertEquals(0L, balance())
-        }
-
-    @Test
     fun `AC-020-40 one payment on a split group pays several members at once, or nothing when one is refused`() =
         runTest {
             val (gid, bia) = splitGroup()

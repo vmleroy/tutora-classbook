@@ -325,10 +325,6 @@ private data class PayerClass(
     val owed: OwedClass,
     val left: Cents,
     val placePays: String?,
-    /** A class of one of the student's groups that the group pays as one (AC-020-39). */
-    val groupPays: Boolean = false,
-    /** On a student's page, the group a class belongs to (AC-020-39). */
-    val group: String? = null,
 )
 
 @Composable
@@ -336,25 +332,12 @@ private fun payerClasses(payer: PayerRef): List<PayerClass>? {
     val services = LocalServices.current
     val ledger by remember(payer) { services.paymentRepo.ledger(payer) }.collectAsState(initial = null)
     val elsewhere = studentElsewhere(payer)
-    // Every class of the student's groups too, whoever pays it, so their list is complete (AC-020-39).
-    val inGroups by remember(payer) {
-        if (payer.kind == PayerKind.STUDENT) services.paymentRepo.groupClasses(payer.id) else kotlinx.coroutines.flow.flowOf(emptyList())
-    }.collectAsState(initial = emptyList())
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val placeNames = places.associate { it.place.id to placeName(it.place) }
     val l = ledger ?: return null
     return (
         l.owed.map { PayerClass(it, l.allocation.left[it.lessonId] ?: 0, null) } +
-            elsewhere.map { PayerClass(it.owed, it.left, placeNames[it.payer.id]) } +
-            inGroups.map { g ->
-                PayerClass(
-                    g.owed,
-                    g.left,
-                    placeNames[g.payer.id].takeIf { g.payer.kind == PayerKind.PLACE },
-                    g.payer.kind == PayerKind.GROUP,
-                    g.owed.who,
-                )
-            }
+            elsewhere.map { PayerClass(it.owed, it.left, placeNames[it.payer.id]) }
     ).sortedByDescending { it.owed.startAt }
 }
 
@@ -367,15 +350,8 @@ private fun PayerClassRow(
     val services = LocalServices.current
     val language = currentLanguage()
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
-    // "28/10 · Ventura" on a student's or group's page; "28/10 · ENEM" on a place's (AC-008-33); a group's
-    // class on a student's page carries the group's name (AC-020-39).
-    val placeText = places.firstOrNull { it.place.id == c.owed.placeId }?.let { placeName(it.place) }
-    val summary =
-        when {
-            showWho -> c.owed.who
-            c.group != null -> listOfNotNull(c.group.takeIf { it.isNotEmpty() }, placeText).joinToString(" · ")
-            else -> placeText
-        }
+    // "28/10 · Ventura" on a student's or group's page; "28/10 · ENEM" on a place's (AC-008-33).
+    val summary = if (showWho) c.owed.who else places.firstOrNull { it.place.id == c.owed.placeId }?.let { placeName(it.place) }
     ListRow(
         listOfNotNull(dayMonth(c.owed.localDate(services.zone), language), summary?.takeIf { it.isNotEmpty() }).joinToString(" · "),
         subtitle =
@@ -385,9 +361,8 @@ private fun PayerClassRow(
                     .takeIf { it > 0 }
                     ?.let { formatMoney(it, language) },
                 c.placePays?.let { stringResource(R.string.pay_byPlace) },
-                stringResource(R.string.pay_byGroup).takeIf { c.groupPays },
             ).joinToString(" · "),
-        badge = leftBadge(c.left, c.owed.dueCents).takeIf { c.owed.dueCents > 0 },
+        badge = leftBadge(c.left, c.owed.dueCents),
         onClick = { nav.navigate(LessonDetail(c.owed.lessonId)) },
     )
 }

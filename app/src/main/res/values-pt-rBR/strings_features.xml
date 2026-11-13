@@ -646,7 +646,6 @@
     <string name="grp_over">As partes definidas já cobrem a aula: os outros não pagam nada.</string>
     <string name="grp_uncovered">%1$s de cada aula fica sem ninguém pagar.</string>
     <string name="places_choose">Escolha o local</string>
-    <string name="pay_byGroup">a turma paga</string>
     <string name="pay_groupBefore">A turma (aulas antes da divisão)</string>
     <string name="pay_refused">Nada foi salvo: confira os valores e a data.</string>
     <string name="pay_methodLabel">Forma de pagamento</string>

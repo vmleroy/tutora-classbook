@@ -44,7 +44,7 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 
 - [x] 25. Places as a `ChoiceField` with search in Nova turma and the class form; `ChoiceField` takes `required`, `isError` and `errorKey`. Test: `FeatureScreensTest.kt`. (AC-020-38)
 
-- [x] 26. A student's list with their groups' classes and who pays them; a split group's "Registrar pagamento" for several members at once (`recordAll`, all or none); a student's chosen classes include their shares. Test: `PaymentsTest.kt`, `ReportScreensTest.kt`. (AC-020-39, AC-020-40)
+- [x] 26. A split group's "Registrar pagamento" for several members at once (`recordAll`, all or none); a student's chosen classes include their shares. Test: `PaymentsTest.kt`, `ReportScreensTest.kt`. (AC-020-40)
 
 ### Finish
 
