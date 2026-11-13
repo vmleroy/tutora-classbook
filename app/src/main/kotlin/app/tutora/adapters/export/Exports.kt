@@ -233,7 +233,15 @@ class AndroidExports(
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-        context.startActivity(Intent.createChooser(send, fileName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        // Tutora takes shared images and PDFs as comprovantes (spec 021); its own documents never go back into it.
+        val chooser =
+            Intent
+                .createChooser(send, fileName)
+                .putExtra(
+                    Intent.EXTRA_EXCLUDE_COMPONENTS,
+                    arrayOf(android.content.ComponentName(context.packageName, "app.tutora.MainActivity")),
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(chooser)
     }
 
     override fun copy(text: String) {

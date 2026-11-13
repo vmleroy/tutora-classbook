@@ -138,5 +138,7 @@ class SourceChecksTest {
         // The viewer and Anexar comprovante are routes under the app lock's gate like every page.
         val nav = File("src/main/kotlin/app/tutora/ui/Navigation.kt").readText()
         assertTrue("composable<ReceiptViewer>" in nav && "composable<AttachReceipt>" in nav)
+        // Tutora's own documents never come back into it as a comprovante through the share sheet.
+        assertTrue("EXTRA_EXCLUDE_COMPONENTS" in File("src/main/kotlin/app/tutora/adapters/export/Exports.kt").readText())
     }
 }
