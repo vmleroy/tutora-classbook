@@ -84,6 +84,8 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 - **AC-020-36.** A member's share is theirs everywhere: their balance, Hoje's and Cadastro's lists, Registrar pagamento (which pays it, oldest first or chosen), their report and Fatura, and Faturas do mês, which lists them with it. The group's report shows what is still left across the shares, and its Enviar › Dividir por aluno uses each member's real share.
 - **AC-020-37.** Classes given before the split was turned on stay owed by the group, so nothing already paid moves.
 
+- **AC-020-38.** Choosing a place from the places you have (a new group's place, a class's place) is one field that opens the list with a search box, each place with its kind under it, like Quem; never a row of chips, which doesn't scale (Victor, 13 Nov 2026).
+
 ### Language
 
 - **AC-020-27.** Every new word, both PDFs, the Excel and the copied text follow the app language, including dates, weekdays and amounts; switching it never changes a number.

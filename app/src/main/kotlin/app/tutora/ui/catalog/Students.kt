@@ -42,7 +42,8 @@ import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.CardElevation
-import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.Choice
+import app.tutora.designsystem.components.ChoiceField
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.FieldError
 import app.tutora.designsystem.components.HeaderAction
@@ -93,6 +94,7 @@ import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
 import app.tutora.ui.errorText
+import app.tutora.ui.kindName
 import app.tutora.ui.payments.CreditsSection
 import app.tutora.ui.payments.PackageCard
 import app.tutora.ui.payments.PayerBalance
@@ -788,12 +790,21 @@ private fun GroupForm(
         RequiredLegend()
         // A new group picks its place; an existing one moves from its detail (AC-004-35, 37).
         if (id == null) {
-            Field(stringResource(R.string.lesson_groupPlace), required = true) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                    places.forEach { p -> Chip(placeName(p.place), d.placeId == p.place.id, { d = d.copy(placeId = p.place.id) }) }
-                }
-                if (error == CatalogError.PLACE_REQUIRED) FieldError(errorText(CatalogError.PLACE_REQUIRED), key = tries)
-            }
+            // A list that grows: one field with a search box, not a row of chips (AC-020-38).
+            ChoiceField(
+                stringResource(R.string.lesson_groupPlace),
+                places.map { p -> Choice(p.place.id, placeName(p.place), kindName(p.place.kind)) },
+                setOfNotNull(d.placeId.takeIf { it.isNotEmpty() }),
+                { picked -> picked.firstOrNull()?.let { d = d.copy(placeId = it) } },
+                Modifier.testTag("group-place"),
+                allLabel = stringResource(R.string.places_choose),
+                searchLabel = stringResource(R.string.places_search),
+                icon = IconName.PIN,
+                required = true,
+                isError = error == CatalogError.PLACE_REQUIRED,
+                errorKey = tries,
+            )
+            if (error == CatalogError.PLACE_REQUIRED) FieldError(errorText(CatalogError.PLACE_REQUIRED), key = tries)
         } else {
             place?.let { Text(placeName(it), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted) }
         }

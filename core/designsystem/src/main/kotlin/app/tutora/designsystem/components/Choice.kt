@@ -42,6 +42,10 @@ fun ChoiceField(
     allLabel: String? = null,
     searchLabel: String? = null,
     icon: IconName? = null,
+    /** The field's star and red error state, as any required field's (spec 020). */
+    required: Boolean = false,
+    isError: Boolean = false,
+    errorKey: Any? = null,
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
     val names = choices.filter { it.key in selected }.map { it.label }
@@ -51,7 +55,7 @@ fun ChoiceField(
             names.size <= SHOWN_NAMES -> names.joinToString(", ")
             else -> names.take(SHOWN_NAMES).joinToString(", ") + " +${names.size - SHOWN_NAMES}"
         }
-    SelectField(shown, { open = true }, modifier, label = label, icon = icon)
+    SelectField(shown, { open = true }, modifier, label = label, icon = icon, isError = isError, errorKey = errorKey, required = required)
     if (!open) return
     var query by rememberSaveable { mutableStateOf("") }
     val close = {

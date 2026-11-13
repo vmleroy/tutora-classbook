@@ -569,4 +569,29 @@ class FeatureScreensTest {
             }
         assertEquals(10, count)
     }
+
+    @Test
+    fun `AC-020-38 a group's place is one field with a search box, not a row of chips`() {
+        salinha()
+        h.show(compose)
+        h.go(compose, app.tutora.ui.GroupEdit())
+        compose.onNodeWithTag("group-place").performClick()
+        h.settle(compose)
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasSetTextAction() and
+                    androidx.compose.ui.test
+                        .hasAnyAncestor(
+                            androidx.compose.ui.test
+                                .hasTestTag("choice-search"),
+                        ),
+            ).performTextInput("aprend")
+        h.settle(compose)
+        compose.onNode(hasPlainText("Salinha Aprender+"), useUnmergedTree = true).assertExists()
+        compose.onAllNodes(hasPlainText("Casa do Aluno"), useUnmergedTree = true).assertCountEquals(0)
+        compose.onNode(hasPlainText("Salinha Aprender+"), useUnmergedTree = true).performClick()
+        h.settle(compose)
+        compose.onNode(hasPlainText("Salinha Aprender+"), useUnmergedTree = true).assertExists()
+    }
 }

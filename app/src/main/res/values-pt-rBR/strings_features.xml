@@ -645,4 +645,5 @@
     <string name="grp_equalHint">Divide em partes iguais o que os outros não cobrem.</string>
     <string name="grp_over">As partes definidas já cobrem a aula: os outros não pagam nada.</string>
     <string name="grp_uncovered">%1$s de cada aula fica sem ninguém pagar.</string>
+    <string name="places_choose">Escolha o local</string>
 </resources>

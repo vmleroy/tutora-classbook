@@ -2,7 +2,6 @@ package app.tutora.ui.schedule
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,6 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.navigation.NavHostController
@@ -22,7 +22,8 @@ import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
-import app.tutora.designsystem.components.Chip
+import app.tutora.designsystem.components.Choice
+import app.tutora.designsystem.components.ChoiceField
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.FieldError
@@ -62,6 +63,7 @@ import app.tutora.ui.catalog.DurationInput
 import app.tutora.ui.catalog.Field
 import app.tutora.ui.catalog.RequiredLegend
 import app.tutora.ui.clockTime
+import app.tutora.ui.kindName
 import app.tutora.ui.minutesText
 import app.tutora.ui.placeName
 import app.tutora.ui.shortDate
@@ -239,13 +241,19 @@ fun LessonForm(
             errorKey = tries,
         )
         if (choices.isNotEmpty()) {
-            Field(stringResource(if (group != null) R.string.lesson_groupPlace else R.string.lesson_placeLabel), required = !editing) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                    choices.forEach { p ->
-                        Chip(placeName(p), v.placeId == p.id, { choosePlace(p, (v.who as? WhoId.OfStudent)?.id) })
-                    }
-                }
-            }
+            // A list that grows: one field with a search box, not a row of chips (AC-020-38).
+            val placeChoices = choices.map { p -> Choice(p.id, placeName(p), kindName(p.kind)) }
+            ChoiceField(
+                stringResource(if (group != null) R.string.lesson_groupPlace else R.string.lesson_placeLabel),
+                placeChoices,
+                setOfNotNull(v.placeId?.takeIf { it.isNotEmpty() }),
+                { picked -> choices.firstOrNull { it.id in picked }?.let { choosePlace(it, (v.who as? WhoId.OfStudent)?.id) } },
+                Modifier.testTag("lesson-place"),
+                allLabel = stringResource(R.string.places_choose),
+                searchLabel = stringResource(R.string.places_search),
+                icon = IconName.PIN,
+                required = !editing,
+            )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
             DateField(

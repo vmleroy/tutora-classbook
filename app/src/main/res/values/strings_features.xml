@@ -635,4 +635,5 @@
     <string name="grp_equalHint">Splits what the others don\'t cover equally with the rest.</string>
     <string name="grp_over">The set shares already cover the class: the others pay nothing.</string>
     <string name="grp_uncovered">%1$s of each class isn\'t charged to anyone.</string>
+    <string name="places_choose">Choose a place</string>
 </resources>
