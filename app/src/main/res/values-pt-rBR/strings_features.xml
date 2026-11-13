@@ -632,4 +632,5 @@
     <string name="rep_sectionPixBody">Para receber: a chave vai inteira nas faturas. Com seu nome e a cidade, a fatura ganha também um QR code com o valor.</string>
     <string name="rep_sectionReports">Relatórios</string>
     <string name="rep_sectionReportsBody">A linha no topo de cada PDF. Vazia, fica a do Tutora.</string>
+    <string name="rep_period">Período</string>
 </resources>

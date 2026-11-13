@@ -77,7 +77,8 @@ fun <T> SegmentedControl(
     size: ControlSize = ControlSize.MD,
 ) {
     val c = TutoraTheme.colors
-    val index = options.indexOfFirst { it.first == value }.coerceAtLeast(0)
+    // A value that matches no option leaves every segment off, as a report's dates picked by hand (AC-020-30).
+    val index = options.indexOfFirst { it.first == value }
     val last = options.lastIndex
     // A label too long for its segment wraps and every segment grows with it, so nothing is
     // clipped (AC-002-16). Each segment's hit area is at least the touch size (AC-002-12).

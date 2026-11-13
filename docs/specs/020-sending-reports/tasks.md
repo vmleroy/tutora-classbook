@@ -33,6 +33,8 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 
 - [x] 19. Relatório only for the one it was opened from: no subject switch or name list. Test: `ReportScreensTest.kt`. (AC-020-29)
 
+- [x] 20. The period as one segmented row over De and Até, no Outro…; SegmentedControl leaves every segment off for a value it doesn't list. Test: `ReportScreensTest.kt`. (AC-020-30)
+
 ### Finish
 
 - [x] 17. Product doc: Reports feature and the "Send a monthly report" flow mention Fatura, Relatório detalhado and Faturas do mês; data model lists `student.guardian`. `./gradlew check` green once. Spec status in progress → done at `/verify`.

@@ -622,4 +622,5 @@
     <string name="rep_sectionPixBody">To get paid: the key goes in full on invoices. With your name and city, invoices also get a QR code with the amount.</string>
     <string name="rep_sectionReports">Reports</string>
     <string name="rep_sectionReportsBody">The line at the top of every PDF. Left empty, it says Tutora\'s.</string>
+    <string name="rep_period">Period</string>
 </resources>

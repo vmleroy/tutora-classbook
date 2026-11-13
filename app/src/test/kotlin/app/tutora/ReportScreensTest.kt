@@ -323,4 +323,25 @@ class ReportScreensTest {
         val text = plain(h.exports.copied.single())
         assertTrue(text, text.contains("Total a pagar: R$ 50,00"))
     }
+
+    @Test
+    fun `AC-020-30 the period is one row over De and Ate, and dates picked by hand light none of it`() {
+        openReport()
+        compose.onNodeWithTag("report-period").assertExists()
+        compose.onAllNodes(matching("Outro…"), useUnmergedTree = true).assertCountEquals(0)
+
+        fun lit() =
+            listOf("Este mês", "Mês passado", "3 meses").filter { label ->
+                compose
+                    .onAllNodes(matching(label), useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .any { n -> generateSequence(n) { it.parent }.any { it.config.getOrNull(SemanticsProperties.Selected) == true } }
+            }
+        assertEquals(listOf("Este mês"), lit())
+        // De: the picker opens on 01/10/2026; OK keeps it, which is now a period of its own.
+        click("01/10/2026")
+        click("OK", scroll = false)
+        assertEquals(emptyList<String>(), lit())
+        exists("01/10/2026")
+    }
 }

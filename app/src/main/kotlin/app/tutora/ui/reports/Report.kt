@@ -2,7 +2,6 @@ package app.tutora.ui.reports
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +40,7 @@ import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyTone
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
+import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -278,14 +278,18 @@ fun ReportScreen(
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
     ) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        // The quick periods in one row over De and Até; a date picked by hand lights none (AC-020-30).
+        SegmentedControl(
             listOf(
-                "month" to R.string.rep_thisMonth,
-                "last" to R.string.rep_lastMonth,
-                "three" to R.string.rep_threeMonths,
-                "custom" to R.string.rep_custom,
-            ).forEach { (k, label) -> Chip(stringResource(label), range == k, { range = k }) }
-        }
+                "month" to stringResource(R.string.rep_thisMonth),
+                "last" to stringResource(R.string.rep_lastMonth),
+                "three" to stringResource(R.string.rep_threeMonths),
+            ),
+            range,
+            { range = it },
+            stringResource(R.string.rep_period),
+            Modifier.testTag("report-period"),
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
             DateField(stringResource(R.string.rep_from), pattern("dd/MM/yyyy", language, from), from, {
                 range = "custom"
