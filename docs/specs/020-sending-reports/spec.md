@@ -1,6 +1,6 @@
 # Spec 020: Fatura and detailed report
 
-Status: in progress
+Status: done
 Depends on: 010 Reports (subjects, periods, PDF, Excel, copy as text, Seus dados), 019 (the reports' header title, AC-019-15), 015 App lock (the Pix key masked in the app, shown in full on what is sent), 008 Payments and packages (balances, which classes a payment paid), 006 Lessons (travel fee, cancellation charge), 007 Live timer (the real time in class), 004 Places and students (groups and their members)
 Mockups: docs/mockups/Report.dc.html, ReportPdf.dc.html (today's report and its PDF). New mockups for the Fatura PDF, the detailed PDF and Faturas do mês come with the plan.
 
