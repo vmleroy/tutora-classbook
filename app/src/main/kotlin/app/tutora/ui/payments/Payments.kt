@@ -41,6 +41,7 @@ import app.tutora.designsystem.components.DurationField
 import app.tutora.designsystem.components.HeaderAction
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconButton
+import app.tutora.designsystem.components.IconButtonVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
@@ -1292,15 +1293,22 @@ private fun GroupPaySheet(
             } else {
                 paying.forEach { id ->
                     val name = names[id].orEmpty()
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.CenterVertically) {
+                    // What they owe goes in the label, so nothing hangs under the box and the small ×
+                    // lines up with it.
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s1), verticalAlignment = Alignment.Bottom) {
                         MoneyField(
-                            name,
+                            listOfNotNull(name, owesText(id)?.let { owesLabel.replace("%s", it) }).joinToString(" · "),
                             amountOf(id),
                             { amounts = amounts + (id to (it ?: 0)) },
                             Modifier.weight(1f).testTag("group-pay-$name"),
-                            helper = owesText(id)?.let { owesLabel.replace("%s", it) },
                         )
-                        IconButton(IconName.CLOSE, stringResource(R.string.pay_removeFrom, name), { choose(paying - id) })
+                        IconButton(
+                            IconName.CLOSE,
+                            stringResource(R.string.pay_removeFrom, name),
+                            { choose(paying - id) },
+                            variant = IconButtonVariant.PLAIN,
+                            size = ControlSize.SM,
+                        )
                     }
                 }
             }
