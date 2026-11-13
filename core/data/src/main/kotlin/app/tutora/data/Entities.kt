@@ -79,6 +79,8 @@ data class GroupRow(
     @ColumnInfo(name = "archived_at") val archivedAt: String?,
     @ColumnInfo(name = "created_at") val createdAt: String,
     @ColumnInfo(name = "updated_at") val updatedAt: String,
+    /** Since when the class value is split between the members; null = the group owes as one (AC-020-34). */
+    @ColumnInfo(name = "split_since") val splitSince: String? = null,
 )
 
 @Entity(
@@ -93,6 +95,26 @@ data class GroupRow(
 data class MemberRow(
     @ColumnInfo(name = "group_id") val groupId: String,
     @ColumnInfo(name = "student_id") val studentId: String,
+    /** The member's own share of each class: a percentage in basis points or an amount; both null = an equal part (AC-020-35). */
+    @ColumnInfo(name = "share_bp") val shareBp: Int? = null,
+    @ColumnInfo(name = "share_cents") val shareCents: Long? = null,
+)
+
+/** What one member owes for one class of a split group, frozen when the class is given (AC-020-34). */
+@Entity(
+    tableName = "lesson_share",
+    primaryKeys = ["lesson_id", "student_id"],
+    foreignKeys = [
+        // Checked when the transaction ends: a class's shares are worked out just before it is saved.
+        ForeignKey(LessonRow::class, ["id"], ["lesson_id"], onDelete = ForeignKey.CASCADE, deferred = true),
+        ForeignKey(StudentRow::class, ["id"], ["student_id"], onDelete = ForeignKey.CASCADE),
+    ],
+    indices = [Index("student_id")],
+)
+data class LessonShareRow(
+    @ColumnInfo(name = "lesson_id") val lessonId: String,
+    @ColumnInfo(name = "student_id") val studentId: String,
+    @ColumnInfo(name = "due_cents") val dueCents: Long,
 )
 
 /** A repeating class: wall-clock time in its own zone, filled 8 weeks ahead (spec 005). */

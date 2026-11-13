@@ -365,6 +365,7 @@ fun ReportScreen(
                 subjectLabel,
                 if (kind == SubjectKind.STUDENT) students.firstOrNull { it.student.id == id }?.student?.guardian else null,
                 splitMembers,
+                group?.takeIf { it.splitSince != null }?.id,
             ),
         )
     }

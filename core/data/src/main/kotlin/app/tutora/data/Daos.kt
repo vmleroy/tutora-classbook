@@ -148,6 +148,24 @@ interface GroupDao {
     @Query("SELECT student_id FROM group_member WHERE group_id = :groupId")
     suspend fun members(groupId: String): List<String>
 
+    @Query("SELECT * FROM group_member WHERE group_id = :groupId")
+    suspend fun memberRows(groupId: String): List<MemberRow>
+
+    @Query("UPDATE group_member SET share_bp = :bp, share_cents = :cents WHERE group_id = :groupId AND student_id = :studentId")
+    suspend fun setShare(
+        groupId: String,
+        studentId: String,
+        bp: Int?,
+        cents: Long?,
+    )
+
+    @Query("UPDATE group_class SET split_since = :since, updated_at = :now WHERE id = :groupId")
+    suspend fun setSplitSince(
+        groupId: String,
+        since: String?,
+        now: String,
+    )
+
     @Upsert
     suspend fun upsert(row: GroupRow)
 

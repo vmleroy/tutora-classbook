@@ -131,4 +131,27 @@ class InvoiceRulesTest {
         assertEquals(listOf("Inglês B"), invoicesDue(listOf(g), false).map { it.name })
         assertEquals(listOf("Ana" to 5_000L, "Bia" to 5_000L), invoicesDue(listOf(g), true).map { it.name to it.toPay })
     }
+
+    @Test
+    fun `AC-020-35 a member pays an equal part, a percentage or a set amount, and the rest is split equally`() {
+        val m = listOf("ana", "bia", "caio")
+        assertEquals(mapOf("ana" to 5_000L, "bia" to 5_000L, "caio" to 5_000L), memberDues(15_000, m, emptyMap()))
+        // Ana pays 50%, Bia a set R$ 30: Caio takes what is left.
+        val mixed = memberDues(15_000, m, mapOf("ana" to MemberShare.Percent(5_000), "bia" to MemberShare.Amount(3_000)))
+        assertEquals(mapOf("ana" to 7_500L, "bia" to 3_000L, "caio" to 4_500L), mixed)
+        // Everyone on their own share: what they don't cover isn't charged.
+        val all = memberDues(15_000, listOf("ana", "bia"), mapOf("ana" to MemberShare.Amount(5_000), "bia" to MemberShare.Amount(5_000)))
+        assertEquals(10_000L, all.values.sum())
+        // A set amount never takes more than is left.
+        assertEquals(
+            mapOf("ana" to 15_000L, "bia" to 0L),
+            memberDues(
+                15_000,
+                listOf("ana", "bia"),
+                mapOf(
+                    "ana" to MemberShare.Amount(20_000),
+                ),
+            ),
+        )
+    }
 }

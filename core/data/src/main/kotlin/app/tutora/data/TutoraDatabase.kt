@@ -87,7 +87,7 @@ interface BackupDao {
     entities = [
         SettingRow::class, PlaceRow::class, StudentRow::class, LinkRow::class, GroupRow::class, MemberRow::class,
         RuleRow::class, SkipRow::class, LessonRow::class, TimerRow::class, PackageRow::class, PaymentRow::class,
-        PaymentLessonRow::class, CreditRow::class, NoticeRow::class,
+        PaymentLessonRow::class, CreditRow::class, NoticeRow::class, LessonShareRow::class,
     ],
     version = TutoraDatabase.VERSION,
     exportSchema = true,
@@ -113,11 +113,11 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 8
+        const val VERSION = 9
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
         val MIGRATIONS: Array<Migration> =
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
     }
 }
 
@@ -228,5 +228,21 @@ val MIGRATION_7_8 =
     object : Migration(7, 8) {
         override fun migrate(connection: SQLiteConnection) {
             connection.execSQL("ALTER TABLE student ADD COLUMN guardian TEXT")
+        }
+    }
+
+/** Spec 020: a group can split each class between its members, each with an equal part or their own (AC-020-34, 35). */
+val MIGRATION_8_9 =
+    object : Migration(8, 9) {
+        override fun migrate(connection: SQLiteConnection) {
+            listOf(
+                "ALTER TABLE group_class ADD COLUMN split_since TEXT",
+                "ALTER TABLE group_member ADD COLUMN share_bp INTEGER",
+                "ALTER TABLE group_member ADD COLUMN share_cents INTEGER",
+                "CREATE TABLE IF NOT EXISTS `lesson_share` (`lesson_id` TEXT NOT NULL, `student_id` TEXT NOT NULL, `due_cents` INTEGER " +
+                    "NOT NULL, PRIMARY KEY(`lesson_id`, `student_id`), FOREIGN KEY(`lesson_id`) REFERENCES `lesson`(`id`) ON UPDATE " +
+                    "NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`student_id`) REFERENCES `student`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+                "CREATE INDEX IF NOT EXISTS `index_lesson_share_student_id` ON `lesson_share` (`student_id`)",
+            ).forEach { connection.execSQL(it) }
         }
     }

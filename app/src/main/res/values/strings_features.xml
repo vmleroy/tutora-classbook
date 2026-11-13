@@ -622,4 +622,17 @@
     <string name="rep_sectionReports">Reports</string>
     <string name="rep_sectionReportsBody">The line at the top of every PDF. Left empty, it says Tutora\'s.</string>
     <string name="rep_period">Period</string>
+    <string name="grp_splitTitle">Splitting the price</string>
+    <string name="grp_split">Split the price between the students</string>
+    <string name="grp_splitHint">Each student owes their share of every class given from now on.</string>
+    <string name="grp_splitOffHint">The group pays as one.</string>
+    <string name="grp_shareEqual">Equal share</string>
+    <string name="grp_sharePercent">Percentage</string>
+    <string name="grp_shareAmount">Set amount</string>
+    <string name="grp_shareTitle">%1$s\'s share</string>
+    <string name="grp_percentLabel">Percent of each class</string>
+    <string name="grp_amountLabel">Amount per class</string>
+    <string name="grp_equalHint">Splits what the others don\'t cover equally with the rest.</string>
+    <string name="grp_over">The set shares already cover the class: the others pay nothing.</string>
+    <string name="grp_uncovered">%1$s of each class isn\'t charged to anyone.</string>
 </resources>

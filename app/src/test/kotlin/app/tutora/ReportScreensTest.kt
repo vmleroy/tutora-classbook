@@ -344,4 +344,45 @@ class ReportScreensTest {
         assertEquals(emptyList<String>(), lit())
         exists("01/10/2026")
     }
+
+    @Test
+    fun `AC-020-35 the group's detail splits the price, and each member's share can be a percentage or an amount`() {
+        val gid =
+            runBlocking {
+                h.t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                )
+                val ids =
+                    h.services.catalogRepo
+                        .students()
+                        .first()
+                        .map { it.student.id }
+                (h.t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, ids, null)) as Result.Ok).value.id
+            }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.GroupDetail(gid))
+        compose.onNodeWithTag("group-split").performScrollTo()
+        compose.onNodeWithContentDescription("Dividir o valor entre os alunos").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .group(gid)
+                ?.splitSince != null
+        }
+        h.settle(compose)
+        exists("Parte igual · R$ 50,00/aula", part = true)
+        compose.onNodeWithTag("share-Ana Souza").performScrollTo().performClick()
+        h.settle(compose)
+        click("Porcentagem", scroll = false)
+        compose.onNodeWithTag("share-save").performClick()
+        h.awaitDb(compose) {
+            h.services.catalogRepo
+                .group(gid)
+                ?.shares
+                ?.isNotEmpty() == true
+        }
+        h.settle(compose)
+        // Ana at 50% (the sheet's start) pays R$ 50,00, and Bia the rest.
+        exists("50% · R$ 50,00/aula", part = true)
+    }
 }

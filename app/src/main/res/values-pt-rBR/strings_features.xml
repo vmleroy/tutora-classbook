@@ -632,4 +632,17 @@
     <string name="rep_sectionReports">Relatórios</string>
     <string name="rep_sectionReportsBody">A linha no topo de cada PDF. Vazia, fica a do Tutora.</string>
     <string name="rep_period">Período</string>
+    <string name="grp_splitTitle">Divisão do valor</string>
+    <string name="grp_split">Dividir o valor entre os alunos</string>
+    <string name="grp_splitHint">Cada aluno deve a sua parte de cada aula dada a partir de agora.</string>
+    <string name="grp_splitOffHint">A turma paga como uma só.</string>
+    <string name="grp_shareEqual">Parte igual</string>
+    <string name="grp_sharePercent">Porcentagem</string>
+    <string name="grp_shareAmount">Valor fixo</string>
+    <string name="grp_shareTitle">Parte de %1$s</string>
+    <string name="grp_percentLabel">Porcentagem de cada aula</string>
+    <string name="grp_amountLabel">Valor por aula</string>
+    <string name="grp_equalHint">Divide em partes iguais o que os outros não cobrem.</string>
+    <string name="grp_over">As partes definidas já cobrem a aula: os outros não pagam nada.</string>
+    <string name="grp_uncovered">%1$s de cada aula fica sem ninguém pagar.</string>
 </resources>

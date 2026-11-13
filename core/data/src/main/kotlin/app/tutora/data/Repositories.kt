@@ -55,16 +55,16 @@ class CatalogRepository(
 
     fun groups(archived: Boolean = false): Flow<List<Group>> =
         combine(db.groups().observe(archived), db.groups().observeMembers()) { groups, members ->
-            val byGroup = members.groupBy({ it.groupId }, { it.studentId })
-            groups.map { it.toGroup(byGroup[it.id].orEmpty()) }
+            val byGroup = members.groupBy { it.groupId }
+            groups.map { it.withMembers(byGroup[it.id].orEmpty()) }
         }
 
     fun groupFlow(id: String): Flow<Group?> =
         combine(db.groups().observeOne(id), db.groups().observeMembers()) { g, members ->
-            g?.toGroup(members.filter { it.groupId == id }.map { it.studentId })
+            g?.withMembers(members.filter { it.groupId == id })
         }
 
-    suspend fun group(id: String): Group? = db.groups().get(id)?.let { it.toGroup(db.groups().members(id)) }
+    suspend fun group(id: String): Group? = db.groups().get(id)?.let { it.withMembers(db.groups().memberRows(id)) }
 }
 
 /** Reads of classes, each with who and where, ready to price. */
@@ -177,7 +177,7 @@ class ScheduleRepository(
                 }
                 l.groupId != null -> {
                     val g = db.groups().get(l.groupId) ?: return null
-                    Who.OfGroup(g.toGroup(db.groups().members(g.id)))
+                    Who.OfGroup(g.withMembers(db.groups().memberRows(g.id)))
                 }
                 else -> return null
             }

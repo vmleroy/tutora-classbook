@@ -2,6 +2,7 @@ package app.tutora.usecases
 
 import app.tutora.data.CreditRow
 import app.tutora.data.LessonRow
+import app.tutora.data.LessonShareRow
 import app.tutora.data.PackageRow
 import app.tutora.data.PaymentLessonRow
 import app.tutora.data.PaymentRepository
@@ -19,10 +20,12 @@ import app.tutora.domain.PayerKind
 import app.tutora.domain.PayerRef
 import app.tutora.domain.RateType
 import app.tutora.domain.Who
+import app.tutora.domain.canSplit
 import app.tutora.domain.dueOf
 import app.tutora.domain.isoText
 import app.tutora.domain.localOf
 import app.tutora.domain.localToInstant
+import app.tutora.domain.memberDues
 import app.tutora.domain.minutesCover
 import app.tutora.domain.payerOf
 import kotlinx.datetime.LocalDate
@@ -39,8 +42,9 @@ internal suspend fun withDue(
 ): LessonRow {
     val status = LessonStatus.fromKey(row.status)
     if (status == LessonStatus.SCHEDULED || status == LessonStatus.LIVE) {
-        // Credit or minutes put on it go back to the payer (AC-008-30).
+        // Credit or minutes put on it go back to the payer (AC-008-30); a split class's shares go too.
         ctx.db.payments().deleteUsesOn(row.id)
+        ctx.db.payments().deleteShares(row.id)
         return row.copy(payer = null, dueCents = null, packageId = null)
     }
     val lesson = ScheduleRepository(ctx.db).load(row) ?: return row
@@ -50,8 +54,40 @@ internal suspend fun withDue(
             PackageState(it.id, it.lessonsTotal, dao.packageUsed(it.id, except = row.id))
         }
     val due = dueOf(lesson, pkg, row.packageId?.takeIf { status == LessonStatus.DONE })
-    return row.copy(payer = payerOf(lesson.place, lesson.who).kind.key, dueCents = due?.cents, packageId = due?.packageId)
+    val payer = payerOf(lesson.place, lesson.who)
+    dao.deleteShares(row.id)
+    // A split group: each member owes their share and the group owes nothing for it (AC-020-34).
+    val group = (lesson.who as? Who.OfGroup)?.group
+    val since = group?.splitSince
+    if (group != null &&
+        since != null &&
+        row.startAt >= since &&
+        payer.kind == PayerKind.GROUP &&
+        (due?.cents ?: 0) > 0 &&
+        canSplit(group.memberIds.size, lesson.place.kind, lesson.place.payer)
+    ) {
+        val names =
+            group.memberIds.associateWith {
+                ctx.db
+                    .students()
+                    .get(it)
+                    ?.name
+                    .orEmpty()
+            }
+        val order = group.memberIds.sortedBy { foldName(names.getValue(it)) }
+        val dues = memberDues(due?.cents ?: 0, order, group.shares)
+        dao.insertShares(dues.filterValues { it > 0 }.map { (sid, cents) -> LessonShareRow(row.id, sid, cents) })
+        return row.copy(payer = payer.kind.key, dueCents = 0, packageId = null)
+    }
+    return row.copy(payer = payer.kind.key, dueCents = due?.cents, packageId = due?.packageId)
 }
+
+/** A name without accents or capitals, so members sort as people read them. */
+internal fun foldName(s: String) =
+    java.text.Normalizer
+        .normalize(s, java.text.Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}"), "")
+        .lowercase()
 
 data class PaymentDraft(
     val payer: PayerRef,

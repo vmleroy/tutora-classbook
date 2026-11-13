@@ -63,16 +63,25 @@ class ReportsRepository(
                 with(earnings) { instant(from, zone) },
                 with(earnings) { instant(to.plus(DatePeriod(days = 1)), zone) },
             ),
-            db.payments().observeAllCredits(),
+            combine(db.payments().observeAllCredits(), db.payments().observeShareRows()) { c, sh -> c to sh },
             payments.leftByLesson(),
             payments.ledger(payer),
             db.places().observeOne(if (s.kind == SubjectKind.PLACE) s.id else ""),
-        ) { rows, credits, left, ledger, placeRow ->
+        ) { rows, (credits, shareRows), left, ledger, placeRow ->
             val cover = coverOf(credits)
+            // A student's share of each split group's class (AC-020-36).
+            val myShares =
+                if (s.kind ==
+                    SubjectKind.STUDENT
+                ) {
+                    shareRows.filter { it.studentId == s.id }.associate { it.lessonId to it.dueCents }
+                } else {
+                    emptyMap()
+                }
             val mine =
                 rows.filter { r ->
                     when (s.kind) {
-                        SubjectKind.STUDENT -> r.payer == PayerKind.STUDENT.key && r.studentId == s.id
+                        SubjectKind.STUDENT -> (r.payer == PayerKind.STUDENT.key && r.studentId == s.id) || r.id in myShares
                         SubjectKind.GROUP -> r.payer == PayerKind.GROUP.key && r.groupId == s.id
                         SubjectKind.PLACE -> r.placeId == s.id
                     }
@@ -81,21 +90,23 @@ class ReportsRepository(
                 mine.mapNotNull { r ->
                     val record = with(earnings) { r.record(zone) }
                     val earned = earnedOf(record) ?: return@mapNotNull null
+                    val share = myShares[r.id]
                     ReportClass(
                         lessonId = r.id,
                         day = record.day,
                         minutes = if (record.status == LessonStatus.DONE) r.plannedMin else 0,
-                        value = earned.gross,
+                        value = share ?: earned.gross,
                         who = r.whoName.orEmpty(),
                         charged = record.status != LessonStatus.DONE,
                         bonus = cover[r.id] ?: 0,
-                        left = left[r.id] ?: 0,
+                        left = if (share != null) ledger.allocation.left[r.id] ?: 0 else left[r.id] ?: 0,
                         start = localOf(r.startAt, zone).time.let { LocalTime(it.hour, it.minute) },
-                        travel = if (record.status == LessonStatus.DONE) r.travelFeeCents ?: 0 else 0,
-                        charge = if (record.status == LessonStatus.DONE) 0 else earned.gross,
+                        travel = if (record.status == LessonStatus.DONE && share == null) r.travelFeeCents ?: 0 else 0,
+                        charge = if (record.status == LessonStatus.DONE) 0 else share ?: earned.gross,
                         placeId = r.placeId,
                         placeName = r.placeName,
                         notes = r.notes?.trim()?.takeIf { it.isNotEmpty() },
+                        groupId = r.groupId,
                     )
                 }
             val starts = ledger.owed.associate { it.lessonId to localOf(it.startAt, zone).date }
@@ -169,17 +180,33 @@ class ReportsRepository(
                 with(earnings) { instant(from, zone) },
                 with(earnings) { instant(to.plus(DatePeriod(days = 1)), zone) },
             ),
-            payments.leftByLesson(),
+            combine(
+                payments.leftByLesson(),
+                payments.leftByPayer(),
+                db.payments().observeShareRows(),
+            ) { l, byPayer, sh -> Triple(l, byPayer, sh) },
             members(),
             guardians(),
-        ) { rows, left, members, guardians ->
+            db.students().observeEvery(),
+        ) { rows, (left, leftByPayer, shareRows), members, guardians, students ->
+            val names = students.associate { it.id to it.name }
+            val sharesOf = shareRows.groupBy { it.lessonId }
             val sources =
                 rows
-                    .mapNotNull { r ->
+                    .flatMap { r ->
                         val record = with(earnings) { r.record(zone) }
-                        earnedOf(record) ?: return@mapNotNull null
-                        val payer = record.payer ?: return@mapNotNull null
-                        Triple(payer, r, left[r.id] ?: 0L)
+                        earnedOf(record) ?: return@flatMap emptyList()
+                        val split = sharesOf[r.id]
+                        // A split class is owed by each member: it goes to them, not to the group (AC-020-36).
+                        if (split != null) {
+                            split.map { sh ->
+                                val p = PayerRef(PayerKind.STUDENT, sh.studentId)
+                                Triple(p, r.copy(whoName = names[sh.studentId]), leftByPayer[p]?.get(r.id) ?: 0L)
+                            }
+                        } else {
+                            val payer = record.payer ?: return@flatMap emptyList()
+                            listOf(Triple(payer, r, left[r.id] ?: 0L))
+                        }
                     }.groupBy { it.first }
                     .map { (payer, list) ->
                         val r = list.first().second

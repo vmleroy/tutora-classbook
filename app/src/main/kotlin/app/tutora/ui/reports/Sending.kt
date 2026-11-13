@@ -54,6 +54,7 @@ import app.tutora.domain.SubjectKind
 import app.tutora.domain.SubjectReport
 import app.tutora.domain.invoiceOf
 import app.tutora.domain.memberReport
+import app.tutora.domain.subjectReport
 import app.tutora.state.LocalServices
 import app.tutora.ui.PersonalData
 import app.tutora.ui.ScreenScaffold
@@ -266,6 +267,8 @@ data class SendSubject(
     val guardian: String?,
     /** A group's members, sorted by name, when it can be split (AC-020-20). */
     val members: List<Member>?,
+    /** The group's id when its price is split in the app: each member's documents use their real share (AC-020-36). */
+    val splitGroupId: String? = null,
 )
 
 /**
@@ -279,6 +282,8 @@ fun SendSection(
     s: SendSubject,
 ) {
     val maker = rememberDocMaker()
+    val services = LocalServices.current
+    val scope = rememberCoroutineScope()
     val today = remember { LocalDate(r.to.year, r.to.month, r.to.day) }
     var open by rememberSaveable { mutableStateOf("") }
     SectionHeader(stringResource(R.string.inv_send))
@@ -377,16 +382,35 @@ fun SendSection(
             }
             if (split && members != null) {
                 members.forEachIndexed { i, m ->
-                    val share = shareOf(r, s.name, members.size, i)
                     val mine = Recipient(m.name, m.guardian)
+                    // Split in the app: the member's real shares of this group's classes; otherwise an equal part.
+                    val withShare = { act: (SubjectReport) -> Unit ->
+                        val gid = s.splitGroupId
+                        if (gid == null) {
+                            act(shareOf(r, s.name, members.size, i))
+                        } else {
+                            scope.launch {
+                                val own =
+                                    services.reportsRepo.subjectNow(
+                                        app.tutora.data.Subject(SubjectKind.STUDENT, m.id),
+                                        r.from,
+                                        r.to,
+                                        today,
+                                        services.zone,
+                                    )
+                                act(subjectReport(r.from, r.to, own.classes.filter { it.groupId == gid }, emptyList()))
+                            }
+                        }
+                        Unit
+                    }
                     if (invoice) {
                         MemberLine(m, stringResource(R.string.rep_pdf), stringResource(R.string.inv_text), {
-                            maker.invoicePdf(share, mine, false, dueDate)
-                        }, { maker.invoiceCopy(share, false, dueDate) })
+                            withShare { maker.invoicePdf(it, mine, false, dueDate) }
+                        }, { withShare { maker.invoiceCopy(it, false, dueDate) } })
                     } else {
                         MemberLine(m, stringResource(R.string.rep_pdf), stringResource(R.string.rep_excel), {
-                            maker.detailPdf(share, mine, s.label, s.name, false, notes)
-                        }, { maker.detailXlsx(share, mine, notes) })
+                            withShare { maker.detailPdf(it, mine, s.label, s.name, false, notes) }
+                        }, { withShare { maker.detailXlsx(it, mine, notes) } })
                     }
                 }
             }

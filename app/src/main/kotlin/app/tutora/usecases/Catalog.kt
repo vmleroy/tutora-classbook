@@ -169,6 +169,33 @@ class Catalog(
         db.groups().insertMembers(studentIds.map { MemberRow(groupId, it) })
     }
 
+    /**
+     * Turns the split on or off: on, classes given from now on are split between the members;
+     * classes already given stay owed by the group (AC-020-34, 37).
+     */
+    suspend fun setSplit(
+        groupId: String,
+        on: Boolean,
+    ) = db.inTransaction {
+        val group = db.groups().get(groupId) ?: return@inTransaction
+        if (on == (group.splitSince != null)) return@inTransaction
+        db.groups().setSplitSince(groupId, if (on) ctx.now() else null, ctx.now())
+    }
+
+    /** A member's own share of each class, or null for an equal part of what is left (AC-020-35). */
+    suspend fun setShare(
+        groupId: String,
+        studentId: String,
+        share: app.tutora.domain.MemberShare?,
+    ) = db.inTransaction {
+        db.groups().setShare(
+            groupId,
+            studentId,
+            (share as? app.tutora.domain.MemberShare.Percent)?.bp,
+            (share as? app.tutora.domain.MemberShare.Amount)?.cents,
+        )
+    }
+
     suspend fun removeMember(
         groupId: String,
         studentId: String,
@@ -209,6 +236,7 @@ class Catalog(
                     rateCents = if (place.kind == PlaceKind.SCHOOL) null else draft.rateCents,
                     memberIds = if (beforeRow != null) db.groups().members(beforeRow.id) else draft.memberIds.distinct(),
                     archivedAt = beforeRow?.archivedAt,
+                    splitSince = beforeRow?.splitSince,
                 )
             db.groups().upsert(next.toRow(beforeRow?.createdAt ?: ctx.now(), ctx.now()))
             if (beforeRow == null) {

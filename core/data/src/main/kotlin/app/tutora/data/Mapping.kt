@@ -3,6 +3,7 @@ package app.tutora.data
 import app.tutora.domain.BuiltinPlace
 import app.tutora.domain.Group
 import app.tutora.domain.LessonTimer
+import app.tutora.domain.MemberShare
 import app.tutora.domain.PayCycle
 import app.tutora.domain.Payer
 import app.tutora.domain.Place
@@ -95,11 +96,22 @@ fun Student.toRow(
 
 fun LinkRow.toLink() = PlaceLink(placeId, isDefault, rateCents)
 
-fun GroupRow.toGroup(members: List<String>) = Group(id, placeId, name, subject, rateCents, members, archivedAt)
+fun GroupRow.toGroup(members: List<String>) = Group(id, placeId, name, subject, rateCents, members, archivedAt, splitSince)
+
+/** A group with its members and their own shares (AC-020-35). */
+fun GroupRow.withMembers(rows: List<MemberRow>): Group =
+    toGroup(rows.map { it.studentId }).copy(shares = rows.mapNotNull { r -> r.share()?.let { r.studentId to it } }.toMap())
+
+fun MemberRow.share(): MemberShare? =
+    when {
+        shareBp != null -> MemberShare.Percent(shareBp)
+        shareCents != null -> MemberShare.Amount(shareCents)
+        else -> null
+    }
 
 fun Group.toRow(
     createdAt: String,
     now: String,
-) = GroupRow(id, placeId, name, subject, rateCents, archivedAt, createdAt, now)
+) = GroupRow(id, placeId, name, subject, rateCents, archivedAt, createdAt, now, splitSince)
 
 fun TimerRow.toTimer() = LessonTimer(lessonId, startedAt, pausedMs, pausedAt, note)

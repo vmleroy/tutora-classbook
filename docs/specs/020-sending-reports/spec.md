@@ -77,6 +77,13 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 - **AC-020-25.** A Vencimento set at the top of Faturas do mês applies to every Fatura sent from it.
 - **AC-020-26.** A private group (AC-020-20) is one row; with "Dividir turmas por aluno" on, its members appear as their own rows instead.
 
+### Splitting a group's price (Victor, 13 Nov 2026)
+
+- **AC-020-34.** A group whose students pay has "Dividir o valor entre os alunos" on its detail. On, every class given from then on is owed by the group's members, each their share, and the group owes nothing for it; off again, classes given after are owed by the group.
+- **AC-020-35.** Each member's share is an equal part, a percentage of each class or a set amount, set from their row on the group's detail. Members with their own share take it first; what is left is split equally among the others, the leftover cents to the first by name. With everyone on their own share, what they don't cover isn't charged, and the detail says so. Each member's row shows what they owe per class.
+- **AC-020-36.** A member's share is theirs everywhere: their balance, Hoje's and Cadastro's lists, Registrar pagamento (which pays it, oldest first or chosen), their report and Fatura, and Faturas do mês, which lists them with it. The group's report shows what is still left across the shares, and its Enviar › Dividir por aluno uses each member's real share.
+- **AC-020-37.** Classes given before the split was turned on stay owed by the group, so nothing already paid moves.
+
 ### Language
 
 - **AC-020-27.** Every new word, both PDFs, the Excel and the copied text follow the app language, including dates, weekdays and amounts; switching it never changes a number.
@@ -85,7 +92,6 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 
 - Sending from inside the app by e-mail or WhatsApp; the share sheet does it (as 010).
 - Tracking whether a Fatura was sent, seen or paid beyond Faturas do mês's check while it is open; a payment is still recorded by hand (008).
-- Splitting a group's payments between members: the group pays as one in the app (008); only the documents split.
 - Pix charges with an expiry or a bank-issued (dynamic) QR code, which need a network.
 - Invoices with tax value (nota fiscal, recibo for income tax).
 - A logo or photo on the PDFs.

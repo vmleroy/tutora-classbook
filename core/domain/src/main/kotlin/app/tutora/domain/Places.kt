@@ -89,6 +89,10 @@ data class Group(
     val rateCents: Cents?,
     val memberIds: List<String>,
     val archivedAt: String?,
+    /** Since when each class's value is split between the members; null = the group owes as one (AC-020-34). */
+    val splitSince: String? = null,
+    /** Members with their own share; the others split what is left equally (AC-020-35). */
+    val shares: Map<String, MemberShare> = emptyMap(),
 )
 
 const val DEFAULT_DURATION_MIN = 60

@@ -74,6 +74,8 @@ data class ReportClass(
     val placeId: String = "",
     val placeName: String? = null,
     val notes: String? = null,
+    /** The group a class belongs to, for a member's share of a split group (AC-020-36). */
+    val groupId: String? = null,
 ) {
     val paid: Boolean get() = left == 0L
 

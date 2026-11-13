@@ -101,6 +101,8 @@ val backupUpgrades: Map<Int, (Map<String, List<BackupRow>>) -> Map<String, List<
         6 to { t -> t + ("notice" to t["notice"].orEmpty()) },
         // 020: a student's Responsável, a nullable column.
         7 to { t -> t },
+        // 020: a split group's shares of each class, starting empty.
+        8 to { t -> t + ("lesson_share" to t["lesson_share"].orEmpty()) },
     )
 
 fun upgradeBackup(
