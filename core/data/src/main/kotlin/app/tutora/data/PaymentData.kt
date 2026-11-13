@@ -151,6 +151,12 @@ interface PaymentDao {
     @Query("DELETE FROM payment_lesson WHERE payment_id = :paymentId")
     suspend fun clearChosen(paymentId: String)
 
+    @Query("SELECT * FROM payment_lesson WHERE payment_id = :paymentId")
+    suspend fun chosenOf(paymentId: String): List<PaymentLessonRow>
+
+    @Query("SELECT * FROM package WHERE id = :id")
+    suspend fun packageRow(id: String): PackageRow?
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertChosen(rows: List<PaymentLessonRow>)
 
@@ -371,7 +377,12 @@ class PaymentRepository(
             dao.observePayments(payer.kind.key, payer.id),
             dao.observeChosen(payer.kind.key, payer.id),
             dao.observeCredits(payer.kind.key, payer.id),
-        ) { owed, payments, chosen, credits -> ledgerOf(owed, payments, chosen, credits) }
+            ReceiptRepository(db).counts(),
+        ) { owed, payments, chosen, credits, receipts ->
+            // How many comprovantes each payment holds, for the mark on its row (AC-021-4).
+            val ledger = ledgerOf(owed, payments, chosen, credits)
+            ledger.copy(payments = ledger.payments.map { it.copy(receipts = receipts[it.id] ?: 0) })
+        }
 
     suspend fun ledgerNow(payer: PayerRef): Ledger =
         ledgerOf(

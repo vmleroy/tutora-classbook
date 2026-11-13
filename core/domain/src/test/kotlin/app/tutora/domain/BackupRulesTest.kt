@@ -96,4 +96,12 @@ class BackupRulesTest {
         assertEquals(9, read.file.schemaVersion)
         assertTrue("lesson_share" in read.file.tables)
     }
+
+    @Test
+    fun `AC-021-10 a backup from before comprovantes restores with none`() {
+        val read = readBackup(encodeBackup(file.copy(schemaVersion = 9)).encodeToByteArray(), 10) as BackupRead.Ok
+        assertEquals(10, read.file.schemaVersion)
+        assertEquals(emptyList<BackupRow>(), read.file.tables["payment_receipt"])
+        assertEquals(file.tables["student"], read.file.tables["student"])
+    }
 }

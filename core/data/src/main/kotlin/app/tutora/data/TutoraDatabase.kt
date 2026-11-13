@@ -87,7 +87,7 @@ interface BackupDao {
     entities = [
         SettingRow::class, PlaceRow::class, StudentRow::class, LinkRow::class, GroupRow::class, MemberRow::class,
         RuleRow::class, SkipRow::class, LessonRow::class, TimerRow::class, PackageRow::class, PaymentRow::class,
-        PaymentLessonRow::class, CreditRow::class, NoticeRow::class, LessonShareRow::class,
+        PaymentLessonRow::class, CreditRow::class, NoticeRow::class, LessonShareRow::class, ReceiptRow::class,
     ],
     version = TutoraDatabase.VERSION,
     exportSchema = true,
@@ -111,13 +111,25 @@ abstract class TutoraDatabase : RoomDatabase() {
 
     abstract fun notices(): NoticeDao
 
+    abstract fun receipts(): ReceiptDao
+
     companion object {
         /** The schema version this build expects; Ajustes › Sobre shows it. */
-        const val VERSION = 9
+        const val VERSION = 10
 
         /** One entry per version step, in order. Each has a test from the previous schema. */
         val MIGRATIONS: Array<Migration> =
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+            arrayOf(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+                MIGRATION_6_7,
+                MIGRATION_7_8,
+                MIGRATION_8_9,
+                MIGRATION_9_10,
+            )
     }
 }
 
@@ -243,6 +255,20 @@ val MIGRATION_8_9 =
                     "NOT NULL, PRIMARY KEY(`lesson_id`, `student_id`), FOREIGN KEY(`lesson_id`) REFERENCES `lesson`(`id`) ON UPDATE " +
                     "NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`student_id`) REFERENCES `student`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
                 "CREATE INDEX IF NOT EXISTS `index_lesson_share_student_id` ON `lesson_share` (`student_id`)",
+            ).forEach { connection.execSQL(it) }
+        }
+    }
+
+/** Spec 021: comprovantes on payments, none at first (AC-021-1, 10). */
+val MIGRATION_9_10 =
+    object : Migration(9, 10) {
+        override fun migrate(connection: SQLiteConnection) {
+            listOf(
+                "CREATE TABLE IF NOT EXISTS `payment_receipt` (`id` TEXT NOT NULL, `payment_id` TEXT NOT NULL, `kind` TEXT NOT NULL, " +
+                    "`mime` TEXT NOT NULL, `file` TEXT NOT NULL, `bytes` INTEGER NOT NULL, `position` INTEGER NOT NULL, " +
+                    "`created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`payment_id`) " +
+                    "REFERENCES `payment`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+                "CREATE INDEX IF NOT EXISTS `index_payment_receipt_payment_id` ON `payment_receipt` (`payment_id`)",
             ).forEach { connection.execSQL(it) }
         }
     }
