@@ -31,7 +31,7 @@ When a student, a parent or a place pays by Pix or transfer, the teacher gets a 
 
 ### Sending them
 
-- **AC-021-7.** The Fatura and Relatório detalhado sheets (AC-020-1) both have (Victor, 13 Nov 2026) "Incluir comprovantes", off at first and shown only when a payment in the period has one. On, the PDF ends with a "Comprovantes" section: one per page, each headed by its payment ("16/10/2026 · Pix · R$ 540,00"), an image fitted to the page, a PDF's pages after it.
+- **AC-021-7.** The Fatura and Relatório detalhado sheets (AC-020-1) both have (Victor, 13 Nov 2026), and so does Exportar este relatório's PDF (AC-010-8; Victor, 13 Nov 2026), "Incluir comprovantes", off at first and shown only when a payment in the period has one. On, the PDF ends with a "Comprovantes" section: one per page, each headed by its payment ("16/10/2026 · Pix · R$ 540,00"), an image fitted to the page, a PDF's pages after it.
 - **AC-021-8.** The Excel files (AC-010-10, AC-020-19, and Backup e planilha's spreadsheet, AC-011-19) get a "Comprovante" column in Pagamentos: Sim or Não. The files themselves never go into the spreadsheet.
 - **AC-021-9.** Copiar como texto never carries a comprovante.
 

@@ -143,10 +143,16 @@ class DocMaker(
     private val receiptPages: (app.tutora.domain.Receipt) -> Int = { 1 },
 ) {
     /** The plan, with the comprovantes at its end when asked (AC-021-7). */
-    private fun PdfPlan.with(
+    fun PdfPlan.with(
         r: SubjectReport,
         receipts: Boolean,
     ) = if (receipts) copy(receiptsTitle = receiptsWord, receipts = receiptsOf(r, w, receiptPath, receiptPages)) else this
+
+    /** Any document's plan with the period's comprovantes at its end: the plain report's too (AC-021-7). */
+    fun withReceipts(
+        plan: PdfPlan,
+        r: SubjectReport,
+    ) = plan.with(r, true)
 
     private fun file(
         name: String,

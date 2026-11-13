@@ -5,6 +5,9 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -525,12 +528,27 @@ class ReportScreensTest {
             compose.onNodeWithTag(sheet).performScrollTo().performClick()
             h.settle(compose)
             compose.onNodeWithTag("sheet-receipts").assertExists()
-            compose.onNodeWithContentDescription("Incluir comprovantes").assertIsOff()
-            compose.onNodeWithContentDescription("Incluir comprovantes").performClick()
+            val inSheet = hasContentDescription("Incluir comprovantes") and hasAnyAncestor(hasTestTag("sheet-receipts"))
+            compose.onNode(inSheet).assertIsOff()
+            compose.onNode(inSheet).performClick()
             h.settle(compose)
             compose.onNodeWithTag("sheet-pdf").performClick()
             h.settle(compose)
         }
+        // Exportar este relatório's PDF has the same switch (Victor, 13 Nov 2026).
+        compose.onNodeWithTag("export-receipts").performScrollTo().assertExists()
+        val onPage = hasContentDescription("Incluir comprovantes") and hasAnyAncestor(hasTestTag("export-receipts"))
+        compose.onNode(onPage).assertIsOff()
+        compose.onNode(onPage).performClick()
+        h.settle(compose)
+        click("PDF")
+        val plain =
+            String(
+                h.exports.shared
+                    .last()
+                    .second,
+            )
+        assertTrue("PdfReceipt(" in plain && "receiptsTitle=Comprovantes" in plain)
         val (first, invoice, detail) = h.exports.shared.map { String(it.second) }
         assertTrue("receipts=[]" in first)
         assertTrue("PdfReceipt(" in invoice && "receiptsTitle=Comprovantes" in invoice)

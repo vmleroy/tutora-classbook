@@ -333,7 +333,24 @@ fun ReportScreen(
         // Exportar este relatório: PDF and Excel side by side, and Copiar como texto (AC-010-8).
         SectionHeader(stringResource(R.string.rep_export))
         val name = subject.second
-        val plan = { subjectPlan(r, words, teacher, subjectLabel, name, subject.third, kind == SubjectKind.PLACE, stamp) }
+        // Incluir comprovantes, as on the Fatura and the Relatório detalhado: off at first, only when a payment has one (AC-021-7).
+        val maker = rememberDocMaker()
+        var withReceipts by rememberSaveable { mutableStateOf(false) }
+        val canAttach = hasReceipts(r)
+        val plan = {
+            val base = subjectPlan(r, words, teacher, subjectLabel, name, subject.third, kind == SubjectKind.PLACE, stamp)
+            if (withReceipts && canAttach) maker.withReceipts(base, r) else base
+        }
+        if (canAttach) {
+            ListRow(
+                stringResource(R.string.rc_include),
+                Modifier.testTag("export-receipts"),
+                subtitle = stringResource(R.string.rc_includeSub),
+                trailing = RowTrailing.SWITCH,
+                switchValue = withReceipts,
+                onSwitchChange = { withReceipts = it },
+            )
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
             Button(stringResource(R.string.rep_pdf), {
                 exports.share(fileName(name, from, to, language) + ".pdf", MIME_PDF, exports.pdf(plan(), colors))
