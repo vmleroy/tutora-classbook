@@ -55,6 +55,11 @@ class AppContainer(
         app.tutora.adapters.calendar
             .androidCalendarWords(context)
 
+    /** Picked and shared comprovantes, copied in and a large photo reduced (spec 021). */
+    private val receiptFiles =
+        app.tutora.adapters.receipts
+            .AndroidReceiptFiles(context)
+
     // Opened once per process, so the notification's buttons use the same database as the screens.
     private val database by lazy { openTutoraDatabase(context) }
 
@@ -94,6 +99,7 @@ class AppContainer(
             calendar = calendar,
             calendarWords = calendarWords,
             reminders = reminderAlarm,
+            receiptFiles = receiptFiles,
         )
     }
 
@@ -117,6 +123,7 @@ class AppContainer(
             calendar = calendar,
             calendarWords = calendarWords,
             reminders = reminderAlarm,
+            receiptFiles = receiptFiles,
         )
 }
 

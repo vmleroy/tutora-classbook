@@ -23,6 +23,7 @@ class TestDb(
     val scheduler: FakeBackupScheduler = FakeBackupScheduler(),
     val calendar: FakePhoneCalendar = FakePhoneCalendar(),
     val reminders: FakeReminderAlarm = FakeReminderAlarm(),
+    val receiptFiles: FakeReceiptFiles = FakeReceiptFiles(),
 ) {
     private var n = 0
     val db = openTutoraDatabase(ApplicationProvider.getApplicationContext(), File(dir, "tutora.db"), AndroidSQLiteDriver()).first
@@ -40,6 +41,7 @@ class TestDb(
             calendar,
             { TEST_CALENDAR_WORDS },
             reminders,
+            receiptFiles,
         )
     val catalog = Catalog(ctx)
     val schedule = Schedule(ctx)
@@ -193,5 +195,33 @@ class FakeReminderAlarm : app.tutora.usecases.ReminderAlarm {
         lessonId: String?,
     ) {
         if (at == null) set.remove(kind) else set[kind] = at to lessonId
+    }
+}
+
+/**
+ * Picked and shared comprovantes from plain files: the uri is a path, the type comes from its
+ * extension, and the file is copied as it is (the phone's shrinking is the domain rule's job).
+ */
+class FakeReceiptFiles : app.tutora.usecases.ReceiptFiles {
+    override fun stage(
+        uri: String,
+        dir: File,
+        name: String,
+    ): app.tutora.usecases.StageResult {
+        val from = File(uri.removePrefix("file://"))
+        val mime =
+            when (from.extension.lowercase()) {
+                "pdf" -> "application/pdf"
+                "png" -> "image/png"
+                "jpg", "jpeg" -> "image/jpeg"
+                else ->
+                    return app.tutora.usecases.StageResult
+                        .Refused(app.tutora.usecases.ReceiptRefusal.UNSUPPORTED)
+            }
+        dir.mkdirs()
+        val out = File(dir, "$name.${from.extension.lowercase()}")
+        from.copyTo(out, overwrite = true)
+        return app.tutora.usecases.StageResult
+            .Ok(app.tutora.usecases.StagedReceipt(out.name, mime, out.length()))
     }
 }
