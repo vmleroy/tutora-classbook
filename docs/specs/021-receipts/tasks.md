@@ -10,15 +10,15 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 
 ### Data and domain
 
-- [ ] 2. `payment_receipt` table, `ReceiptRow`, `ReceiptDao`, `MIGRATION_9_10`, VERSION 10, schema `10.json`; backup upgrade step 9; `PaymentRecord.receipts` and `ReportPayment.id` / `receipts` from a count. Test: `MigrationsTest.kt`, `BackupRulesTest.kt`. (AC-021-10)
-- [ ] 3. `Receipts.kt`: `receiptPolicy`, `receiptHeading`, `receiptUsage`, `attachable`. Test: `ReceiptRulesTest.kt`. (AC-021-2, AC-021-3, AC-021-12)
+- [x] 2. `payment_receipt` table, `ReceiptRow`, `ReceiptDao`, `MIGRATION_9_10`, VERSION 10, schema `10.json`; backup upgrade step 9; `PaymentRecord.receipts` and `ReportPayment.id` / `receipts` from a count. Test: `MigrationsTest.kt`, `BackupRulesTest.kt`. (AC-021-10)
+- [x] 3. `Receipts.kt`: `receiptPolicy`, `receiptUsage`, `attachable`. Test: `ReceiptRulesTest.kt`. (AC-021-2, AC-021-3, AC-021-12)
 
 ### Files and use cases
 
-- [ ] 4. `ReceiptFiles` interface, its fake, `AndroidReceiptFiles` (stage, shrink, count PDF pages, commit, delete, thumbnail, pages); `cache-path` for the camera; `Ctx.receiptFiles`. Test: `ReceiptsTest.kt`. (AC-021-2)
-- [ ] 5. `PaymentDraft.receipts`; `record`, `recordAll` and `edit` write receipt rows and commit or delete files; `Receipts.attach`, `replace`, `remove`, `sweep` (at start-up). Test: `ReceiptsTest.kt`. (AC-021-1, AC-021-2)
-- [ ] 6. `Payments.delete` returns `DeletedPayment`; `Payments.restore`. Test: `ReceiptsTest.kt`. (AC-021-6)
-- [ ] 7. `BackupArchive` (zip with `tutora.json` and `comprovantes/`, streamed); `Backups` writes and restores it, `.json` still read, the comprovantes folder aside for Desfazer restauração, missing files counted; `BackupFolder.write` takes a file; `Exports.shareFile`. Test: `BackupTest.kt`. (AC-021-10)
+- [x] 4. `ReceiptFiles` interface, its fake, `AndroidReceiptFiles` (stage, shrink, turn upright, refuse a PDF that won't open); `ReceiptStore`; `cache-path` for the camera; `Ctx.receiptFiles`. Test: `ReceiptsTest.kt`. (AC-021-2)
+- [x] 5. `PaymentDraft.receipts`; `record`, `recordAll` and `edit` write receipt rows and commit or delete files; `Receipts.attach`, `replace`, `remove`, `sweep` (at start-up). Test: `ReceiptsTest.kt`. (AC-021-1, AC-021-2)
+- [x] 6. `Payments.delete` returns `DeletedPayment`; `Payments.restore`. Test: `ReceiptsTest.kt`. (AC-021-6)
+- [x] 7. `BackupArchive` (zip with `tutora.json` and `comprovantes/`); `Backups` writes and restores it, `.json` still read, the comprovantes folder aside for Desfazer restauração, missing files counted (`receiptsIn`); "Backup completo (.zip)". Test: `BackupTest.kt`. (AC-021-10)
 
 ### Design system
 
@@ -28,7 +28,7 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 
 - [ ] 9. Comprovante part in `PaymentSheet` and `GroupPaySheet`: thumbnails with ×, Adicionar with Tirar foto, Escolher da galeria, Escolher arquivo; a refused file explained. Test: `PaymentScreensTest.kt`. (AC-021-1, AC-021-2)
 - [ ] 10. The mark on the payer's payment rows; thumbnails on the payment detail. Test: `PaymentScreensTest.kt`. (AC-021-4)
-- [ ] 11. `ReceiptViewer`: one comprovante after another, zoomable image, PDF pages; Compartilhar, Substituir, Remover with its confirmation. Test: `PaymentScreensTest.kt`. (AC-021-5)
+- [ ] 11. `ReceiptViewer`: one comprovante after another, zoomable image, PDF pages (thumbnails and page rendering in `AndroidReceiptFiles`); Compartilhar (`Exports.shareFile`), Substituir, Remover with its confirmation. Test: `PaymentScreensTest.kt`. (AC-021-5)
 - [ ] 12. Excluir pagamento then Desfazer on the payer's detail. Test: `PaymentScreensTest.kt`. (AC-021-6)
 - [ ] 13. Share target: intent filters, staging in `MainActivity`, `ShareRequest` routed under `LockGate`; `AttachReceipt` with the 60-day list and Registrar novo pagamento. Test: `ReceiptScreensTest.kt`, `AppLockTest.kt`. (AC-021-3, AC-021-11)
 

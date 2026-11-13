@@ -91,7 +91,7 @@ class BackupScreensTest {
         h.go(compose, SettingsGraph)
         exists("Nenhum backup ainda")
         click("Backup e planilha")
-        listOf("Backup automático", "Fazer agora", "Backup completo (.json)", "Planilha .xlsx", "Restaurar backup").forEach(::exists)
+        listOf("Backup automático", "Fazer agora", "Backup completo (.zip)", "Planilha .xlsx", "Restaurar backup").forEach(::exists)
     }
 
     @Test
@@ -134,7 +134,7 @@ class BackupScreensTest {
         runBlocking { h.services.backups.setFolder("content://tree/downloads", "Download") }
         h.show(compose)
         h.go(compose, BackupHome)
-        click("Backup completo (.json)")
+        click("Backup completo (.zip)")
         compose.onNodeWithText("Salvar").performClick()
         h.awaitDb(compose) {
             h.t.folder.files
@@ -161,7 +161,7 @@ class BackupScreensTest {
         h.settle(compose)
         val asks = h.unlock.asks
         h.go(compose, BackupHome)
-        click("Backup completo (.json)")
+        click("Backup completo (.zip)")
         compose.onNodeWithText("Salvar o backup em Download?").assertExists()
         compose.onNodeWithText("Cancelar").performClick()
         h.settle(compose)
@@ -169,7 +169,7 @@ class BackupScreensTest {
             h.t.folder.files
                 .isEmpty(),
         )
-        click("Backup completo (.json)")
+        click("Backup completo (.zip)")
         compose.onNodeWithText("Salvar").performClick()
         h.awaitDb(compose) {
             h.t.folder.files
@@ -328,7 +328,7 @@ class BackupScreensTest {
     fun `AC-011-21 the page follows the app language`() {
         h.show(compose)
         h.go(compose, BackupHome)
-        listOf("Automatic backup", "Off · manual backups only", "Full backup (.json)", "Restore backup").forEach(::exists)
+        listOf("Automatic backup", "Off · manual backups only", "Full backup (.zip)", "Restore backup").forEach(::exists)
     }
 }
 

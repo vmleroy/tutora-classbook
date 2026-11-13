@@ -123,7 +123,7 @@ fun rememberBackupPicker(): BackupPicker {
 
             override fun file(onPicked: (String?) -> Unit) {
                 pending = onPicked
-                file.launch(arrayOf("application/json", "application/octet-stream", "text/plain", "*/*"))
+                file.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "text/plain", "*/*"))
             }
         }
     }
@@ -486,14 +486,28 @@ fun BackupScreen(nav: NavHostController) {
         problem = null
         scope.launch {
             val bytes = withContext(Dispatchers.IO) { services.backups.fileOf(e) }
-            if (bytes == null) problem = Problem.GONE else exports.share(e.name, "application/json", bytes)
+            if (bytes == null) {
+                problem = Problem.GONE
+            } else {
+                exports.share(
+                    e.name,
+                    app.tutora.adapters.backup
+                        .backupMime(e.name),
+                    bytes,
+                )
+            }
         }
     }
 
     fun share() =
         scope.launch {
             val (name, bytes) = withContext(Dispatchers.IO) { services.backups.makeBackup() }
-            exports.share(name, "application/json", bytes)
+            exports.share(
+                name,
+                app.tutora.adapters.backup
+                    .backupMime(name),
+                bytes,
+            )
         }
 
     if (savingWhere) {
