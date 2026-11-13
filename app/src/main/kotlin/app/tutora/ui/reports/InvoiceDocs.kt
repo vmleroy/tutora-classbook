@@ -384,3 +384,28 @@ fun detailSheets(
         ),
         subjectSheets(r, w)[1],
     )
+
+/**
+ * The comprovantes of the document's payments, oldest payment first, each headed "16/10/2026 ·
+ * Pix · R$ 540,00" (AC-021-7). [path] finds a kept file; [pages] counts a PDF's pages.
+ */
+fun receiptsOf(
+    r: SubjectReport,
+    w: ReportWords,
+    path: (app.tutora.domain.Receipt) -> String,
+    pages: (app.tutora.domain.Receipt) -> Int,
+): List<app.tutora.adapters.export.PdfReceipt> =
+    r.payments.sortedBy { it.day }.flatMap { p ->
+        val heading = listOf(w.day(p.day), w.methodName(p.method), w.money(p.cents)).joinToString(" · ")
+        p.receipts.map { rc ->
+            app.tutora.adapters.export.PdfReceipt(
+                heading,
+                path(rc),
+                rc.kind == app.tutora.domain.ReceiptKind.PDF,
+                pages(rc).coerceAtLeast(1),
+            )
+        }
+    }
+
+/** Whether a document's period has a payment with a comprovante, so "Incluir comprovantes" shows (AC-021-7). */
+fun hasReceipts(r: SubjectReport) = r.payments.any { it.receipts.isNotEmpty() }

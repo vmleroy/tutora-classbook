@@ -4,6 +4,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -490,5 +491,49 @@ class ReportScreensTest {
                     .all { it.first == 2_000L }
             },
         )
+    }
+
+    @Test
+    fun `AC-021-7 Incluir comprovantes is on both sheets only when a payment has one, off at first, and on puts them in the PDF`() {
+        // No comprovante yet: no switch.
+        openReport()
+        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("sheet-receipts").assertDoesNotExist()
+        compose.onNodeWithTag("sheet-pdf").performClick()
+        h.settle(compose)
+        // A Pix with its comprovante.
+        runBlocking {
+            val photo = java.io.File(tmp.newFolder(), "pix.jpg").apply { writeBytes(ByteArray(100) { 2 }) }
+            val staged = (h.services.receipts.stage(photo.path) as app.tutora.usecases.StageResult.Ok).staged
+            h.services.payments.record(
+                app.tutora.usecases.PaymentDraft(
+                    app.tutora.domain.PayerRef(app.tutora.domain.PayerKind.STUDENT, ana.id),
+                    12_000,
+                    app.tutora.domain.PayMethod.PIX,
+                    LocalDate(2026, 10, 23),
+                    receipts =
+                        listOf(
+                            app.tutora.usecases.ReceiptRef
+                                .New(staged),
+                        ),
+                ),
+            )
+        }
+        h.settle(compose)
+        for (sheet in listOf("send-invoice", "send-detail")) {
+            compose.onNodeWithTag(sheet).performScrollTo().performClick()
+            h.settle(compose)
+            compose.onNodeWithTag("sheet-receipts").assertExists()
+            compose.onNodeWithContentDescription("Incluir comprovantes").assertIsOff()
+            compose.onNodeWithContentDescription("Incluir comprovantes").performClick()
+            h.settle(compose)
+            compose.onNodeWithTag("sheet-pdf").performClick()
+            h.settle(compose)
+        }
+        val (first, invoice, detail) = h.exports.shared.map { String(it.second) }
+        assertTrue("receipts=[]" in first)
+        assertTrue("PdfReceipt(" in invoice && "receiptsTitle=Comprovantes" in invoice)
+        assertTrue("PdfReceipt(" in detail)
     }
 }

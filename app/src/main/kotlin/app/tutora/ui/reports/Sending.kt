@@ -23,6 +23,7 @@ import app.tutora.adapters.export.LocalExports
 import app.tutora.adapters.export.MIME_PDF
 import app.tutora.adapters.export.MIME_XLSX
 import app.tutora.adapters.export.PdfColors
+import app.tutora.adapters.export.PdfPlan
 import app.tutora.adapters.export.Xlsx
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.AlertBanner
@@ -136,7 +137,17 @@ class DocMaker(
     private val exports: Exports,
     private val invoiceFile: String,
     private val detailFile: String,
+    /** "Comprovantes", where a kept comprovante is, and how many pages a PDF one has (AC-021-7). */
+    private val receiptsWord: String = "",
+    private val receiptPath: (app.tutora.domain.Receipt) -> String = { "" },
+    private val receiptPages: (app.tutora.domain.Receipt) -> Int = { 1 },
 ) {
+    /** The plan, with the comprovantes at its end when asked (AC-021-7). */
+    private fun PdfPlan.with(
+        r: SubjectReport,
+        receipts: Boolean,
+    ) = if (receipts) copy(receiptsTitle = receiptsWord, receipts = receiptsOf(r, w, receiptPath, receiptPages)) else this
+
     private fun file(
         name: String,
         kind: String,
@@ -149,10 +160,11 @@ class DocMaker(
         to: Recipient,
         grouped: Boolean,
         due: LocalDate?,
+        receipts: Boolean = false,
     ) = exports.share(
         file(to.name, invoiceFile, r) + ".pdf",
         MIME_PDF,
-        exports.pdf(invoicePlan(invoiceOf(r, grouped), w, iw, teacher, city, to, due, today, stamp), colors),
+        exports.pdf(invoicePlan(invoiceOf(r, grouped), w, iw, teacher, city, to, due, today, stamp).with(r, receipts), colors),
     )
 
     /** Copies the Fatura's message (AC-020-14). */
@@ -170,10 +182,11 @@ class DocMaker(
         line: String?,
         grouped: Boolean,
         notes: Boolean,
+        receipts: Boolean = false,
     ) = exports.share(
         file(to.name, detailFile, r) + ".pdf",
         MIME_PDF,
-        exports.pdf(detailPlan(r, w, iw, teacher, to, label, line, grouped, notes, today, stamp), colors),
+        exports.pdf(detailPlan(r, w, iw, teacher, to, label, line, grouped, notes, today, stamp).with(r, receipts), colors),
     )
 
     /** Shares the detailed Excel (AC-020-19). */
@@ -187,6 +200,7 @@ class DocMaker(
 @Composable
 fun rememberDocMaker(): DocMaker {
     val services = LocalServices.current
+    val images = app.tutora.ui.receipts.LocalReceiptImages.current
     val settings by services.settings.collectAsState(initial = null)
     val language = currentLanguage()
     return DocMaker(
@@ -205,6 +219,15 @@ fun rememberDocMaker(): DocMaker {
         LocalExports.current,
         stringResource(R.string.inv_fileInvoice),
         stringResource(R.string.inv_fileDetail),
+        stringResource(R.string.rc_section),
+        {
+            services.receipts.store
+                .file(it.file)
+                .path
+        },
+        { rc ->
+            if (rc.kind == app.tutora.domain.ReceiptKind.PDF) images.pages(services.receipts.store.file(rc.file)) else 1
+        },
     )
 }
 
@@ -316,6 +339,10 @@ fun SendSection(
     var split by rememberSaveable { mutableStateOf(false) }
     var due by rememberSaveable { mutableStateOf<String?>(null) }
     var notes by rememberSaveable { mutableStateOf(true) }
+    // Off at first, and only offered when a payment in the period has a comprovante (AC-021-7).
+    var receipts by rememberSaveable { mutableStateOf(false) }
+    val canAttach = hasReceipts(r)
+    val withReceipts = receipts && canAttach
     val dueDate = due?.let(LocalDate::parse)
     val invoice = open == "invoice"
     val grouped = s.kind == SubjectKind.PLACE
@@ -339,7 +366,7 @@ fun SendSection(
                     },
                     { m ->
                         Button(stringResource(R.string.rep_pdf), {
-                            maker.invoicePdf(r, to, grouped, dueDate)
+                            maker.invoicePdf(r, to, grouped, dueDate, withReceipts)
                             close()
                         }, m.testTag("sheet-pdf"))
                     },
@@ -354,7 +381,7 @@ fun SendSection(
                     },
                     { m ->
                         Button(stringResource(R.string.rep_pdf), {
-                            maker.detailPdf(r, to, s.label, s.line, grouped, notes)
+                            maker.detailPdf(r, to, s.label, s.line, grouped, notes, withReceipts)
                             close()
                         }, m.testTag("sheet-pdf"))
                     },
@@ -378,6 +405,16 @@ fun SendSection(
                     trailing = RowTrailing.SWITCH,
                     switchValue = notes,
                     onSwitchChange = { notes = it },
+                )
+            }
+            if (canAttach && !(split && members != null)) {
+                ListRow(
+                    stringResource(R.string.rc_include),
+                    Modifier.testTag("sheet-receipts"),
+                    subtitle = stringResource(R.string.rc_includeSub),
+                    trailing = RowTrailing.SWITCH,
+                    switchValue = receipts,
+                    onSwitchChange = { receipts = it },
                 )
             }
             if (split && members != null) {

@@ -102,6 +102,23 @@ data class PdfPlan(
     val payPix: PdfPix? = null,
     /** "Gerado pela Tutora em 26/10/2026, 18:45 · página %1$d de %2$d". */
     val footer: String,
+    /** "Comprovantes", and the comprovantes after the last page, when asked (AC-021-7). */
+    val receiptsTitle: String = "",
+    val receipts: List<PdfReceipt> = emptyList(),
+)
+
+/** The pages the comprovantes add after the document: one per image, one per page of a PDF (AC-021-7). */
+fun receiptPageCount(plan: PdfPlan) = plan.receipts.sumOf { it.pages.coerceAtLeast(1) }
+
+/**
+ * A comprovante at the end of a Fatura or Relatório detalhado (AC-021-7): headed by its payment
+ * ("16/10/2026 · Pix · R$ 540,00"), an image on one page, a PDF's pages one per page.
+ */
+data class PdfReceipt(
+    val heading: String,
+    val path: String,
+    val pdf: Boolean,
+    val pages: Int = 1,
 )
 
 /** Colors from the active theme, as ARGB ints. */
@@ -137,6 +154,9 @@ const val PDF_FIRST_ROWS_WITH_DUE = 12
 const val PDF_OTHER_ROWS_WITH_DUE = 15
 const val PDF_TILES_PER_ROW = 4
 
+// A comprovante is drawn from a bitmap about 150 dpi across the page's width.
+private const val RECEIPT_PX = 1240
+
 /** Pages for a plan: the table spread over pages, with the header repeated; the footer numbers each (AC-010-9). */
 fun pdfPages(plan: PdfPlan): List<PdfPage> {
     // A second row of tiles (more than four totals) takes two rows of the table.
@@ -146,8 +166,10 @@ fun pdfPages(plan: PdfPlan): List<PdfPage> {
         val room = if (ranges.size == 1) PDF_FIRST_ROWS_WITH_DUE else PDF_OTHER_ROWS_WITH_DUE
         if (ranges.last().count() > room) ranges = ranges + listOf(IntRange.EMPTY)
     }
+    // The comprovantes' pages come after, and the footer counts them too (AC-021-7).
+    val total = ranges.size + receiptPageCount(plan)
     return ranges.mapIndexed { i, r ->
-        PdfPage(r, first = i == 0, last = i == ranges.lastIndex, footer = plan.footer.format(i + 1, ranges.size))
+        PdfPage(r, first = i == 0, last = i == ranges.lastIndex, footer = plan.footer.format(i + 1, total))
     }
 }
 
@@ -389,6 +411,56 @@ private class AndroidPdf(
         }
     }
 
+    /**
+     * The "Comprovantes" section (AC-021-7): one page per image and per page of a PDF, each headed
+     * by its payment, the picture fitted inside the margins; numbered after the document's pages.
+     */
+    private fun drawReceipts(
+        doc: PdfDocument,
+        plan: PdfPlan,
+        before: Int,
+    ) {
+        if (plan.receipts.isEmpty()) return
+        val total = before + receiptPageCount(plan)
+        val images =
+            app.tutora.adapters.receipts
+                .AndroidReceiptImages()
+        var n = before
+        var firstPage = true
+        plan.receipts.forEach { r ->
+            val file = File(r.path)
+            repeat(r.pages.coerceAtLeast(1)) { k ->
+                n++
+                val page = doc.startPage(PdfDocument.PageInfo.Builder(width.toInt(), height.toInt(), n).create())
+                val canvas = page.canvas
+                var y = top
+                if (firstPage) {
+                    canvas.text(plan.receiptsTitle, left, y + 16f, paint(18f, c.ink, bold = true), maxWidth = right - left)
+                    y += 30f
+                    firstPage = false
+                }
+                canvas.text(r.heading, left, y + 12f, paint(11f, c.ink, bold = true), maxWidth = right - left)
+                canvas.drawRect(left, y + 20f, right, y + 21.5f, fill(c.line))
+                y += 32f
+                val bmp = runCatching { if (r.pdf) images.pdfPage(file, k, RECEIPT_PX) else images.image(file, RECEIPT_PX) }.getOrNull()
+                if (bmp != null) {
+                    val boxW = right - left
+                    val boxH = height - 60f - y
+                    val scale = minOf(boxW / bmp.width, boxH / bmp.height)
+                    val w = bmp.width * scale
+                    val h = bmp.height * scale
+                    val x = left + (boxW - w) / 2
+                    canvas.drawBitmap(bmp, null, RectF(x, y, x + w, y + h), Paint(Paint.FILTER_BITMAP_FLAG))
+                    bmp.recycle()
+                }
+                val footer = plan.footer.format(n, total)
+                val foot = paint(8f, c.muted)
+                canvas.text(footer, width / 2 - foot.measureText(footer).coerceAtMost(right - left) / 2, height - 30f, foot)
+                doc.finishPage(page)
+            }
+        }
+    }
+
     fun draw(plan: PdfPlan): ByteArray {
         val doc = PdfDocument()
         val pages = pdfPages(plan)
@@ -595,6 +667,7 @@ private class AndroidPdf(
             canvas.text(pg.footer, width / 2 - foot.measureText(pg.footer).coerceAtMost(right - left) / 2, height - 30f, foot)
             doc.finishPage(page)
         }
+        drawReceipts(doc, plan, pages.size)
         val out = ByteArrayOutputStream()
         doc.writeTo(out)
         doc.close()

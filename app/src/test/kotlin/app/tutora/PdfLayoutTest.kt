@@ -105,4 +105,26 @@ class PdfLayoutTest {
         assertEquals(2, pages.size)
         assertTrue(pages.last().rows.isEmpty())
     }
+
+    @Test
+    fun `AC-021-7 the comprovantes add one page per image and per PDF page, and the footer counts them`() {
+        val r = subjectReport(LocalDate(2026, 10, 1), LocalDate(2026, 10, 31), emptyList(), emptyList())
+        val plan =
+            subjectPlan(r, w, teacher, "Aluna", "Ana Souza", null, false, "26/10/2026, 18:45").copy(
+                receiptsTitle = "Comprovantes",
+                receipts =
+                    listOf(
+                        app.tutora.adapters.export
+                            .PdfReceipt("16/10/2026 · Pix · R$ 540,00", "/a.jpg", false),
+                        app.tutora.adapters.export
+                            .PdfReceipt("16/10/2026 · Pix · R$ 540,00", "/b.pdf", true, 2),
+                    ),
+            )
+        assertEquals(
+            3,
+            app.tutora.adapters.export
+                .receiptPageCount(plan),
+        )
+        assertEquals("Gerado pela Tutora em 26/10/2026, 18:45 · página 1 de 4", pdfPages(plan).single().footer)
+    }
 }

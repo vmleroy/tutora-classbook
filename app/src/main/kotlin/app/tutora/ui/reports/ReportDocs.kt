@@ -79,6 +79,10 @@ data class ReportWords(
     val sheetSources: String,
     val method: String,
     val amount: String,
+    /** The Pagamentos sheet's "Comprovante" column, with Sim or Não (AC-021-8). */
+    val receiptColumn: String = "",
+    val yes: String = "",
+    val no: String = "",
 )
 
 /** The teacher's name and Pix key from Ajustes; empty when not set (AC-010-16). */
@@ -199,9 +203,15 @@ fun subjectSheets(
         ),
         Sheet(
             w.sheetPayments,
-            listOf(w.date, w.method, w.amount),
+            listOf(w.date, w.method, w.amount, w.receiptColumn),
             r.payments.map { p ->
-                listOf(Cell.Day(p.day.year, p.day.month.ordinal + 1, p.day.day), Cell.Text(w.methodName(p.method)), Cell.Money(p.cents))
+                listOf(
+                    Cell.Day(p.day.year, p.day.month.ordinal + 1, p.day.day),
+                    Cell.Text(w.methodName(p.method)),
+                    Cell.Money(p.cents),
+                    // Whether it has a comprovante; the files themselves never go into a spreadsheet (AC-021-8).
+                    Cell.Text(if (p.receipts.isNotEmpty()) w.yes else w.no),
+                )
             },
         ),
     )

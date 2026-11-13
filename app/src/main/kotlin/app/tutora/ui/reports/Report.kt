@@ -149,6 +149,9 @@ fun rememberReportWords(): ReportWords {
         sheetSources = stringResource(R.string.rep_sheetSources),
         method = stringResource(R.string.rep_method),
         amount = stringResource(R.string.pay_amount),
+        receiptColumn = stringResource(R.string.rc_column),
+        yes = stringResource(R.string.rc_yes),
+        no = stringResource(R.string.rc_no),
     )
 }
 
