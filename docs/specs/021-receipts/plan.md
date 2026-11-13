@@ -37,7 +37,7 @@ Victor, 13 Nov 2026: a payment holds **as many comprovantes as the teacher wants
 - Thumbnails and pages for the viewer and the documents (`thumbnail`, `pages`, `page`) come with the screens (tasks 9 to 15).
 - `MainActivity`: `ACTION_SEND` and `ACTION_SEND_MULTIPLE` for `image/*` and `application/pdf` (an intent filter on the activity, AC-021-3). The streams are staged right away, before anything is shown, then a `ShareRequest(staged)` goes to the navigation like a notification's open request; `LockGate` already covers whatever it opens (AC-015-9).
 - The camera: `ActivityResultContracts.TakePicture` into a file in `cache/incoming/` through the existing `FileProvider` (a new `cache-path`; nothing under `files/` is ever exposed). No CAMERA permission: the system camera app takes the photo. The gallery: `PickMultipleVisualMedia` (the photo picker, no permission). A file: `OpenMultipleDocuments` with `image/*` and `application/pdf` (AC-021-1).
-- `Exports`: `shareFile(file, mime)` for Compartilhar from the viewer (AC-021-5). `PdfPlan` gains `receipts: List<PdfReceipt>` (heading, kind, file name); `AndroidPdf.draw` adds, after the last page, a "Comprovantes" title on the first and one page per image or per PDF page, headed by its payment, the picture fitted inside the margins (a PDF page rendered by `PdfRenderer` at 150 dpi) (AC-021-7). `pdfPages` counts those pages so the footer's "página x de y" stays right.
+- Compartilhar from the viewer hands the kept file's bytes to `Exports.share`, like a report (AC-021-5). `ReceiptImages` (`LocalReceiptImages`, `AndroidReceiptImages` on the phone, nothing in tests) draws thumbnails, the viewer's pages and the document's pictures; `ReceiptPicker` (`LocalReceiptPicker`, faked in tests like `BackupPicker`) is the camera, photo picker and file picker. `PdfPlan` gains `receipts: List<PdfReceipt>` (heading, kind, file name); `AndroidPdf.draw` adds, after the last page, a "Comprovantes" title on the first and one page per image or per PDF page, headed by its payment, the picture fitted inside the margins (a PDF page rendered by `PdfRenderer` at 150 dpi) (AC-021-7). `pdfPages` counts those pages so the footer's "página x de y" stays right.
 - `BackupArchive` (new, `java.util.zip`, in `:app/usecases` so the domain stays shareable): writes `tutora.json` and `comprovantes/<file>` into a zip and reads one back: the JSON entry first (for the preview), the files only on restore, never a name that climbs out of the folder (AC-021-10). A file not starting with "PK" is still read as a `.json` backup. The zip is built in memory like the JSON was, so `BackupFolder` and the share sheet keep taking bytes; streaming to a file is the fallback if sizes demand it (see Risks).
 
 **Use cases (`:app usecases/`)**
@@ -49,20 +49,21 @@ Victor, 13 Nov 2026: a payment holds **as many comprovantes as the teacher wants
 
 **State and screens (`:app ui/`)**
 
+- Desfazer after Excluir shows from `PaymentUndoHost`, at the bottom of the navigation's root, so it appears on whatever page the teacher is back on (AC-021-6).
 - `ui/payments/Payments.kt`:
   - `PaymentSheet` and `GroupPaySheet`: a "Comprovante" part under Observação: a row of `Thumbnail`s with their × and an "Adicionar" tile that opens a `BottomSheet` with Tirar foto, Escolher da galeria, Escolher arquivo. Staged files live in `rememberSaveable` (their names), so turning the phone or the lock keeps them (AC-021-1).
   - `PayerHistory`'s payment rows: a paperclip mark, labelled "Com comprovante" for TalkBack, when `receipts > 0` (AC-021-4). Hoje has no list of payments today, so the payer's Pagamentos (student, group and place detail) is where it shows; 022 reuses the same row.
   - `PaymentDetailScreen`: the thumbnails under the note; tapping one opens the viewer at it (AC-021-4, 5). Excluir, confirmed as now, then an `UndoBar` "Pagamento excluído" with Desfazer on the payer's detail, held in `AppServices` as the last `DeletedPayment` until it times out (AC-021-6).
 - `ui/receipts/ReceiptViewer.kt` (new): a full-screen page, the payment's comprovantes one after another ("2 de 5"); an image in `ZoomImage` (pinch and double tap), a PDF as its pages one under the other; the header's Compartilhar, Substituir and Remover, Remover after a confirmation sheet (AC-021-5).
-- `ui/receipts/AttachReceipt.kt` (new): "Anexar comprovante": `ListGroup` of the payments `attachable` returns, each payer, date, method and amount, those that already have one with the mark; tapping one attaches and opens its detail. "Registrar novo pagamento" asks for the payer in a `SearchField` of students, groups and places, then opens `PaymentSheet` with the file already in its Comprovante part (AC-021-3).
+- `ui/receipts/AttachReceipt.kt` (new): "Anexar comprovante": `ListGroup` of the payments `attachable` returns, each payer, date, method and amount, those that already have one with the mark; tapping one attaches and opens its detail. "Registrar novo pagamento" asks for the payer in a sheet with a `TextField` search over students, groups and places, then opens `PaymentSheet` with the file already in its Comprovante part (AC-021-3).
 - `ui/reports/Sending.kt`: `Switch` "Incluir comprovantes" in both the Fatura and the Relatório detalhado sheets, off at first, shown only when a payment in the document has one (AC-021-7). `InvoiceDocs.kt` and `ReportDocs.kt` put the receipts on the plan, and a "Comprovante" column (Sim / Não) on the Pagamentos sheet of the report's Excel (AC-010-10) and the detailed Excel (AC-020-19), and of Backup e planilha's spreadsheet (AC-011-19) for the same reason (AC-021-8). Text never changes (AC-021-9).
 - `ui/backup/Backup.kt`: under Backup completo, "12 comprovantes · 8,4 MB" from the receipt Flow, hidden when there are none; the restore preview counts the comprovantes (AC-021-10, 12).
 
 **Design system (`:core:designsystem`, before the screens)**
 
-- `Thumbnail` (new): a rounded tile showing an `ImageBitmap` or, while it loads or for a PDF, the file icon with "PDF"; an optional × (touch size) to take it off; an "Adicionar" variant with the plus. Guideline in `docs/design-system/components/Thumbnail/README.md`, gallery entry.
+- `Thumbnail` (new): a rounded tile showing a `Painter` (a `BitmapPainter` in the app) or, while it loads or for a PDF, the file icon with "PDF"; an optional × (touch size) to take it off; an "Adicionar" variant with the plus. Guideline in `docs/design-system/components/Thumbnail/README.md`, gallery entry.
 - `ZoomImage` (new): an image that fills its box and zooms with pinch and double tap, panning inside its bounds, for the viewer. Guideline and gallery entry.
-- `ListRow` gains `mark: Pair<IconName, String>?`, a small icon before the chevron with its spoken label. `IconName` gains `PAPERCLIP`, `CAMERA`, `IMAGE` and `SHARE` (line icons drawn like the others).
+- `ListRow` gains `mark: Pair<IconName, String>?`, a small icon before the chevron with its spoken label. `IconName` gains `PAPERCLIP`, `CAMERA`, `IMAGE`, `SHARE` and `REPLACE` (Lucide line icons like the others). Tokens `size-thumb` (72) and `size-thumb-lg` (96).
 - 47 → 49 components; CLAUDE.md and the design-system README say so.
 
 ## Data
@@ -97,7 +98,7 @@ Sharing a comprovante or a document writes nothing and stays in the screen layer
 | The payer's Pagamentos | ListRow with `mark` (new parameter) |
 | Pagamento (detail) | Thumbnail, UndoBar on the payer's detail after Excluir |
 | Comprovante (viewer, new) | ScreenScaffold, ZoomImage (new), HeaderAction (Compartilhar, Substituir, Remover), BottomSheet (Remover?) |
-| Anexar comprovante (new) | ScreenHeader, ListGroup, ListRow, SearchField, Button, EmptyState ("Nenhum pagamento nos últimos 60 dias") |
+| Anexar comprovante (new) | ScreenHeader, Thumbnail, ListGroup, ListRow, BottomSheet with TextField (Quem pagou?), Button, EmptyState ("Nenhum pagamento nos últimos 60 dias") |
 | Fatura and Relatório detalhado sheets | Switch |
 | Backup e planilha | the existing text line under Backup completo |
 
