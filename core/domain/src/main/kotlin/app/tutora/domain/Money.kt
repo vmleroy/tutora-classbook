@@ -91,3 +91,23 @@ fun splitShares(
     val rest = cents % parts
     return List(parts) { i -> base + if (i < rest) 1 else 0 }
 }
+
+/**
+ * [cents] divided in proportion to [weights] (what each member owes), in whole cents: each takes
+ * its floor, and the leftover cents go to the largest remainders (the first on a tie), so the
+ * parts always add up to [cents] (AC-020-41). With no weight at all, it is split equally.
+ */
+fun proportionalShares(
+    cents: Cents,
+    weights: List<Cents>,
+): List<Cents> {
+    if (weights.isEmpty()) return emptyList()
+    val total = sum(weights)
+    if (total <= 0) return splitShares(cents, weights.size)
+    val exact = weights.map { Math.multiplyExact(cents, it) }
+    val floors = exact.map { it / total }
+    val rest = cents - sum(floors)
+    val order = exact.indices.sortedWith(compareByDescending<Int> { exact[it] % total }.thenBy { it })
+    val extra = order.take(rest.toInt()).toSet()
+    return floors.mapIndexed { i, f -> f + if (i in extra) 1 else 0 }
+}

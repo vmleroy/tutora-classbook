@@ -412,10 +412,9 @@ class ReportScreensTest {
         h.go(compose, app.tutora.ui.GroupDetail(gid))
         click("Registrar pagamento", scroll = false)
         compose.onNodeWithTag("group-pay").assertExists()
-        // Nobody picked is Todos pagaram: everyone who owes, each with what they owe.
+        // Nobody picked is Todos pagaram: everyone who owes, the whole amount at first.
         exists("Todos pagaram · R$ 100,00", part = true)
-        compose.onNodeWithTag("group-pay-Ana Souza").assertExists()
-        compose.onNodeWithTag("group-pay-Bia Lima").assertExists()
+        exists("Ana Souza R$ 50,00 · Bia Lima R$ 50,00", part = true)
         exists("Registrar · R$ 100,00", part = true)
         compose.onNodeWithTag("group-pay-save").performClick()
         // Both shares paid; Ana's own private class from the setup stays hers to pay.
@@ -433,6 +432,62 @@ class ReportScreensTest {
                     .first()
                     .values
                     .all { it.first == 0L }
+            },
+        )
+    }
+
+    @Test
+    fun `AC-020-41 Todos pagaram takes one amount and divides it by what each member owes`() {
+        val gid =
+            runBlocking {
+                h.t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                )
+                val ids =
+                    h.services.catalogRepo
+                        .students()
+                        .first()
+                        .map { it.student.id }
+                val g = (h.t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, ids, null)) as Result.Ok).value
+                h.t.now = "2026-10-20T12:00:00.000Z"
+                h.t.catalog.setSplit(g.id, true)
+                h.t.now = "2026-10-26T12:00:00.000Z"
+                h.t.lessons.logLesson(
+                    LessonDraft(WhoId.OfGroup(g.id), online, LocalDate(2026, 10, 21), LocalTime(9, 0), 60, null, null, null),
+                )
+                g.id
+            }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.GroupDetail(gid))
+        click("Registrar pagamento", scroll = false)
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasSetTextAction() and
+                    androidx.compose.ui.test
+                        .hasAnyAncestor(
+                            androidx.compose.ui.test
+                                .hasTestTag("group-pay-total"),
+                        ),
+            ).performTextReplacement("6000")
+        h.settle(compose)
+        exists("Ana Souza R$ 30,00 · Bia Lima R$ 30,00", part = true)
+        compose.onNodeWithTag("group-pay-save").performClick()
+        h.awaitDb(compose) {
+            h.services.paymentRepo
+                .memberDebts(gid)
+                .first()
+                .values
+                .all { it.first == 2_000L }
+        }
+        assertTrue(
+            runBlocking {
+                h.services.paymentRepo
+                    .memberDebts(gid)
+                    .first()
+                    .values
+                    .all { it.first == 2_000L }
             },
         )
     }

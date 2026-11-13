@@ -154,4 +154,15 @@ class InvoiceRulesTest {
             ),
         )
     }
+
+    @Test
+    fun `AC-020-41 one amount for everyone is divided by what each owes and always adds up`(): Unit =
+        runBlocking {
+            assertEquals(listOf(6_000L, 4_000L), proportionalShares(10_000, listOf(6_000, 4_000)))
+            assertEquals(listOf(3_000L, 2_000L), proportionalShares(5_000, listOf(6_000, 4_000)))
+            assertEquals(listOf(4L, 3L, 3L), proportionalShares(10, listOf(1, 1, 1)))
+            checkAll(Arb.long(0L..1_000_000L), Arb.long(1L..100_000L), Arb.long(0L..100_000L)) { cents, a, b ->
+                assertEquals(cents, proportionalShares(cents, listOf(a, b)).sum())
+            }
+        }
 }

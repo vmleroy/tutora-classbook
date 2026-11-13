@@ -46,6 +46,8 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 
 - [x] 26. A split group's "Registrar pagamento" for several members at once (`recordAll`, all or none); a student's chosen classes include their shares. Test: `PaymentsTest.kt`, `ReportScreensTest.kt`. (AC-020-40)
 
+- [x] 27. "Todos pagaram" with one "Valor pago" divided by what each owes (`proportionalShares`). Test: `InvoiceRulesTest.kt`, `ReportScreensTest.kt`. (AC-020-41)
+
 ### Finish
 
 - [x] 17. Product doc: Reports feature and the "Send a monthly report" flow mention Fatura, Relatório detalhado and Faturas do mês; data model lists `student.guardian`. `./gradlew check` green once. Spec status in progress → done at `/verify`.

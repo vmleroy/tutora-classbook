@@ -81,6 +81,7 @@ import app.tutora.domain.Who
 import app.tutora.domain.balanceOf
 import app.tutora.domain.localOf
 import app.tutora.domain.payerOf
+import app.tutora.domain.proportionalShares
 import app.tutora.domain.sum
 import app.tutora.state.LocalServices
 import app.tutora.ui.GroupDetail
@@ -1230,7 +1231,11 @@ private fun GroupPaySheet(
     fun choose(ids: Collection<String>) {
         picked = names.keys.filter { it in ids }
     }
-    val amountOf = { id: String -> amounts[id] ?: owedBy[id] ?: 0 }
+    // Todos pagaram: one amount for everyone, divided by what each owes (AC-020-41).
+    val everyone = picked.isEmpty()
+    var together by remember(debts, groupOwes) { mutableStateOf<Cents?>(sum(owing.map { owedBy[it] ?: 0 })) }
+    val split = proportionalShares(together ?: 0, owing.map { owedBy[it] ?: 0 }).let { parts -> owing.zip(parts).toMap() }
+    val amountOf = { id: String -> if (everyone) split[id] ?: 0 else amounts[id] ?: owedBy[id] ?: 0 }
     val total = paying.sumOf { amountOf(it) }
     val owesText = { id: String -> (owedBy[id] ?: 0).takeIf { it > 0 }?.let { formatMoney(it, language) } }
     val owesLabel = stringResource(R.string.pay_owesShort, "%s")
@@ -1276,17 +1281,27 @@ private fun GroupPaySheet(
                 searchLabel = stringResource(R.string.pay_searchMember),
                 icon = IconName.USERS,
             )
-            paying.forEach { id ->
-                val name = names[id].orEmpty()
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.CenterVertically) {
-                    MoneyField(
-                        name,
-                        amountOf(id),
-                        { amounts = amounts + (id to (it ?: 0)) },
-                        Modifier.weight(1f).testTag("group-pay-$name"),
-                        helper = owesText(id)?.let { owesLabel.replace("%s", it) },
-                    )
-                    IconButton(IconName.CLOSE, stringResource(R.string.pay_removeFrom, name), { choose(paying - id) })
+            if (everyone) {
+                MoneyField(
+                    stringResource(R.string.pay_paidTogether),
+                    together,
+                    { together = it },
+                    Modifier.testTag("group-pay-total"),
+                    helper = owing.joinToString(" · ") { "${names[it].orEmpty()} ${formatMoney(split[it] ?: 0, language)}" },
+                )
+            } else {
+                paying.forEach { id ->
+                    val name = names[id].orEmpty()
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.CenterVertically) {
+                        MoneyField(
+                            name,
+                            amountOf(id),
+                            { amounts = amounts + (id to (it ?: 0)) },
+                            Modifier.weight(1f).testTag("group-pay-$name"),
+                            helper = owesText(id)?.let { owesLabel.replace("%s", it) },
+                        )
+                        IconButton(IconName.CLOSE, stringResource(R.string.pay_removeFrom, name), { choose(paying - id) })
+                    }
                 }
             }
             MethodControl(method) { method = it }

@@ -85,6 +85,7 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 - **AC-020-37.** Classes given before the split was turned on stay owed by the group, so nothing already paid moves.
 
 - **AC-020-40.** "Registrar pagamento" on a split group has "Quem pagou", which starts at "Todos pagaram · R$ 100,00": everyone who owes for this group (and the group's own debt from before the split, when there is one), each with their own amount, what they owe at first. Picking members in it, with a search box, narrows the payment to them; an × takes one out. One method and one date. Saving records each ticked amount as that student's payment, paying this group's classes first, all together or none (Victor, 13 Nov 2026).
+- **AC-020-41.** In "Todos pagaram", one "Valor pago" field takes what was paid, the total owed at first; it is divided among the members by what each owes, the leftover cents to the largest remainders so the parts add up, and the line under it shows each part ("Ana R$ 30,00 · Bia R$ 30,00"). Each part is saved as that student's payment (Victor, 13 Nov 2026).
 - **AC-020-38.** Choosing a place from the places you have (a new group's place, a class's place) is one field that opens the list with a search box, each place with its kind under it, like Quem; never a row of chips, which doesn't scale (Victor, 13 Nov 2026).
 
 ### Language
