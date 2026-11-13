@@ -363,20 +363,19 @@ fun SendSection(
             if (split && members != null) {
                 emptyList()
             } else if (invoice) {
-                listOf(
-                    { m ->
-                        Button(stringResource(R.string.rep_copy), {
-                            maker.invoiceCopy(r, grouped, dueDate)
-                            close()
-                        }, m.testTag("sheet-copy"), variant = ButtonVariant.OUTLINE)
-                    },
-                    { m ->
+                // One stacked action: PDF the main one, Copiar como texto under it at full width, never squeezed.
+                listOf { m ->
+                    Column(m, verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                         Button(stringResource(R.string.rep_pdf), {
                             maker.invoicePdf(r, to, grouped, dueDate, withReceipts)
                             close()
-                        }, m.testTag("sheet-pdf"))
-                    },
-                )
+                        }, Modifier.testTag("sheet-pdf"), fullWidth = true, icon = IconName.FILE)
+                        Button(stringResource(R.string.rep_copy), {
+                            maker.invoiceCopy(r, grouped, dueDate)
+                            close()
+                        }, Modifier.testTag("sheet-copy"), variant = ButtonVariant.OUTLINE, fullWidth = true, icon = IconName.COPY)
+                    }
+                }
             } else {
                 listOf(
                     { m ->

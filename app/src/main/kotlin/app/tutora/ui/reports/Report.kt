@@ -365,8 +365,9 @@ fun ReportScreen(
                 exports.copy(subjectText(r, words, teacher, name))
                 copied = true
             },
-            variant = ButtonVariant.GHOST,
+            variant = ButtonVariant.OUTLINE,
             fullWidth = true,
+            icon = IconName.COPY,
         )
         // Enviar: the Fatura and the Relatório detalhado (spec 020).
         val group = if (kind == SubjectKind.GROUP) groups.firstOrNull { it.id == id } else null

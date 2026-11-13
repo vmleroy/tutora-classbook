@@ -58,6 +58,7 @@ enum class IconName(
     IMAGE(R.drawable.ic_image),
     SHARE(R.drawable.ic_share),
     REPLACE(R.drawable.ic_replace),
+    COPY(R.drawable.ic_copy),
 }
 
 /** A line icon tinted with a token color; decorative unless it has a [label]. */
