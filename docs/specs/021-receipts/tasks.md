@@ -1,12 +1,12 @@
 # Tasks 021: Comprovantes
 
-Each task lists the criteria it proves and the test file that proves them. Check a box only when its tests pass. Branch `spec/021-receipts` from `spec/020-sending-reports`.
+Each task lists the criteria it proves and the test file that proves them. Check a box only when its tests pass. Branch `spec/021-receipts` from `main`.
 
 Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data tests in `core/data/src/test/kotlin/app/tutora/data/`, design-system tests in `core/designsystem/src/test/kotlin/app/tutora/designsystem/`, app tests in `app/src/test/kotlin/app/tutora/`.
 
 ### Mockups
 
-- [ ] 1. `docs/mockups/PaymentSheet.dc.html` (Comprovante part), `PaymentDetail.dc.html` (thumbnails), `Receipt.dc.html` (viewer and Anexar comprovante), in both languages' copy; Victor looks before task 9. Test: none (docs). (AC-021-1, AC-021-3, AC-021-4, AC-021-5)
+- [x] 1. `docs/mockups/PaymentSheet.dc.html` (Comprovante part), `PaymentDetail.dc.html` (thumbnails), `Receipt.dc.html` (viewer and Anexar comprovante), in both languages' copy; Victor looks before task 9. Test: none (docs). (AC-021-1, AC-021-3, AC-021-4, AC-021-5)
 
 ### Data and domain
 

@@ -4,7 +4,7 @@ Architecture reference: docs/architecture.md (Architecture layers, State managem
 
 ## Branch
 
-Implemented on `spec/021-receipts`, branched from `spec/020-sending-reports` (PR #23 is open): 021 adds to 020's Fatura and Relatório detalhado sheets and documents (AC-021-7, 8). The PR is based on `spec/020-sending-reports` and retargeted to `main` once #23 merges.
+Implemented on `spec/021-receipts`, branched from `main` after 020 merged (#23); the PR goes into `main`.
 
 ## Approach
 
@@ -134,4 +134,3 @@ Device checks for the PR (pending, not run unless Victor asks): Compartilhar ›
 - **PDFs Android can't open.** `PdfRenderer` refuses password-protected or broken PDFs. Mitigation: they are refused when picked ("Este PDF não pode ser aberto"), never after.
 - **Share target and the lock.** A shared file must not show anything before the unlock. Mitigation: staging only copies bytes; the screen it opens is under `LockGate`, tested.
 - **Automatic backup to a folder** now writes a `.zip`; the folder's pruning keeps the newest N by name, `.json` files written before 021 included.
-- **Stacked on #23.** If 020 changes before it merges, rebase `spec/021-receipts` on it.
