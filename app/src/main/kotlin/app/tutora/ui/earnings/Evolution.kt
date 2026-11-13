@@ -2,7 +2,6 @@ package app.tutora.ui.earnings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,10 +24,8 @@ import androidx.navigation.NavHostController
 import app.tutora.R
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.Card
-import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.Choice
 import app.tutora.designsystem.components.ChoiceField
-import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconButton
 import app.tutora.designsystem.components.IconButtonVariant
@@ -36,6 +33,7 @@ import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.MonthBar
 import app.tutora.designsystem.components.MonthBars
+import app.tutora.designsystem.components.PeriodField
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -118,6 +116,7 @@ fun EvolutionScreen(nav: NavHostController) {
         if (tooLong) return
         customFrom = start.toString()
         customTo = end.toString()
+        range = EvolutionRange.CUSTOM
         picked = emptyList()
     }
     val months by remember(from, to, filter, chosenPayers, chosenKinds) {
@@ -130,51 +129,38 @@ fun EvolutionScreen(nav: NavHostController) {
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
     ) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+        // The period as a filter field, like Tipo under it: quick periods over De and Até; a date picked
+        // by hand is a period of its own and lights none (AC-019-1, AC-020-31).
+        PeriodField(
+            stringResource(R.string.rep_period),
             listOf(
-                EvolutionRange.SIX to R.string.evo_six,
-                EvolutionRange.TWELVE to R.string.evo_twelve,
-                EvolutionRange.YEAR to R.string.evo_year,
-                EvolutionRange.CUSTOM to R.string.evo_custom,
-            ).forEach { (r, label) ->
-                Chip(stringResource(label), range == r, {
-                    // Personalizado starts from the period on screen (AC-019-1).
-                    if (r == EvolutionRange.CUSTOM && range != r) {
-                        customFrom = from.toString()
-                        customTo = minOf(to, today).toString()
-                    }
-                    range = r
-                    tooLong = false
-                    picked = emptyList()
-                })
-            }
-        }
-        // Any gap of dates, from De to Até, as in the reports' Outro… (AC-019-1, AC-010-3).
-        if (range == EvolutionRange.CUSTOM) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-                DateField(
-                    stringResource(R.string.rep_from),
-                    pattern("dd/MM/yyyy", language, from),
-                    from,
-                    { pick(it, maxOf(it, to)) },
-                    Modifier.weight(1f).testTag("evo-from"),
-                )
-                DateField(
-                    stringResource(R.string.rep_to),
-                    pattern("dd/MM/yyyy", language, to),
-                    to,
-                    { pick(minOf(from, it), it) },
-                    Modifier.weight(1f).testTag("evo-to"),
-                )
-            }
-            if (tooLong) {
-                Text(
-                    stringResource(R.string.evo_tooLong),
-                    Modifier.testTag("evo-too-long"),
-                    style = TutoraTheme.type.meta,
-                    color = TutoraTheme.colors.dangerInk,
-                )
-            }
+                EvolutionRange.SIX to stringResource(R.string.evo_six),
+                EvolutionRange.TWELVE to stringResource(R.string.evo_twelve),
+                EvolutionRange.YEAR to stringResource(R.string.evo_year),
+            ),
+            range.takeIf { it != EvolutionRange.CUSTOM },
+            {
+                range = it
+                tooLong = false
+                picked = emptyList()
+            },
+            from,
+            pattern("dd/MM/yyyy", language, from),
+            { pick(it, maxOf(it, to)) },
+            to,
+            pattern("dd/MM/yyyy", language, to),
+            { pick(minOf(from, it), it) },
+            stringResource(R.string.rep_from),
+            stringResource(R.string.rep_to),
+            tag = "evo",
+        )
+        if (tooLong) {
+            Text(
+                stringResource(R.string.evo_tooLong),
+                Modifier.testTag("evo-too-long"),
+                style = TutoraTheme.type.meta,
+                color = TutoraTheme.colors.dangerInk,
+            )
         }
         // A year goes back and forth with ‹ ›, never past this one.
         if (range == EvolutionRange.YEAR) {

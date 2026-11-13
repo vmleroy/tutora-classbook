@@ -30,14 +30,14 @@ import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Checkbox
-import app.tutora.designsystem.components.Chip
-import app.tutora.designsystem.components.DateField
+import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.Money
 import app.tutora.designsystem.components.MoneyTone
+import app.tutora.designsystem.components.PeriodField
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SectionHeader
 import app.tutora.designsystem.components.SegmentedControl
@@ -278,30 +278,34 @@ fun ReportScreen(
         variant = HeaderVariant.PUSH,
         onBack = { nav.popBackStack() },
     ) {
-        // The quick periods in one row over De and Até; a date picked by hand lights none (AC-020-30).
-        SegmentedControl(
+        // The period as a filter: quick periods over De and Até; dates picked by hand light none (AC-020-30, 31).
+        PeriodField(
+            stringResource(R.string.rep_period),
             listOf(
                 "month" to stringResource(R.string.rep_thisMonth),
                 "last" to stringResource(R.string.rep_lastMonth),
                 "three" to stringResource(R.string.rep_threeMonths),
             ),
-            range,
+            range.takeIf { it != "custom" },
             { range = it },
-            stringResource(R.string.rep_period),
-            Modifier.testTag("report-period"),
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            DateField(stringResource(R.string.rep_from), pattern("dd/MM/yyyy", language, from), from, {
+            from,
+            pattern("dd/MM/yyyy", language, from),
+            {
                 range = "custom"
                 customFrom = it.toString()
                 customTo = to.toString()
-            }, Modifier.weight(1f))
-            DateField(stringResource(R.string.rep_to), pattern("dd/MM/yyyy", language, to), to, {
+            },
+            to,
+            pattern("dd/MM/yyyy", language, to),
+            {
                 range = "custom"
                 customFrom = from.toString()
                 customTo = it.toString()
-            }, Modifier.weight(1f))
-        }
+            },
+            stringResource(R.string.rep_from),
+            stringResource(R.string.rep_to),
+            tag = "report-period",
+        )
         val r = report
         if (subject == null || r == null) return@ScreenScaffold
         Card(Modifier.testTag("report-summary")) {
@@ -452,10 +456,13 @@ fun EarningsReportSheet(
             ),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                Chip(stringResource(R.string.rep_pdf), pdf, { pdf = true })
-                Chip(stringResource(R.string.rep_excel), !pdf, { pdf = false })
-            }
+            SegmentedControl(
+                listOf(true to stringResource(R.string.rep_pdf), false to stringResource(R.string.rep_excel)),
+                pdf,
+                { pdf = it },
+                stringResource(R.string.rep_earningsTitle),
+                size = ControlSize.SM,
+            )
             Checkbox(stringResource(R.string.rep_partSources), parts.bySource, { parts = parts.copy(bySource = it) })
             Checkbox(stringResource(R.string.rep_partClasses), parts.classes, { parts = parts.copy(classes = it) })
             Checkbox(stringResource(R.string.rep_partPayments), parts.payments, { parts = parts.copy(payments = it) })

@@ -525,7 +525,6 @@
     <string name="rep_thisMonth">Este mês</string>
     <string name="rep_lastMonth">Mês passado</string>
     <string name="rep_threeMonths">3 meses</string>
-    <string name="rep_custom">Outro…</string>
     <string name="rep_from">De</string>
     <string name="rep_to">Até</string>
     <string name="rep_export">Exportar este relatório</string>

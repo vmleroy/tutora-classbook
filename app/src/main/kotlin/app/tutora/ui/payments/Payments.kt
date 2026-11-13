@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -34,7 +33,6 @@ import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Checkbox
-import app.tutora.designsystem.components.Chip
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.DurationField
@@ -429,10 +427,18 @@ fun PayerLessonsScreen(
         onBack = { nav.popBackStack() },
     ) {
         val classes = payerClasses(payer) ?: return@ScreenScaffold
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            val filters = listOf("all" to R.string.pay_filterAll, "owed" to R.string.pay_filterOwed, "paid" to R.string.pay_filterPaid)
-            filters.forEach { (k, label) -> Chip(stringResource(label), filter == k, { filter = k }) }
-        }
+        // Short fixed choices as one segmented row (AC-020-32).
+        SegmentedControl(
+            listOf(
+                "all" to stringResource(R.string.pay_filterAll),
+                "owed" to stringResource(R.string.pay_filterOwed),
+                "paid" to stringResource(R.string.pay_filterPaid),
+            ),
+            filter,
+            { filter = it },
+            stringResource(R.string.pay_lessonsAll),
+            size = ControlSize.SM,
+        )
         val shown =
             classes.filter {
                 when (filter) {
@@ -700,9 +706,7 @@ fun PaymentSheet(
                     tone = AlertTone.ACCENT,
                 )
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                PayMethod.entries.forEach { mth -> Chip(methodName(mth), method == mth, { method = mth }) }
-            }
+            MethodControl(method) { method = it }
             DateField(stringResource(R.string.lesson_date), dayMonth(picked, language), picked, { if (it <= today) date = it.toString() })
             TextField(stringResource(R.string.pay_note), note, { note = it })
             // Escolher aulas is a switch: off pays the oldest first, on lists the classes (Victor, 29 Oct 2026).
@@ -882,9 +886,7 @@ fun PackageCard(
                 },
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                    PayMethod.entries.forEach { mth -> Chip(methodName(mth), method == mth, { method = mth }) }
-                }
+                MethodControl(method) { method = it }
                 DateField(stringResource(R.string.lesson_date), dayMonth(picked, language), picked, {
                     if (it <=
                         today
@@ -1136,3 +1138,18 @@ fun bonusOffer(lesson: Lesson): BonusOffer? {
 
 /** The most minutes a bonus can give at once. */
 private const val BONUS_MAX_MIN = 600
+
+/** Dinheiro, Pix, Transferência, Cartão as one segmented row (AC-020-32). */
+@Composable
+fun MethodControl(
+    method: PayMethod,
+    onChange: (PayMethod) -> Unit,
+) {
+    SegmentedControl(
+        PayMethod.entries.map { it to methodName(it) },
+        method,
+        onChange,
+        stringResource(R.string.rep_method),
+        size = ControlSize.SM,
+    )
+}

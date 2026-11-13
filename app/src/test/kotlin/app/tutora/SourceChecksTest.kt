@@ -96,4 +96,33 @@ class SourceChecksTest {
             org.junit.Assert.assertTrue("$it pads for the sides", "WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal" in text)
         }
     }
+
+    @Test
+    fun `AC-020-32 short fixed choices are segmented rows, not chips`() {
+        val ui = File("src/main/kotlin/app/tutora/ui")
+
+        fun src(path: String) = File(ui, path).readText()
+        // Each was a row of chips; now a SegmentedControl (or MethodControl, the payment method's).
+        val chipRows =
+            listOf(
+                "payments/Payments.kt" to "PayMethod.entries.forEach",
+                "schedule/LessonForm.kt" to "PayMethod.entries.forEach",
+                "schedule/LessonForm.kt" to "lesson_repeats_none,",
+                "schedule/LessonForm.kt" to "R.string.lesson_whoAll,",
+                "schedule/CancelSheet.kt" to "reasons.forEach",
+                "catalog/Places.kt" to "PayCycle.LESSON to R.string",
+                "setup/Setup.kt" to ".forEach { (m, label) -> Chip",
+                "SettingsScreen.kt" to "ConfirmWhen.END to R.string",
+                "SettingsScreen.kt" to "LockAfter.entries.forEach",
+                "payments/Payments.kt" to "\"all\" to R.string.pay_filterAll",
+                "reports/Report.kt" to "Chip(stringResource(R.string.rep_pdf)",
+                "earnings/Evolution.kt" to "Chip(",
+                "backup/Backup.kt" to "Chip(",
+            ).filter { (file, old) -> src(file).contains(old) }
+        assertEquals(emptyList<Pair<String, String>>(), chipRows)
+        assertEquals(
+            3,
+            ui.walkTopDown().filter { it.extension == "kt" }.sumOf { Regex("MethodControl\\(").findAll(it.readText()).count() } - 1,
+        )
+    }
 }

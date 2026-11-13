@@ -4,7 +4,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,12 +35,11 @@ import app.tutora.designsystem.components.BadgeTone
 import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
-import app.tutora.designsystem.components.Chip
-import app.tutora.designsystem.components.DateField
 import app.tutora.designsystem.components.HeaderVariant
 import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
+import app.tutora.designsystem.components.PeriodField
 import app.tutora.designsystem.components.RowTrailing
 import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.TileTone
@@ -79,9 +77,11 @@ import app.tutora.usecases.SheetData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.daysUntil
+import kotlinx.datetime.minus
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toJavaLocalDateTime
 import java.time.format.DateTimeFormatter
@@ -820,26 +820,44 @@ private fun SheetPeriodSheet(
         onDismiss,
         actions = listOf({ m -> Button(stringResource(R.string.bk_generate), { onGenerate(range) }, m) }),
     ) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-            listOf(
-                "month" to R.string.rep_thisMonth,
-                "last" to R.string.rep_lastMonth,
-                "year" to R.string.bk_thisYear,
-                "all" to R.string.bk_all,
-                "custom" to R.string.bk_custom,
-            ).forEach { (k, label) -> Chip(stringResource(label), key == k, { key = k }) }
-        }
-        if (key == "custom") {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-                DateField(
-                    stringResource(R.string.rep_from),
-                    shown(from),
-                    LocalDate.parse(from),
-                    { from = it.toString() },
-                    Modifier.weight(1f),
-                )
-                DateField(stringResource(R.string.rep_to), shown(to), LocalDate.parse(to), { to = it.toString() }, Modifier.weight(1f))
+        // The period as a filter field: quick periods over De and Até; dates picked by hand light none,
+        // and Tudo has no first day to show (AC-011-19, AC-020-31).
+        val first = LocalDate(today.year, today.month, 1)
+        val (shownFrom, shownTo) =
+            when (key) {
+                "last" -> first.minus(DatePeriod(months = 1)) to first.minus(DatePeriod(days = 1))
+                "year" -> LocalDate(today.year, 1, 1) to today
+                "all" -> null to today
+                "custom" -> LocalDate.parse(from) to LocalDate.parse(to)
+                else -> first to today
             }
-        }
+        PeriodField(
+            stringResource(R.string.rep_period),
+            listOf(
+                "month" to stringResource(R.string.rep_thisMonth),
+                "last" to stringResource(R.string.rep_lastMonth),
+                "year" to stringResource(R.string.bk_thisYear),
+                "all" to stringResource(R.string.bk_all),
+            ),
+            key.takeIf { it != "custom" },
+            { key = it },
+            shownFrom ?: today,
+            shownFrom?.let { shown(it.toString()) } ?: "—",
+            {
+                from = it.toString()
+                to = maxOf(it, shownTo).toString()
+                key = "custom"
+            },
+            shownTo,
+            shown(shownTo.toString()),
+            {
+                to = it.toString()
+                from = minOf(shownFrom ?: it, it).toString()
+                key = "custom"
+            },
+            stringResource(R.string.rep_from),
+            stringResource(R.string.rep_to),
+            tag = "sheet-period",
+        )
     }
 }

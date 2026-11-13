@@ -63,7 +63,6 @@ import app.tutora.ui.catalog.Field
 import app.tutora.ui.catalog.RequiredLegend
 import app.tutora.ui.clockTime
 import app.tutora.ui.minutesText
-import app.tutora.ui.payments.methodName
 import app.tutora.ui.placeName
 import app.tutora.ui.shortDate
 import app.tutora.ui.tag
@@ -321,22 +320,25 @@ fun LessonForm(
                         size = ControlSize.SM,
                     )
                     v.paidWith?.let { method ->
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                            PayMethod.entries.forEach { m -> Chip(methodName(m), method == m, { v = v.copy(paidWith = m) }) }
-                        }
+                        app.tutora.ui.payments
+                            .MethodControl(method) { v = v.copy(paidWith = it) }
                     }
                 }
             }
         }
         if (!editing && log != true) {
             Field(stringResource(R.string.lesson_repeat)) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                SegmentedControl(
                     listOf(
-                        null to R.string.lesson_repeats_none,
-                        Repeat.WEEKLY to R.string.lesson_repeats_weekly,
-                        Repeat.BIWEEKLY to R.string.lesson_repeats_biweekly,
-                    ).forEach { (r, label) -> Chip(stringResource(label), v.repeat == r, { v = v.copy(repeat = r) }) }
-                }
+                        null to stringResource(R.string.lesson_repeats_none),
+                        Repeat.WEEKLY to stringResource(R.string.lesson_repeats_weekly),
+                        Repeat.BIWEEKLY to stringResource(R.string.lesson_repeats_biweekly),
+                    ),
+                    v.repeat,
+                    { v = v.copy(repeat = it) },
+                    stringResource(R.string.lesson_repeat),
+                    size = ControlSize.SM,
+                )
             }
         }
         if (series != null) {
@@ -370,13 +372,17 @@ fun LessonForm(
                 val q = fold(query.trim())
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
                     TextField(stringResource(R.string.lesson_whoSearch), query, { query = it })
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
+                    SegmentedControl(
                         listOf(
-                            "all" to R.string.lesson_whoAll,
-                            "students" to R.string.tab_students,
-                            "groups" to R.string.tab_groups,
-                        ).forEach { (k, label) -> Chip(stringResource(label), kind == k, { kind = k }) }
-                    }
+                            "all" to stringResource(R.string.lesson_whoAll),
+                            "students" to stringResource(R.string.tab_students),
+                            "groups" to stringResource(R.string.tab_groups),
+                        ),
+                        kind,
+                        { kind = it },
+                        stringResource(R.string.lesson_pickWho),
+                        size = ControlSize.SM,
+                    )
                 }
                 val studentRows: List<@Composable () -> Unit> =
                     students.filter { it.links.isNotEmpty() && kind != "groups" && fold(it.student.name).contains(q) }.map { s ->

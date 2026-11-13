@@ -420,19 +420,17 @@ private fun PastClassesRow(
             color = c.inkMuted,
         )
         Text(stringResource(R.string.set_confirmWhen), style = TutoraTheme.type.bodyStrong, color = c.ink)
-        androidx.compose.foundation.layout.FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-            verticalArrangement = Arrangement.spacedBy(Spacing.s2),
-        ) {
+        SegmentedControl(
             listOf(
-                ConfirmWhen.END to R.string.set_confirmEnd,
-                ConfirmWhen.HOUR to R.string.set_confirmHour,
-                ConfirmWhen.NEXT_DAY to R.string.set_confirmNextDay,
-            ).forEach { (w, label) ->
-                app.tutora.designsystem.components
-                    .Chip(stringResource(label), s.confirmWhen == w, { onChange(s.copy(confirmWhen = w)) })
-            }
-        }
+                ConfirmWhen.END to stringResource(R.string.set_confirmEnd),
+                ConfirmWhen.HOUR to stringResource(R.string.set_confirmHour),
+                ConfirmWhen.NEXT_DAY to stringResource(R.string.set_confirmNextDay),
+            ),
+            s.confirmWhen,
+            { onChange(s.copy(confirmWhen = it)) },
+            stringResource(R.string.set_confirmWhen),
+            size = ControlSize.SM,
+        )
     }
 }
 
@@ -642,18 +640,13 @@ private fun LockSettings(s: Settings) {
     }
     if (s.appLock && available) {
         Text(stringResource(R.string.lock_after), style = TutoraTheme.type.bodyStrong, color = c.ink)
-        androidx.compose.foundation.layout.FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s2),
-            verticalArrangement = Arrangement.spacedBy(Spacing.s2),
-        ) {
-            app.tutora.domain.LockAfter.entries.forEach { after ->
-                app.tutora.designsystem.components
-                    .Chip(
-                        stringResource(lockAfterLabel(after)),
-                        s.lockAfter == after,
-                        { scope.launch { services.saveSettings(s.copy(lockAfter = after)) } },
-                    )
-            }
-        }
+        SegmentedControl(
+            app.tutora.domain.LockAfter.entries
+                .map { it to stringResource(lockAfterLabel(it)) },
+            s.lockAfter,
+            { after -> scope.launch { services.saveSettings(s.copy(lockAfter = after)) } },
+            stringResource(R.string.lock_after),
+            size = ControlSize.SM,
+        )
     }
 }

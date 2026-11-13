@@ -18,7 +18,7 @@ Evolução, opened from Ganhos, shows only 6 months, 12 months or one calendar y
 
 ### Any period
 
-- **AC-019-1.** Evolução's period choices are 6 meses (at first), 12 meses, Ano and Personalizado. Personalizado shows De and Até date fields under the choices, as "Outro…" in the reports (AC-010-3); the other choices fill them in.
+- **AC-019-1.** *(13 Nov 2026: Personalizado removed; De and Até always show under the quick periods, see AC-020-31.)* Evolução's period choices are 6 meses (at first), 12 meses, Ano and Personalizado. Personalizado shows De and Até date fields under the choices, as "Outro…" in the reports (AC-010-3); the other choices fill them in.
 - **AC-019-2.** De and Até take any day. Até is never before De nor after today, and the period is at most 5 years; a longer one says so under the fields and keeps the last valid period.
 - **AC-019-3.** The period is a gap of dates and Evolução shows only what falls inside it, one bar per month as today (Victor, 5 Nov 2026). The first and last month count only their days inside the period; a period inside one month is one bar. A school's salary counts in its month when that month's first day is inside the period (AC-009-5). The bars keep scrolling sideways when they don't fit.
 - **AC-019-4.** The list under the chart (AC-014-34) shows one row per bar with the same figures: earned, received, to receive, classes and hours, and the change from the bar before.

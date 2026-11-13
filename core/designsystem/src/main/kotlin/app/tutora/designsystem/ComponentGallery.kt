@@ -70,6 +70,7 @@ import app.tutora.designsystem.components.MonthDay
 import app.tutora.designsystem.components.MonthGrid
 import app.tutora.designsystem.components.MonthPicker
 import app.tutora.designsystem.components.NavRail
+import app.tutora.designsystem.components.PeriodField
 import app.tutora.designsystem.components.PickerMonth
 import app.tutora.designsystem.components.ProgressBar
 import app.tutora.designsystem.components.RowTrailing
@@ -102,7 +103,7 @@ import app.tutora.domain.ThemeMode
 import app.tutora.domain.theme.themeIds
 import kotlinx.datetime.LocalDate
 
-/** The 46 components, in a section each. */
+/** The 47 components, in a section each. */
 val galleryComponents =
     listOf(
         "Icon",
@@ -151,6 +152,7 @@ val galleryComponents =
         "UndoBar",
         "NumberField",
         "ChoiceField",
+        "PeriodField",
     )
 
 /**
@@ -400,6 +402,23 @@ fun GallerySections() {
                     DotTone.ACCENT to "Particular",
                     DotTone.VIOLET to "Turma",
                 ),
+        )
+    }
+    Section("PeriodField") {
+        var preset by remember { mutableStateOf<String?>("mes") }
+        PeriodField(
+            "Período",
+            listOf("mes" to "Este mês", "passado" to "Mês passado", "tres" to "3 meses"),
+            preset,
+            { preset = it },
+            LocalDate(2026, 10, 1),
+            "01/10/2026",
+            { preset = null },
+            LocalDate(2026, 10, 26),
+            "26/10/2026",
+            { preset = null },
+            "De",
+            "Até",
         )
     }
     Section("MonthPicker") {

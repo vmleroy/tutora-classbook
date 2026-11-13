@@ -515,7 +515,6 @@
     <string name="rep_thisMonth">This month</string>
     <string name="rep_lastMonth">Last month</string>
     <string name="rep_threeMonths">3 months</string>
-    <string name="rep_custom">Other…</string>
     <string name="rep_from">From</string>
     <string name="rep_to">To</string>
     <string name="rep_export">Export this report</string>
