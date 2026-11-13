@@ -50,6 +50,7 @@ import app.tutora.domain.Language
 import app.tutora.domain.ReportRange
 import app.tutora.domain.SubjectKind
 import app.tutora.domain.SubjectReport
+import app.tutora.domain.canSplit
 import app.tutora.domain.localOf
 import app.tutora.state.LocalServices
 import app.tutora.ui.LocalClockDurations
@@ -232,6 +233,7 @@ fun ReportScreen(
     val groups by remember { services.catalogRepo.groups() }.collectAsState(initial = emptyList())
     val places by remember { services.catalogRepo.places() }.collectAsState(initial = emptyList())
     val settings by services.settings.collectAsState(initial = null)
+    val members by remember { services.reportsRepo.members() }.collectAsState(initial = emptyMap())
     val report by remember(kind, id, from, to) {
         services.reportsRepo.subject(app.tutora.data.Subject(kind, id), from, to, today, zone)
     }.collectAsState(initial = null)
@@ -355,6 +357,25 @@ fun ReportScreen(
             },
             variant = ButtonVariant.GHOST,
             fullWidth = true,
+        )
+        // Enviar: the Fatura and the Relatório detalhado (spec 020).
+        val group = if (kind == SubjectKind.GROUP) groups.firstOrNull { it.id == id } else null
+        val groupPlace = group?.let { g -> places.firstOrNull { it.place.id == g.placeId }?.place }
+        val splitMembers =
+            group?.let { g ->
+                members[g.id]?.takeIf { groupPlace != null && canSplit(it.size, groupPlace.kind, groupPlace.payer) }
+            }
+        SendSection(
+            nav,
+            r,
+            SendSubject(
+                kind,
+                name,
+                subject.third,
+                subjectLabel,
+                if (kind == SubjectKind.STUDENT) students.firstOrNull { it.student.id == id }?.student?.guardian else null,
+                splitMembers,
+            ),
         )
     }
 }

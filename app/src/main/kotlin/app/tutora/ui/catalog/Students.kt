@@ -160,6 +160,9 @@ fun StudentDetailScreen(
         DetailIdentity(s.student.name, listOfNotNull(s.student.subject, s.student.phone).joinToString(" · ")) {
             Avatar(initials(s.student.name), s.student.color.tag(), size = AvatarSize.LG)
         }
+        s.student.guardian?.let {
+            Text(stringResource(R.string.stu_guardianLine, it), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
+        }
         s.student.notes?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.inkMuted) }
         val defaultLink = s.links.firstOrNull { it.isDefault } ?: s.links.firstOrNull()
         val rate =
@@ -378,6 +381,19 @@ private fun StudentForm(
         TextField(stringResource(R.string.students_phone), d.phone.orEmpty(), {
             d = d.copy(phone = it.ifEmpty { null })
         }, keyboardType = KeyboardType.Phone, capitalization = KeyboardCapitalization.None)
+        // Responsável: who the Fatura is for, when not the student (AC-020-17).
+        TextField(
+            stringResource(R.string.stu_guardian),
+            d.guardian.orEmpty(),
+            {
+                d = d.copy(guardian = it.ifEmpty { null })
+            },
+            Modifier.testTag(
+                "student-guardian",
+            ),
+            helper = stringResource(R.string.stu_guardianHint),
+            capitalization = KeyboardCapitalization.Words,
+        )
         SectionHeader(stringResource(R.string.students_wherePays), aside = stringResource(R.string.students_starHint), required = true)
         SegmentedControl(
             listOf(

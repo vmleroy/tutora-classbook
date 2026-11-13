@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
+import app.tutora.domain.Group
 import app.tutora.domain.PlaceLink
 import app.tutora.domain.RateType
 import app.tutora.domain.Student
@@ -23,6 +24,7 @@ import app.tutora.ui.StudentDetail
 import app.tutora.usecases.LessonDraft
 import app.tutora.usecases.Result
 import app.tutora.usecases.WhoId
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -221,5 +223,101 @@ class ReportScreensTest {
                     .second,
             ).contains("brand=Aulas da Profa. Ana"),
         )
+    }
+
+    @Test
+    fun `AC-020-1 Relatorio keeps its export and adds Enviar with the Fatura and the detailed report`() {
+        openReport()
+        listOf(
+            "Exportar este relatório",
+            "Enviar",
+            "Fatura",
+            "Para receber: valor e Pix",
+            "Relatório detalhado",
+            "Cada aula com dia, horário e deslocamento",
+        ).forEach { exists(it) }
+    }
+
+    @Test
+    fun `AC-020-2 the Fatura and the detailed report are shared under names that say which`() {
+        openReport()
+        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("sheet-pdf").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("send-detail").performScrollTo().performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("sheet-pdf").performClick()
+        h.settle(compose)
+        assertEquals(
+            listOf("Ana Souza - fatura - outubro 2026.pdf", "Ana Souza - relatório detalhado - outubro 2026.pdf"),
+            h.exports.shared.map { it.first },
+        )
+    }
+
+    @Test
+    fun `AC-020-11 without a Pix key Relatorio asks for one in Seus dados`() {
+        openReport()
+        click("Adicione sua chave Pix em Seus dados")
+        compose.onNodeWithTag("personal-screen").assertExists()
+    }
+
+    private fun groupReport() {
+        val gid =
+            runBlocking {
+                h.t.catalog.saveStudent(
+                    Student("", "Bia Lima", null, null, null, TagColor.AMBER, RateType.HOUR, null),
+                    listOf(PlaceLink(online, true, 12_000)),
+                )
+                val ids =
+                    h.services.catalogRepo
+                        .students()
+                        .first()
+                        .map { it.student.id }
+                val g = (h.t.catalog.saveGroup(Group("", online, "Inglês B", null, 10_000, ids, null)) as Result.Ok).value
+                h.t.lessons.logLesson(
+                    LessonDraft(WhoId.OfGroup(g.id), online, LocalDate(2026, 10, 20), LocalTime(9, 0), 60, null, null, null),
+                )
+                g.id
+            }
+        h.show(compose)
+        h.go(compose, app.tutora.ui.Report("GROUP", gid))
+    }
+
+    @Test
+    fun `AC-020-20 a private group's Fatura goes to the whole group or split by student`() {
+        groupReport()
+        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        h.settle(compose)
+        exists("Turma inteira")
+        exists("Dividir por aluno")
+        compose.onNodeWithTag("sheet-pdf").performClick()
+        h.settle(compose)
+        assertEquals(
+            "Inglês B - fatura - outubro 2026.pdf",
+            h.exports.shared
+                .single()
+                .first,
+        )
+    }
+
+    @Test
+    fun `AC-020-21 split by student, each member gets their own Fatura for their share`() {
+        groupReport()
+        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        h.settle(compose)
+        click("Dividir por aluno", scroll = false)
+        compose.onNodeWithTag("member-first-Bia Lima").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("member-second-Ana Souza").performClick()
+        h.settle(compose)
+        assertEquals(
+            "Bia Lima - fatura - outubro 2026.pdf",
+            h.exports.shared
+                .single()
+                .first,
+        )
+        val text = plain(h.exports.copied.single())
+        assertTrue(text, text.contains("Total a pagar: R$ 50,00"))
     }
 }

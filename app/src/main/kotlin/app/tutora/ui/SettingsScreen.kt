@@ -527,6 +527,15 @@ fun PersonalDataScreen(onBack: () -> Unit) {
                 if (s.pixKey.isNotBlank() && !s.appLock && !s.lockOffered && lock.device.available()) offer = true
             },
         )
+        // Cidade: the Pix QR code needs it with the name and key (AC-020-18).
+        TextField(
+            stringResource(R.string.rep_settingsCity),
+            s.pixCity,
+            { v -> scope.launch { services.saveSettings(s.copy(pixCity = v)) } },
+            Modifier.testTag("pix-city"),
+            helper = stringResource(R.string.rep_settingsCityHint),
+            capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Words,
+        )
         // The reports' top line; empty keeps Tutora's (AC-019-15).
         TextField(
             stringResource(R.string.rep_settingsTitle),

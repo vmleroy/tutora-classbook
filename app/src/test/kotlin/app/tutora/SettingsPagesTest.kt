@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.ui.SettingsGraph
 import org.junit.Before
@@ -66,5 +67,14 @@ class SettingsPagesTest {
         back()
         open("page-about")
         compose.onNodeWithTag("settings-about").assertExists()
+    }
+
+    @Test
+    fun `AC-020-18 Seus dados has an optional Cidade, used in the Pix QR code`() {
+        h.show(compose)
+        h.go(compose, app.tutora.ui.PersonalData)
+        compose.onNodeWithText("Usada no QR code do Pix").performScrollTo().assertExists()
+        compose.onNodeWithContentDescription("Cidade").performTextReplacement("Recife")
+        h.awaitDb(compose) { h.services.currentSettings().pixCity == "Recife" }
     }
 }

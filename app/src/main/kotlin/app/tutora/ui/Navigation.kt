@@ -101,6 +101,13 @@ fun NavHostController.openTab(graph: Any) {
 /** Ganhos › Evolução (AC-014-31). */
 @Serializable data object Evolution
 
+/** Ganhos › Faturas do mês, for Ganhos' period (AC-020-23). */
+@Serializable data class Invoices(
+    val from: String,
+    val to: String,
+    val label: String,
+)
+
 /** Ajustes' pages (AC-014-28). */
 @Serializable data object SettingsGeneral
 
@@ -372,6 +379,15 @@ fun TutoraNav(
                         composable<NoticesHome> {
                             app.tutora.ui.reminders
                                 .NoticesScreen(nav)
+                        }
+                        composable<Invoices> {
+                            val r = it.toRoute<Invoices>()
+                            app.tutora.ui.reports.InvoicesScreen(
+                                nav,
+                                kotlinx.datetime.LocalDate.parse(r.from),
+                                kotlinx.datetime.LocalDate.parse(r.to),
+                                r.label,
+                            )
                         }
                         composable<Evolution> {
                             app.tutora.ui.earnings
