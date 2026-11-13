@@ -487,8 +487,10 @@ class FeatureScreensTest {
         h.show(compose)
         h.go(compose, ScheduleGraph)
         compose.onNodeWithText("Semana").performClick()
-        // The week list reads its own days from the database.
+        // The week list reads its own days from the database, on Room's own thread: wait until they
+        // are in, as a slower machine (CI) needs longer than one settle.
         h.settle(compose)
+        h.awaitDb(compose) { compose.onAllNodesWithText("Ana Souza", useUnmergedTree = true).fetchSemanticsNodes().size >= 2 }
         // This week's two classes, Monday's and Wednesday's, each under its day.
         assertTrue(compose.onAllNodesWithText("Ana Souza", useUnmergedTree = true).fetchSemanticsNodes().size >= 2)
         compose.onAllNodesWithText("14:00", useUnmergedTree = true).onFirst().assertExists()

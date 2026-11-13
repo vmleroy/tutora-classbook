@@ -105,6 +105,8 @@ class PaymentScreensTest {
         text: String,
         part: Boolean = false,
     ) {
+        // The screens read Room on its own thread; wait for the text before looking (slower on CI).
+        h.awaitDb(compose) { compose.onAllNodes(matching(text, part), useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
         compose.onAllNodes(matching(text, part), useUnmergedTree = true).onFirst().assertExists()
     }
 
