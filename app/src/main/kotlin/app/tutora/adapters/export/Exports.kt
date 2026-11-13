@@ -27,6 +27,30 @@ import java.io.File
 data class PdfRow(
     val cells: List<String>,
     val tone: PdfTone = PdfTone.INK,
+    val kind: PdfRowKind = PdfRowKind.CLASS,
+)
+
+/** A class; a person's name over their classes; their subtotal; a class's notes under it (AC-020-13 to 16). */
+enum class PdfRowKind { CLASS, HEADING, SUBTOTAL, NOTE }
+
+/** What there is to pay, under a Fatura's table: the lines, then the amount in large type (AC-020-7, 9, 12). */
+data class PdfDue(
+    val lines: List<Pair<String, String>>,
+    val label: String,
+    val amount: String,
+    /** "Vencimento: 05/11/2026", when set. */
+    val note: String?,
+    val settled: Boolean,
+)
+
+/** "Pague com Pix": the key in full, the name, and the QR code with its "copia e cola" (AC-020-10). */
+data class PdfPix(
+    val title: String,
+    val key: String,
+    val name: String,
+    val codeTitle: String,
+    val code: String?,
+    val qr: List<BooleanArray>?,
 )
 
 enum class PdfTone { INK, PAID, OWED, MUTED }
@@ -72,6 +96,10 @@ data class PdfPlan(
     /** "Valor pendente: R$ 240,00" and the days still owed, in the dashed box at the foot. */
     val pending: Pair<String, String>? = null,
     val pix: String? = null,
+    val due: PdfDue? = null,
+    /** How wide each column is, relative to the others; null keeps the first one widest. */
+    val weights: List<Float>? = null,
+    val payPix: PdfPix? = null,
     /** "Gerado pela Tutora em 26/10/2026, 18:45 · página %1$d de %2$d". */
     val footer: String,
 )
@@ -104,9 +132,20 @@ data class PdfPage(
 const val PDF_FIRST_ROWS = 16
 const val PDF_OTHER_ROWS = 26
 
+// With a Fatura's amount and Pix block under the table, fewer rows fit on its last page.
+const val PDF_FIRST_ROWS_WITH_DUE = 12
+const val PDF_OTHER_ROWS_WITH_DUE = 15
+const val PDF_TILES_PER_ROW = 4
+
 /** Pages for a plan: the table spread over pages, with the header repeated; the footer numbers each (AC-010-9). */
 fun pdfPages(plan: PdfPlan): List<PdfPage> {
-    val ranges = paginate(plan.rows.size, PDF_FIRST_ROWS, PDF_OTHER_ROWS)
+    // A second row of tiles (more than four totals) takes two rows of the table.
+    val first = if (plan.stats.size > PDF_TILES_PER_ROW) PDF_FIRST_ROWS - 2 else PDF_FIRST_ROWS
+    var ranges = paginate(plan.rows.size, first, PDF_OTHER_ROWS)
+    if (plan.due != null || plan.payPix != null) {
+        val room = if (ranges.size == 1) PDF_FIRST_ROWS_WITH_DUE else PDF_OTHER_ROWS_WITH_DUE
+        if (ranges.last().count() > room) ranges = ranges + listOf(IntRange.EMPTY)
+    }
     return ranges.mapIndexed { i, r ->
         PdfPage(r, first = i == 0, last = i == ranges.lastIndex, footer = plan.footer.format(i + 1, ranges.size))
     }
@@ -251,8 +290,11 @@ private class AndroidPdf(
     }
 
     /** Column edges for the table: the first is widest, as in the mockup. */
-    private fun columns(n: Int): List<Pair<Float, Float>> {
-        val weights = List(n) { if (it == 0 || (n == 5 && it == 2)) 1.4f else 1f }
+    private fun columns(
+        n: Int,
+        given: List<Float>?,
+    ): List<Pair<Float, Float>> {
+        val weights = given?.takeIf { it.size == n } ?: List(n) { if (it == 0 || (n == 5 && it == 2)) 1.4f else 1f }
         val unit = (right - left - 20f) / weights.sum()
         var x = left + 10f
         return weights.map { w -> (x to x + w * unit).also { x += w * unit } }
@@ -284,10 +326,75 @@ private class AndroidPdf(
         }
     }
 
+    /** Total do período and Já pago, then Valor a pagar (or "Pago, obrigado") large, with the Vencimento. */
+    private fun Canvas.due(
+        d: PdfDue,
+        top: Float,
+    ): Float {
+        var y = top + 4f
+        for ((label, value) in d.lines) {
+            text(label, right - 150f, y + 12f, paint(9.5f, c.muted), alignRight = true, maxWidth = 200f)
+            text(value, right - 10f, y + 12f, paint(9.5f, c.ink, bold = true), alignRight = true, maxWidth = 120f)
+            y += 18f
+        }
+        y += 6f
+        val tone = if (d.settled) c.paid else c.owed
+        drawRoundRect(RectF(left, y, right, y + 56f), 10f, 10f, fill(if (d.settled) c.paidSoft else c.owedSoft))
+        text(d.label, left + 14f, y + 22f, paint(10f, tone, bold = true), maxWidth = 240f)
+        d.note?.let { text(it, left + 14f, y + 40f, paint(9f, c.ink), maxWidth = 240f) }
+        text(d.amount, right - 14f, y + 36f, paint(22f, tone, bold = true), alignRight = true, maxWidth = 260f)
+        return y + 66f
+    }
+
+    /** The Pix block at the foot: QR code on the left, the key, the name and the "copia e cola" on the right. */
+    private fun Canvas.payPix(p: PdfPix) {
+        val boxTop = height - 210f
+        val dash =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = c.line
+                style = Paint.Style.STROKE
+                strokeWidth = 1.5f
+                pathEffect = DashPathEffect(floatArrayOf(5f, 4f), 0f)
+            }
+        drawRoundRect(RectF(left, boxTop, right, boxTop + 150f), 10f, 10f, dash)
+        var x = left + 14f
+        p.qr?.let { qr ->
+            val side = 122f
+            val quiet = 4
+            val cell = side / (qr.size + 2 * quiet)
+            val ox = left + 14f
+            val oy = boxTop + 14f
+            drawRect(ox, oy, ox + side, oy + side, fill(android.graphics.Color.WHITE))
+            val dark = fill(android.graphics.Color.BLACK)
+            qr.forEachIndexed { row, cells ->
+                cells.forEachIndexed { col, on ->
+                    if (on) {
+                        val cx = ox + (col + quiet) * cell
+                        val cy = oy + (row + quiet) * cell
+                        drawRect(cx, cy, cx + cell, cy + cell, dark)
+                    }
+                }
+            }
+            x = ox + side + 16f
+        }
+        val w = right - 14f - x
+        text(p.title, x, boxTop + 26f, paint(11f, c.ink, bold = true), maxWidth = w)
+        text(p.key, x, boxTop + 46f, paint(12f, c.ink, bold = true), maxWidth = w)
+        text(p.name, x, boxTop + 62f, paint(9f, c.muted), maxWidth = w)
+        p.code?.let { code ->
+            text(p.codeTitle, x, boxTop + 84f, paint(8.5f, c.muted, bold = true), maxWidth = w)
+            val small = paint(7f, c.ink).apply { typeface = Typeface.MONOSPACE }
+            val perLine = (w / small.measureText("0")).toInt().coerceAtLeast(10)
+            code.chunked(perLine).take(5).forEachIndexed { i, line -> text(line, x, boxTop + 96f + i * 9f, small, maxWidth = w) }
+        }
+    }
+
     fun draw(plan: PdfPlan): ByteArray {
         val doc = PdfDocument()
         val pages = pdfPages(plan)
-        val cols = columns(plan.columns.size)
+        val cols = columns(plan.columns.size, plan.weights)
+        // Wide tables (the detailed report's nine columns) use a smaller type.
+        val cellSize = if (plan.columns.size > 6) 8.5f else 9.5f
         pages.forEachIndexed { i, pg ->
             val page = doc.startPage(PdfDocument.PageInfo.Builder(width.toInt(), height.toInt(), i + 1).create())
             val canvas = page.canvas
@@ -315,8 +422,11 @@ private class AndroidPdf(
                 y += 18f
                 // Four tiles: neutral on cream, Pago on green, A receber on red.
                 val gap = 8f
-                val tileW = (right - left - gap * (plan.stats.size - 1)) / plan.stats.size.coerceAtLeast(1)
-                plan.stats.forEachIndexed { k, st ->
+                val perRow = plan.stats.size.coerceIn(1, PDF_TILES_PER_ROW)
+                val tileW = (right - left - gap * (perRow - 1)) / perRow
+                plan.stats.forEachIndexed { i, st ->
+                    val k = i % perRow
+                    if (i > 0 && k == 0) y += 52f
                     val x = left + k * (tileW + gap)
                     val (bg, fg) =
                         when (st.tone) {
@@ -344,7 +454,7 @@ private class AndroidPdf(
                     )
                     canvas.text(st.value, x + 10f, y + 34f, paint(13f, fg, bold = true), maxWidth = tileW - 20f)
                 }
-                y += 62f
+                if (plan.stats.isNotEmpty()) y += 62f
                 canvas.text(plan.tableTitle, left, y, paint(11f, c.ink, bold = true))
                 y += 8f
             }
@@ -364,13 +474,26 @@ private class AndroidPdf(
             }
             for (r in pg.rows) {
                 val row = plan.rows[r]
+                if (row.kind == PdfRowKind.HEADING) {
+                    canvas.drawRect(left, y, right, y + rowH, fill(c.ground))
+                    canvas.text(row.cells.firstOrNull().orEmpty(), left + 10f, y + 17f, paint(10f, c.ink, bold = true))
+                    y += rowH
+                    continue
+                }
+                if (row.kind == PdfRowKind.NOTE) {
+                    canvas.text(row.cells.firstOrNull().orEmpty(), left + 22f, y + 14f, paint(8.5f, c.muted))
+                    y += rowH - 6f
+                    canvas.drawLine(left, y, right, y, Paint().apply { color = c.line })
+                    continue
+                }
+                val bold = row.kind == PdfRowKind.SUBTOTAL
                 canvas.row(row.cells, y + 17f, plan, cols) { k ->
                     when {
-                        k == row.cells.lastIndex && row.tone == PdfTone.PAID -> paint(9.5f, c.paid, bold = true)
-                        k == row.cells.lastIndex && row.tone == PdfTone.OWED -> paint(9.5f, c.owed, bold = true)
-                        k == row.cells.lastIndex && row.tone == PdfTone.MUTED -> paint(9.5f, c.muted)
-                        k == 0 -> paint(9.5f, c.ink, bold = true)
-                        else -> paint(9.5f, c.ink)
+                        k == row.cells.lastIndex && row.tone == PdfTone.PAID -> paint(cellSize, c.paid, bold = true)
+                        k == row.cells.lastIndex && row.tone == PdfTone.OWED -> paint(cellSize, c.owed, bold = true)
+                        k == row.cells.lastIndex && row.tone == PdfTone.MUTED -> paint(cellSize, c.muted)
+                        k == 0 || bold -> paint(cellSize, c.ink, bold = true)
+                        else -> paint(cellSize, c.ink)
                     }
                 }
                 y += rowH
@@ -439,6 +562,8 @@ private class AndroidPdf(
                     }
                     y += 8f
                 }
+                plan.due?.let { due -> y = canvas.due(due, y) }
+                plan.payPix?.let { canvas.payPix(it) }
                 // The pending amount and the Pix key, in a dashed box above the foot.
                 if (plan.pending != null || plan.pix != null) {
                     val boxTop = height - 110f

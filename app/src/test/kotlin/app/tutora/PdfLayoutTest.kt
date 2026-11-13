@@ -72,4 +72,37 @@ class PdfLayoutTest {
         assertEquals("Últimos 6 meses", plan.trendTitle)
         assertEquals(listOf("M10"), plan.trend.map { it.label })
     }
+
+    @Test
+    fun `AC-020-10 the Fatura's Pix block has the full key, the name and a QR code of the copia e cola, with room on its page`() {
+        val owed = (1..14).map { i -> ReportClass("l$i", LocalDate(2026, 10, i), 60, 12_000, "Ana", false, 0, 12_000) }
+        val r = subjectReport(LocalDate(2026, 10, 1), LocalDate(2026, 10, 31), owed, emptyList())
+        val plan =
+            app.tutora.ui.reports.invoicePlan(
+                app.tutora.domain.invoiceOf(r, false),
+                w,
+                testInvoiceWords(),
+                Teacher("Victor", "victor@pix.com"),
+                app.tutora.ui.reports
+                    .PixPlace("Recife"),
+                app.tutora.ui.reports
+                    .Recipient("Ana"),
+                null,
+                LocalDate(2026, 11, 13),
+                "13/11/2026, 10:00",
+            )
+        val pix = plan.payPix!!
+        assertEquals("victor@pix.com" to "Victor", pix.key to pix.name)
+        assertEquals(app.tutora.domain.pixPayload("victor@pix.com", "Victor", "Recife", 168_000), pix.code)
+        assertEquals(
+            app.tutora.adapters.export
+                .qrMatrix(pix.code!!)
+                .size,
+            pix.qr!!.size,
+        )
+        // 14 classes don't leave room for the amount and the Pix block: they go on a page of their own.
+        val pages = pdfPages(plan)
+        assertEquals(2, pages.size)
+        assertTrue(pages.last().rows.isEmpty())
+    }
 }
