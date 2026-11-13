@@ -3,7 +3,7 @@
 Settings and navigation row: optional icon tile, title, subtitle with the current value, and a chevron, switch, badge or remove (×).
 
 ## Consumer provides
-`title`, `subtitle` (the current value, so the user knows the state without opening it), optional `icon` + `iconTone` or `avatar` (initials + color tag, for people), `trailing` (chevron | switch | remove | none), `badge`, `onPress`, `onRemove`.
+`title`, `subtitle` (the current value, so the user knows the state without opening it), optional `icon` + `iconTone` or `avatar` (initials + color tag, for people), `trailing` (chevron | switch | remove | none), `badge`, `mark` (a small icon before the chevron with its spoken meaning, the paperclip "Com comprovante" on a payment, spec 021), `onPress`, `onRemove`.
 
 ## Rules
 - Subtitles state the current setting ("Automática · US$ 1 = R$ 5,42 · hoje"), not a description of the feature.

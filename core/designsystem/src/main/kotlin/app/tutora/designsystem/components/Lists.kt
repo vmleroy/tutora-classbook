@@ -213,6 +213,8 @@ fun ListRow(
     badge: Pair<BadgeTone, String>? = null,
     onClick: (() -> Unit)? = null,
     onRemove: () -> Unit = {},
+    /** A small icon before the chevron with what it means, "Com comprovante" (spec 021). */
+    mark: Pair<IconName, String>? = null,
 ) {
     val c = TutoraTheme.colors
     val (tile, tileInk) =
@@ -233,7 +235,7 @@ fun ListRow(
                     if (pressable) {
                         Modifier
                             .clickable(role = Role.Button, onClick = onClick)
-                            .semantics { contentDescription = listOfNotNull(title, subtitle).joinToString(", ") }
+                            .semantics { contentDescription = listOfNotNull(title, subtitle, mark?.second).joinToString(", ") }
                     } else {
                         Modifier
                     },
@@ -257,6 +259,7 @@ fun ListRow(
             if (subtitle != null) Text(subtitle, style = TutoraTheme.type.meta, color = c.inkMuted)
         }
         if (badge != null) Badge(badge.second, tone = badge.first)
+        if (mark != null) Icon(mark.first, Modifier.testTag("row-mark"), tint = c.inkMuted, size = Size.iconSm, label = mark.second)
         when (trailing) {
             RowTrailing.CHEVRON -> Icon(IconName.CHEVRON_RIGHT, tint = c.inkMuted, size = Size.iconSm)
             RowTrailing.SWITCH -> Switch(switchValue, onSwitchChange, title)

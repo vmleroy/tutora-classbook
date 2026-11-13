@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -23,7 +24,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.platform.testTag
+import app.tutora.designsystem.components.AddThumbnail
 import app.tutora.designsystem.components.AgendaBlock
 import app.tutora.designsystem.components.AlertBanner
 import app.tutora.designsystem.components.AlertTone
@@ -92,18 +95,21 @@ import app.tutora.designsystem.components.TabItem
 import app.tutora.designsystem.components.Tag
 import app.tutora.designsystem.components.TagDot
 import app.tutora.designsystem.components.TextField
+import app.tutora.designsystem.components.Thumbnail
+import app.tutora.designsystem.components.ThumbnailSize
 import app.tutora.designsystem.components.TileTone
 import app.tutora.designsystem.components.TimeField
 import app.tutora.designsystem.components.TimerRing
 import app.tutora.designsystem.components.WeekDay
 import app.tutora.designsystem.components.WeekStrip
+import app.tutora.designsystem.components.ZoomImage
 import app.tutora.designsystem.tokens.TutoraTokens.Size
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.ThemeMode
 import app.tutora.domain.theme.themeIds
 import kotlinx.datetime.LocalDate
 
-/** The 47 components, in a section each. */
+/** The 49 components, in a section each. */
 val galleryComponents =
     listOf(
         "Icon",
@@ -153,6 +159,8 @@ val galleryComponents =
         "NumberField",
         "ChoiceField",
         "PeriodField",
+        "Thumbnail",
+        "ZoomImage",
     )
 
 /**
@@ -616,6 +624,17 @@ fun GallerySections() {
         var percent by remember { mutableLongStateOf(30L) }
         app.tutora.designsystem.components
             .NumberField("Comissão do local", percent, { percent = it }, max = 90, step = 5, suffix = "%")
+    }
+    Section("Thumbnail") {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+            Thumbnail("Comprovante 1", null, kindLabel = "PDF", onRemove = {})
+            Thumbnail("Comprovante 2", null, size = ThumbnailSize.LG, kindLabel = "PDF", onClick = {})
+            AddThumbnail("Adicionar", {})
+        }
+    }
+    Section("ZoomImage") {
+        val picture = ColorPainter(TutoraTheme.colors.surfaceSunken)
+        ZoomImage(picture, "Comprovante", Modifier.size(Size.thumbLg))
     }
     Section("UndoBar") {
         app.tutora.designsystem.components
