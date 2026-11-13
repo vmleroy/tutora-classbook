@@ -83,6 +83,9 @@ class AppContainer(
 
     fun zone(): String = ctx.zone()
 
+    /** Files shared to Tutora are copied in at once, before anything shows (AC-021-3). */
+    val receipts by lazy { app.tutora.usecases.Receipts(ctx) }
+
     /** Automatic backups for the 20:00 work, which runs without the screens (AC-011-6). */
     val backups by lazy { Backups(ctx) }
 

@@ -1,5 +1,6 @@
 package app.tutora.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -199,6 +200,18 @@ data class LiveRequest(
     val id: String,
 )
 
+/** A payment's comprovantes full screen, opened at [index] (AC-021-5). */
+@Serializable data class ReceiptViewer(
+    val paymentId: String,
+    val index: Int = 0,
+)
+
+/** Compartilhar › Tutora: files already copied in, as "name|mime|bytes", and how many could not be used (AC-021-3). */
+@Serializable data class AttachReceipt(
+    val files: List<String>,
+    val refused: Int = 0,
+)
+
 @Serializable data class PayerLessons(
     val kind: String,
     val id: String,
@@ -310,133 +323,148 @@ fun TutoraNav(
                 if (activeTab != null && !landscape) TabBar(tabs = tabItems, active = activeTab.key, onSelect = onTab)
             },
         ) { padding ->
-            Row(Modifier.padding(padding).consumeWindowInsets(padding)) {
-                val railTab = activeTab?.takeIf { landscape }
-                val rail = railTab != null
-                if (railTab != null) NavRail(tabs = tabItems, active = railTab.key, onSelect = onTab)
-                // Sideways, a tapped page opens in the panel over the screen (spec 017).
-                DetailPanelHost(
-                    nav,
-                    panel,
-                    // The rail already keeps clear of the cut-out on the left (AC-017-5).
-                    modifier =
-                        Modifier
-                            .weight(1f)
-                            .then(
-                                if (rail) {
-                                    Modifier.consumeWindowInsets(
-                                        WindowInsets.safeDrawing.only(WindowInsetsSides.Start),
-                                    )
-                                } else {
-                                    Modifier
-                                },
-                            ),
-                ) {
-                    NavHost(nav, startDestination = TodayGraph, modifier = Modifier.fillMaxSize()) {
-                        navigation<TodayGraph>(startDestination = TodayHome) {
-                            composable<TodayHome> { TodayScreen(nav) }
-                        }
-                        navigation<ScheduleGraph>(startDestination = ScheduleHome) {
-                            composable<ScheduleHome> { AgendaScreen(nav) }
-                        }
-                        navigation<RegistryGraph>(startDestination = RegistryHome()) {
-                            composable<RegistryHome> {
-                                val r = it.toRoute<RegistryHome>()
-                                RegistryScreen(nav, r.view, r.owing)
+            Box(Modifier.padding(padding).consumeWindowInsets(padding)) {
+                Row(Modifier.fillMaxSize()) {
+                    val railTab = activeTab?.takeIf { landscape }
+                    val rail = railTab != null
+                    if (railTab != null) NavRail(tabs = tabItems, active = railTab.key, onSelect = onTab)
+                    // Sideways, a tapped page opens in the panel over the screen (spec 017).
+                    DetailPanelHost(
+                        nav,
+                        panel,
+                        // The rail already keeps clear of the cut-out on the left (AC-017-5).
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .then(
+                                    if (rail) {
+                                        Modifier.consumeWindowInsets(
+                                            WindowInsets.safeDrawing.only(WindowInsetsSides.Start),
+                                        )
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
+                    ) {
+                        NavHost(nav, startDestination = TodayGraph, modifier = Modifier.fillMaxSize()) {
+                            navigation<TodayGraph>(startDestination = TodayHome) {
+                                composable<TodayHome> { TodayScreen(nav) }
                             }
-                        }
-                        navigation<EarningsGraph>(startDestination = EarningsHome) {
-                            composable<EarningsHome> { entry ->
-                                val asked by entry.savedStateHandle.getStateFlow<String?>(OPEN_PERIOD, null).collectAsState()
-                                EarningsScreen(nav, asked) { entry.savedStateHandle[OPEN_PERIOD] = null }
+                            navigation<ScheduleGraph>(startDestination = ScheduleHome) {
+                                composable<ScheduleHome> { AgendaScreen(nav) }
                             }
-                        }
-                        navigation<SettingsGraph>(startDestination = SettingsHome) {
-                            composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { route -> nav.navigate(route) } }
-                            composable<SettingsGeneral> { SettingsGeneralScreen(nav) }
-                            composable<SettingsLessons> { SettingsLessonsScreen(nav) }
-                            composable<SettingsPayments> { SettingsPaymentsScreen(nav) }
-                            composable<SettingsPrivacy> { SettingsPrivacyScreen(nav) }
-                            composable<SettingsAbout> { SettingsAboutScreen(nav, appInfo, schemaVersion) }
-                            composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
-                        }
-                        composable<BackupHome> {
-                            app.tutora.ui.backup
-                                .BackupScreen(nav)
-                        }
-                        composable<AppearanceHome> {
-                            app.tutora.ui.appearance
-                                .AppearanceScreen(nav)
-                        }
-                        composable<CustomColors> {
-                            app.tutora.ui.appearance
-                                .CustomColorsScreen(nav, it.toRoute<CustomColors>().part)
-                        }
-                        composable<ConfirmClasses> {
-                            app.tutora.ui.confirm
-                                .ConfirmClassesScreen(nav)
-                        }
-                        composable<NoticesHome> {
-                            app.tutora.ui.reminders
-                                .NoticesScreen(nav)
-                        }
-                        composable<Invoices> {
-                            val r = it.toRoute<Invoices>()
-                            app.tutora.ui.reports.InvoicesScreen(
-                                nav,
-                                kotlinx.datetime.LocalDate.parse(r.from),
-                                kotlinx.datetime.LocalDate.parse(r.to),
-                                r.label,
-                            )
-                        }
-                        composable<Evolution> {
-                            app.tutora.ui.earnings
-                                .EvolutionScreen(nav)
-                        }
-                        composable<RemindersHome> {
-                            app.tutora.ui.reminders
-                                .RemindersScreen(nav)
-                        }
-                        composable<TeachingHome> {
-                            app.tutora.ui.setup
-                                .TeachingScreen(nav)
-                        }
-                        composable<SetupHome> {
-                            app.tutora.ui.setup
-                                .SetupScreen(nav)
-                        }
-                        composable<CalendarHome> {
-                            app.tutora.ui.calendar
-                                .CalendarScreen(nav)
-                        }
-                        composable<PlaceDetail> { PlaceDetailScreen(nav, it.toRoute<PlaceDetail>().id) }
-                        composable<PlaceEdit> { PlaceEditScreen(nav, it.toRoute<PlaceEdit>().id) }
-                        composable<StudentDetail> { StudentDetailScreen(nav, it.toRoute<StudentDetail>().id) }
-                        composable<StudentEdit> { StudentEditScreen(nav, it.toRoute<StudentEdit>().id) }
-                        composable<GroupEdit> {
-                            val r = it.toRoute<GroupEdit>()
-                            GroupEditScreen(nav, r.id, r.placeId)
-                        }
-                        composable<LiveLesson> {
-                            val r = it.toRoute<LiveLesson>()
-                            LiveScreen(nav, r.id, r.end)
-                        }
-                        composable<GroupDetail> { GroupDetailScreen(nav, it.toRoute<GroupDetail>().id) }
-                        composable<Archived> { ArchivedScreen(nav) }
-                        composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
-                        composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
-                        composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
-                        composable<Report> {
-                            val r = it.toRoute<Report>()
-                            ReportScreen(nav, r.kind, r.id)
-                        }
-                        composable<PaymentDetail> { PaymentDetailScreen(nav, it.toRoute<PaymentDetail>().id) }
-                        composable<PayerLessons> {
-                            val r = it.toRoute<PayerLessons>()
-                            PayerLessonsScreen(nav, r.kind, r.id)
+                            navigation<RegistryGraph>(startDestination = RegistryHome()) {
+                                composable<RegistryHome> {
+                                    val r = it.toRoute<RegistryHome>()
+                                    RegistryScreen(nav, r.view, r.owing)
+                                }
+                            }
+                            navigation<EarningsGraph>(startDestination = EarningsHome) {
+                                composable<EarningsHome> { entry ->
+                                    val asked by entry.savedStateHandle.getStateFlow<String?>(OPEN_PERIOD, null).collectAsState()
+                                    EarningsScreen(nav, asked) { entry.savedStateHandle[OPEN_PERIOD] = null }
+                                }
+                            }
+                            navigation<SettingsGraph>(startDestination = SettingsHome) {
+                                composable<SettingsHome> { SettingsScreen(appInfo, schemaVersion) { route -> nav.navigate(route) } }
+                                composable<SettingsGeneral> { SettingsGeneralScreen(nav) }
+                                composable<SettingsLessons> { SettingsLessonsScreen(nav) }
+                                composable<SettingsPayments> { SettingsPaymentsScreen(nav) }
+                                composable<SettingsPrivacy> { SettingsPrivacyScreen(nav) }
+                                composable<SettingsAbout> { SettingsAboutScreen(nav, appInfo, schemaVersion) }
+                                composable<PersonalData> { PersonalDataScreen { nav.popBackStack() } }
+                            }
+                            composable<BackupHome> {
+                                app.tutora.ui.backup
+                                    .BackupScreen(nav)
+                            }
+                            composable<AppearanceHome> {
+                                app.tutora.ui.appearance
+                                    .AppearanceScreen(nav)
+                            }
+                            composable<CustomColors> {
+                                app.tutora.ui.appearance
+                                    .CustomColorsScreen(nav, it.toRoute<CustomColors>().part)
+                            }
+                            composable<ConfirmClasses> {
+                                app.tutora.ui.confirm
+                                    .ConfirmClassesScreen(nav)
+                            }
+                            composable<NoticesHome> {
+                                app.tutora.ui.reminders
+                                    .NoticesScreen(nav)
+                            }
+                            composable<Invoices> {
+                                val r = it.toRoute<Invoices>()
+                                app.tutora.ui.reports.InvoicesScreen(
+                                    nav,
+                                    kotlinx.datetime.LocalDate.parse(r.from),
+                                    kotlinx.datetime.LocalDate.parse(r.to),
+                                    r.label,
+                                )
+                            }
+                            composable<Evolution> {
+                                app.tutora.ui.earnings
+                                    .EvolutionScreen(nav)
+                            }
+                            composable<RemindersHome> {
+                                app.tutora.ui.reminders
+                                    .RemindersScreen(nav)
+                            }
+                            composable<TeachingHome> {
+                                app.tutora.ui.setup
+                                    .TeachingScreen(nav)
+                            }
+                            composable<SetupHome> {
+                                app.tutora.ui.setup
+                                    .SetupScreen(nav)
+                            }
+                            composable<CalendarHome> {
+                                app.tutora.ui.calendar
+                                    .CalendarScreen(nav)
+                            }
+                            composable<PlaceDetail> { PlaceDetailScreen(nav, it.toRoute<PlaceDetail>().id) }
+                            composable<PlaceEdit> { PlaceEditScreen(nav, it.toRoute<PlaceEdit>().id) }
+                            composable<StudentDetail> { StudentDetailScreen(nav, it.toRoute<StudentDetail>().id) }
+                            composable<StudentEdit> { StudentEditScreen(nav, it.toRoute<StudentEdit>().id) }
+                            composable<GroupEdit> {
+                                val r = it.toRoute<GroupEdit>()
+                                GroupEditScreen(nav, r.id, r.placeId)
+                            }
+                            composable<LiveLesson> {
+                                val r = it.toRoute<LiveLesson>()
+                                LiveScreen(nav, r.id, r.end)
+                            }
+                            composable<GroupDetail> { GroupDetailScreen(nav, it.toRoute<GroupDetail>().id) }
+                            composable<Archived> { ArchivedScreen(nav) }
+                            composable<LessonNew> { LessonNewScreen(nav, it.toRoute<LessonNew>().date) }
+                            composable<LessonDetail> { LessonDetailScreen(nav, it.toRoute<LessonDetail>().id) }
+                            composable<LessonEdit> { LessonEditScreen(nav, it.toRoute<LessonEdit>().id) }
+                            composable<Report> {
+                                val r = it.toRoute<Report>()
+                                ReportScreen(nav, r.kind, r.id)
+                            }
+                            composable<PaymentDetail> { PaymentDetailScreen(nav, it.toRoute<PaymentDetail>().id) }
+                            composable<ReceiptViewer> {
+                                val r = it.toRoute<ReceiptViewer>()
+                                app.tutora.ui.receipts
+                                    .ReceiptViewerScreen(nav, r.paymentId, r.index)
+                            }
+                            composable<AttachReceipt> {
+                                val r = it.toRoute<AttachReceipt>()
+                                app.tutora.ui.receipts
+                                    .AttachReceiptScreen(nav, r.files, r.refused)
+                            }
+                            composable<PayerLessons> {
+                                val r = it.toRoute<PayerLessons>()
+                                PayerLessonsScreen(nav, r.kind, r.id)
+                            }
                         }
                     }
                 }
+                // Desfazer after Excluir pagamento, over any page (AC-021-6).
+                app.tutora.ui.payments
+                    .PaymentUndoHost(Modifier.align(androidx.compose.ui.Alignment.BottomCenter))
             }
         }
     }

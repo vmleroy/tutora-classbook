@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Spec 021: comprovantes on payments. -->
+<resources>
+    <string name="rc_receipt">Receipt</string>
+    <string name="rc_add">Add</string>
+    <string name="rc_addTitle">Add receipt</string>
+    <string name="rc_camera">Take photo</string>
+    <string name="rc_cameraSub">With the phone\'s camera</string>
+    <string name="rc_gallery">Choose from gallery</string>
+    <string name="rc_gallerySub">A screenshot or photo of the receipt</string>
+    <string name="rc_file">Choose file</string>
+    <string name="rc_fileSub">Image or PDF, up to 10 MB</string>
+    <string name="rc_refusedUnsupported">This file isn\'t an image or a PDF.</string>
+    <string name="rc_refusedTooLarge">This PDF is over 10 MB. Send a screenshot of the receipt instead.</string>
+    <string name="rc_refusedUnreadable">This file can\'t be opened (it has a password or is damaged). Send a screenshot of the receipt instead.</string>
+    <string name="rc_item">Receipt %1$d of %2$d</string>
+    <string name="rc_pdf">PDF</string>
+    <string name="rc_withReceipt">With receipt</string>
+    <string name="rc_viewer">Receipt</string>
+    <string name="rc_nOfM">%1$d of %2$d</string>
+    <string name="rc_pinch">Pinch to zoom</string>
+    <string name="rc_share">Share</string>
+    <string name="rc_replace">Replace</string>
+    <string name="rc_remove">Remove</string>
+    <string name="rc_removeTitle">Remove this receipt?</string>
+    <string name="rc_removeBody">The payment stays recorded; only the file leaves Tutora.</string>
+    <string name="rc_cancel">Cancel</string>
+    <string name="rc_page">Page %1$d of %2$d</string>
+    <string name="rc_attachTitle">Attach receipt</string>
+    <string name="rc_which">Which payment is it for?</string>
+    <string name="rc_last60">Last 60 days</string>
+    <string name="rc_noneRecent">No payments in the last 60 days</string>
+    <string name="rc_newPayment">Record new payment</string>
+    <string name="rc_whoPaid">Who paid?</string>
+    <string name="rc_search">Search student, group or place</string>
+    <string name="rc_kindStudent">Student</string>
+    <string name="rc_kindGroup">Group</string>
+    <string name="rc_kindPlace">Place</string>
+    <string name="rc_whoHint">Then Record payment opens with the receipt already attached.</string>
+    <string name="rc_nothingShared">None of the files received can be used as a receipt.</string>
+    <string name="rc_include">Include receipts</string>
+    <string name="rc_includeSub">At the end of the PDF, one per page</string>
+    <string name="rc_section">Receipts</string>
+    <string name="rc_column">Receipt</string>
+    <string name="rc_yes">Yes</string>
+    <string name="rc_no">No</string>
+    <string name="rc_usage">%1$s · %2$s MB</string>
+    <string name="pay_deleted">%1$s payment deleted</string>
+    <string name="pay_undo">Undo</string>
+    <plurals name="rc_listTitle">
+        <item quantity="one">Receipt · %1$d</item>
+        <item quantity="other">Receipts · %1$d</item>
+    </plurals>
+    <plurals name="rc_received">
+        <item quantity="one">%1$d receipt received</item>
+        <item quantity="other">%1$d receipts received</item>
+    </plurals>
+    <plurals name="rc_count">
+        <item quantity="one">%1$d receipt</item>
+        <item quantity="other">%1$d receipts</item>
+    </plurals>
+    <plurals name="rc_restoreMissing">
+        <item quantity="one">%1$d receipt isn\'t in the file and is left out</item>
+        <item quantity="other">%1$d receipts aren\'t in the file and are left out</item>
+    </plurals>
+</resources>

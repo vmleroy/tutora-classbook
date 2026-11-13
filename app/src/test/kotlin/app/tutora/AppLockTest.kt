@@ -333,4 +333,33 @@ class AppLockTest {
         compose.onNodeWithText("Privacy").assertExists()
         compose.onNodeWithContentDescription("Lock Tutora").assertExists()
     }
+
+    @Test
+    fun `AC-021-3 AC-021-11 a file shared while locked waits behind the lock, and so does the comprovante viewer`() {
+        val photo = java.io.File(tmp.newFolder(), "pix.jpg").apply { writeBytes(ByteArray(200) { 3 }) }
+        val staged = (h.services.receipts.stage(photo.path) as app.tutora.usecases.StageResult.Ok).staged
+        lockedStart(answer = false)
+        compose.runOnIdle {
+            h.nav.navigate(
+                app.tutora.ui.receipts
+                    .attachRoute(
+                        listOf(
+                            app.tutora.usecases.StageResult
+                                .Ok(staged),
+                        ),
+                    ),
+            )
+        }
+        h.settle(compose)
+        compose.onNodeWithTag("lock-screen").assertExists()
+        compose.onNodeWithTag("attach-receipt").assertDoesNotExist()
+        compose.onNodeWithText("Anexar comprovante").assertDoesNotExist()
+        compose.runOnIdle { h.nav.navigate(app.tutora.ui.ReceiptViewer("any", 0)) }
+        h.settle(compose)
+        compose.onNodeWithTag("receipt-viewer").assertDoesNotExist()
+        h.unlock.answer = true
+        compose.onNodeWithText("Desbloquear").performClick()
+        h.settle(compose)
+        compose.onNodeWithTag("lock-screen").assertDoesNotExist()
+    }
 }

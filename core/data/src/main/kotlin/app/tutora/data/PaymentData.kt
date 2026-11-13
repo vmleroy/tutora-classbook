@@ -403,6 +403,12 @@ class PaymentRepository(
 
     fun payment(id: String): Flow<PaymentRecord?> = dao.observePayment(id).map { it?.toPayment(emptyList()) }
 
+    /** Every payment with how many comprovantes it holds, for Anexar comprovante (AC-021-3). */
+    fun allPayments(): Flow<List<PaymentRecord>> =
+        combine(dao.observeAllPayments(), ReceiptRepository(db).counts()) { rows, counts ->
+            rows.map { it.toPayment(emptyList()).copy(receipts = counts[it.id] ?: 0) }
+        }
+
     /** The student's latest package and how many classes have used it. */
     fun lastPackage(studentId: String): Flow<PackageState?> =
         // The balances read the lesson table, so the count is read again whenever a class changes.
