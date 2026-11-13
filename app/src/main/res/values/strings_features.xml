@@ -534,7 +534,7 @@
     <string name="rep_settingsTitle">Title at the top of reports</string>
     <string name="rep_personal">Your details</string>
     <string name="rep_personalHint">Name and Pix key for reports</string>
-    <string name="rep_personalBody">Shown on report PDFs and copied text. Leave blank to leave them out.</string>
+    <string name="rep_personalBody">All optional: what is left empty stays off what you send.</string>
     <!-- Spec 015: app lock -->
     <string name="lock_promptTitle">Unlock Tutora</string>
     <string name="lock_body">Unlock to continue</string>
@@ -616,4 +616,10 @@
     <string name="rep_settingsCity">City</string>
     <string name="rep_settingsCityHint">Used in the Pix QR code</string>
     <string name="stu_guardianLine">Guardian: %1$s</string>
+    <string name="rep_sectionYou">You</string>
+    <string name="rep_sectionYouBody">Your name goes at the top of invoices and reports, and at the end of the copied text.</string>
+    <string name="rep_sectionPix">Pix</string>
+    <string name="rep_sectionPixBody">To get paid: the key goes in full on invoices. With your name and city, invoices also get a QR code with the amount.</string>
+    <string name="rep_sectionReports">Reports</string>
+    <string name="rep_sectionReportsBody">The line at the top of every PDF. Left empty, it says Tutora\'s.</string>
 </resources>

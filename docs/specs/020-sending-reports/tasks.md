@@ -29,6 +29,8 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 - [x] 15. Faturas do mês from Ganhos: period, total, rows with PDF and Texto and the check, Vencimento for all, Dividir turmas por aluno, empty state. Test: `InvoicesScreenTest.kt`. (AC-020-23, AC-020-24, AC-020-25, AC-020-26)
 - [x] 16. Responsável on the student's edit form and detail; Cidade in Seus dados. Test: `CatalogTest.kt`, `InvoicesScreenTest.kt` (the detail line), `SettingsPagesTest.kt`. (AC-020-17, AC-020-18)
 
+- [x] 18. Seus dados in three sections with a line each: Você, Pix, Relatórios. Test: `SettingsPagesTest.kt`. (AC-020-28)
+
 ### Finish
 
 - [x] 17. Product doc: Reports feature and the "Send a monthly report" flow mention Fatura, Relatório detalhado and Faturas do mês; data model lists `student.guardian`. `./gradlew check` green once. Spec status in progress → done at `/verify`.

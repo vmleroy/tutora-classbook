@@ -544,7 +544,7 @@
     <string name="rep_settingsTitle">Título no topo dos relatórios</string>
     <string name="rep_personal">Seus dados</string>
     <string name="rep_personalHint">Nome e chave Pix para os relatórios</string>
-    <string name="rep_personalBody">Aparecem no PDF e no texto copiado dos relatórios. Deixe em branco para não mostrar.</string>
+    <string name="rep_personalBody">Tudo opcional: o que ficar vazio não aparece no que você envia.</string>
     <!-- Spec 015: app lock -->
     <string name="lock_promptTitle">Desbloquear o Tutora</string>
     <string name="lock_body">Desbloqueie para continuar</string>
@@ -626,4 +626,10 @@
     <string name="rep_settingsCity">Cidade</string>
     <string name="rep_settingsCityHint">Usada no QR code do Pix</string>
     <string name="stu_guardianLine">Responsável: %1$s</string>
+    <string name="rep_sectionYou">Você</string>
+    <string name="rep_sectionYouBody">Seu nome vai no topo das faturas e relatórios e no fim do texto copiado.</string>
+    <string name="rep_sectionPix">Pix</string>
+    <string name="rep_sectionPixBody">Para receber: a chave vai inteira nas faturas. Com seu nome e a cidade, a fatura ganha também um QR code com o valor.</string>
+    <string name="rep_sectionReports">Relatórios</string>
+    <string name="rep_sectionReportsBody">A linha no topo de cada PDF. Vazia, fica a do Tutora.</string>
 </resources>

@@ -56,6 +56,7 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 ### Who it is for
 
 - **AC-020-17.** A student's edit form has an optional "Responsável" (name). Student detail shows it under the name when set. It is kept in the backup (011) and restored with it.
+- **AC-020-28.** Seus dados is in three sections, each with a line saying what it is for: "Você" (Seu nome), "Pix" (Chave Pix and Cidade) and "Relatórios" (Título no topo dos relatórios) (Victor, 13 Nov 2026).
 - **AC-020-18.** Seus dados has an optional "Cidade", described as "Usada no QR code do Pix". Seu nome, Chave Pix and Cidade are all needed for the QR code (AC-020-11).
 
 ### Groups

@@ -77,4 +77,16 @@ class SettingsPagesTest {
         compose.onNodeWithContentDescription("Cidade").performTextReplacement("Recife")
         h.awaitDb(compose) { h.services.currentSettings().pixCity == "Recife" }
     }
+
+    @Test
+    fun `AC-020-28 Seus dados is in three sections, each saying what it is for`() {
+        h.show(compose)
+        h.go(compose, app.tutora.ui.PersonalData)
+        listOf("section-you", "section-pix", "section-reports").forEach { compose.onNodeWithTag(it).performScrollTo().assertExists() }
+        listOf(
+            "Seu nome vai no topo das faturas e relatórios e no fim do texto copiado.",
+            "Para receber: a chave vai inteira nas faturas. Com seu nome e a cidade, a fatura ganha também um QR code com o valor.",
+            "A linha no topo de cada PDF. Vazia, fica a do Tutora.",
+        ).forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
+    }
 }
