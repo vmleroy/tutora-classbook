@@ -858,6 +858,7 @@ private fun SheetPeriodSheet(
             stringResource(R.string.rep_from),
             stringResource(R.string.rep_to),
             tag = "sheet-period",
+            latest = today,
         )
     }
 }

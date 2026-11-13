@@ -26,6 +26,7 @@ import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePicker
@@ -652,7 +653,8 @@ fun TimeField(
 
 /**
  * A calendar date: shows [text] (the date as the screen writes it) and opens the month
- * calendar, which can also be typed; [title] heads the calendar.
+ * calendar, which can also be typed; [title] heads the calendar. With [latest], no later day can be
+ * picked or typed: the days after it are disabled (a period never goes past today, spec 020).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -663,12 +665,24 @@ fun DateField(
     onPick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
     title: String? = null,
+    latest: LocalDate? = null,
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
     SelectField(text, { open = true }, modifier, label = label, icon = IconName.CALENDAR)
     if (open && !LocalCovered.current) {
         // The calendar counts in UTC milliseconds at midnight.
-        val state = rememberDatePickerState(initialSelectedDateMillis = date.toEpochDays() * DAY_MILLIS)
+        val lastMillis = latest?.let { it.toEpochDays() * DAY_MILLIS }
+        val start = if (latest != null && date > latest) latest else date
+        val state =
+            rememberDatePickerState(
+                initialSelectedDateMillis = start.toEpochDays() * DAY_MILLIS,
+                selectableDates =
+                    object : SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long) = lastMillis == null || utcTimeMillis <= lastMillis
+
+                        override fun isSelectableYear(year: Int) = latest == null || year <= latest.year
+                    },
+            )
         val c = TutoraTheme.colors
         val colors =
             DatePickerDefaults.colors(
@@ -709,7 +723,7 @@ fun DateField(
                         return@TypingTarget
                     }
                 }
-                typedDate(digits, dayFirst, date.year)?.let {
+                typedDate(digits, dayFirst, date.year)?.takeIf { latest == null || it <= latest }?.let {
                     state.selectedDateMillis = it.toEpochDays() * DAY_MILLIS
                     state.displayedMonthMillis = LocalDate(it.year, it.month, 1).toEpochDays() * DAY_MILLIS
                 }

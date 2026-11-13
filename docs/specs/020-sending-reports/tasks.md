@@ -38,6 +38,8 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 - [x] 21. `PeriodField` in the design system (guideline, gallery, 47 components), used by Relatório, Evolução and the backup spreadsheet. Test: `DesignSystemTest.kt`, `EarningsScreensTest.kt`. (AC-020-31)
 - [x] 22. Short fixed chip rows as segmented rows; `MethodControl` for the payment method. Test: `SourceChecksTest.kt`. (AC-020-32)
 
+- [x] 23. Até never past today: `DateField` and `PeriodField` take `latest`; Evolução shows today in Até for quick periods. Test: `EarningsScreensTest.kt`. (AC-020-33)
+
 ### Finish
 
 - [x] 17. Product doc: Reports feature and the "Send a monthly report" flow mention Fatura, Relatório detalhado and Faturas do mês; data model lists `student.guardian`. `./gradlew check` green once. Spec status in progress → done at `/verify`.

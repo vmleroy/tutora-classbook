@@ -328,7 +328,19 @@ class EarningsScreensTest {
         listOf("6 meses", "12 meses", "Ano").forEach { exists(it) }
         compose.onNodeWithTag("evo-from").assertExists()
         exists("01/05/2026")
-        exists("31/10/2026")
+        exists("26/10/2026")
+    }
+
+    @Test
+    fun `AC-020-33 Ate never shows or takes a day after today, so picking De leaves it where it was`() {
+        openEvolution()
+        // 6 meses runs to the end of October, but Até shows today.
+        exists("26/10/2026")
+        compose.onAllNodes(matching("31/10/2026"), useUnmergedTree = true).assertCountEquals(0)
+        pickFrom()
+        exists("01/05/2026")
+        exists("26/10/2026")
+        compose.onNodeWithTag("evo-too-long").assertDoesNotExist()
     }
 
     private fun lit(vararg labels: String) =
@@ -441,7 +453,7 @@ class EarningsScreensTest {
     fun `AC-019-10 the new words read in English`() {
         runBlocking { h.services.saveSettings(h.services.currentSettings().copy(language = app.tutora.domain.Language.EN)) }
         openEvolution()
-        listOf("Custom", "Type", "Place", "All places").forEach { exists(it) }
+        listOf("Period", "Type", "Place", "All places").forEach { exists(it) }
     }
 
     @Test

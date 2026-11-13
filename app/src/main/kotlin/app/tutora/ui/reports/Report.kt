@@ -305,6 +305,7 @@ fun ReportScreen(
             stringResource(R.string.rep_from),
             stringResource(R.string.rep_to),
             tag = "report-period",
+            latest = today,
         )
         val r = report
         if (subject == null || r == null) return@ScreenScaffold

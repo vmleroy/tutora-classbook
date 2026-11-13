@@ -105,6 +105,10 @@ fun EvolutionScreen(nav: NavHostController) {
             EvolutionRange.CUSTOM -> LocalDate.parse(customFrom) to LocalDate.parse(customTo)
         }
 
+    // Até never shows a day after today: a quick period runs to its month's end, but nothing after
+    // today has happened yet (AC-020-33).
+    val shownTo = minOf(to, today)
+
     // A pick that breaks the rules keeps the last valid period (AC-019-2).
     fun pick(
         newFrom: LocalDate,
@@ -146,13 +150,14 @@ fun EvolutionScreen(nav: NavHostController) {
             },
             from,
             pattern("dd/MM/yyyy", language, from),
-            { pick(it, maxOf(it, to)) },
-            to,
-            pattern("dd/MM/yyyy", language, to),
+            { pick(it, maxOf(it, shownTo)) },
+            shownTo,
+            pattern("dd/MM/yyyy", language, shownTo),
             { pick(minOf(from, it), it) },
             stringResource(R.string.rep_from),
             stringResource(R.string.rep_to),
             tag = "evo",
+            latest = today,
         )
         if (tooLong) {
             Text(

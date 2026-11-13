@@ -13,7 +13,8 @@ import kotlinx.datetime.LocalDate
  * A period as a filter field: its label, the quick periods in one segmented row, and De and Até
  * under them. Picking a date by hand makes the period those dates, and then no quick period is lit
  * ([selected] null). Dates come formatted by the caller, in the app language. [tag] marks the row;
- * the date fields are "$tag-from" and "$tag-to" (spec 020).
+ * the date fields are "$tag-from" and "$tag-to". With [latest] (today), no later day can be picked
+ * (spec 020).
  */
 @Composable
 fun <T> PeriodField(
@@ -31,6 +32,7 @@ fun <T> PeriodField(
     toLabel: String,
     modifier: Modifier = Modifier,
     tag: String = "period",
+    latest: LocalDate? = null,
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
         FieldLabel(label)
@@ -43,8 +45,8 @@ fun <T> PeriodField(
             size = ControlSize.SM,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            DateField(fromLabel, fromText, from, onFrom, Modifier.weight(1f).testTag("$tag-from"))
-            DateField(toLabel, toText, to, onTo, Modifier.weight(1f).testTag("$tag-to"))
+            DateField(fromLabel, fromText, from, onFrom, Modifier.weight(1f).testTag("$tag-from"), latest = latest)
+            DateField(toLabel, toText, to, onTo, Modifier.weight(1f).testTag("$tag-to"), latest = latest)
         }
     }
 }
