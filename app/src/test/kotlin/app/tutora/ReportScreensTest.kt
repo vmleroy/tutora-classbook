@@ -412,9 +412,8 @@ class ReportScreensTest {
         h.go(compose, app.tutora.ui.GroupDetail(gid))
         click("Registrar pagamento", scroll = false)
         compose.onNodeWithTag("group-pay").assertExists()
-        // Todos pagaram adds everyone who owes, each with what they owe.
-        compose.onNodeWithTag("group-pay-all").performClick()
-        h.settle(compose)
+        // Nobody picked is Todos pagaram: everyone who owes, each with what they owe.
+        exists("Todos pagaram · R$ 100,00", part = true)
         compose.onNodeWithTag("group-pay-Ana Souza").assertExists()
         compose.onNodeWithTag("group-pay-Bia Lima").assertExists()
         exists("Registrar · R$ 100,00", part = true)

@@ -165,8 +165,6 @@ class Payments(
         dao.insertChosen(draft.chosen.distinct().map { PaymentLessonRow(paymentId, it) })
     }
 
-    /** Registrar pagamento / Receber da salinha (AC-008-5 to 8, 10). */
-
     /**
      * Several students' payments at once, from a split group's "Registrar pagamento": all of them
      * or none (AC-020-40).
@@ -191,6 +189,7 @@ class Payments(
         }.getOrElse { PaymentResult.Err(refused ?: throw it) }
     }
 
+    /** Registrar pagamento / Receber da salinha (AC-008-5 to 8, 10). */
     suspend fun record(draft: PaymentDraft): PaymentResult =
         db.inTransaction {
             check(draft)?.let { return@inTransaction PaymentResult.Err(it) }

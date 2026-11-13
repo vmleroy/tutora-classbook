@@ -652,8 +652,7 @@
     <string name="pay_methodLabel">Forma de pagamento</string>
     <string name="pay_whoPaid">Quem pagou</string>
     <string name="pay_owesShort">deve %1$s</string>
-    <string name="pay_nobodyYet">Escolha quem pagou</string>
     <string name="pay_searchMember">Buscar aluno</string>
-    <string name="pay_allPaid">Todos pagaram</string>
     <string name="pay_removeFrom">Tirar %1$s</string>
+    <string name="pay_allPaidTotal">Todos pagaram · %1$s</string>
 </resources>

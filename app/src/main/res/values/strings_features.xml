@@ -642,8 +642,7 @@
     <string name="pay_methodLabel">Payment method</string>
     <string name="pay_whoPaid">Who paid</string>
     <string name="pay_owesShort">owes %1$s</string>
-    <string name="pay_nobodyYet">Choose who paid</string>
     <string name="pay_searchMember">Search a student</string>
-    <string name="pay_allPaid">Everyone paid</string>
     <string name="pay_removeFrom">Take %1$s out</string>
+    <string name="pay_allPaidTotal">Everyone paid · %1$s</string>
 </resources>

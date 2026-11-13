@@ -81,6 +81,7 @@ import app.tutora.domain.Who
 import app.tutora.domain.balanceOf
 import app.tutora.domain.localOf
 import app.tutora.domain.payerOf
+import app.tutora.domain.sum
 import app.tutora.state.LocalServices
 import app.tutora.ui.GroupDetail
 import app.tutora.ui.LessonDetail
@@ -1220,9 +1221,9 @@ fun GroupSplitBalance(
 }
 
 /**
- * Registrar pagamento on a split group: "Quem pagou" adds the students who paid (with a search
- * box), or "Todos pagaram" adds everyone who owes; each has their own amount, what they owe for
- * this group at first, and an × to take them out. One method and one date; each becomes that
+ * Registrar pagamento on a split group: "Quem pagou" starts at "Todos pagaram" with the total,
+ * everyone who owes listed with their amount; picking students in it (with a search box) narrows
+ * the list to them, and an × takes one out. One method and one date; each becomes that
  * student's payment, paying this group's classes first. The group's own debt from before the split
  * is one more choice (AC-020-40).
  */
@@ -1247,12 +1248,15 @@ private fun GroupPaySheet(
     var date by rememberSaveable { mutableStateOf(today.toString()) }
     var refused by remember { mutableStateOf(false) }
 
+    val owing = names.keys.filter { (owedBy[it] ?: 0) > 0 }
+    // Nobody picked is everyone who owes: "Todos pagaram".
+    val paying = picked.ifEmpty { owing }
+
     fun choose(ids: Collection<String>) {
         picked = names.keys.filter { it in ids }
-        amounts = picked.associateWith { amounts[it] ?: owedBy[it] ?: 0 }
     }
-    val total = picked.sumOf { amounts[it] ?: 0 }
-    val owing = names.keys.filter { (owedBy[it] ?: 0) > 0 }
+    val amountOf = { id: String -> amounts[id] ?: owedBy[id] ?: 0 }
+    val total = paying.sumOf { amountOf(it) }
     val owesText = { id: String -> (owedBy[id] ?: 0).takeIf { it > 0 }?.let { formatMoney(it, language) } }
     val owesLabel = stringResource(R.string.pay_owesShort, "%s")
     BottomSheet(
@@ -1263,13 +1267,13 @@ private fun GroupPaySheet(
             listOf { m ->
                 Button(stringResource(R.string.pay_save, formatMoney(total, language)), {
                     val drafts =
-                        picked.filter { (amounts[it] ?: 0) > 0 }.map { id ->
+                        paying.filter { amountOf(it) > 0 }.map { id ->
                             if (id == groupKey) {
-                                PaymentDraft(PayerRef(PayerKind.GROUP, groupId), amounts[id] ?: 0, method, LocalDate.parse(date))
+                                PaymentDraft(PayerRef(PayerKind.GROUP, groupId), amountOf(id), method, LocalDate.parse(date))
                             } else {
                                 PaymentDraft(
                                     PayerRef(PayerKind.STUDENT, id),
-                                    amounts[id] ?: 0,
+                                    amountOf(id),
                                     method,
                                     LocalDate.parse(date),
                                     chosen = debts[id]?.second.orEmpty(),
@@ -1293,31 +1297,21 @@ private fun GroupPaySheet(
                 { choose(it) },
                 Modifier.testTag("group-pay-who"),
                 multiple = true,
-                allLabel = stringResource(R.string.pay_nobodyYet),
+                allLabel = stringResource(R.string.pay_allPaidTotal, formatMoney(sum(owing.map { owedBy[it] ?: 0 }), language)),
                 searchLabel = stringResource(R.string.pay_searchMember),
                 icon = IconName.USERS,
             )
-            if (owing.isNotEmpty() && !picked.containsAll(owing)) {
-                Button(
-                    stringResource(R.string.pay_allPaid),
-                    { choose(picked + owing) },
-                    Modifier.testTag("group-pay-all"),
-                    variant = ButtonVariant.OUTLINE,
-                    icon = IconName.CHECK,
-                    fullWidth = true,
-                )
-            }
-            picked.forEach { id ->
+            paying.forEach { id ->
                 val name = names[id].orEmpty()
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2), verticalAlignment = Alignment.CenterVertically) {
                     MoneyField(
                         name,
-                        amounts[id],
+                        amountOf(id),
                         { amounts = amounts + (id to (it ?: 0)) },
                         Modifier.weight(1f).testTag("group-pay-$name"),
                         helper = owesText(id)?.let { owesLabel.replace("%s", it) },
                     )
-                    IconButton(IconName.CLOSE, stringResource(R.string.pay_removeFrom, name), { choose(picked - id) })
+                    IconButton(IconName.CLOSE, stringResource(R.string.pay_removeFrom, name), { choose(paying - id) })
                 }
             }
             MethodControl(method) { method = it }
