@@ -65,7 +65,7 @@
     </plurals>
     <string name="doc_section">Export</string>
     <string name="doc_pix">Amount due and Pix</string>
-    <string name="doc_pixSub">Makes it an invoice: paid, amount due and QR code</string>
+    <string name="doc_pixSub">Paid, amount due and Pix QR code</string>
     <string name="doc_details">Times, place and travel</string>
     <string name="doc_notes">Class notes</string>
     <string name="doc_payments">Payments received</string>

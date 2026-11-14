@@ -69,7 +69,7 @@
     </plurals>
     <string name="doc_section">Exportar</string>
     <string name="doc_pix">Valor a pagar e Pix</string>
-    <string name="doc_pixSub">Vira uma Fatura: já pago, valor a pagar e QR code</string>
+    <string name="doc_pixSub">Já pago, valor a pagar e QR code do Pix</string>
     <string name="doc_details">Horários, local e deslocamento</string>
     <string name="doc_notes">Observações das aulas</string>
     <string name="doc_payments">Pagamentos recebidos</string>

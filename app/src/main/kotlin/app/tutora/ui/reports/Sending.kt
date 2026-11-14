@@ -137,7 +137,6 @@ class DocMaker(
     private val today: LocalDate,
     private val language: Language,
     private val exports: Exports,
-    private val invoiceFile: String,
     private val reportFile: String,
     /** The parts a document starts with: Ajustes' defaults (AC-021-18). */
     val defaults: DocParts = DocParts(),
@@ -165,8 +164,8 @@ class DocMaker(
     ) = fileName("$name - $kind", r.from, r.to, language)
 
     /**
-     * Shares the one document as PDF: "Ana Souza - fatura - outubro 2026.pdf" with Valor a pagar e
-     * Pix on, "… - relatório - …" off; the comprovantes at its end when on (AC-021-15, 16).
+     * Shares the one document as PDF, "Ana Souza - relatório - outubro 2026.pdf", the comprovantes
+     * at its end when on (AC-021-15, 16).
      */
     fun docPdf(
         r: SubjectReport,
@@ -177,7 +176,7 @@ class DocMaker(
         grouped: Boolean,
         due: LocalDate?,
     ) = exports.share(
-        file(to.name, if (parts.pix) invoiceFile else reportFile, r) + ".pdf",
+        file(to.name, reportFile, r) + ".pdf",
         MIME_PDF,
         exports.pdf(
             documentPlan(r, parts, w, iw, teacher, city, to, label, line, grouped, due, today, stamp).with(r, parts.receipts),
@@ -222,7 +221,6 @@ fun rememberDocMaker(): DocMaker {
         },
         language,
         LocalExports.current,
-        stringResource(R.string.inv_fileInvoice),
         stringResource(R.string.doc_fileReport),
         settings?.docParts ?: DocParts(),
         stringResource(R.string.rc_section),

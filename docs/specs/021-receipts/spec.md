@@ -46,9 +46,9 @@ When a student, a parent or a place pays by Pix or transfer, the teacher gets a 
 The plain report (010), the Fatura and the Relatório detalhado (020) become one document whose parts the teacher shows or hides. This replaces AC-010-8, AC-020-1, AC-020-2 and the per-sheet switches of AC-020-15 and AC-021-7; the content each part draws stays as 010 and 020 describe it.
 
 - **AC-021-14.** Relatório has one section, "Exportar", in place of "Exportar este relatório" and "Enviar". It holds Turma inteira / Dividir por aluno (only where AC-020-20 offers it), then the switches "Valor a pagar e Pix", "Horários, local e deslocamento", "Observações das aulas", "Pagamentos recebidos" and "Comprovantes" (this one only when a payment in the period has one), then PDF, Excel and Copiar como texto. "Vencimento" (AC-020-9) shows under "Valor a pagar e Pix" while it is on.
-- **AC-021-15.** The PDF always has the header (AC-010-9), the classes and the totals. "Valor a pagar e Pix" adds Para with the Responsável, Já pago, Valor a pagar or "Pago, obrigado", the Vencimento and the Pix block with its QR code (AC-020-6 to 12), and the title becomes "Fatura"; off, the title is "Relatório". "Horários, local e deslocamento" adds the start and end, place, travel and extra charge to each class (AC-020-15, 16). "Observações das aulas" puts each class's notes under it. "Pagamentos recebidos" adds the payments. "Comprovantes" ends it with the comprovantes (AC-021-7).
-- **AC-021-16.** The file says which: "Ana Souza - fatura - outubro 2026.pdf" with Valor a pagar e Pix on, "Ana Souza - relatório - outubro 2026.pdf" off; the Excel is "… - relatório - ….xlsx".
-- **AC-021-17.** The Excel's Aulas sheet has the detailed columns when "Horários, local e deslocamento" is on and the notes when "Observações das aulas" is on; Pagamentos as AC-021-8. Copiar como texto is the Fatura's message (AC-020-14) with Valor a pagar e Pix on, the summary (AC-010-12) off.
+- **AC-021-15.** The PDF always has the header (AC-010-9), the classes and the totals. "Valor a pagar e Pix" adds Para with the Responsável, Já pago, Valor a pagar or "Pago, obrigado", the Vencimento and the Pix block with its QR code (AC-020-6 to 12). The document is always the Relatório de aulas, with or without it (Victor, 14 Nov 2026). "Horários, local e deslocamento" adds the start and end, place, travel and extra charge to each class (AC-020-15, 16). "Observações das aulas" puts each class's notes under it. "Pagamentos recebidos" adds the payments. "Comprovantes" ends it with the comprovantes (AC-021-7).
+- **AC-021-16.** The files are "Ana Souza - relatório - outubro 2026.pdf" and ".xlsx", whatever is shown (Victor, 14 Nov 2026).
+- **AC-021-17.** The Excel's Aulas sheet has the detailed columns when "Horários, local e deslocamento" is on and the notes when "Observações das aulas" is on; Pagamentos as AC-021-8. Copiar como texto is the message with what is still to pay and the Pix (AC-020-14, opening "Aulas de outubro 2026") with Valor a pagar e Pix on, the summary (AC-010-12) off.
 - **AC-021-18.** Ajustes › Seus dados › Relatórios sets which switches start on: Valor a pagar e Pix and Pagamentos recebidos on, the others off, at first. "Lembrar a última escolha" (off at first): on, each Relatório opens with the switches as they were last left; off, with these defaults.
 - **AC-021-19.** Faturas do mês (AC-020-23 to 26) keeps its PDF and Texto on each row: the same document with Valor a pagar e Pix on and the other parts as the defaults.
 
@@ -73,7 +73,7 @@ Answered by Victor, 13 Nov 2026:
 - **How many:** as many as the teacher wants per payment, images and PDFs (AC-021-1).
 - **On the Fatura:** both the Fatura and the Relatório detalhado can carry them (AC-021-7).
 
-- **One document (13 Nov 2026):** the three PDFs merge into one with switches (AC-021-14 to 19); "Fatura" is its title when Valor a pagar e Pix is on; the defaults and whether to remember the last choice are set in Ajustes; amended here, in the same PR.
+- **One document (13 Nov 2026):** the three PDFs merge into one with switches (AC-021-14 to 19); it is always the Relatório de aulas, Valor a pagar e Pix only adding its part (14 Nov 2026); the defaults and whether to remember the last choice are set in Ajustes; amended here, in the same PR.
 
 Settled in the plan (technical):
 

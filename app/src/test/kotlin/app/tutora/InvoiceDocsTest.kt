@@ -74,9 +74,24 @@ class InvoiceDocsTest {
     }
 
     @Test
-    fun `AC-020-6 the Fatura's header has its title, the teacher, the date made, who it is for and the period`() {
-        val plan = fatura()
-        assertEquals("Fatura", plan.title)
+    fun `AC-020-6 the document's header has its title, the teacher, the date made, who it is for and the period`() {
+        val plan =
+            app.tutora.ui.reports.documentPlan(
+                owing,
+                app.tutora.domain.DocParts(),
+                w,
+                iw,
+                teacher,
+                city,
+                ana,
+                "Aluna",
+                null,
+                false,
+                null,
+                made,
+                stamp,
+            )
+        assertEquals("Relatório de aulas", plan.title)
         assertEquals("Prof. Victor Le Roy · Emitida em 13/11/2026 · 01/10/2026 a 31/10/2026", plan.subtitle)
         assertEquals("Para:", plan.subjectLabel)
         assertEquals("Maria Souza", plan.subjectName)
@@ -115,7 +130,7 @@ class InvoiceDocsTest {
         val text = invoiceText(invoiceOf(owing, false), w, iw, teacher, city, "outubro 2026", null)
         val lines = text.lines()
         assertEquals(
-            listOf("Olá!", "Fatura de outubro 2026", "19/10 · 14:00 · 60 min · R$ 120,00", "22/10 · 14:00 · 60 min · R$ 120,00"),
+            listOf("Olá!", "Aulas de outubro 2026", "19/10 · 14:00 · 60 min · R$ 120,00", "22/10 · 14:00 · 60 min · R$ 120,00"),
             lines.take(4),
         )
         assertTrue(text.contains("Total a pagar: R$ 240,00"))
@@ -170,7 +185,7 @@ class InvoiceDocsTest {
                 .associate { it.groupValues[1] to it.groupValues[2] }
         val en = names("src/main/res/values/strings_features.xml")
         val pt = names("src/main/res/values-pt-rBR/strings_features.xml")
-        assertTrue(en.size >= 50)
+        assertTrue(en.size >= 45)
         assertEquals(en.keys, pt.keys)
         assertEquals("Amount due" to "Valor a pagar", en["inv_toPay"] to pt["inv_toPay"])
     }
@@ -288,7 +303,7 @@ class InvoiceDocsTest {
         assertEquals(6, bare.columns.size)
         assertTrue(bare.rows.none { it.kind == PdfRowKind.NOTE })
         val all = doc(r, app.tutora.domain.DocParts(pix = true, details = true, notes = true, payments = true))
-        assertEquals("Fatura", all.title)
+        assertEquals("Relatório de aulas", all.title)
         assertEquals("Para:" to "Maria Souza", all.subjectLabel to all.subjectName)
         assertEquals("Valor a pagar", all.due?.label)
         assertEquals("victor@gmail.com", all.payPix?.key)

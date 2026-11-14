@@ -89,8 +89,8 @@ class SettingsPagesTest {
         h.go(compose, app.tutora.ui.PersonalData)
         listOf("section-you", "section-pix", "section-reports").forEach { compose.onNodeWithTag(it).performScrollTo().assertExists() }
         listOf(
-            "Seu nome vai no topo das faturas e relatórios e no fim do texto copiado.",
-            "Para receber: a chave vai inteira nas faturas. Com seu nome e a cidade, a fatura ganha também um QR code com o valor.",
+            "Seu nome vai no topo dos relatórios e no fim do texto copiado.",
+            "Para receber: a chave vai inteira no relatório. Com seu nome e a cidade, ele ganha também um QR code com o valor.",
             "A linha no topo de cada PDF. Vazia, fica a do Tutora.",
         ).forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
     }

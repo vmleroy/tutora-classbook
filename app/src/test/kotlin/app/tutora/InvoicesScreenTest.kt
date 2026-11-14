@@ -84,7 +84,7 @@ class InvoicesScreenTest {
         compose.onNodeWithTag("due-Ana Souza").assertExists()
         tap("due-pdf-Ana Souza")
         assertEquals(
-            "Ana Souza - fatura - outubro 2026.pdf",
+            "Ana Souza - relatório - outubro 2026.pdf",
             h.exports.shared
                 .single()
                 .first,
@@ -144,10 +144,10 @@ class InvoicesScreenTest {
                     .single()
                     .second,
             )
-        assertTrue(plan.contains("title=Fatura,"))
+        assertTrue(plan.contains("title=Relatório de aulas,") && plan.contains("due=PdfDue("))
         assertTrue(plan.contains("Deslocamento"))
         assertEquals(
-            "Ana Souza - fatura - outubro 2026.pdf",
+            "Ana Souza - relatório - outubro 2026.pdf",
             h.exports.shared
                 .single()
                 .first,

@@ -167,7 +167,7 @@ class ReportScreensTest {
         h.settle(compose)
         assertEquals(
             listOf(
-                "Ana Souza - fatura - outubro 2026.pdf",
+                "Ana Souza - relatório - outubro 2026.pdf",
                 "Ana Souza - relatório - outubro 2026.xlsx",
                 "Ana Souza - relatório - outubro 2026.pdf",
             ),
@@ -310,7 +310,7 @@ class ReportScreensTest {
         compose.onNodeWithTag("export-pdf").performScrollTo().performClick()
         h.settle(compose)
         assertEquals(
-            "Inglês B - fatura - outubro 2026.pdf",
+            "Inglês B - relatório - outubro 2026.pdf",
             h.exports.shared
                 .single()
                 .first,
@@ -326,7 +326,7 @@ class ReportScreensTest {
         compose.onNodeWithTag("member-second-Ana Souza").performScrollTo().performClick()
         h.settle(compose)
         assertEquals(
-            "Bia Lima - fatura - outubro 2026.pdf",
+            "Bia Lima - relatório - outubro 2026.pdf",
             h.exports.shared
                 .single()
                 .first,

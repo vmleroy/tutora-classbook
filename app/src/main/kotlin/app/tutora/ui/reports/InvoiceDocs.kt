@@ -419,7 +419,7 @@ fun hasReceipts(r: SubjectReport) = r.payments.any { it.receipts.isNotEmpty() }
 
 /**
  * The one document (Victor, 13 Nov 2026; AC-021-15): the header, classes and totals always; the
- * Fatura's Para, amount due, Vencimento and Pix block, titled "Fatura", with Valor a pagar e Pix;
+ * Para, amount due, Vencimento and Pix block with Valor a pagar e Pix;
  * the detailed columns with Horários, local e deslocamento; notes under each class; the payments.
  * The comprovantes are added after, by the caller (AC-021-7).
  */
@@ -442,7 +442,8 @@ fun documentPlan(
     val detail = detailPlan(r, w, iw, t, to, subjectLabel, subjectLine, grouped, parts.notes, made, generatedAt)
     val table = if (parts.details) detail else fatura
     return table.copy(
-        title = if (parts.pix) iw.invoiceTitle else w.subjectTitle,
+        // Always the Relatório de aulas; Valor a pagar e Pix only adds its part (Victor, 14 Nov 2026).
+        title = w.subjectTitle,
         subtitle = fatura.subtitle,
         subjectLabel = if (parts.pix) fatura.subjectLabel else detail.subjectLabel,
         subjectName = if (parts.pix) fatura.subjectName else detail.subjectName,

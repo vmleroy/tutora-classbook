@@ -585,7 +585,7 @@
     <string name="inv_extraCharges">Extra charges</string>
     <string name="inv_notes">Notes</string>
     <string name="inv_hello">Hi!</string>
-    <string name="inv_invoiceOf">Invoice for %1$s</string>
+    <string name="inv_invoiceOf">Classes in %1$s</string>
     <string name="inv_totalToPay">Total due: %1$s</string>
     <string name="inv_until">by %1$s</string>
     <string name="inv_pixWithName">Pix: %1$s (%2$s)</string>
@@ -596,7 +596,6 @@
     <string name="inv_whole">Whole group</string>
     <string name="inv_split">Split by student</string>
     <string name="inv_addPix">Add your Pix key in Your details</string>
-    <string name="inv_fileInvoice">invoice</string>
     <string name="inv_monthTitle">Monthly invoices</string>
     <string name="inv_monthTotal">Due in the period</string>
     <string name="inv_splitGroups">Split groups by student</string>
@@ -605,14 +604,14 @@
     <string name="inv_dueAll">Due date for all</string>
     <string name="inv_sent">Sent</string>
     <string name="stu_guardian">Guardian</string>
-    <string name="stu_guardianHint">Who gets the invoice, if not the student</string>
+    <string name="stu_guardianHint">Who gets the report, if not the student</string>
     <string name="rep_settingsCity">City</string>
     <string name="rep_settingsCityHint">Used in the Pix QR code</string>
     <string name="stu_guardianLine">Guardian: %1$s</string>
     <string name="rep_sectionYou">You</string>
-    <string name="rep_sectionYouBody">Your name goes at the top of invoices and reports, and at the end of the copied text.</string>
+    <string name="rep_sectionYouBody">Your name goes at the top of reports and at the end of the copied text.</string>
     <string name="rep_sectionPix">Pix</string>
-    <string name="rep_sectionPixBody">To get paid: the key goes in full on invoices. With your name and city, invoices also get a QR code with the amount.</string>
+    <string name="rep_sectionPixBody">To get paid: the key goes in full on the report. With your name and city, it also gets a QR code with the amount.</string>
     <string name="rep_sectionReports">Reports</string>
     <string name="rep_sectionReportsBody">The line at the top of every PDF. Left empty, it says Tutora\'s.</string>
     <string name="rep_period">Period</string>
