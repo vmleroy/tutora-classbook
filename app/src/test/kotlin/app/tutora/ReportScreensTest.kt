@@ -238,7 +238,7 @@ class ReportScreensTest {
     }
 
     @Test
-    fun `AC-019-15 the title typed in Seus dados replaces Tutora's at the top of the PDF, and empty keeps it`() {
+    fun `AC-019-15 the title typed in Ajustes › Relatorios replaces Tutora's at the top of the PDF, and empty keeps it`() {
         openReport()
         click("PDF")
         assertTrue(
@@ -248,7 +248,7 @@ class ReportScreensTest {
                     .second,
             ).contains("brand=TUTORA · CONTROLE DE AULAS"),
         )
-        h.go(compose, app.tutora.ui.PersonalData)
+        h.go(compose, app.tutora.ui.SettingsReports)
         compose
             .onNode(
                 androidx.compose.ui.test

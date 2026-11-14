@@ -51,6 +51,8 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 - [x] 22. Seus dados › Relatórios: the defaults and Lembrar a última escolha. Test: `SettingsPagesTest.kt`. (AC-021-18)
 - [x] 23. Faturas do mês sends the same document with Pix on and the rest as the defaults. Test: `InvoicesScreenTest.kt`. (AC-021-19)
 
+- [x] 24. Ajustes ordered by subject: your work (Seus dados, Aulas, Pagamentos, Relatórios, Lembretes), then the app (Geral, Backup e planilha, Privacidade), then Sobre; Calendário, Como você dá aula, Locais padrão and Durações em HH:MM into Aulas; `SettingsReportsScreen` with the title, the defaults and Lembrar. Test: `SettingsPagesTest.kt`, `ReportScreensTest.kt`, `CalendarScreensTest.kt`, `SetupScreensTest.kt`, `FeatureScreensTest.kt`. (AC-021-20, AC-021-18)
+
 ### Pending on a device
 
 Not run (no emulator unless Victor asks); for the PR:

@@ -73,4 +73,5 @@
     <string name="doc_settingsTitle">What the report shows</string>
     <string name="doc_remember">Remember the last choice</string>
     <string name="doc_rememberSub">Each report opens as you last left it</string>
+    <string name="doc_rowHint">What the PDF shows and the title on top</string>
 </resources>

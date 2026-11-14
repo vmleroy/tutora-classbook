@@ -103,7 +103,7 @@ class SetupScreensTest {
     fun `AC-014-20 Como voce da aula changes in Ajustes, and a kind already in use shows again`() {
         teaching(Teaching.PRIVATE)
         h.show(compose)
-        h.go(compose, app.tutora.ui.SettingsGeneral)
+        h.go(compose, app.tutora.ui.SettingsLessons)
         compose.onNodeWithTag("teaching-row").performScrollTo().performClick()
         h.settle(compose)
         compose.onNodeWithContentDescription("Escola ou emprego fixo").performClick()
