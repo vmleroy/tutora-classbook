@@ -112,7 +112,7 @@ class PdfLayoutTest {
         assertEquals(listOf("Aulas", "Total", "Pago", "A receber"), plan.stats.map { it.label })
         assertEquals(emptyList<Any>(), plan.due?.lines)
         val pages = pdfPages(plan)
-        assertEquals(listOf(6, 8), pages.map { it.rows.count() })
+        assertEquals(listOf(5, 9), pages.map { it.rows.count() })
     }
 
     @Test

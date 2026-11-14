@@ -146,7 +146,8 @@ data class PdfPage(
 )
 
 // Rows that fit under the summary on page one, and on a page with only the table header.
-const val PDF_FIRST_ROWS = 16
+// One fewer than before, for the room between the parts (Victor, 14 Nov 2026).
+const val PDF_FIRST_ROWS = 15
 const val PDF_OTHER_ROWS = 26
 
 // The amount due and the Pix box sit on page one, above the table (Victor, 14 Nov 2026): the
@@ -154,6 +155,9 @@ const val PDF_OTHER_ROWS = 26
 const val PDF_DUE_ROWS = 4
 const val PDF_PIX_ROWS = 7
 const val PDF_TILES_PER_ROW = 4
+
+// The space between the parts of a page: tiles, summary, table, each section.
+private const val PDF_GAP = 22f
 
 // A comprovante is drawn from a bitmap about 150 dpi across the page's width.
 private const val RECEIPT_PX = 1240
@@ -509,7 +513,7 @@ private class AndroidPdf(
                 plan.subjectLine?.let { canvas.text(it, right, y + 44f, paint(9f, c.muted), alignRight = true, maxWidth = 200f) }
                 y += 64f
                 canvas.drawRect(left, y, right, y + 2.5f, fill(c.primary))
-                y += 18f
+                y += 24f
                 // Four tiles: neutral on cream, Pago on green, A receber on red.
                 val gap = 8f
                 val perRow = plan.stats.size.coerceIn(1, PDF_TILES_PER_ROW)
@@ -544,12 +548,14 @@ private class AndroidPdf(
                     )
                     canvas.text(st.value, x + 10f, y + 34f, paint(13f, fg, bold = true), maxWidth = tileW - 20f)
                 }
-                if (plan.stats.isNotEmpty()) y += 62f
+                // Room between the parts, so the page doesn't feel cluttered (Victor, 14 Nov 2026).
+                if (plan.stats.isNotEmpty()) y += 44f + PDF_GAP
                 // The summary before the details: what is due and how to pay it, then the classes (AC-021-15).
-                plan.due?.let { due -> y = canvas.due(due, y - 4f) + 2f }
-                plan.payPix?.let { y = canvas.payPix(it, y) + 18f }
+                plan.due?.let { due -> y = canvas.due(due, y - 4f) + PDF_GAP - 8f }
+                plan.payPix?.let { y = canvas.payPix(it, y) + PDF_GAP }
+                y += 6f
                 canvas.text(plan.tableTitle, left, y, paint(11f, c.ink, bold = true))
-                y += 8f
+                y += 12f
             }
             // The table's header row, filled, repeated on every page.
             if (plan.columns.isNotEmpty() && (pg.rows.count() > 0 || pg.first)) {
@@ -595,7 +601,7 @@ private class AndroidPdf(
             if (pg.last) {
                 plan.totalRow?.let { total ->
                     canvas.row(total, y + 17f, plan, cols) { paint(9.5f, c.ink, bold = true) }
-                    y += rowH + 10f
+                    y += rowH + PDF_GAP
                 }
                 if (plan.trend.isNotEmpty() && plan.trendTitle != null) {
                     y += 6f
@@ -636,7 +642,7 @@ private class AndroidPdf(
                 for (s in plan.sections) {
                     if (y > height - 150f) break
                     canvas.text(s.title, left, y + 4f, paint(11f, c.ink, bold = true))
-                    y += 12f
+                    y += 16f
                     for ((text, value) in s.lines) {
                         if (y > height - 140f) break
                         canvas.drawRoundRect(RectF(left, y, right, y + 22f), 6f, 6f, fill(c.ground))
@@ -653,7 +659,7 @@ private class AndroidPdf(
                         }
                         y += 26f
                     }
-                    y += 8f
+                    y += PDF_GAP
                 }
                 // The pending amount and the Pix key, in a dashed box above the foot.
                 if (plan.pending != null || plan.pix != null) {
