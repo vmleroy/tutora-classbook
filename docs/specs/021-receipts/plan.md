@@ -66,6 +66,13 @@ Victor, 13 Nov 2026: a payment holds **as many comprovantes as the teacher wants
 - `ListRow` gains `mark: Pair<IconName, String>?`, a small icon before the chevron with its spoken label. `IconName` gains `PAPERCLIP`, `CAMERA`, `IMAGE`, `SHARE` and `REPLACE` (Lucide line icons like the others). Tokens `size-thumb` (72) and `size-thumb-lg` (96).
 - 47 → 49 components; CLAUDE.md and the design-system README say so.
 
+**One document with switches (Victor, 13 Nov 2026; AC-021-14 to 19)**
+
+- Domain: `DocParts(pix, details, notes, payments, receipts)` in `Reports.kt`; `Settings.docParts` (Pix and Pagamentos on at first), `docRemember` (off), `docLast`, stored as the keys `doc_parts`, `doc_remember`, `doc_last`. No migration: the settings table is key–value.
+- `InvoiceDocs.kt`: `documentPlan` takes the Fatura's plan and the detailed one and keeps, per switch, the title ("Fatura" or "Relatório"), Para, the tiles (only without the amount due), the detailed columns, the notes rows, the payments section, the amount due and the Pix block; `DocMaker.with` adds the comprovantes. `documentSheets` drops the detailed columns when that switch is off; `documentText` is the Fatura's message with Pix on, 010's summary off. `subjectPlan` and the strings of the old sections go.
+- `Sending.kt`: `ExportSection` replaces Report.kt's export block and `SendSection`; `DocMaker.docPdf / docXlsx / docCopy` replace the four per-document methods. Faturas do mês calls `docPdf` with `defaults.copy(pix = true)`.
+- `SettingsScreen.kt`: under Relatórios in Seus dados, a `ListGroup` of the five defaults and the Lembrar switch.
+
 ## Data
 
 | Change | Migration | Default / backfill |

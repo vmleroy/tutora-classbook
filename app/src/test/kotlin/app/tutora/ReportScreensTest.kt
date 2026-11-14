@@ -5,10 +5,12 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -125,29 +127,67 @@ class ReportScreensTest {
         }
     }
 
-    @Test
-    fun `AC-010-8 the report offers PDF and Excel side by side, and Copiar como texto`() {
-        openReport()
-        listOf("Exportar este relatório", "PDF", "Excel", "Copiar como texto").forEach { exists(it) }
+    /** Turns one of Exportar's switches (AC-021-14). */
+    private fun toggle(tag: String) {
+        compose
+            .onNode(isToggleable() and hasAnyAncestor(hasTestTag(tag)))
+            .performScrollTo()
+            .performClick()
+        h.settle(compose)
     }
 
     @Test
-    fun `AC-010-11 PDF and Excel go to the share sheet, named after who and the period`() {
+    fun `AC-021-14 one Exportar section with the switches, Vencimento under Pix, then PDF, Excel and Copiar como texto`() {
         openReport()
-        click("PDF")
-        click("Excel")
-        assertEquals(listOf("Ana Souza - outubro 2026.pdf", "Ana Souza - outubro 2026.xlsx"), h.exports.shared.map { it.first })
+        listOf(
+            "Exportar",
+            "Valor a pagar e Pix",
+            "Vencimento",
+            "Horários, local e deslocamento",
+            "Observações das aulas",
+            "Pagamentos recebidos",
+            "PDF",
+            "Excel",
+            "Copiar como texto",
+        ).forEach { exists(it) }
+        listOf("Exportar este relatório", "Enviar").forEach {
+            assertEquals(0, compose.onAllNodes(matching(it), useUnmergedTree = true).fetchSemanticsNodes().size)
+        }
+        toggle("part-pix")
+        assertEquals(0, compose.onAllNodes(matching("Vencimento"), useUnmergedTree = true).fetchSemanticsNodes().size)
     }
 
     @Test
-    fun `AC-010-12 Copiar como texto copies a short summary and says Copiado`() {
+    fun `AC-010-11 AC-021-16 PDF and Excel go to the share sheet, named after who, what and the period`() {
         openReport()
+        compose.onNodeWithTag("export-pdf").performScrollTo().performClick()
+        compose.onNodeWithTag("export-excel").performScrollTo().performClick()
+        toggle("part-pix")
+        compose.onNodeWithTag("export-pdf").performScrollTo().performClick()
+        h.settle(compose)
+        assertEquals(
+            listOf(
+                "Ana Souza - fatura - outubro 2026.pdf",
+                "Ana Souza - relatório - outubro 2026.xlsx",
+                "Ana Souza - relatório - outubro 2026.pdf",
+            ),
+            h.exports.shared.map { it.first },
+        )
+    }
+
+    @Test
+    fun `AC-010-12 AC-021-17 Copiar como texto copies the summary with Pix off, the Fatura's message with it on, and says Copiado`() {
+        openReport()
+        toggle("part-pix")
         click("Copiar como texto")
         val text = plain(h.exports.copied.single())
         assertTrue(text.startsWith("Ana Souza · 01/10/2026 a 26/10/2026"))
         assertTrue(text.contains("1 aula · R$ 120,00 · pago R$ 0,00 · a receber R$ 120,00"))
         assertTrue(text.contains("A receber: 22/10"))
         exists("Copiado")
+        toggle("part-pix")
+        click("Copiado")
+        assertTrue(plain(h.exports.copied.last()).contains("Total a pagar: R$ 120,00"))
     }
 
     @Test
@@ -180,6 +220,7 @@ class ReportScreensTest {
         h.go(compose, StudentDetail(ana.id))
         compose.onNodeWithContentDescription("Relatório").performClick()
         h.settle(compose)
+        toggle("part-pix")
         click("Copiar como texto")
         val text = h.exports.copied.single()
         assertTrue(text.contains("Pix: victor@pix.com"))
@@ -193,7 +234,7 @@ class ReportScreensTest {
         h.go(compose, StudentDetail(ana.id))
         compose.onNodeWithContentDescription("Report").performClick()
         h.settle(compose)
-        listOf("This month", "Export this report", "Copy as text", "R$120.00").forEach { exists(it) }
+        listOf("This month", "Export", "Amount due and Pix", "Copy as text", "R$120.00").forEach { exists(it) }
     }
 
     @Test
@@ -233,36 +274,6 @@ class ReportScreensTest {
     }
 
     @Test
-    fun `AC-020-1 Relatorio keeps its export and adds Enviar with the Fatura and the detailed report`() {
-        openReport()
-        listOf(
-            "Exportar este relatório",
-            "Enviar",
-            "Fatura",
-            "Para receber: valor e Pix",
-            "Relatório detalhado",
-            "Cada aula com dia, horário e deslocamento",
-        ).forEach { exists(it) }
-    }
-
-    @Test
-    fun `AC-020-2 the Fatura and the detailed report are shared under names that say which`() {
-        openReport()
-        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
-        h.settle(compose)
-        compose.onNodeWithTag("sheet-pdf").performClick()
-        h.settle(compose)
-        compose.onNodeWithTag("send-detail").performScrollTo().performClick()
-        h.settle(compose)
-        compose.onNodeWithTag("sheet-pdf").performClick()
-        h.settle(compose)
-        assertEquals(
-            listOf("Ana Souza - fatura - outubro 2026.pdf", "Ana Souza - relatório detalhado - outubro 2026.pdf"),
-            h.exports.shared.map { it.first },
-        )
-    }
-
-    @Test
     fun `AC-020-11 without a Pix key Relatorio asks for one in Seus dados`() {
         openReport()
         click("Adicione sua chave Pix em Seus dados")
@@ -294,11 +305,9 @@ class ReportScreensTest {
     @Test
     fun `AC-020-20 a private group's Fatura goes to the whole group or split by student`() {
         groupReport()
-        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
-        h.settle(compose)
         exists("Turma inteira")
         exists("Dividir por aluno")
-        compose.onNodeWithTag("sheet-pdf").performClick()
+        compose.onNodeWithTag("export-pdf").performScrollTo().performClick()
         h.settle(compose)
         assertEquals(
             "Inglês B - fatura - outubro 2026.pdf",
@@ -311,12 +320,10 @@ class ReportScreensTest {
     @Test
     fun `AC-020-21 split by student, each member gets their own Fatura for their share`() {
         groupReport()
-        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        click("Dividir por aluno")
+        compose.onNodeWithTag("member-first-Bia Lima").performScrollTo().performClick()
         h.settle(compose)
-        click("Dividir por aluno", scroll = false)
-        compose.onNodeWithTag("member-first-Bia Lima").performClick()
-        h.settle(compose)
-        compose.onNodeWithTag("member-second-Ana Souza").performClick()
+        compose.onNodeWithTag("member-second-Ana Souza").performScrollTo().performClick()
         h.settle(compose)
         assertEquals(
             "Bia Lima - fatura - outubro 2026.pdf",
@@ -497,15 +504,11 @@ class ReportScreensTest {
     }
 
     @Test
-    fun `AC-021-7 Incluir comprovantes is on both sheets only when a payment has one, off at first, and on puts them in the PDF`() {
-        // No comprovante yet: no switch.
+    fun `AC-021-7 Comprovantes shows only when a payment has one, off at first, and on ends the PDF with them`() {
         openReport()
-        compose.onNodeWithTag("send-invoice").performScrollTo().performClick()
+        compose.onNodeWithTag("part-receipts").assertDoesNotExist()
+        compose.onNodeWithTag("export-pdf").performScrollTo().performClick()
         h.settle(compose)
-        compose.onNodeWithTag("sheet-receipts").assertDoesNotExist()
-        compose.onNodeWithTag("sheet-pdf").performClick()
-        h.settle(compose)
-        // A Pix with its comprovante.
         runBlocking {
             val photo = java.io.File(tmp.newFolder(), "pix.jpg").apply { writeBytes(ByteArray(100) { 2 }) }
             val staged = (h.services.receipts.stage(photo.path) as app.tutora.usecases.StageResult.Ok).staged
@@ -523,35 +526,40 @@ class ReportScreensTest {
                 ),
             )
         }
+        h.awaitDb(compose) { compose.onAllNodesWithTag("part-receipts").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNode(isToggleable() and hasAnyAncestor(hasTestTag("part-receipts"))).performScrollTo().assertIsOff()
+        toggle("part-receipts")
+        compose.onNodeWithTag("export-pdf").performScrollTo().performClick()
         h.settle(compose)
-        for (sheet in listOf("send-invoice", "send-detail")) {
-            compose.onNodeWithTag(sheet).performScrollTo().performClick()
-            h.settle(compose)
-            compose.onNodeWithTag("sheet-receipts").assertExists()
-            val inSheet = hasContentDescription("Incluir comprovantes") and hasAnyAncestor(hasTestTag("sheet-receipts"))
-            compose.onNode(inSheet).assertIsOff()
-            compose.onNode(inSheet).performClick()
-            h.settle(compose)
-            compose.onNodeWithTag("sheet-pdf").performClick()
-            h.settle(compose)
+        val (without, with) = h.exports.shared.map { String(it.second) }
+        assertTrue("receipts=[]" in without)
+        assertTrue("PdfReceipt(" in with && "receiptsTitle=Comprovantes" in with)
+    }
+
+    @Test
+    fun `AC-021-18 Relatorio opens with Ajustes' defaults, or as last left with Lembrar a ultima escolha`() {
+        runBlocking {
+            h.services.saveSettings(h.services.currentSettings().copy(docParts = app.tutora.domain.DocParts(pix = false, notes = true)))
         }
-        // Exportar este relatório's PDF has the same switch (Victor, 13 Nov 2026).
-        compose.onNodeWithTag("export-receipts").performScrollTo().assertExists()
-        val onPage = hasContentDescription("Incluir comprovantes") and hasAnyAncestor(hasTestTag("export-receipts"))
-        compose.onNode(onPage).assertIsOff()
-        compose.onNode(onPage).performClick()
+        openReport()
+        val notes = isToggleable() and hasAnyAncestor(hasTestTag("part-notes"))
+        compose.onNode(notes).performScrollTo().assertIsOn()
+        compose.onNode(isToggleable() and hasAnyAncestor(hasTestTag("part-pix"))).performScrollTo().assertIsOff()
+        // Without Lembrar, changing a switch keeps the defaults as they are.
+        toggle("part-notes")
+        assertEquals(null, runBlocking { h.services.currentSettings().docLast })
+        runBlocking { h.services.saveSettings(h.services.currentSettings().copy(docRemember = true)) }
         h.settle(compose)
-        click("PDF")
-        val plain =
-            String(
-                h.exports.shared
-                    .last()
-                    .second,
-            )
-        assertTrue("PdfReceipt(" in plain && "receiptsTitle=Comprovantes" in plain)
-        val (first, invoice, detail) = h.exports.shared.map { String(it.second) }
-        assertTrue("receipts=[]" in first)
-        assertTrue("PdfReceipt(" in invoice && "receiptsTitle=Comprovantes" in invoice)
-        assertTrue("PdfReceipt(" in detail)
+        toggle("part-details")
+        h.awaitDb(compose) { h.services.currentSettings().docLast != null }
+        assertEquals(
+            true,
+            runBlocking {
+                h.services
+                    .currentSettings()
+                    .docLast
+                    ?.details
+            },
+        )
     }
 }

@@ -1,8 +1,10 @@
 package app.tutora.ui.reports
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,7 +30,6 @@ import app.tutora.adapters.export.Xlsx
 import app.tutora.designsystem.TutoraTheme
 import app.tutora.designsystem.components.AlertBanner
 import app.tutora.designsystem.components.AlertTone
-import app.tutora.designsystem.components.BottomSheet
 import app.tutora.designsystem.components.Button
 import app.tutora.designsystem.components.ButtonVariant
 import app.tutora.designsystem.components.Card
@@ -48,6 +49,7 @@ import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
 import app.tutora.domain.BuiltinPlace
+import app.tutora.domain.DocParts
 import app.tutora.domain.DueRow
 import app.tutora.domain.Language
 import app.tutora.domain.Member
@@ -136,7 +138,9 @@ class DocMaker(
     private val language: Language,
     private val exports: Exports,
     private val invoiceFile: String,
-    private val detailFile: String,
+    private val reportFile: String,
+    /** The parts a document starts with: Ajustes' defaults (AC-021-18). */
+    val defaults: DocParts = DocParts(),
     /** "Comprovantes", where a kept comprovante is, and how many pages a PDF one has (AC-021-7). */
     private val receiptsWord: String = "",
     private val receiptPath: (app.tutora.domain.Receipt) -> String = { "" },
@@ -160,47 +164,42 @@ class DocMaker(
         r: SubjectReport,
     ) = fileName("$name - $kind", r.from, r.to, language)
 
-    /** Shares the Fatura PDF, "Ana Souza - fatura - outubro 2026.pdf" (AC-020-2, 6 to 13). */
-    fun invoicePdf(
+    /**
+     * Shares the one document as PDF: "Ana Souza - fatura - outubro 2026.pdf" with Valor a pagar e
+     * Pix on, "… - relatório - …" off; the comprovantes at its end when on (AC-021-15, 16).
+     */
+    fun docPdf(
         r: SubjectReport,
         to: Recipient,
-        grouped: Boolean,
-        due: LocalDate?,
-        receipts: Boolean = false,
-    ) = exports.share(
-        file(to.name, invoiceFile, r) + ".pdf",
-        MIME_PDF,
-        exports.pdf(invoicePlan(invoiceOf(r, grouped), w, iw, teacher, city, to, due, today, stamp).with(r, receipts), colors),
-    )
-
-    /** Copies the Fatura's message (AC-020-14). */
-    fun invoiceCopy(
-        r: SubjectReport,
-        grouped: Boolean,
-        due: LocalDate?,
-    ) = exports.copy(invoiceText(invoiceOf(r, grouped), w, iw, teacher, city, periodLabel(r.from, r.to, language), due))
-
-    /** Shares the detailed PDF (AC-020-15, 16). */
-    fun detailPdf(
-        r: SubjectReport,
-        to: Recipient,
+        parts: DocParts,
         label: String,
         line: String?,
         grouped: Boolean,
-        notes: Boolean,
-        receipts: Boolean = false,
+        due: LocalDate?,
     ) = exports.share(
-        file(to.name, detailFile, r) + ".pdf",
+        file(to.name, if (parts.pix) invoiceFile else reportFile, r) + ".pdf",
         MIME_PDF,
-        exports.pdf(detailPlan(r, w, iw, teacher, to, label, line, grouped, notes, today, stamp).with(r, receipts), colors),
+        exports.pdf(
+            documentPlan(r, parts, w, iw, teacher, city, to, label, line, grouped, due, today, stamp).with(r, parts.receipts),
+            colors,
+        ),
     )
 
-    /** Shares the detailed Excel (AC-020-19). */
-    fun detailXlsx(
+    /** Shares the Excel, its columns following the switches (AC-021-17). */
+    fun docXlsx(
         r: SubjectReport,
         to: Recipient,
-        notes: Boolean,
-    ) = exports.share(file(to.name, detailFile, r) + ".xlsx", MIME_XLSX, Xlsx.write(detailSheets(r, w, iw, notes)))
+        parts: DocParts,
+    ) = exports.share(file(to.name, reportFile, r) + ".xlsx", MIME_XLSX, Xlsx.write(documentSheets(r, parts, w, iw)))
+
+    /** Copiar como texto: the Fatura's message with Valor a pagar e Pix on, the summary off (AC-021-17). */
+    fun docCopy(
+        r: SubjectReport,
+        parts: DocParts,
+        name: String,
+        grouped: Boolean,
+        due: LocalDate?,
+    ) = exports.copy(documentText(r, parts, w, iw, teacher, city, name, periodLabel(r.from, r.to, language), grouped, due))
 }
 
 @Composable
@@ -224,7 +223,8 @@ fun rememberDocMaker(): DocMaker {
         language,
         LocalExports.current,
         stringResource(R.string.inv_fileInvoice),
-        stringResource(R.string.inv_fileDetail),
+        stringResource(R.string.doc_fileReport),
+        settings?.docParts ?: DocParts(),
         stringResource(R.string.rc_section),
         {
             services.receipts.store
@@ -301,11 +301,12 @@ data class SendSubject(
 )
 
 /**
- * Enviar: Fatura and Relatório detalhado, each opening its sheet; the hint to add the Pix key when
- * there is none (AC-020-1, 2, 11, 20, 21).
+ * Exportar: one document with switches (Victor, 13 Nov 2026; AC-021-14). Turma inteira / Dividir
+ * por aluno where it applies, the parts to show, then PDF, Excel and Copiar como texto. The parts
+ * start as Ajustes says, or as last left with Lembrar a última escolha (AC-021-18).
  */
 @Composable
-fun SendSection(
+fun ExportSection(
     nav: NavHostController,
     r: SubjectReport,
     s: SendSubject,
@@ -313,151 +314,126 @@ fun SendSection(
     val maker = rememberDocMaker()
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
+    val settings by services.settings.collectAsState(initial = null)
+    val saved = settings ?: return
     val today = remember { LocalDate(r.to.year, r.to.month, r.to.day) }
-    var open by rememberSaveable { mutableStateOf("") }
-    SectionHeader(stringResource(R.string.inv_send))
-    ListGroup(
-        listOf(
-            {
-                ListRow(
-                    stringResource(R.string.inv_invoice),
-                    Modifier.testTag("send-invoice"),
-                    subtitle = stringResource(R.string.inv_invoiceHint),
-                    icon = IconName.WALLET,
-                    onClick = { open = "invoice" },
-                )
-            },
-            {
-                ListRow(
-                    stringResource(R.string.inv_detail),
-                    Modifier.testTag("send-detail"),
-                    subtitle = stringResource(R.string.inv_detailHint),
-                    icon = IconName.FILE,
-                    onClick = { open = "detail" },
-                )
-            },
-        ),
-    )
-    if (maker.teacher.pix.isBlank()) {
-        AlertBanner(stringResource(R.string.inv_addPix), tone = AlertTone.ACCENT, onClick = { nav.navigate(PersonalData) })
-    }
-    if (open.isEmpty()) return
+    var parts by remember { mutableStateOf(if (saved.docRemember) saved.docLast ?: saved.docParts else saved.docParts) }
     var split by rememberSaveable { mutableStateOf(false) }
     var due by rememberSaveable { mutableStateOf<String?>(null) }
-    var notes by rememberSaveable { mutableStateOf(true) }
-    // Off at first, and only offered when a payment in the period has a comprovante (AC-021-7).
-    var receipts by rememberSaveable { mutableStateOf(false) }
-    val canAttach = hasReceipts(r)
-    val withReceipts = receipts && canAttach
     val dueDate = due?.let(LocalDate::parse)
-    val invoice = open == "invoice"
     val grouped = s.kind == SubjectKind.PLACE
     val to = Recipient(s.name, s.guardian)
     val members = s.members
-    val close = { open = "" }
-    BottomSheet(
-        stringResource(if (invoice) R.string.inv_invoice else R.string.inv_detail),
-        close,
-        subtitle = s.name,
-        actions =
-            if (split && members != null) {
-                emptyList()
-            } else if (invoice) {
-                // One stacked action: PDF the main one, Copiar como texto under it at full width, never squeezed.
-                listOf { m ->
-                    Column(m, verticalArrangement = Arrangement.spacedBy(Spacing.s2)) {
-                        Button(stringResource(R.string.rep_pdf), {
-                            maker.invoicePdf(r, to, grouped, dueDate, withReceipts)
-                            close()
-                        }, Modifier.testTag("sheet-pdf"), fullWidth = true, icon = IconName.FILE)
-                        Button(stringResource(R.string.rep_copy), {
-                            maker.invoiceCopy(r, grouped, dueDate)
-                            close()
-                        }, Modifier.testTag("sheet-copy"), variant = ButtonVariant.OUTLINE, fullWidth = true, icon = IconName.COPY)
-                    }
-                }
-            } else {
-                listOf(
-                    { m ->
-                        Button(stringResource(R.string.rep_excel), {
-                            maker.detailXlsx(r, to, notes)
-                            close()
-                        }, m.testTag("sheet-excel"), variant = ButtonVariant.OUTLINE)
-                    },
-                    { m ->
-                        Button(stringResource(R.string.rep_pdf), {
-                            maker.detailPdf(r, to, s.label, s.line, grouped, notes, withReceipts)
-                            close()
-                        }, m.testTag("sheet-pdf"))
-                    },
-                )
-            },
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            if (members != null) {
-                SegmentedControl(
-                    listOf(false to stringResource(R.string.inv_whole), true to stringResource(R.string.inv_split)),
-                    split,
-                    { split = it },
-                    stringResource(R.string.inv_split),
-                )
-            }
-            if (invoice) {
-                DueField(stringResource(R.string.inv_dueDate), dueDate, today) { due = it?.toString() }
-            } else {
-                ListRow(
-                    stringResource(R.string.inv_withNotes),
-                    trailing = RowTrailing.SWITCH,
-                    switchValue = notes,
-                    onSwitchChange = { notes = it },
-                )
-            }
-            if (canAttach && !(split && members != null)) {
-                ListRow(
-                    stringResource(R.string.rc_include),
-                    Modifier.testTag("sheet-receipts"),
-                    subtitle = stringResource(R.string.rc_includeSub),
-                    trailing = RowTrailing.SWITCH,
-                    switchValue = receipts,
-                    onSwitchChange = { receipts = it },
-                )
-            }
-            if (split && members != null) {
-                members.forEachIndexed { i, m ->
-                    val mine = Recipient(m.name, m.guardian)
-                    // Split in the app: the member's real shares of this group's classes; otherwise an equal part.
-                    val withShare = { act: (SubjectReport) -> Unit ->
-                        val gid = s.splitGroupId
-                        if (gid == null) {
-                            act(shareOf(r, s.name, members.size, i))
-                        } else {
-                            scope.launch {
-                                val own =
-                                    services.reportsRepo.subjectNow(
-                                        app.tutora.data.Subject(SubjectKind.STUDENT, m.id),
-                                        r.from,
-                                        r.to,
-                                        today,
-                                        services.zone,
-                                    )
-                                act(subjectReport(r.from, r.to, own.classes.filter { it.groupId == gid }, emptyList()))
-                            }
-                        }
-                        Unit
-                    }
-                    if (invoice) {
-                        MemberLine(m, stringResource(R.string.rep_pdf), stringResource(R.string.inv_text), {
-                            withShare { maker.invoicePdf(it, mine, false, dueDate) }
-                        }, { withShare { maker.invoiceCopy(it, false, dueDate) } })
-                    } else {
-                        MemberLine(m, stringResource(R.string.rep_pdf), stringResource(R.string.rep_excel), {
-                            withShare { maker.detailPdf(it, mine, s.label, s.name, false, notes) }
-                        }, { withShare { maker.detailXlsx(it, mine, notes) } })
-                    }
-                }
-            }
-        }
+    val canAttach = hasReceipts(r)
+    // Comprovantes only when a payment in the period has one (AC-021-7).
+    val now = parts.copy(receipts = parts.receipts && canAttach)
+
+    fun change(next: DocParts) {
+        parts = next
+        if (saved.docRemember) scope.launch { services.saveSettings(services.currentSettings().copy(docLast = next)) }
     }
+
+    fun part(
+        label: Int,
+        tag: String,
+        on: Boolean,
+        sub: Int? = null,
+        set: (Boolean) -> Unit,
+    ): @Composable () -> Unit =
+        {
+            ListRow(
+                stringResource(label),
+                Modifier.testTag(tag),
+                subtitle = sub?.let { stringResource(it) },
+                trailing = RowTrailing.SWITCH,
+                switchValue = on,
+                onSwitchChange = set,
+            )
+        }
+    SectionHeader(stringResource(R.string.doc_section))
+    if (members != null) {
+        SegmentedControl(
+            listOf(false to stringResource(R.string.inv_whole), true to stringResource(R.string.inv_split)),
+            split,
+            { split = it },
+            stringResource(R.string.inv_split),
+        )
+    }
+    // The parts as rows of one group; Vencimento right under Valor a pagar e Pix while it is on (AC-021-14).
+    ListGroup(
+        listOfNotNull(
+            part(R.string.doc_pix, "part-pix", parts.pix, R.string.doc_pixSub) { change(parts.copy(pix = it)) },
+            if (parts.pix) {
+                {
+                    Box(Modifier.padding(start = Spacing.s4, end = Spacing.s4, bottom = Spacing.s3)) {
+                        DueField(stringResource(R.string.inv_dueDate), dueDate, today) { due = it?.toString() }
+                    }
+                }
+            } else {
+                null
+            },
+            part(R.string.doc_details, "part-details", parts.details) { change(parts.copy(details = it)) },
+            part(R.string.doc_notes, "part-notes", parts.notes) { change(parts.copy(notes = it)) },
+            part(R.string.doc_payments, "part-payments", parts.payments) { change(parts.copy(payments = it)) },
+            if (canAttach) {
+                part(R.string.rc_include, "part-receipts", parts.receipts, R.string.rc_includeSub) { change(parts.copy(receipts = it)) }
+            } else {
+                null
+            },
+        ),
+    )
+    if (parts.pix && maker.teacher.pix.isBlank()) {
+        AlertBanner(stringResource(R.string.inv_addPix), tone = AlertTone.ACCENT, onClick = { nav.navigate(PersonalData) })
+    }
+    if (split && members != null) {
+        members.forEachIndexed { i, m ->
+            val mine = Recipient(m.name, m.guardian)
+            // Split in the app: the member's real shares of this group's classes; otherwise an equal part.
+            val withShare = { act: (SubjectReport) -> Unit ->
+                val gid = s.splitGroupId
+                if (gid == null) {
+                    act(shareOf(r, s.name, members.size, i))
+                } else {
+                    scope.launch {
+                        val own =
+                            services.reportsRepo.subjectNow(
+                                app.tutora.data.Subject(SubjectKind.STUDENT, m.id),
+                                r.from,
+                                r.to,
+                                today,
+                                services.zone,
+                            )
+                        act(subjectReport(r.from, r.to, own.classes.filter { it.groupId == gid }, emptyList()))
+                    }
+                }
+                Unit
+            }
+            MemberLine(m, stringResource(R.string.rep_pdf), stringResource(R.string.inv_text), {
+                withShare { maker.docPdf(it, mine, now, s.label, s.name, false, dueDate) }
+            }, { withShare { maker.docCopy(it, now, m.name, false, dueDate) } })
+        }
+        return
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
+        Button(stringResource(R.string.rep_pdf), {
+            maker.docPdf(r, to, now, s.label, s.line, grouped, dueDate)
+        }, Modifier.weight(1f).testTag("export-pdf"), icon = IconName.FILE)
+        Button(stringResource(R.string.rep_excel), {
+            maker.docXlsx(r, to, now)
+        }, Modifier.weight(1f).testTag("export-excel"), variant = ButtonVariant.OUTLINE, icon = IconName.FILE)
+    }
+    var copied by remember { mutableStateOf(false) }
+    Button(
+        stringResource(if (copied) R.string.rep_copied else R.string.rep_copy),
+        {
+            maker.docCopy(r, now, s.name, grouped, dueDate)
+            copied = true
+        },
+        Modifier.testTag("export-copy"),
+        variant = ButtonVariant.OUTLINE,
+        fullWidth = true,
+        icon = IconName.COPY,
+    )
 }
 
 /**
@@ -526,14 +502,12 @@ fun InvoicesScreen(
                             report
                         }
                     val grouped = row.kind == SubjectKind.PLACE
+                    // The same document with Valor a pagar e Pix on, the other parts as Ajustes' defaults (AC-021-19).
+                    val parts = maker.defaults.copy(pix = true)
                     if (copy) {
-                        maker.invoiceCopy(
-                            r,
-                            grouped,
-                            dueDate,
-                        )
+                        maker.docCopy(r, parts, row.name, grouped, dueDate)
                     } else {
-                        maker.invoicePdf(r, Recipient(row.name, row.guardian), grouped, dueDate)
+                        maker.docPdf(r, Recipient(row.name, row.guardian), parts, "", null, grouped, dueDate)
                     }
                     done = (done.split('|').filter { it.isNotEmpty() } + key).joinToString("|")
                 }

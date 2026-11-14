@@ -547,6 +547,45 @@ fun PersonalDataScreen(onBack: () -> Unit) {
             Modifier.testTag("report-title"),
             placeholder = stringResource(R.string.rep_brand),
         )
+        // Which parts of the document start on, and whether Relatório keeps the last choice (AC-021-18).
+        val parts = s.docParts
+
+        fun setParts(p: app.tutora.domain.DocParts) = scope.launch { services.saveSettings(s.copy(docParts = p)) }
+
+        @Composable
+        fun part(
+            label: Int,
+            tag: String,
+            on: Boolean,
+            set: (Boolean) -> Unit,
+        ): @Composable () -> Unit =
+            {
+                ListRow(
+                    stringResource(label),
+                    Modifier.testTag(tag),
+                    trailing = RowTrailing.SWITCH,
+                    switchValue = on,
+                    onSwitchChange = set,
+                )
+            }
+        ListGroup(
+            listOf(
+                part(R.string.doc_pix, "default-pix", parts.pix) { setParts(parts.copy(pix = it)) },
+                part(R.string.doc_details, "default-details", parts.details) { setParts(parts.copy(details = it)) },
+                part(R.string.doc_notes, "default-notes", parts.notes) { setParts(parts.copy(notes = it)) },
+                part(R.string.doc_payments, "default-payments", parts.payments) { setParts(parts.copy(payments = it)) },
+                part(R.string.rc_include, "default-receipts", parts.receipts) { setParts(parts.copy(receipts = it)) },
+            ),
+            title = stringResource(R.string.doc_settingsTitle),
+        )
+        ListRow(
+            stringResource(R.string.doc_remember),
+            Modifier.testTag("doc-remember"),
+            subtitle = stringResource(R.string.doc_rememberSub),
+            trailing = RowTrailing.SWITCH,
+            switchValue = s.docRemember,
+            onSwitchChange = { on -> scope.launch { services.saveSettings(s.copy(docRemember = on, docLast = null)) } },
+        )
         if (offer) {
             fun answer(on: Boolean) {
                 offer = false

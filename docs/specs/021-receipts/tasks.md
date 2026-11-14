@@ -43,6 +43,14 @@ Paths: domain tests in `core/domain/src/test/kotlin/app/tutora/domain/`, data te
 - [x] 17. No INTERNET permission and only cache folders in `file_paths.xml`; the viewer behind the lock. Test: `SourceChecksTest.kt`, `AppLockTest.kt`. (AC-021-11)
 - [x] 18. Every new string in `values/` and `values-pt-rBR/`; headings checked in both languages; full `./gradlew check`. Test: `InvoiceDocsTest.kt`, lint. (AC-021-13)
 
+### One document with switches (Victor, 13 Nov 2026)
+
+- [x] 19. `DocParts` in the domain; `docParts`, `docRemember` and `docLast` in Settings. Test: `SettingsPagesTest.kt`. (AC-021-18)
+- [x] 20. `documentPlan`, `documentSheets`, `documentText` built from the Fatura's and the detailed builders; `subjectPlan` and the six strings of the old sections removed. Test: `InvoiceDocsTest.kt`, `PdfLayoutTest.kt`. (AC-021-15, AC-021-17, AC-010-9)
+- [x] 21. `ExportSection` in place of Exportar este relatório and Enviar: Turma inteira / Dividir por aluno, the switches, Vencimento under Pix, PDF, Excel and Copiar como texto; file names by kind. Test: `ReportScreensTest.kt`. (AC-021-14, AC-021-16, AC-021-17, AC-021-18, AC-021-7, AC-020-20, AC-020-21)
+- [x] 22. Seus dados › Relatórios: the defaults and Lembrar a última escolha. Test: `SettingsPagesTest.kt`. (AC-021-18)
+- [x] 23. Faturas do mês sends the same document with Pix on and the rest as the defaults. Test: `InvoicesScreenTest.kt`. (AC-021-19)
+
 ### Pending on a device
 
 Not run (no emulator unless Victor asks); for the PR:
@@ -51,6 +59,6 @@ Not run (no emulator unless Victor asks); for the PR:
 - Tirar foto with the system camera; Escolher da galeria with the photo picker; a bank PDF from Escolher arquivo.
 - A 4000 px photo comes in at 2000 px and upright; a 9 MB bank PDF is kept; a PDF with a password is refused.
 - The viewer: pinch and double tap on an image, a two-page PDF page by page.
-- A Relatório detalhado and a Fatura with five comprovantes opened in a PDF viewer and in WhatsApp (pages, headings, file size).
+- The one document with every switch on and with five comprovantes, opened in a PDF viewer and in WhatsApp (pages, headings, file size).
 - A backup with comprovantes restored on a clean install; the `.zip` read back from the Google Drive folder; a backup of tens of MB on a mid-range phone.
 - Large text, sideways, and the four themes light and dark on the sheet, the detail and the viewer.

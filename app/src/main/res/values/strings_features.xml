@@ -517,7 +517,6 @@
     <string name="rep_threeMonths">3 months</string>
     <string name="rep_from">From</string>
     <string name="rep_to">To</string>
-    <string name="rep_export">Export this report</string>
     <string name="rep_copy">Copy as text</string>
     <string name="rep_copied">Copied</string>
     <string name="rep_earningsSubtitle">%1$s · uses the filters on screen</string>
@@ -561,10 +560,7 @@
     <string name="lock_startClass">Start class</string>
     <!-- Spec 020: Fatura and detailed report -->
     <string name="inv_invoice">Invoice</string>
-    <string name="inv_invoiceHint">To get paid: amount and Pix</string>
     <string name="inv_detail">Detailed report</string>
-    <string name="inv_detailHint">Each lesson with day, time and travel</string>
-    <string name="inv_send">Send</string>
     <string name="inv_to">To:</string>
     <string name="inv_guardianOf">guardian of %1$s</string>
     <string name="inv_madeOn">Issued on %1$s</string>
@@ -599,10 +595,8 @@
     <string name="inv_noDue">None</string>
     <string name="inv_whole">Whole group</string>
     <string name="inv_split">Split by student</string>
-    <string name="inv_withNotes">Include notes</string>
     <string name="inv_addPix">Add your Pix key in Your details</string>
     <string name="inv_fileInvoice">invoice</string>
-    <string name="inv_fileDetail">detailed report</string>
     <string name="inv_monthTitle">Monthly invoices</string>
     <string name="inv_monthTotal">Due in the period</string>
     <string name="inv_splitGroups">Split groups by student</string>

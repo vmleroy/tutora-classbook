@@ -40,6 +40,12 @@ data class Settings(
     val reportTitle: String = "",
     /** Seus dados › Cidade, needed with the name and key for the Fatura's Pix QR code (AC-020-18). */
     val pixCity: String = "",
+    /** Seus dados › Relatórios: which parts of the document start on (AC-021-18). */
+    val docParts: DocParts = DocParts(),
+    /** Lembrar a última escolha: each Relatório opens with the parts as last left (AC-021-18). */
+    val docRemember: Boolean = false,
+    /** The parts as they were last left, used while Lembrar a última escolha is on. */
+    val docLast: DocParts? = null,
     /** Themes of the teacher's own: a theme with custom colors, under a name (AC-013-5). */
     val savedThemes: List<SavedTheme> = emptyList(),
     /** The saved theme the current colors came from, if they still match it. */

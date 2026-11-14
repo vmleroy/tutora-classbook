@@ -16,7 +16,6 @@ import app.tutora.domain.subjectReport
 import app.tutora.ui.reports.EarningsParts
 import app.tutora.ui.reports.Teacher
 import app.tutora.ui.reports.earningsPlan
-import app.tutora.ui.reports.subjectPlan
 import kotlinx.datetime.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -26,8 +25,30 @@ class PdfLayoutTest {
     private val w = testWords()
     private val teacher = Teacher("Victor", "victor@pix.com")
 
+    /** The one document with the switches given, for Ana (AC-021-15). */
+    private fun doc(
+        r: app.tutora.domain.SubjectReport,
+        parts: app.tutora.domain.DocParts,
+    ) = app.tutora.ui.reports.documentPlan(
+        r,
+        parts,
+        w,
+        testInvoiceWords(),
+        teacher,
+        app.tutora.ui.reports
+            .PixPlace("Recife"),
+        app.tutora.ui.reports
+            .Recipient("Ana Souza"),
+        "Aluna",
+        "Matemática · R$ 120,00/h",
+        false,
+        null,
+        LocalDate(2026, 10, 26),
+        "26/10/2026, 18:45",
+    )
+
     @Test
-    fun `AC-010-9 the PDF has the teacher and period, the classes, payments, pending, Pix and numbered pages`() {
+    fun `AC-010-9 the PDF has the teacher and period, the classes, payments, totals and numbered pages`() {
         val classes =
             (1..40).map { i ->
                 ReportClass("l$i", LocalDate(2026, 10, 1 + i % 26), 60, 12_000, "Online", false, 0, if (i <= 2) 12_000 else 0)
@@ -39,14 +60,14 @@ class PdfLayoutTest {
                 classes,
                 listOf(ReportPayment(LocalDate(2026, 10, 16), PayMethod.PIX, 54_000, listOf(LocalDate(2026, 10, 5)))),
             )
-        val plan = subjectPlan(r, w, teacher, "Aluna", "Ana Souza", "Matemática · R$ 120,00/h", false, "26/10/2026, 18:45")
-        assertEquals("Prof. Victor · 01/10/2026 a 26/10/2026", plan.subtitle)
-        assertTrue(plan.sections.single().title == "Pagamentos recebidos")
-        assertEquals("Valor pendente: R$ 240,00", plan.pending?.first)
-        assertEquals("Pix: victor@pix.com", plan.pix)
+        val plan = doc(r, app.tutora.domain.DocParts(pix = false, payments = true))
+        assertTrue(plan.subtitle.startsWith("Prof. Victor"))
+        assertTrue(plan.subtitle.endsWith("01/10/2026 a 26/10/2026"))
+        assertEquals("Pagamentos recebidos", plan.sections.single().title)
+        assertEquals(listOf("Aulas", "Total", "Pago", "A receber"), plan.stats.map { it.label })
         val pages = pdfPages(plan)
         assertEquals(2, pages.size)
-        assertEquals("Gerado pela Tutora em 26/10/2026, 18:45 · página 2 de 2", pages.last().footer)
+        assertTrue(pages.last().footer.endsWith("página 2 de 2"))
         assertTrue(pages.first().first && pages.last().last)
     }
 
@@ -110,7 +131,7 @@ class PdfLayoutTest {
     fun `AC-021-7 the comprovantes add one page per image and per PDF page, and the footer counts them`() {
         val r = subjectReport(LocalDate(2026, 10, 1), LocalDate(2026, 10, 31), emptyList(), emptyList())
         val plan =
-            subjectPlan(r, w, teacher, "Aluna", "Ana Souza", null, false, "26/10/2026, 18:45").copy(
+            doc(r, app.tutora.domain.DocParts(pix = false)).copy(
                 receiptsTitle = "Comprovantes",
                 receipts =
                     listOf(

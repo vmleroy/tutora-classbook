@@ -63,4 +63,14 @@
         <item quantity="one">%1$d receipt isn\'t in the file and is left out</item>
         <item quantity="other">%1$d receipts aren\'t in the file and are left out</item>
     </plurals>
+    <string name="doc_section">Export</string>
+    <string name="doc_pix">Amount due and Pix</string>
+    <string name="doc_pixSub">Makes it an invoice: paid, amount due and QR code</string>
+    <string name="doc_details">Times, place and travel</string>
+    <string name="doc_notes">Class notes</string>
+    <string name="doc_payments">Payments received</string>
+    <string name="doc_fileReport">report</string>
+    <string name="doc_settingsTitle">What the report shows</string>
+    <string name="doc_remember">Remember the last choice</string>
+    <string name="doc_rememberSub">Each report opens as you last left it</string>
 </resources>

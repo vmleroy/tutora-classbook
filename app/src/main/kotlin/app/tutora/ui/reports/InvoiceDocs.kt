@@ -17,6 +17,7 @@ import app.tutora.domain.SubjectReport
 import app.tutora.domain.byPerson
 import app.tutora.domain.chronological
 import app.tutora.domain.detailTotals
+import app.tutora.domain.invoiceOf
 import app.tutora.domain.pixPayload
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -143,6 +144,8 @@ fun invoicePlan(
     due: LocalDate?,
     made: LocalDate,
     generatedAt: String,
+    /** Each class's notes under it (AC-021-15). */
+    withNotes: Boolean = false,
 ): PdfPlan {
     val grouped = inv.groups != null
     val rows =
@@ -154,7 +157,10 @@ fun invoicePlan(
                 grouped,
                 { c ->
                     val (status, tone) = w.statusOf(c)
-                    listOf(PdfRow(listOf(c.who, iw.weekday(c.day), iw.time(c.start), w.inClass(c), w.money(c.value), status), tone))
+                    listOfNotNull(
+                        PdfRow(listOf(c.who, iw.weekday(c.day), iw.time(c.start), w.inClass(c), w.money(c.value), status), tone),
+                        c.notes?.takeIf { withNotes }?.let { PdfRow(listOf(it), kind = PdfRowKind.NOTE) },
+                    )
                 },
                 { cs ->
                     PdfRow(
@@ -320,7 +326,8 @@ fun detailPlan(
         stats = stats,
         tableTitle = w.tableClasses,
         columns = listOf(iw.name, iw.dayCol, iw.scheduled, iw.inClass, iw.place, iw.travel, iw.charge, w.value, w.situation),
-        rightAligned = setOf(3, 5, 6, 7, 8),
+        // "Em aula" stays left, so it never runs into the place beside it.
+        rightAligned = setOf(5, 6, 7, 8),
         rows = rows,
         totalRow = listOf(w.total, w.classCount(tt.count), "", w.hours(tt.minutes), "", "", "", w.money(tt.total), ""),
         sections =
@@ -409,3 +416,72 @@ fun receiptsOf(
 
 /** Whether a document's period has a payment with a comprovante, so "Incluir comprovantes" shows (AC-021-7). */
 fun hasReceipts(r: SubjectReport) = r.payments.any { it.receipts.isNotEmpty() }
+
+/**
+ * The one document (Victor, 13 Nov 2026; AC-021-15): the header, classes and totals always; the
+ * Fatura's Para, amount due, Vencimento and Pix block, titled "Fatura", with Valor a pagar e Pix;
+ * the detailed columns with Horários, local e deslocamento; notes under each class; the payments.
+ * The comprovantes are added after, by the caller (AC-021-7).
+ */
+fun documentPlan(
+    r: SubjectReport,
+    parts: app.tutora.domain.DocParts,
+    w: ReportWords,
+    iw: InvoiceWords,
+    t: Teacher,
+    place: PixPlace,
+    to: Recipient,
+    subjectLabel: String,
+    subjectLine: String?,
+    grouped: Boolean,
+    due: LocalDate?,
+    made: LocalDate,
+    generatedAt: String,
+): PdfPlan {
+    val fatura = invoicePlan(invoiceOf(r, grouped), w, iw, t, place, to, due, made, generatedAt, parts.notes)
+    val detail = detailPlan(r, w, iw, t, to, subjectLabel, subjectLine, grouped, parts.notes, made, generatedAt)
+    val table = if (parts.details) detail else fatura
+    return table.copy(
+        title = if (parts.pix) iw.invoiceTitle else w.subjectTitle,
+        subtitle = fatura.subtitle,
+        subjectLabel = if (parts.pix) fatura.subjectLabel else detail.subjectLabel,
+        subjectName = if (parts.pix) fatura.subjectName else detail.subjectName,
+        subjectLine = if (parts.pix) fatura.subjectLine else detail.subjectLine,
+        // With the amount due under the table, the tiles would say the same twice.
+        stats = if (parts.pix) emptyList() else detail.stats,
+        totalRow = if (parts.details) detail.totalRow else null,
+        sections = if (parts.payments) detail.sections else emptyList(),
+        due = fatura.due.takeIf { parts.pix },
+        payPix = fatura.payPix.takeIf { parts.pix },
+    )
+}
+
+/** The Excel: Aulas with the detailed columns and the notes only when on, then Pagamentos (AC-021-17). */
+fun documentSheets(
+    r: SubjectReport,
+    parts: app.tutora.domain.DocParts,
+    w: ReportWords,
+    iw: InvoiceWords,
+): List<Sheet> {
+    val sheets = detailSheets(r, w, iw, parts.notes)
+    if (parts.details) return sheets
+    val aulas = sheets.first()
+    val drop = setOf(iw.scheduled, iw.ends, iw.place, iw.travel, iw.charge)
+    val keep = aulas.header.indices.filter { aulas.header[it] !in drop }
+    return listOf(aulas.copy(header = keep.map { aulas.header[it] }, rows = aulas.rows.map { row -> keep.map { row[it] } })) +
+        sheets.drop(1)
+}
+
+/** Copiar como texto: the Fatura's message with Valor a pagar e Pix on, the summary off (AC-021-17). */
+fun documentText(
+    r: SubjectReport,
+    parts: app.tutora.domain.DocParts,
+    w: ReportWords,
+    iw: InvoiceWords,
+    t: Teacher,
+    place: PixPlace,
+    subjectName: String,
+    period: String,
+    grouped: Boolean,
+    due: LocalDate?,
+): String = if (parts.pix) invoiceText(invoiceOf(r, grouped), w, iw, t, place, period, due) else subjectText(r, w, t, subjectName)

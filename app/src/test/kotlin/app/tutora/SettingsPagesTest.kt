@@ -1,5 +1,10 @@
 package app.tutora
 
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -88,5 +93,30 @@ class SettingsPagesTest {
             "Para receber: a chave vai inteira nas faturas. Com seu nome e a cidade, a fatura ganha também um QR code com o valor.",
             "A linha no topo de cada PDF. Vazia, fica a do Tutora.",
         ).forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
+    }
+
+    @Test
+    fun `AC-021-18 Seus dados sets which parts start on, Pix and Pagamentos at first, and Lembrar a ultima escolha`() {
+        h.show(compose)
+        h.go(compose, app.tutora.ui.PersonalData)
+        compose.onNodeWithText("O que o relatório mostra").performScrollTo().assertExists()
+
+        fun switch(tag: String) = compose.onNode(isToggleable() and hasAnyAncestor(hasTestTag(tag)))
+        switch("default-pix").performScrollTo().assertIsOn()
+        switch("default-payments").performScrollTo().assertIsOn()
+        switch("default-details").performScrollTo().assertIsOff()
+        switch("doc-remember").performScrollTo().assertIsOff()
+        switch("default-details").performScrollTo().performClick()
+        h.awaitDb(compose) {
+            h.services
+                .currentSettings()
+                .docParts.details
+        }
+        switch("doc-remember").performScrollTo().performClick()
+        h.awaitDb(compose) { h.services.currentSettings().docRemember }
+        org.junit.Assert.assertEquals(
+            app.tutora.domain.DocParts(details = true),
+            kotlinx.coroutines.runBlocking { h.services.currentSettings().docParts },
+        )
     }
 }

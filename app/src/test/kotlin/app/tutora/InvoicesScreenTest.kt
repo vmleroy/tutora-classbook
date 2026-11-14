@@ -130,4 +130,27 @@ class InvoicesScreenTest {
             ).onFirst()
             .assertExists()
     }
+
+    @Test
+    fun `AC-021-19 Faturas do mes sends the same document, Pix on and the rest as Ajustes' defaults`() {
+        kotlinx.coroutines.runBlocking {
+            h.services.saveSettings(h.services.currentSettings().copy(docParts = app.tutora.domain.DocParts(pix = false, details = true)))
+        }
+        openInvoices()
+        tap("due-pdf-Ana Souza")
+        val plan =
+            String(
+                h.exports.shared
+                    .single()
+                    .second,
+            )
+        assertTrue(plan.contains("title=Fatura,"))
+        assertTrue(plan.contains("Deslocamento"))
+        assertEquals(
+            "Ana Souza - fatura - outubro 2026.pdf",
+            h.exports.shared
+                .single()
+                .first,
+        )
+    }
 }
