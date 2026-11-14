@@ -541,7 +541,7 @@
     <string name="rep_settingsPix">Chave Pix</string>
     <string name="rep_settingsTitle">Título no topo dos relatórios</string>
     <string name="rep_personal">Seus dados</string>
-    <string name="rep_personalHint">Nome e chave Pix para os relatórios</string>
+    <string name="rep_personalHint">Seu nome nos relatórios</string>
     <string name="rep_personalBody">Tudo opcional: o que ficar vazio não aparece no que você envia.</string>
     <!-- Spec 015: app lock -->
     <string name="lock_promptTitle">Desbloquear o Tutora</string>
@@ -605,7 +605,7 @@
     <string name="inv_noDue">Sem vencimento</string>
     <string name="inv_whole">Turma inteira</string>
     <string name="inv_split">Dividir por aluno</string>
-    <string name="inv_addPix">Adicione sua chave Pix em Seus dados</string>
+    <string name="inv_addPix">Adicione sua chave Pix em Ajustes › Pagamentos</string>
     <string name="inv_monthTitle">Faturas do mês</string>
     <string name="inv_monthTotal">A receber no período</string>
     <string name="inv_splitGroups">Dividir turmas por aluno</string>

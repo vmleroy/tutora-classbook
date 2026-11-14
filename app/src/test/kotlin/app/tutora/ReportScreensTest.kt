@@ -215,7 +215,9 @@ class ReportScreensTest {
         compose.onNodeWithTag("personal-screen").assertExists()
         compose.onNodeWithContentDescription("Seu nome").performTextReplacement("Victor")
         h.awaitDb(compose) { h.services.currentSettings().teacherName == "Victor" }
-        compose.onNodeWithContentDescription("Chave Pix").performTextReplacement("victor@pix.com")
+        // The Pix key is in Pagamentos (Victor, 14 Nov 2026).
+        h.go(compose, app.tutora.ui.SettingsPayments)
+        compose.onNodeWithContentDescription("Chave Pix").performScrollTo().performTextReplacement("victor@pix.com")
         h.awaitDb(compose) { h.services.currentSettings().pixKey == "victor@pix.com" }
         h.go(compose, StudentDetail(ana.id))
         compose.onNodeWithContentDescription("Relatório").performClick()
@@ -274,10 +276,10 @@ class ReportScreensTest {
     }
 
     @Test
-    fun `AC-020-11 without a Pix key Relatorio asks for one in Seus dados`() {
+    fun `AC-020-11 without a Pix key Relatorio asks for one in Ajustes › Pagamentos`() {
         openReport()
-        click("Adicione sua chave Pix em Seus dados")
-        compose.onNodeWithTag("personal-screen").assertExists()
+        click("Adicione sua chave Pix em Ajustes › Pagamentos")
+        compose.onNodeWithTag("settings-payments").assertExists()
     }
 
     private fun groupReport() {

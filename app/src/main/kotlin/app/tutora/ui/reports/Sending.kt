@@ -59,7 +59,6 @@ import app.tutora.domain.invoiceOf
 import app.tutora.domain.memberReport
 import app.tutora.domain.subjectReport
 import app.tutora.state.LocalServices
-import app.tutora.ui.PersonalData
 import app.tutora.ui.ScreenScaffold
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -381,7 +380,11 @@ fun ExportSection(
         ),
     )
     if (parts.pix && maker.teacher.pix.isBlank()) {
-        AlertBanner(stringResource(R.string.inv_addPix), tone = AlertTone.ACCENT, onClick = { nav.navigate(PersonalData) })
+        AlertBanner(
+            stringResource(R.string.inv_addPix),
+            tone = AlertTone.ACCENT,
+            onClick = { nav.navigate(app.tutora.ui.SettingsPayments) },
+        )
     }
     if (split && members != null) {
         members.forEachIndexed { i, m ->

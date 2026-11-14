@@ -48,9 +48,9 @@ class CalendarScreensTest {
     }
 
     @Test
-    fun `AC-012-1 Ajustes has Calendario in Aulas, and its page has every part`() {
+    fun `AC-012-1 Ajustes has Calendario as its own page, and its page has every part`() {
         h.show(compose)
-        h.go(compose, app.tutora.ui.SettingsLessons)
+        h.go(compose, app.tutora.ui.SettingsGraph)
         exists("Calendário")
         compose.onNodeWithTag("calendar-row").performScrollTo().performClick()
         h.settle(compose)

@@ -8,6 +8,7 @@ import android.view.WindowManager
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -79,8 +80,9 @@ class AppLockTest {
         h.settle(compose)
     }
 
+    /** Ajustes › Pagamentos, where the Pix key is (Victor, 14 Nov 2026). */
     private fun personal() {
-        h.go(compose, PersonalData)
+        h.go(compose, app.tutora.ui.SettingsPayments)
     }
 
     private fun privacy() {
@@ -92,7 +94,8 @@ class AppLockTest {
         h.show(compose)
         h.go(compose, SettingsGraph)
         compose.onNodeWithTag("page-privacy").performScrollTo().assertExists()
-        compose.onNodeWithText("Desligado").assertExists()
+        // Privacidade's own line (Calendário, on Ajustes too, can also say Desligado).
+        compose.onNode(hasText("Desligado") and hasAnyAncestor(hasTestTag("page-privacy")), useUnmergedTree = true).assertExists()
         privacy()
         assertFalse(settings().appLock)
         h.unlock.answer = false
@@ -159,8 +162,8 @@ class AppLockTest {
         val pix = hasSetTextAction() and hasAnyAncestor(hasTestTag("pix-key"))
         compose.onNode(pix).performScrollTo().performTextInput("11987659876")
         h.settle(compose)
-        // Leaving the field makes the offer.
-        compose.onAllNodes(hasSetTextAction())[0].performClick()
+        // Leaving the field (for Cidade) makes the offer.
+        compose.onAllNodes(hasSetTextAction())[1].performClick()
         h.settle(compose)
         compose.onNodeWithText("Sua chave Pix fica no app. Quer proteger o Tutora com o bloqueio do celular?").assertExists()
         compose.onNodeWithText("Ativar").performClick()
@@ -236,7 +239,8 @@ class AppLockTest {
     fun `AC-015-10 once unlocked Tutora is where it was, with what was typed and an open sheet, or where a notification led`() {
         runBlocking { h.services.backups.setFolder("content://tree/downloads", "Download") }
         lockedStart(answer = true)
-        personal()
+        // Seus dados: what was typed in Seu nome is still there after the unlock.
+        h.go(compose, PersonalData)
         compose.onAllNodes(hasSetTextAction())[0].performScrollTo().performTextInput("Victor")
         h.settle(compose)
         h.unlock.answer = false
@@ -303,11 +307,11 @@ class AppLockTest {
     }
 
     @Test
-    fun `AC-015-16 the Pix key shows masked in Ajustes and Seus dados until the eye shows it`() {
+    fun `AC-015-16 the Pix key shows masked in Ajustes and Pagamentos until the eye shows it`() {
         save { it.copy(pixKey = "victor@gmail.com", teacherName = "Victor") }
         h.show(compose)
         h.go(compose, SettingsGraph)
-        compose.onNodeWithText("Victor · vi•••@gmail.com").assertExists()
+        compose.onNodeWithText("Créditos e bônus desligados · vi•••@gmail.com").performScrollTo().assertExists()
         compose.onAllNodesWithText("victor@gmail.com", substring = true).fetchSemanticsNodes().let { assertTrue(it.isEmpty()) }
         personal()
         compose.onNodeWithText("vi•••@gmail.com").performScrollTo().assertExists()

@@ -52,6 +52,7 @@ class SettingsPagesTest {
         listOf(
             "Seus dados",
             "Aulas",
+            "Calendário",
             "Pagamentos",
             "Relatórios",
             "Lembretes",
@@ -65,29 +66,30 @@ class SettingsPagesTest {
         compose.onNodeWithText("Português").assertExists()
         compose.onNodeWithText("Créditos e bônus desligados").assertExists()
         compose.onNodeWithText("Idioma do app").assertDoesNotExist()
-        // Geral is the app itself: Idioma and Aparência, nothing about classes.
+        // Calendário is a page of its own, right on Ajustes.
+        compose.onNodeWithTag("calendar-row").performScrollTo().assertExists()
+        // Geral is how the app shows things: Idioma, Aparência and Durações em HH:MM.
         open("page-general")
         compose.onNodeWithText("Idioma do app").performScrollTo().assertExists()
         compose.onNodeWithTag("appearance-row").performScrollTo().assertExists()
-        listOf(
-            "Como você dá aula",
-            "Mostrar locais padrão",
-            "Durações em HH:MM",
-        ).forEach { compose.onNodeWithText(it).assertDoesNotExist() }
-        compose.onNodeWithTag("calendar-row").assertDoesNotExist()
+        compose.onNodeWithText("Durações em HH:MM").performScrollTo().assertExists()
+        listOf("Como você dá aula", "Mostrar locais padrão").forEach { compose.onNodeWithText(it).assertDoesNotExist() }
         back()
-        // Aulas holds everything about classes.
+        // Aulas holds what is about classes.
         open("page-lessons")
-        listOf("Como você dá aula", "Mostrar locais padrão", "Durações em HH:MM").forEach {
+        listOf("Como você dá aula", "Mostrar locais padrão").forEach {
             compose.onNodeWithText(it).performScrollTo().assertExists()
         }
-        compose.onNodeWithTag("calendar-row").performScrollTo().assertExists()
+        compose.onNodeWithText("Durações em HH:MM").assertDoesNotExist()
         compose.onNodeWithContentDescription("Aula ao vivo").performScrollTo().assertExists()
         compose.onNodeWithText("Aulas passadas").performScrollTo().assertExists()
         compose.onNodeWithText("Pedir confirmação").performScrollTo().assertExists()
         back()
+        // Pagamentos: Créditos e bônus and the Pix key with its city.
         open("page-payments")
         compose.onNodeWithContentDescription("Créditos e bônus").assertExists()
+        compose.onNodeWithTag("pix-key").performScrollTo().assertExists()
+        compose.onNodeWithTag("pix-city").performScrollTo().assertExists()
         back()
         // Relatórios: the title and what the PDF shows, on a page of their own.
         open("page-reports")
@@ -99,22 +101,24 @@ class SettingsPagesTest {
     }
 
     @Test
-    fun `AC-020-18 Seus dados has an optional Cidade, used in the Pix QR code`() {
+    fun `AC-020-18 Pagamentos has an optional Cidade, used in the Pix QR code`() {
         h.show(compose)
-        h.go(compose, app.tutora.ui.PersonalData)
+        h.go(compose, app.tutora.ui.SettingsPayments)
         compose.onNodeWithText("Usada no QR code do Pix").performScrollTo().assertExists()
         compose.onNodeWithContentDescription("Cidade").performTextReplacement("Recife")
         h.awaitDb(compose) { h.services.currentSettings().pixCity == "Recife" }
     }
 
     @Test
-    fun `AC-020-28 Seus dados is in two sections, each saying what it is for`() {
+    fun `AC-020-28 Seus dados and the Pix section in Pagamentos each say what they are for`() {
         h.show(compose)
         h.go(compose, app.tutora.ui.PersonalData)
-        listOf("section-you", "section-pix").forEach { compose.onNodeWithTag(it).performScrollTo().assertExists() }
-        compose.onNodeWithTag("section-reports").assertDoesNotExist()
+        compose.onNodeWithTag("section-you").performScrollTo().assertExists()
+        compose.onNodeWithText("Seu nome vai no topo dos relatórios e no fim do texto copiado.").performScrollTo().assertExists()
+        listOf("section-pix", "section-reports").forEach { compose.onNodeWithTag(it).assertDoesNotExist() }
+        h.go(compose, app.tutora.ui.SettingsPayments)
+        compose.onNodeWithTag("section-pix").performScrollTo().assertExists()
         listOf(
-            "Seu nome vai no topo dos relatórios e no fim do texto copiado.",
             "Para receber: a chave vai inteira no relatório. Com seu nome e a cidade, ele ganha também um QR code com o valor.",
         ).forEach { compose.onNodeWithText(it).performScrollTo().assertExists() }
     }
