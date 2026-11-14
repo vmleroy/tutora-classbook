@@ -109,7 +109,7 @@ class PdfLayoutTest {
             pix.qr!!.size,
         )
         // The summary tiles, the amount due and the Pix box come first on page one, so fewer classes fit under them (AC-021-15).
-        assertEquals(listOf("Total do período", "Já pago", "Valor a pagar"), plan.stats.map { it.label })
+        assertEquals(listOf("Aulas", "Total", "Pago", "A receber"), plan.stats.map { it.label })
         assertEquals(emptyList<Any>(), plan.due?.lines)
         val pages = pdfPages(plan)
         assertEquals(listOf(6, 8), pages.map { it.rows.count() })

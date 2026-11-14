@@ -418,10 +418,11 @@ fun receiptsOf(
 fun hasReceipts(r: SubjectReport) = r.payments.any { it.receipts.isNotEmpty() }
 
 /**
- * The one document (Victor, 13 Nov 2026; AC-021-15): the header, classes and totals always; the
- * Para, amount due, Vencimento and Pix block with Valor a pagar e Pix;
- * the detailed columns with Horários, local e deslocamento; notes under each class; the payments.
- * The comprovantes are added after, by the caller (AC-021-7).
+ * The one document, in one style (Victor, 14 Nov 2026; AC-021-15): the header with Para, the four
+ * tiles (Aulas, Total, Pago, A receber), the amount due and the Pix box when Valor a pagar e Pix is
+ * on, then the classes in one table, which gains Local, Deslocamento and Cobrança with Horários,
+ * local e deslocamento; the notes under each class and the payments when on. The switches only show
+ * or hide parts; nothing else changes. The comprovantes are added after, by the caller (AC-021-7).
  */
 fun documentPlan(
     r: SubjectReport,
@@ -438,35 +439,47 @@ fun documentPlan(
     made: LocalDate,
     generatedAt: String,
 ): PdfPlan {
-    val inv = invoiceOf(r, grouped)
-    val fatura = invoicePlan(inv, w, iw, t, place, to, due, made, generatedAt, parts.notes)
+    val fatura = invoicePlan(invoiceOf(r, grouped), w, iw, t, place, to, due, made, generatedAt)
     val detail = detailPlan(r, w, iw, t, to, subjectLabel, subjectLine, grouped, parts.notes, made, generatedAt)
-    val table = if (parts.details) detail else fatura
+    val tt = detailTotals(r)
+    val table = if (parts.details) detail else detail.withoutColumns(DETAIL_ONLY)
     return table.copy(
-        // Always the Relatório de aulas; Valor a pagar e Pix only adds its part (Victor, 14 Nov 2026).
         title = w.subjectTitle,
-        subtitle = fatura.subtitle,
-        subjectLabel = if (parts.pix) fatura.subjectLabel else detail.subjectLabel,
-        subjectName = if (parts.pix) fatura.subjectName else detail.subjectName,
-        subjectLine = if (parts.pix) fatura.subjectLine else detail.subjectLine,
-        // The summary in three tiles, then the amount due large only when something is owed (Victor, 14 Nov 2026).
+        subjectLabel = iw.to,
+        subjectName = to.guardian ?: to.name,
+        subjectLine = to.guardian?.let { iw.guardianOf.format(to.name) } ?: subjectLine,
         stats =
-            if (parts.pix) {
-                listOf(
-                    PdfStat(iw.periodTotal, w.money(inv.total)),
-                    PdfStat(iw.alreadyPaid, w.money(inv.paid), PdfTone.PAID),
-                    PdfStat(iw.toPay, w.money(inv.toPay), if (inv.settled) PdfTone.PAID else PdfTone.OWED),
-                )
-            } else {
-                detail.stats
-            },
-        totalRow = if (parts.details) detail.totalRow else null,
+            listOf(
+                PdfStat(w.classes, "${tt.count} · ${w.hours(tt.minutes)}"),
+                PdfStat(w.total, w.money(tt.total)),
+                PdfStat(w.paid, w.money(tt.paid), PdfTone.PAID),
+                PdfStat(w.toReceive, w.money(tt.left), if (tt.left > 0) PdfTone.OWED else PdfTone.PAID),
+            ),
         sections = if (parts.payments) detail.sections else emptyList(),
+        // The amount due large only while something is owed; all paid, one line (AC-021-15).
         due =
             fatura.due
                 ?.takeIf { parts.pix }
                 ?.let { d -> d.copy(lines = emptyList(), label = if (d.settled) iw.settledText else d.label) },
         payPix = fatura.payPix.takeIf { parts.pix },
+    )
+}
+
+// The detailed table's Local, Deslocamento and Cobrança extra, shown only with Horários, local e deslocamento.
+private val DETAIL_ONLY = setOf(4, 5, 6)
+
+/** The plan with those table columns taken out of the header, the rows, the total and the widths. */
+private fun PdfPlan.withoutColumns(drop: Set<Int>): PdfPlan {
+    val n = columns.size
+    val keep = (0 until n).filter { it !in drop }
+
+    fun <T> List<T>.kept() = if (size == n) keep.map { this[it] } else this
+    return copy(
+        columns = columns.kept(),
+        rows = rows.map { it.copy(cells = it.cells.kept()) },
+        totalRow = totalRow?.kept(),
+        weights = weights?.kept(),
+        rightAligned = rightAligned.filter { it !in drop }.map { old -> keep.indexOf(old) }.toSet(),
     )
 }
 

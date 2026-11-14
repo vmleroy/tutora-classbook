@@ -310,6 +310,10 @@ class InvoiceDocsTest {
         assertEquals(9, all.columns.size)
         assertEquals(listOf("Revisão"), all.rows.filter { it.kind == PdfRowKind.NOTE }.map { it.cells.single() })
         assertEquals("Pagamentos recebidos", all.sections.single().title)
+        // One style: the same header, tiles and columns in the same order; the switches only add parts.
+        assertEquals(bare.subjectLabel to bare.subjectName, all.subjectLabel to all.subjectName)
+        assertEquals(bare.stats.map { it.label }, all.stats.map { it.label })
+        assertEquals(bare.columns, all.columns.filter { it in bare.columns })
     }
 
     @Test
