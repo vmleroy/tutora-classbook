@@ -98,20 +98,7 @@ class PdfLayoutTest {
     fun `AC-020-10 AC-021-15 the Pix block has the full key, the name and a QR code of the copia e cola, on page one before the classes`() {
         val owed = (1..14).map { i -> ReportClass("l$i", LocalDate(2026, 10, i), 60, 12_000, "Ana", false, 0, 12_000) }
         val r = subjectReport(LocalDate(2026, 10, 1), LocalDate(2026, 10, 31), owed, emptyList())
-        val plan =
-            app.tutora.ui.reports.invoicePlan(
-                app.tutora.domain.invoiceOf(r, false),
-                w,
-                testInvoiceWords(),
-                Teacher("Victor", "victor@pix.com"),
-                app.tutora.ui.reports
-                    .PixPlace("Recife"),
-                app.tutora.ui.reports
-                    .Recipient("Ana"),
-                null,
-                LocalDate(2026, 11, 13),
-                "13/11/2026, 10:00",
-            )
+        val plan = doc(r, app.tutora.domain.DocParts())
         val pix = plan.payPix!!
         assertEquals("victor@pix.com" to "Victor", pix.key to pix.name)
         assertEquals(app.tutora.domain.pixPayload("victor@pix.com", "Victor", "Recife", 168_000), pix.code)
@@ -121,9 +108,11 @@ class PdfLayoutTest {
                 .size,
             pix.qr!!.size,
         )
-        // The amount and the Pix box come first on page one, so fewer classes fit under them (AC-021-15).
+        // The summary tiles, the amount due and the Pix box come first on page one, so fewer classes fit under them (AC-021-15).
+        assertEquals(listOf("Total do período", "Já pago", "Valor a pagar"), plan.stats.map { it.label })
+        assertEquals(emptyList<Any>(), plan.due?.lines)
         val pages = pdfPages(plan)
-        assertEquals(listOf(4, 10), pages.map { it.rows.count() })
+        assertEquals(listOf(6, 8), pages.map { it.rows.count() })
     }
 
     @Test

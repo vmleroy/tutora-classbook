@@ -438,7 +438,8 @@ fun documentPlan(
     made: LocalDate,
     generatedAt: String,
 ): PdfPlan {
-    val fatura = invoicePlan(invoiceOf(r, grouped), w, iw, t, place, to, due, made, generatedAt, parts.notes)
+    val inv = invoiceOf(r, grouped)
+    val fatura = invoicePlan(inv, w, iw, t, place, to, due, made, generatedAt, parts.notes)
     val detail = detailPlan(r, w, iw, t, to, subjectLabel, subjectLine, grouped, parts.notes, made, generatedAt)
     val table = if (parts.details) detail else fatura
     return table.copy(
@@ -448,11 +449,23 @@ fun documentPlan(
         subjectLabel = if (parts.pix) fatura.subjectLabel else detail.subjectLabel,
         subjectName = if (parts.pix) fatura.subjectName else detail.subjectName,
         subjectLine = if (parts.pix) fatura.subjectLine else detail.subjectLine,
-        // With the amount due under the table, the tiles would say the same twice.
-        stats = if (parts.pix) emptyList() else detail.stats,
+        // The summary in three tiles, then the amount due large only when something is owed (Victor, 14 Nov 2026).
+        stats =
+            if (parts.pix) {
+                listOf(
+                    PdfStat(iw.periodTotal, w.money(inv.total)),
+                    PdfStat(iw.alreadyPaid, w.money(inv.paid), PdfTone.PAID),
+                    PdfStat(iw.toPay, w.money(inv.toPay), if (inv.settled) PdfTone.PAID else PdfTone.OWED),
+                )
+            } else {
+                detail.stats
+            },
         totalRow = if (parts.details) detail.totalRow else null,
         sections = if (parts.payments) detail.sections else emptyList(),
-        due = fatura.due.takeIf { parts.pix },
+        due =
+            fatura.due
+                ?.takeIf { parts.pix }
+                ?.let { d -> d.copy(lines = emptyList(), label = if (d.settled) iw.settledText else d.label) },
         payPix = fatura.payPix.takeIf { parts.pix },
     )
 }

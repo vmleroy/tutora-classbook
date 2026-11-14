@@ -163,7 +163,7 @@ fun pdfPages(plan: PdfPlan): List<PdfPage> {
     // A second row of tiles (more than four totals) takes two rows of the table.
     var first = if (plan.stats.size > PDF_TILES_PER_ROW) PDF_FIRST_ROWS - 2 else PDF_FIRST_ROWS
     // The summary comes first: the amount due and the Pix box take room on page one (AC-021-15).
-    plan.due?.let { first -= PDF_DUE_ROWS + it.lines.size }
+    plan.due?.let { first -= (if (it.settled) PDF_DUE_ROWS - 2 else PDF_DUE_ROWS - 1) + it.lines.size }
     if (plan.payPix != null) first -= PDF_PIX_ROWS
     val ranges = paginate(plan.rows.size, first.coerceAtLeast(1), PDF_OTHER_ROWS)
     // The comprovantes' pages come after, and the footer counts them too (AC-021-7).
@@ -367,9 +367,15 @@ private class AndroidPdf(
             text(value, right - 10f, y + 12f, paint(9.5f, c.ink, bold = true), alignRight = true, maxWidth = 120f)
             y += 18f
         }
-        y += 6f
+        if (d.lines.isNotEmpty()) y += 6f
         val tone = if (d.settled) c.paid else c.owed
-        drawRoundRect(RectF(left, y, right, y + 56f), 10f, 10f, fill(if (d.settled) c.paidSoft else c.owedSoft))
+        // All paid: one slim line that says so, no amount repeated.
+        if (d.settled) {
+            drawRoundRect(RectF(left, y, right, y + 30f), 8f, 8f, fill(c.paidSoft))
+            text(d.label, left + 14f, y + 19f, paint(10f, tone, bold = true), maxWidth = right - left - 28f)
+            return y + 40f
+        }
+        drawRoundRect(RectF(left, y, right, y + 56f), 10f, 10f, fill(c.owedSoft))
         text(d.label, left + 14f, y + 22f, paint(10f, tone, bold = true), maxWidth = 240f)
         d.note?.let { text(it, left + 14f, y + 40f, paint(9f, c.ink), maxWidth = 240f) }
         text(d.amount, right - 14f, y + 36f, paint(22f, tone, bold = true), alignRight = true, maxWidth = 260f)
