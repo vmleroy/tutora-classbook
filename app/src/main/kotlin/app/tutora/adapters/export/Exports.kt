@@ -149,9 +149,10 @@ data class PdfPage(
 const val PDF_FIRST_ROWS = 16
 const val PDF_OTHER_ROWS = 26
 
-// With a Fatura's amount and Pix block under the table, fewer rows fit on its last page.
-const val PDF_FIRST_ROWS_WITH_DUE = 12
-const val PDF_OTHER_ROWS_WITH_DUE = 15
+// The amount due and the Pix box sit on page one, above the table (Victor, 14 Nov 2026): the
+// table rows they take there, the amount's lines aside.
+const val PDF_DUE_ROWS = 4
+const val PDF_PIX_ROWS = 7
 const val PDF_TILES_PER_ROW = 4
 
 // A comprovante is drawn from a bitmap about 150 dpi across the page's width.
@@ -160,12 +161,11 @@ private const val RECEIPT_PX = 1240
 /** Pages for a plan: the table spread over pages, with the header repeated; the footer numbers each (AC-010-9). */
 fun pdfPages(plan: PdfPlan): List<PdfPage> {
     // A second row of tiles (more than four totals) takes two rows of the table.
-    val first = if (plan.stats.size > PDF_TILES_PER_ROW) PDF_FIRST_ROWS - 2 else PDF_FIRST_ROWS
-    var ranges = paginate(plan.rows.size, first, PDF_OTHER_ROWS)
-    if (plan.due != null || plan.payPix != null) {
-        val room = if (ranges.size == 1) PDF_FIRST_ROWS_WITH_DUE else PDF_OTHER_ROWS_WITH_DUE
-        if (ranges.last().count() > room) ranges = ranges + listOf(IntRange.EMPTY)
-    }
+    var first = if (plan.stats.size > PDF_TILES_PER_ROW) PDF_FIRST_ROWS - 2 else PDF_FIRST_ROWS
+    // The summary comes first: the amount due and the Pix box take room on page one (AC-021-15).
+    plan.due?.let { first -= PDF_DUE_ROWS + it.lines.size }
+    if (plan.payPix != null) first -= PDF_PIX_ROWS
+    val ranges = paginate(plan.rows.size, first.coerceAtLeast(1), PDF_OTHER_ROWS)
     // The comprovantes' pages come after, and the footer counts them too (AC-021-7).
     val total = ranges.size + receiptPageCount(plan)
     return ranges.mapIndexed { i, r ->
@@ -376,9 +376,12 @@ private class AndroidPdf(
         return y + 66f
     }
 
-    /** The Pix block at the foot: QR code on the left, the key, the name and the "copia e cola" on the right. */
-    private fun Canvas.payPix(p: PdfPix) {
-        val boxTop = height - 210f
+    /** The Pix box, from [top]: QR code on the left, the key, the name and the "copia e cola" on the right. */
+    private fun Canvas.payPix(
+        p: PdfPix,
+        top: Float,
+    ): Float {
+        val boxTop = top
         val dash =
             Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = c.line
@@ -417,6 +420,7 @@ private class AndroidPdf(
             val perLine = (w / small.measureText("0")).toInt().coerceAtLeast(10)
             code.chunked(perLine).take(5).forEachIndexed { i, line -> text(line, x, boxTop + 96f + i * 9f, small, maxWidth = w) }
         }
+        return boxTop + 150f
     }
 
     /**
@@ -535,6 +539,9 @@ private class AndroidPdf(
                     canvas.text(st.value, x + 10f, y + 34f, paint(13f, fg, bold = true), maxWidth = tileW - 20f)
                 }
                 if (plan.stats.isNotEmpty()) y += 62f
+                // The summary before the details: what is due and how to pay it, then the classes (AC-021-15).
+                plan.due?.let { due -> y = canvas.due(due, y - 4f) + 2f }
+                plan.payPix?.let { y = canvas.payPix(it, y) + 18f }
                 canvas.text(plan.tableTitle, left, y, paint(11f, c.ink, bold = true))
                 y += 8f
             }
@@ -642,8 +649,6 @@ private class AndroidPdf(
                     }
                     y += 8f
                 }
-                plan.due?.let { due -> y = canvas.due(due, y) }
-                plan.payPix?.let { canvas.payPix(it) }
                 // The pending amount and the Pix key, in a dashed box above the foot.
                 if (plan.pending != null || plan.pix != null) {
                     val boxTop = height - 110f

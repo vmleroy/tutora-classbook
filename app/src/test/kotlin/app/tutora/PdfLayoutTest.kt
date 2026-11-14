@@ -95,7 +95,7 @@ class PdfLayoutTest {
     }
 
     @Test
-    fun `AC-020-10 the Fatura's Pix block has the full key, the name and a QR code of the copia e cola, with room on its page`() {
+    fun `AC-020-10 AC-021-15 the Pix block has the full key, the name and a QR code of the copia e cola, on page one before the classes`() {
         val owed = (1..14).map { i -> ReportClass("l$i", LocalDate(2026, 10, i), 60, 12_000, "Ana", false, 0, 12_000) }
         val r = subjectReport(LocalDate(2026, 10, 1), LocalDate(2026, 10, 31), owed, emptyList())
         val plan =
@@ -121,10 +121,9 @@ class PdfLayoutTest {
                 .size,
             pix.qr!!.size,
         )
-        // 14 classes don't leave room for the amount and the Pix block: they go on a page of their own.
+        // The amount and the Pix box come first on page one, so fewer classes fit under them (AC-021-15).
         val pages = pdfPages(plan)
-        assertEquals(2, pages.size)
-        assertTrue(pages.last().rows.isEmpty())
+        assertEquals(listOf(4, 10), pages.map { it.rows.count() })
     }
 
     @Test
