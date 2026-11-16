@@ -1,11 +1,13 @@
 package app.tutora.ui.payments
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,6 +59,8 @@ import app.tutora.designsystem.components.SegmentedControl
 import app.tutora.designsystem.components.StatTone
 import app.tutora.designsystem.components.Switch
 import app.tutora.designsystem.components.TextField
+import app.tutora.designsystem.components.ThumbnailSize
+import app.tutora.designsystem.components.UndoBar
 import app.tutora.designsystem.components.currentLanguage
 import app.tutora.designsystem.components.formatMoney
 import app.tutora.designsystem.tokens.TutoraTokens.Spacing
@@ -90,6 +94,7 @@ import app.tutora.ui.LessonDetail
 import app.tutora.ui.LocalClockDurations
 import app.tutora.ui.PayerLessons
 import app.tutora.ui.PaymentDetail
+import app.tutora.ui.ReceiptViewer
 import app.tutora.ui.RegistryHome
 import app.tutora.ui.ScreenScaffold
 import app.tutora.ui.StudentDetail
@@ -98,6 +103,11 @@ import app.tutora.ui.catalog.DetailStat
 import app.tutora.ui.localeOf
 import app.tutora.ui.minutesText
 import app.tutora.ui.placeName
+import app.tutora.ui.receipts.ReceiptThumbnail
+import app.tutora.ui.receipts.ReceiptTile
+import app.tutora.ui.receipts.ReceiptsPart
+import app.tutora.ui.receipts.encodeStaged
+import app.tutora.ui.receipts.receiptRefs
 import app.tutora.usecases.PaymentDraft
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -409,6 +419,8 @@ fun PayerHistory(
                             subtitle = paymentLine(p, l, services.zone),
                             icon = IconName.WALLET,
                             onClick = { nav.navigate(PaymentDetail(p.id)) },
+                            // A payment with a comprovante says so (AC-021-4).
+                            mark = if (p.receipts > 0) IconName.PAPERCLIP to stringResource(R.string.rc_withReceipt) else null,
                         )
                     }
                 },
@@ -624,6 +636,8 @@ fun PaymentSheet(
     preChosen: List<String> = emptyList(),
     /** On a student's sheet: their classes a place owes, which this payment can pay too (AC-008-27). */
     elsewhere: List<OwedElsewhere> = emptyList(),
+    /** Files shared to Tutora, already attached when Anexar comprovante opens a new payment (AC-021-3). */
+    shared: List<app.tutora.usecases.StagedReceipt> = emptyList(),
 ) {
     val services = LocalServices.current
     val scope = rememberCoroutineScope()
@@ -646,6 +660,14 @@ fun PaymentSheet(
     var note by rememberSaveable { mutableStateOf(editing?.note.orEmpty()) }
     var chosen by rememberSaveable { mutableStateOf(editing?.chosen ?: preChosen) }
     var choosing by rememberSaveable { mutableStateOf(preChosen.isNotEmpty() || editing?.chosen?.isNotEmpty() == true) }
+    // Its comprovantes: those it has, once loaded, and files picked now (AC-021-1).
+    val existing by remember(editing?.id) {
+        editing?.let { services.receiptRepo.forPayment(it.id) } ?: kotlinx.coroutines.flow.flowOf(emptyList())
+    }.collectAsState(initial = null)
+    var receiptKeys by rememberSaveable { mutableStateOf<List<String>?>(if (editing == null) shared.map(::encodeStaged) else null) }
+    LaunchedEffect(existing) {
+        if (receiptKeys == null) existing?.let { list -> receiptKeys = list.map { "e:${it.id}" } }
+    }
     if (editing == null) {
         LaunchedEffect(payer) { method = services.payments.lastMethod(payer) }
     }
@@ -675,7 +697,7 @@ fun PaymentSheet(
                     stringResource(R.string.pay_save, formatMoney(amount, language)),
                     {
                         scope.launch {
-                            val draft = PaymentDraft(payer, amount, method, picked, note, chosen)
+                            val draft = PaymentDraft(payer, amount, method, picked, note, chosen, receiptRefs(receiptKeys.orEmpty()))
                             if (editing == null) services.payments.record(draft) else services.payments.edit(editing.id, draft)
                             onDismiss()
                         }
@@ -717,6 +739,7 @@ fun PaymentSheet(
             MethodControl(method) { method = it }
             DateField(stringResource(R.string.lesson_date), dayMonth(picked, language), picked, { if (it <= today) date = it.toString() })
             TextField(stringResource(R.string.pay_note), note, { note = it })
+            receiptKeys?.let { keys -> ReceiptsPart(keys, { receiptKeys = it }, existing.orEmpty()) }
             // Escolher aulas is a switch: off pays the oldest first, on lists the classes (Victor, 29 Oct 2026).
             Row(
                 // The whole line flips it, words included.
@@ -799,6 +822,25 @@ fun PaymentDetailScreen(
             Text(paymentLine(full, l, services.zone), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
             p.note?.let { Text(it, style = TutoraTheme.type.body, color = TutoraTheme.colors.ink) }
         }
+        // Its comprovantes; tapping one opens it full screen (AC-021-4, 5).
+        val receipts by remember(id) { services.receiptRepo.forPayment(id) }.collectAsState(initial = emptyList())
+        if (receipts.isNotEmpty()) {
+            SectionHeader(pluralStringResource(R.plurals.rc_listTitle, receipts.size, receipts.size))
+            Row(
+                Modifier.horizontalScroll(rememberScrollState()).testTag("payment-receipts"),
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s3),
+            ) {
+                receipts.forEachIndexed { i, r ->
+                    ReceiptThumbnail(
+                        ReceiptTile(r.id, services.receipts.store.file(r.file), r.mime),
+                        i,
+                        receipts.size,
+                        size = ThumbnailSize.LG,
+                        onClick = { nav.navigate(ReceiptViewer(id, i)) },
+                    )
+                }
+            }
+        }
         val paid =
             l.allocation.paidBy[id]
                 .orEmpty()
@@ -831,7 +873,8 @@ fun PaymentDetailScreen(
                     { m ->
                         Button(stringResource(R.string.pay_delete), {
                             scope.launch {
-                                services.payments.delete(id)
+                                // Desfazer is offered on the payer's page for a few seconds (AC-021-6).
+                                services.deletedPayment.value = services.payments.delete(id)
                                 deleting = false
                                 nav.popBackStack()
                             }
@@ -1224,6 +1267,8 @@ private fun GroupPaySheet(
     var method by rememberSaveable { mutableStateOf(PayMethod.PIX) }
     var date by rememberSaveable { mutableStateOf(today.toString()) }
     var refused by remember { mutableStateOf(false) }
+    // One transfer's comprovante goes on each payment it becomes (AC-021-1).
+    var receiptKeys by rememberSaveable { mutableStateOf(listOf<String>()) }
 
     val owing = names.keys.filter { (owedBy[it] ?: 0) > 0 }
     // Nobody picked is everyone who owes: "Todos pagaram".
@@ -1250,7 +1295,13 @@ private fun GroupPaySheet(
                     val drafts =
                         paying.filter { amountOf(it) > 0 }.map { id ->
                             if (id == groupKey) {
-                                PaymentDraft(PayerRef(PayerKind.GROUP, groupId), amountOf(id), method, LocalDate.parse(date))
+                                PaymentDraft(
+                                    PayerRef(PayerKind.GROUP, groupId),
+                                    amountOf(id),
+                                    method,
+                                    LocalDate.parse(date),
+                                    receipts = receiptRefs(receiptKeys),
+                                )
                             } else {
                                 PaymentDraft(
                                     PayerRef(PayerKind.STUDENT, id),
@@ -1258,6 +1309,7 @@ private fun GroupPaySheet(
                                     method,
                                     LocalDate.parse(date),
                                     chosen = debts[id]?.second.orEmpty(),
+                                    receipts = receiptRefs(receiptKeys),
                                 )
                             }
                         }
@@ -1316,7 +1368,31 @@ private fun GroupPaySheet(
             DateField(stringResource(R.string.lesson_date), dayMonth(LocalDate.parse(date), language), LocalDate.parse(date), {
                 if (it <= today) date = it.toString()
             }, latest = today)
+            ReceiptsPart(receiptKeys, { receiptKeys = it }, emptyList())
             if (refused) Text(stringResource(R.string.pay_refused), style = TutoraTheme.type.meta, color = TutoraTheme.colors.dangerInk)
         }
     }
+}
+
+/**
+ * Desfazer after Excluir pagamento, at the bottom of whatever page the teacher is back on, for a
+ * few seconds: it writes the payment back with its classes, comprovantes and package (AC-021-6).
+ */
+@Composable
+fun PaymentUndoHost(modifier: Modifier = Modifier) {
+    val services = LocalServices.current
+    val scope = rememberCoroutineScope()
+    val language = currentLanguage()
+    val deleted by services.deletedPayment.collectAsState()
+    val d = deleted ?: return
+    UndoBar(
+        stringResource(R.string.pay_deleted, formatMoney(d.payment.amountCents, language)),
+        stringResource(R.string.pay_undo),
+        {
+            services.deletedPayment.value = null
+            scope.launch { services.payments.restore(d) }
+        },
+        { if (services.deletedPayment.value === d) services.deletedPayment.value = null },
+        modifier,
+    )
 }

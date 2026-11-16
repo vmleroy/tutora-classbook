@@ -58,6 +58,9 @@ fun testWords() =
         sheetSources = "Por aluno e local",
         method = "Forma",
         amount = "Valor",
+        receiptColumn = "Comprovante",
+        yes = "Sim",
+        no = "Não",
     )
 
 /** Keeps what was shared and copied; a PDF is its plan's text, so tests can read it. */
@@ -97,8 +100,8 @@ fun testInvoiceWords() =
         ends = "Término",
         inClass = "Em aula",
         place = "Local",
-        travel = "Deslocamento",
-        charge = "Cobrança extra",
+        travel = "Desloc.",
+        charge = "Extra",
         subtotal = "Subtotal",
         salary = "Salário",
         periodTotal = "Total do período",
@@ -112,7 +115,7 @@ fun testInvoiceWords() =
         extraCharges = "Cobranças extras",
         notes = "Observações",
         hello = "Olá!",
-        invoiceOf = "Fatura de %1\$s",
+        invoiceOf = "Aulas de %1\$s",
         totalToPay = "Total a pagar: %1\$s",
         until = "até %1\$s",
         pixWithName = "Pix: %1\$s (%2\$s)",

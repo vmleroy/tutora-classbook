@@ -79,6 +79,10 @@ data class ReportWords(
     val sheetSources: String,
     val method: String,
     val amount: String,
+    /** The Pagamentos sheet's "Comprovante" column, with Sim or Não (AC-021-8). */
+    val receiptColumn: String = "",
+    val yes: String = "",
+    val no: String = "",
 )
 
 /** The teacher's name and Pix key from Ajustes; empty when not set (AC-010-16). */
@@ -106,78 +110,6 @@ private fun ReportWords.status(c: app.tutora.domain.ReportClass): Pair<String, P
         else -> statusOwed to PdfTone.OWED
     }
 
-/**
- * A student's, group's or place's report as a PDF plan: header with the teacher's name and the
- * period, the subject, the totals, the classes (or a school's days), payments received, what is
- * pending and the Pix key (AC-010-9).
- */
-fun subjectPlan(
-    r: SubjectReport,
-    w: ReportWords,
-    t: Teacher,
-    subjectLabel: String,
-    subjectName: String,
-    subjectLine: String?,
-    showWho: Boolean,
-    generatedAt: String,
-): PdfPlan {
-    val salary = r.days != null
-    val rows =
-        if (salary) {
-            r.days.orEmpty().map { PdfRow(listOf(w.day(it.day), w.classCount(it.classes)), PdfTone.INK) }
-        } else {
-            r.classes.map { c ->
-                val (status, tone) = w.status(c)
-                PdfRow(
-                    listOfNotNull(w.day(c.day), w.minutes(c.minutes), c.who.takeIf { showWho }, w.money(c.value), status),
-                    tone,
-                )
-            }
-        }
-    val columns =
-        if (salary) {
-            listOf(w.date, w.tableClasses)
-        } else {
-            listOfNotNull(w.date, w.duration, w.where.takeIf { showWho }, w.value, w.situation)
-        }
-    val owedDays = r.classes.filter { !it.paid }.map { w.dayMonth(it.day) }
-    return PdfPlan(
-        brand = w.brand,
-        title = w.subjectTitle,
-        subtitle = w.subtitle(t, r.from, r.to),
-        subjectLabel = subjectLabel,
-        subjectName = subjectName,
-        subjectLine = subjectLine,
-        stats =
-            listOf(
-                PdfStat(w.classes, "${r.count} · ${w.hours(r.minutes)}"),
-                PdfStat(w.total, w.money(r.total)),
-                PdfStat(w.paid, w.money(r.paid), PdfTone.PAID),
-                PdfStat(w.toReceive, w.money(r.left), PdfTone.OWED),
-            ),
-        tableTitle = if (salary) w.tableDays else w.tableClasses,
-        columns = columns,
-        rightAligned = if (salary) setOf(1) else setOf(columns.size - 2, columns.size - 1),
-        rows = rows,
-        totalRow = if (salary) null else listOfNotNull(w.total, w.hours(r.minutes), "".takeIf { showWho }, w.money(r.total), ""),
-        sections =
-            listOfNotNull(
-                r.payments.takeIf { it.isNotEmpty() }?.let { ps ->
-                    PdfSection(
-                        w.paymentsTitle,
-                        ps.map { p ->
-                            listOf(w.day(p.day), w.methodName(p.method), w.classCount(p.classDays.size)).joinToString(" · ") to
-                                w.money(p.cents)
-                        },
-                    )
-                },
-            ),
-        pending = r.left.takeIf { it > 0 }?.let { w.pending.format(w.money(it)) to owedDays.joinToString(", ") },
-        pix = t.pix.takeIf { it.isNotBlank() }?.let { w.pix.format(it) },
-        footer = w.generated.format(generatedAt) + " · " + w.page,
-    )
-}
-
 /** The report's Excel file: "Aulas" and "Pagamentos", dates as dates and amounts as numbers (AC-010-10). */
 fun subjectSheets(
     r: SubjectReport,
@@ -199,9 +131,15 @@ fun subjectSheets(
         ),
         Sheet(
             w.sheetPayments,
-            listOf(w.date, w.method, w.amount),
+            listOf(w.date, w.method, w.amount, w.receiptColumn),
             r.payments.map { p ->
-                listOf(Cell.Day(p.day.year, p.day.month.ordinal + 1, p.day.day), Cell.Text(w.methodName(p.method)), Cell.Money(p.cents))
+                listOf(
+                    Cell.Day(p.day.year, p.day.month.ordinal + 1, p.day.day),
+                    Cell.Text(w.methodName(p.method)),
+                    Cell.Money(p.cents),
+                    // Whether it has a comprovante; the files themselves never go into a spreadsheet (AC-021-8).
+                    Cell.Text(if (p.receipts.isNotEmpty()) w.yes else w.no),
+                )
             },
         ),
     )

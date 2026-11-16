@@ -57,9 +57,15 @@ fun TutoraApp(
                         app.tutora.adapters.export
                             .AndroidExports(context)
                     }
+                val receiptImages =
+                    androidx.compose.runtime.remember {
+                        app.tutora.adapters.receipts
+                            .AndroidReceiptImages()
+                    }
                 CompositionLocalProvider(
                     LocalServices provides s,
                     app.tutora.adapters.export.LocalExports provides exports,
+                    app.tutora.ui.receipts.LocalReceiptImages provides receiptImages,
                     app.tutora.lock.LocalAppLock provides (lock ?: app.tutora.lock.LocalAppLock.current),
                 ) {
                     // The app lock stands in front of everything; requests from notifications are

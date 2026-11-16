@@ -123,8 +123,8 @@ class DesignSystemTest {
                 ) { Column(Modifier.verticalScroll(rememberScrollState())) { GallerySections() } }
             }
         }
-        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana), UndoBar and NumberField (014), NavRail and SidePanel (017), ChoiceField (019), PeriodField (020).
-        assertEquals(47, galleryComponents.size)
+        // 30 from spec 002, MonthBars (009), four from 016, BusyBlock (012), three from 013, AgendaCard and DayHeading (016's Semana), UndoBar and NumberField (014), NavRail and SidePanel (017), ChoiceField (019), PeriodField (020), Thumbnail and ZoomImage (021).
+        assertEquals(49, galleryComponents.size)
         for (name in galleryComponents) compose.onNodeWithTag("section-$name").assertExists()
         isDark = true
         compose.waitForIdle()

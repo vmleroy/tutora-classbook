@@ -23,7 +23,6 @@ import app.tutora.domain.Student
 import app.tutora.domain.TagColor
 import app.tutora.domain.TypeFilter
 import app.tutora.domain.backupSummary
-import app.tutora.domain.readBackup
 import app.tutora.ui.backup.SheetWords
 import app.tutora.ui.backup.backupSheets
 import app.tutora.ui.backup.sheetFileName
@@ -100,8 +99,8 @@ class BackupTest {
             given(22)
             pay(12_000)
             val (name, bytes) = backups.makeBackup()
-            assertEquals("Tutora backup 2026-10-26 09-00.json", name)
-            val file = (readBackup(bytes, app.tutora.data.TutoraDatabase.VERSION) as BackupRead.Ok).file
+            assertEquals("Tutora backup 2026-10-26 09-00.zip", name)
+            val file = (backups.inspect(bytes) as BackupRead.Ok).file
             val every =
                 listOf(
                     "settings",
@@ -144,7 +143,7 @@ class BackupTest {
                 backups.runAuto()
             }
             assertEquals(
-                setOf("minhas notas.txt", "Tutora backup 2026-10-27 20-00.json", "Tutora backup 2026-10-28 20-00.json"),
+                setOf("minhas notas.txt", "Tutora backup 2026-10-27 20-00.zip", "Tutora backup 2026-10-28 20-00.zip"),
                 t.folder.files.keys,
             )
         }
@@ -306,5 +305,55 @@ class BackupTest {
             given(22)
             val xlsx = Xlsx.write(backupSheets(backups.sheetData(SheetRange.All), words))
             assertEquals(BackupRead.NotTutora, backups.inspect(xlsx))
+        }
+
+    @Test
+    fun `AC-021-10 comprovantes come back with the backup, a json backup restores with none, Desfazer brings today's back`() =
+        runTest {
+            val receipts = app.tutora.usecases.Receipts(t.ctx)
+            val photo = java.io.File(tmp.newFolder("gallery"), "pix.jpg").apply { writeBytes(ByteArray(500) { 7 }) }
+            val staged = (receipts.stage(photo.path) as app.tutora.usecases.StageResult.Ok).staged
+            val paid =
+                Payments(t.ctx).record(
+                    PaymentDraft(
+                        PayerRef(PayerKind.STUDENT, ana.id),
+                        12_000,
+                        PayMethod.PIX,
+                        LocalDate(2026, 10, 26),
+                        receipts =
+                            listOf(
+                                app.tutora.usecases.ReceiptRef
+                                    .New(staged),
+                            ),
+                    ),
+                ) as app.tutora.usecases.PaymentResult.Ok
+            val repo = app.tutora.data.ReceiptRepository(t.db)
+            val kept = repo.forPayment(paid.paymentId).first().single()
+            val zip = backups.makeBackup().second
+            // A new phone: nothing there yet.
+            receipts.store.dir.deleteRecursively()
+            app.tutora.data
+                .BackupStore(t.db)
+                .replaceAll(emptyMap())
+            val file = (backups.inspect(zip) as BackupRead.Ok).file
+            assertEquals(1 to 0, backups.receiptsIn(file))
+            backups.restore(file)
+            assertEquals(listOf(kept), repo.forPayment(paid.paymentId).first())
+            assertTrue(
+                receipts.store
+                    .file(kept.file)
+                    .readBytes()
+                    .contentEquals(photo.readBytes()),
+            )
+            // A backup from before spec 021 is plain JSON: it restores, with no comprovantes.
+            val old =
+                app.tutora.domain
+                    .encodeBackup(file.copy(tables = file.tables - "payment_receipt"))
+                    .encodeToByteArray()
+            backups.restore((backups.inspect(old) as BackupRead.Ok).file)
+            assertEquals(emptyList<Any>(), repo.forPayment(paid.paymentId).first())
+            backups.undoRestore()
+            assertTrue(receipts.store.file(kept.file).exists())
+            assertEquals(listOf(kept), repo.forPayment(paid.paymentId).first())
         }
 }

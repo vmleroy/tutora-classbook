@@ -527,7 +527,6 @@
     <string name="rep_threeMonths">3 meses</string>
     <string name="rep_from">De</string>
     <string name="rep_to">Até</string>
-    <string name="rep_export">Exportar este relatório</string>
     <string name="rep_copy">Copiar como texto</string>
     <string name="rep_copied">Copiado</string>
     <string name="rep_earningsSubtitle">%1$s · usa os filtros da tela</string>
@@ -542,7 +541,7 @@
     <string name="rep_settingsPix">Chave Pix</string>
     <string name="rep_settingsTitle">Título no topo dos relatórios</string>
     <string name="rep_personal">Seus dados</string>
-    <string name="rep_personalHint">Nome e chave Pix para os relatórios</string>
+    <string name="rep_personalHint">Seu nome nos relatórios</string>
     <string name="rep_personalBody">Tudo opcional: o que ficar vazio não aparece no que você envia.</string>
     <!-- Spec 015: app lock -->
     <string name="lock_promptTitle">Desbloquear o Tutora</string>
@@ -571,10 +570,7 @@
     <string name="lock_startClass">Iniciar aula</string>
     <!-- Spec 020: Fatura and detailed report -->
     <string name="inv_invoice">Fatura</string>
-    <string name="inv_invoiceHint">Para receber: valor e Pix</string>
     <string name="inv_detail">Relatório detalhado</string>
-    <string name="inv_detailHint">Cada aula com dia, horário e deslocamento</string>
-    <string name="inv_send">Enviar</string>
     <string name="inv_to">Para:</string>
     <string name="inv_guardianOf">responsável por %1$s</string>
     <string name="inv_madeOn">Emitida em %1$s</string>
@@ -584,8 +580,8 @@
     <string name="inv_ends">Término</string>
     <string name="inv_inClass">Em aula</string>
     <string name="inv_place">Local</string>
-    <string name="inv_travel">Deslocamento</string>
-    <string name="inv_charge">Cobrança extra</string>
+    <string name="inv_travel">Desloc.</string>
+    <string name="inv_charge">Extra</string>
     <string name="inv_subtotal">Subtotal</string>
     <string name="inv_salary">Salário</string>
     <string name="inv_periodTotal">Total do período</string>
@@ -599,7 +595,7 @@
     <string name="inv_extraCharges">Cobranças extras</string>
     <string name="inv_notes">Observações</string>
     <string name="inv_hello">Olá!</string>
-    <string name="inv_invoiceOf">Fatura de %1$s</string>
+    <string name="inv_invoiceOf">Aulas de %1$s</string>
     <string name="inv_totalToPay">Total a pagar: %1$s</string>
     <string name="inv_until">até %1$s</string>
     <string name="inv_pixWithName">Pix: %1$s (%2$s)</string>
@@ -609,11 +605,8 @@
     <string name="inv_noDue">Sem vencimento</string>
     <string name="inv_whole">Turma inteira</string>
     <string name="inv_split">Dividir por aluno</string>
-    <string name="inv_withNotes">Incluir observações</string>
-    <string name="inv_addPix">Adicione sua chave Pix em Seus dados</string>
-    <string name="inv_fileInvoice">fatura</string>
-    <string name="inv_fileDetail">relatório detalhado</string>
-    <string name="inv_monthTitle">Faturas do mês</string>
+    <string name="inv_addPix">Adicione sua chave Pix em Ajustes › Pagamentos</string>
+    <string name="inv_monthTitle">Cobranças do mês</string>
     <string name="inv_monthTotal">A receber no período</string>
     <string name="inv_splitGroups">Dividir turmas por aluno</string>
     <string name="inv_nobody">Ninguém deve nada neste período</string>
@@ -621,14 +614,14 @@
     <string name="inv_dueAll">Vencimento para todas</string>
     <string name="inv_sent">Enviada</string>
     <string name="stu_guardian">Responsável</string>
-    <string name="stu_guardianHint">Quem recebe a fatura, se não for o aluno</string>
+    <string name="stu_guardianHint">Quem recebe o relatório, se não for o aluno</string>
     <string name="rep_settingsCity">Cidade</string>
     <string name="rep_settingsCityHint">Usada no QR code do Pix</string>
     <string name="stu_guardianLine">Responsável: %1$s</string>
     <string name="rep_sectionYou">Você</string>
-    <string name="rep_sectionYouBody">Seu nome vai no topo das faturas e relatórios e no fim do texto copiado.</string>
+    <string name="rep_sectionYouBody">Seu nome vai no topo dos relatórios e no fim do texto copiado.</string>
     <string name="rep_sectionPix">Pix</string>
-    <string name="rep_sectionPixBody">Para receber: a chave vai inteira nas faturas. Com seu nome e a cidade, a fatura ganha também um QR code com o valor.</string>
+    <string name="rep_sectionPixBody">Para receber: a chave vai inteira no relatório. Com seu nome e a cidade, ele ganha também um QR code com o valor.</string>
     <string name="rep_sectionReports">Relatórios</string>
     <string name="rep_sectionReportsBody">A linha no topo de cada PDF. Vazia, fica a do Tutora.</string>
     <string name="rep_period">Período</string>

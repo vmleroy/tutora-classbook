@@ -44,7 +44,7 @@
     <string name="bk_hint">Você escolhe a pasta uma vez. Pode ser no Google Drive, OneDrive ou no próprio celular. Se o celular estiver sem bateria ou desligado, o backup roda na próxima vez que abrir o app.</string>
     <string name="bk_folderFailed">Não foi possível salvar na pasta. Escolha a pasta de novo.</string>
     <string name="bk_now">Fazer agora</string>
-    <string name="bk_full">Backup completo (.json)</string>
+    <string name="bk_full">Backup completo (.zip)</string>
     <string name="bk_sheet">Planilha .xlsx</string>
     <string name="bk_restore">Restaurar backup</string>
     <string name="bk_undo">Desfazer restauração</string>

@@ -102,6 +102,23 @@ data class PdfPlan(
     val payPix: PdfPix? = null,
     /** "Gerado pela Tutora em 26/10/2026, 18:45 · página %1$d de %2$d". */
     val footer: String,
+    /** "Comprovantes", and the comprovantes after the last page, when asked (AC-021-7). */
+    val receiptsTitle: String = "",
+    val receipts: List<PdfReceipt> = emptyList(),
+)
+
+/** The pages the comprovantes add after the document: one per image, one per page of a PDF (AC-021-7). */
+fun receiptPageCount(plan: PdfPlan) = plan.receipts.sumOf { it.pages.coerceAtLeast(1) }
+
+/**
+ * A comprovante at the end of a Fatura or Relatório detalhado (AC-021-7): headed by its payment
+ * ("16/10/2026 · Pix · R$ 540,00"), an image on one page, a PDF's pages one per page.
+ */
+data class PdfReceipt(
+    val heading: String,
+    val path: String,
+    val pdf: Boolean,
+    val pages: Int = 1,
 )
 
 /** Colors from the active theme, as ARGB ints. */
@@ -129,25 +146,34 @@ data class PdfPage(
 )
 
 // Rows that fit under the summary on page one, and on a page with only the table header.
-const val PDF_FIRST_ROWS = 16
+// One fewer than before, for the room between the parts (Victor, 14 Nov 2026).
+const val PDF_FIRST_ROWS = 15
 const val PDF_OTHER_ROWS = 26
 
-// With a Fatura's amount and Pix block under the table, fewer rows fit on its last page.
-const val PDF_FIRST_ROWS_WITH_DUE = 12
-const val PDF_OTHER_ROWS_WITH_DUE = 15
+// The amount due and the Pix box sit on page one, above the table (Victor, 14 Nov 2026): the
+// table rows they take there, the amount's lines aside.
+const val PDF_DUE_ROWS = 4
+const val PDF_PIX_ROWS = 7
 const val PDF_TILES_PER_ROW = 4
+
+// The space between the parts of a page: tiles, summary, table, each section.
+private const val PDF_GAP = 22f
+
+// A comprovante is drawn from a bitmap about 150 dpi across the page's width.
+private const val RECEIPT_PX = 1240
 
 /** Pages for a plan: the table spread over pages, with the header repeated; the footer numbers each (AC-010-9). */
 fun pdfPages(plan: PdfPlan): List<PdfPage> {
     // A second row of tiles (more than four totals) takes two rows of the table.
-    val first = if (plan.stats.size > PDF_TILES_PER_ROW) PDF_FIRST_ROWS - 2 else PDF_FIRST_ROWS
-    var ranges = paginate(plan.rows.size, first, PDF_OTHER_ROWS)
-    if (plan.due != null || plan.payPix != null) {
-        val room = if (ranges.size == 1) PDF_FIRST_ROWS_WITH_DUE else PDF_OTHER_ROWS_WITH_DUE
-        if (ranges.last().count() > room) ranges = ranges + listOf(IntRange.EMPTY)
-    }
+    var first = if (plan.stats.size > PDF_TILES_PER_ROW) PDF_FIRST_ROWS - 2 else PDF_FIRST_ROWS
+    // The summary comes first: the amount due and the Pix box take room on page one (AC-021-15).
+    plan.due?.let { first -= (if (it.settled) PDF_DUE_ROWS - 2 else PDF_DUE_ROWS - 1) + it.lines.size }
+    if (plan.payPix != null) first -= PDF_PIX_ROWS
+    val ranges = paginate(plan.rows.size, first.coerceAtLeast(1), PDF_OTHER_ROWS)
+    // The comprovantes' pages come after, and the footer counts them too (AC-021-7).
+    val total = ranges.size + receiptPageCount(plan)
     return ranges.mapIndexed { i, r ->
-        PdfPage(r, first = i == 0, last = i == ranges.lastIndex, footer = plan.footer.format(i + 1, ranges.size))
+        PdfPage(r, first = i == 0, last = i == ranges.lastIndex, footer = plan.footer.format(i + 1, total))
     }
 }
 
@@ -211,7 +237,15 @@ class AndroidExports(
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-        context.startActivity(Intent.createChooser(send, fileName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        // Tutora takes shared images and PDFs as comprovantes (spec 021); its own documents never go back into it.
+        val chooser =
+            Intent
+                .createChooser(send, fileName)
+                .putExtra(
+                    Intent.EXTRA_EXCLUDE_COMPONENTS,
+                    arrayOf(android.content.ComponentName(context.packageName, "app.tutora.MainActivity")),
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(chooser)
     }
 
     override fun copy(text: String) {
@@ -337,18 +371,27 @@ private class AndroidPdf(
             text(value, right - 10f, y + 12f, paint(9.5f, c.ink, bold = true), alignRight = true, maxWidth = 120f)
             y += 18f
         }
-        y += 6f
+        if (d.lines.isNotEmpty()) y += 6f
         val tone = if (d.settled) c.paid else c.owed
-        drawRoundRect(RectF(left, y, right, y + 56f), 10f, 10f, fill(if (d.settled) c.paidSoft else c.owedSoft))
+        // All paid: one slim line that says so, no amount repeated.
+        if (d.settled) {
+            drawRoundRect(RectF(left, y, right, y + 30f), 8f, 8f, fill(c.paidSoft))
+            text(d.label, left + 14f, y + 19f, paint(10f, tone, bold = true), maxWidth = right - left - 28f)
+            return y + 40f
+        }
+        drawRoundRect(RectF(left, y, right, y + 56f), 10f, 10f, fill(c.owedSoft))
         text(d.label, left + 14f, y + 22f, paint(10f, tone, bold = true), maxWidth = 240f)
         d.note?.let { text(it, left + 14f, y + 40f, paint(9f, c.ink), maxWidth = 240f) }
         text(d.amount, right - 14f, y + 36f, paint(22f, tone, bold = true), alignRight = true, maxWidth = 260f)
         return y + 66f
     }
 
-    /** The Pix block at the foot: QR code on the left, the key, the name and the "copia e cola" on the right. */
-    private fun Canvas.payPix(p: PdfPix) {
-        val boxTop = height - 210f
+    /** The Pix box, from [top]: QR code on the left, the key, the name and the "copia e cola" on the right. */
+    private fun Canvas.payPix(
+        p: PdfPix,
+        top: Float,
+    ): Float {
+        val boxTop = top
         val dash =
             Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = c.line
@@ -387,6 +430,57 @@ private class AndroidPdf(
             val perLine = (w / small.measureText("0")).toInt().coerceAtLeast(10)
             code.chunked(perLine).take(5).forEachIndexed { i, line -> text(line, x, boxTop + 96f + i * 9f, small, maxWidth = w) }
         }
+        return boxTop + 150f
+    }
+
+    /**
+     * The "Comprovantes" section (AC-021-7): one page per image and per page of a PDF, each headed
+     * by its payment, the picture fitted inside the margins; numbered after the document's pages.
+     */
+    private fun drawReceipts(
+        doc: PdfDocument,
+        plan: PdfPlan,
+        before: Int,
+    ) {
+        if (plan.receipts.isEmpty()) return
+        val total = before + receiptPageCount(plan)
+        val images =
+            app.tutora.adapters.receipts
+                .AndroidReceiptImages()
+        var n = before
+        var firstPage = true
+        plan.receipts.forEach { r ->
+            val file = File(r.path)
+            repeat(r.pages.coerceAtLeast(1)) { k ->
+                n++
+                val page = doc.startPage(PdfDocument.PageInfo.Builder(width.toInt(), height.toInt(), n).create())
+                val canvas = page.canvas
+                var y = top
+                if (firstPage) {
+                    canvas.text(plan.receiptsTitle, left, y + 16f, paint(18f, c.ink, bold = true), maxWidth = right - left)
+                    y += 30f
+                    firstPage = false
+                }
+                canvas.text(r.heading, left, y + 12f, paint(11f, c.ink, bold = true), maxWidth = right - left)
+                canvas.drawRect(left, y + 20f, right, y + 21.5f, fill(c.line))
+                y += 32f
+                val bmp = runCatching { if (r.pdf) images.pdfPage(file, k, RECEIPT_PX) else images.image(file, RECEIPT_PX) }.getOrNull()
+                if (bmp != null) {
+                    val boxW = right - left
+                    val boxH = height - 60f - y
+                    val scale = minOf(boxW / bmp.width, boxH / bmp.height)
+                    val w = bmp.width * scale
+                    val h = bmp.height * scale
+                    val x = left + (boxW - w) / 2
+                    canvas.drawBitmap(bmp, null, RectF(x, y, x + w, y + h), Paint(Paint.FILTER_BITMAP_FLAG))
+                    bmp.recycle()
+                }
+                val footer = plan.footer.format(n, total)
+                val foot = paint(8f, c.muted)
+                canvas.text(footer, width / 2 - foot.measureText(footer).coerceAtMost(right - left) / 2, height - 30f, foot)
+                doc.finishPage(page)
+            }
+        }
     }
 
     fun draw(plan: PdfPlan): ByteArray {
@@ -419,7 +513,7 @@ private class AndroidPdf(
                 plan.subjectLine?.let { canvas.text(it, right, y + 44f, paint(9f, c.muted), alignRight = true, maxWidth = 200f) }
                 y += 64f
                 canvas.drawRect(left, y, right, y + 2.5f, fill(c.primary))
-                y += 18f
+                y += 24f
                 // Four tiles: neutral on cream, Pago on green, A receber on red.
                 val gap = 8f
                 val perRow = plan.stats.size.coerceIn(1, PDF_TILES_PER_ROW)
@@ -454,9 +548,14 @@ private class AndroidPdf(
                     )
                     canvas.text(st.value, x + 10f, y + 34f, paint(13f, fg, bold = true), maxWidth = tileW - 20f)
                 }
-                if (plan.stats.isNotEmpty()) y += 62f
+                // Room between the parts, so the page doesn't feel cluttered (Victor, 14 Nov 2026).
+                if (plan.stats.isNotEmpty()) y += 44f + PDF_GAP
+                // The summary before the details: what is due and how to pay it, then the classes (AC-021-15).
+                plan.due?.let { due -> y = canvas.due(due, y - 4f) + PDF_GAP - 8f }
+                plan.payPix?.let { y = canvas.payPix(it, y) + PDF_GAP }
+                y += 6f
                 canvas.text(plan.tableTitle, left, y, paint(11f, c.ink, bold = true))
-                y += 8f
+                y += 12f
             }
             // The table's header row, filled, repeated on every page.
             if (plan.columns.isNotEmpty() && (pg.rows.count() > 0 || pg.first)) {
@@ -502,7 +601,7 @@ private class AndroidPdf(
             if (pg.last) {
                 plan.totalRow?.let { total ->
                     canvas.row(total, y + 17f, plan, cols) { paint(9.5f, c.ink, bold = true) }
-                    y += rowH + 10f
+                    y += rowH + PDF_GAP
                 }
                 if (plan.trend.isNotEmpty() && plan.trendTitle != null) {
                     y += 6f
@@ -543,7 +642,7 @@ private class AndroidPdf(
                 for (s in plan.sections) {
                     if (y > height - 150f) break
                     canvas.text(s.title, left, y + 4f, paint(11f, c.ink, bold = true))
-                    y += 12f
+                    y += 16f
                     for ((text, value) in s.lines) {
                         if (y > height - 140f) break
                         canvas.drawRoundRect(RectF(left, y, right, y + 22f), 6f, 6f, fill(c.ground))
@@ -560,10 +659,8 @@ private class AndroidPdf(
                         }
                         y += 26f
                     }
-                    y += 8f
+                    y += PDF_GAP
                 }
-                plan.due?.let { due -> y = canvas.due(due, y) }
-                plan.payPix?.let { canvas.payPix(it) }
                 // The pending amount and the Pix key, in a dashed box above the foot.
                 if (plan.pending != null || plan.pix != null) {
                     val boxTop = height - 110f
@@ -595,6 +692,7 @@ private class AndroidPdf(
             canvas.text(pg.footer, width / 2 - foot.measureText(pg.footer).coerceAtMost(right - left) / 2, height - 30f, foot)
             doc.finishPage(page)
         }
+        drawReceipts(doc, plan, pages.size)
         val out = ByteArrayOutputStream()
         doc.writeTo(out)
         doc.close()

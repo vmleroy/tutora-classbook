@@ -54,6 +54,12 @@ class AppServices(
     val reminders = app.tutora.usecases.Reminders(ctx)
     val setup = app.tutora.usecases.Setup(ctx)
     val notices = app.tutora.usecases.Notices(ctx)
+    val receipts = app.tutora.usecases.Receipts(ctx)
+    val receiptRepo = app.tutora.data.ReceiptRepository(db)
+
+    /** The payment just removed, while Desfazer is offered on the payer's page (AC-021-6). */
+    val deletedPayment =
+        kotlinx.coroutines.flow.MutableStateFlow<app.tutora.usecases.DeletedPayment?>(null)
 
     val settings: Flow<Settings> = settingsRepo.observe()
 

@@ -2,4 +2,6 @@
 <paths>
     <!-- Reports are written to cache/reports before they are shared (spec 010). -->
     <cache-path name="reports" path="reports/" />
+    <!-- The system camera writes a comprovante photo here, before Tutora copies it in (spec 021). -->
+    <cache-path name="incoming" path="incoming/" />
 </paths>

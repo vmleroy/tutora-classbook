@@ -123,7 +123,7 @@ fun rememberBackupPicker(): BackupPicker {
 
             override fun file(onPicked: (String?) -> Unit) {
                 pending = onPicked
-                file.launch(arrayOf("application/json", "application/octet-stream", "text/plain", "*/*"))
+                file.launch(arrayOf("application/zip", "application/json", "application/octet-stream", "text/plain", "*/*"))
             }
         }
     }
@@ -486,14 +486,28 @@ fun BackupScreen(nav: NavHostController) {
         problem = null
         scope.launch {
             val bytes = withContext(Dispatchers.IO) { services.backups.fileOf(e) }
-            if (bytes == null) problem = Problem.GONE else exports.share(e.name, "application/json", bytes)
+            if (bytes == null) {
+                problem = Problem.GONE
+            } else {
+                exports.share(
+                    e.name,
+                    app.tutora.adapters.backup
+                        .backupMime(e.name),
+                    bytes,
+                )
+            }
         }
     }
 
     fun share() =
         scope.launch {
             val (name, bytes) = withContext(Dispatchers.IO) { services.backups.makeBackup() }
-            exports.share(name, "application/json", bytes)
+            exports.share(
+                name,
+                app.tutora.adapters.backup
+                    .backupMime(name),
+                bytes,
+            )
         }
 
     if (savingWhere) {
@@ -585,7 +599,14 @@ fun BackupScreen(nav: NavHostController) {
                     countText(R.string.bk_studentsNone, R.plurals.bk_students, sum.students),
                     countText(R.string.bk_lessonsNone, R.plurals.bk_lessons, sum.lessons),
                     countText(R.string.bk_paymentsNone, R.plurals.bk_payments, sum.payments),
-                ),
+                ) +
+                    // Comprovantes the file lacks are left out, and said so (AC-021-10).
+                    services.backups
+                        .receiptsIn(file)
+                        .second
+                        .takeIf { it > 0 }
+                        ?.let { "\n" + pluralStringResource(R.plurals.rc_restoreMissing, it, it) }
+                        .orEmpty(),
             actions =
                 listOf(
                     { m -> Button(stringResource(R.string.catalog_cancel), { confirming = null }, m, variant = ButtonVariant.OUTLINE) },
@@ -720,6 +741,30 @@ fun BackupScreen(nav: NavHostController) {
                 savingWhere = true
             }
         }, fullWidth = true, icon = IconName.CLOUD)
+        // How much room the comprovantes take, which the backup carries too (AC-021-12).
+        val usage by remember { services.receiptRepo.usage() }.collectAsState(initial = null)
+        usage?.takeIf { it.count > 0 }?.let { u ->
+            val mb =
+                java.text.NumberFormat
+                    .getNumberInstance(
+                        if (language ==
+                            app.tutora.domain.Language.PT_BR
+                        ) {
+                            java.util.Locale.forLanguageTag("pt-BR")
+                        } else {
+                            java.util.Locale.US
+                        },
+                    ).apply {
+                        minimumFractionDigits = 1
+                        maximumFractionDigits = 1
+                    }.format(u.tenthsOfMb / 10.0)
+            Text(
+                stringResource(R.string.rc_usage, pluralStringResource(R.plurals.rc_count, u.count, u.count), mb),
+                Modifier.testTag("receipt-usage"),
+                style = TutoraTheme.type.meta,
+                color = TutoraTheme.colors.inkMuted,
+            )
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s2)) {
             Button(stringResource(R.string.bk_sheet), { sheetOpen = true }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)
             Button(stringResource(R.string.bk_restore), ::restoreFromFile, Modifier.weight(1f), variant = ButtonVariant.OUTLINE)

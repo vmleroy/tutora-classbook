@@ -89,6 +89,9 @@ data class ReportPayment(
     val method: PayMethod,
     val cents: Cents,
     val classDays: List<LocalDate>,
+    /** The payment's id and its comprovantes, which a Fatura or Relatório detalhado can carry (AC-021-7, 8). */
+    val id: String = "",
+    val receipts: List<Receipt> = emptyList(),
 )
 
 /** A day a school's classes were given, for a salary report (AC-010-6). */
@@ -154,4 +157,30 @@ fun paginate(
         start += otherPages
     }
     return pages
+}
+
+/**
+ * What the one document shows (Victor, 13 Nov 2026; AC-021-14, 15): the classes and totals
+ * always, then each part the teacher turns on. Valor a pagar e Pix makes it a Fatura.
+ */
+data class DocParts(
+    val pix: Boolean = true,
+    val details: Boolean = false,
+    val notes: Boolean = false,
+    val payments: Boolean = true,
+    val receipts: Boolean = false,
+) {
+    /** The parts that are on, by key, for the settings. */
+    fun keys(): Set<String> =
+        setOfNotNull(
+            "pix".takeIf { pix },
+            "details".takeIf { details },
+            "notes".takeIf { notes },
+            "payments".takeIf { payments },
+            "receipts".takeIf { receipts },
+        )
+
+    companion object {
+        fun fromKeys(on: Set<String>) = DocParts("pix" in on, "details" in on, "notes" in on, "payments" in on, "receipts" in on)
+    }
 }

@@ -26,13 +26,13 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 
 ### Choosing what to send
 
-- **AC-020-1.** Relatório (AC-010-1, 2, 3) keeps its subject, period, on-screen totals and "Exportar este relatório" (PDF, Excel, copy as text), unchanged. Under them, "Enviar" offers two kinds side by side: "Fatura" ("Para receber: valor e Pix") and "Relatório detalhado" ("Cada aula com dia, horário e deslocamento").
+- **AC-020-1.** *(Replaced by AC-021-14 to 16: one Exportar section and one document with switches, 13 Nov 2026.)* Relatório (AC-010-1, 2, 3) keeps its subject, period, on-screen totals and "Exportar este relatório" (PDF, Excel, copy as text), unchanged. Under them, "Enviar" offers two kinds side by side: "Fatura" ("Para receber: valor e Pix") and "Relatório detalhado" ("Cada aula com dia, horário e deslocamento").
 - **AC-020-29.** Relatório is only for the student, group or place it was opened from: the Aluno, Turma and Local switch and the list of names are gone, and its period, totals, export and Enviar are for that one alone. This replaces AC-010-2 (Victor, 13 Nov 2026: the list doesn't scale to many students).
 - **AC-020-30.** Relatório's period is one row, Este mês, Mês passado and 3 meses, over De and Até; "Outro…" is gone. Picking De or Até makes the period those dates, and then none of the three is lit. Até is still never before De nor after today (AC-010-3; Victor, 13 Nov 2026).
 - **AC-020-31.** Wherever a period is chosen by dates, it is one field: the label "Período", the quick periods in one segmented row, and De and Até under them, always showing the dates. Relatório (Este mês, Mês passado, 3 meses), Evolução (6 meses, 12 meses, Ano; "Personalizado" is gone) and the backup spreadsheet (Este mês, Mês passado, Este ano, Tudo; "Personalizado" is gone, and Tudo shows "—" in De). Picking a date makes the period those dates and lights none of the quick ones (Victor, 13 Nov 2026).
 - **AC-020-32.** Every choice of two to four short fixed options is one segmented row instead of chips: Repetir, Alunos and Turmas when picking who, why a class was cancelled, a place's pay cycle, travel in the first-run setup, Pedir confirmação, Bloquear após, a payer's classes (Todas, A receber, Pagas) and PDF or Excel in Ganhos' report. How a payment was made (Pix, Dinheiro, Transferência, Cartão) is a "Forma de pagamento" dropdown field wherever it is asked, since four segments cut "Transferência". Lists that grow (places, the six kinds of place, a cancellation's charge) and Cadastro's filters with counts stay chips (Victor, 13 Nov 2026).
 - **AC-020-33.** A period's Até never shows or takes a day after today: the calendar's later days can't be picked or typed, and a quick period that runs to the end of a month or a year (6 meses, 12 meses, Ano, Este ano) shows today in Até. Picking De then leaves Até where it was (Victor, 13 Nov 2026: Evolução jumped when a date after today was picked).
-- **AC-020-2.** Fatura is shared as PDF or copied as text; Relatório detalhado as PDF or Excel. File names say which ("Ana Souza - fatura - outubro 2026.pdf", "Ana Souza - relatório detalhado - outubro 2026.pdf").
+- **AC-020-2.** *(Replaced by AC-021-14 to 16: one Exportar section and one document with switches, 13 Nov 2026.)* Fatura is shared as PDF or copied as text; Relatório detalhado as PDF or Excel. File names say which ("Ana Souza - fatura - outubro 2026.pdf", "Ana Souza - relatório detalhado - outubro 2026.pdf").
 
 ### What every class row shows
 
@@ -61,7 +61,7 @@ On both, each class shows the name, the day, the scheduled time, the time spent 
 ### Who it is for
 
 - **AC-020-17.** A student's edit form has an optional "Responsável" (name). Student detail shows it under the name when set. It is kept in the backup (011) and restored with it.
-- **AC-020-28.** Seus dados is in three sections, each with a line saying what it is for: "Você" (Seu nome), "Pix" (Chave Pix and Cidade) and "Relatórios" (Título no topo dos relatórios) (Victor, 13 Nov 2026).
+- **AC-020-28.** *(The "Relatórios" section moved to its own page, Ajustes › Relatórios: AC-021-20, 14 Nov 2026.)* Seus dados is in three sections, each with a line saying what it is for: "Você" (Seu nome), "Pix" (Chave Pix and Cidade) and "Relatórios" (Título no topo dos relatórios) (Victor, 13 Nov 2026).
 - **AC-020-18.** Seus dados has an optional "Cidade", described as "Usada no QR code do Pix". Seu nome, Chave Pix and Cidade are all needed for the QR code (AC-020-11).
 
 ### Groups

@@ -247,6 +247,8 @@ data class PaymentRecord(
     val note: String?,
     val packageId: String?,
     val chosen: List<String>,
+    /** How many comprovantes it holds (spec 021), for the mark on its row (AC-021-4). */
+    val receipts: Int = 0,
 )
 
 /** A payer's owed classes, payments and which classes those payments paid (AC-008-6 to 9, 11). */

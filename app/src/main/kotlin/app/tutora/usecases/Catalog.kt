@@ -45,6 +45,8 @@ class Ctx(
     val calendarWords: (app.tutora.domain.Language) -> app.tutora.domain.CalendarWords = NO_CALENDAR_WORDS,
     /** The alarms behind the reminders (spec 014). */
     val reminders: ReminderAlarm = ReminderAlarm.None,
+    /** Reading picked and shared comprovantes into Tutora's storage (spec 021). */
+    val receiptFiles: ReceiptFiles = ReceiptFiles.None,
 )
 
 sealed interface Result<out T> {

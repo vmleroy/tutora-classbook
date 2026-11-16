@@ -23,9 +23,10 @@ class TestDb(
     val scheduler: FakeBackupScheduler = FakeBackupScheduler(),
     val calendar: FakePhoneCalendar = FakePhoneCalendar(),
     val reminders: FakeReminderAlarm = FakeReminderAlarm(),
+    val receiptFiles: FakeReceiptFiles = FakeReceiptFiles(),
 ) {
     private var n = 0
-    val db = openTutoraDatabase(ApplicationProvider.getApplicationContext(), File(dir, "tutora.db"), AndroidSQLiteDriver()).first
+    val db = openTutoraDatabase(ApplicationProvider.getApplicationContext(), File(dir, "tutora.db"), AndroidSQLiteDriver(), DbWork).first
     val ctx =
         Ctx(
             db,
@@ -40,11 +41,39 @@ class TestDb(
             calendar,
             { TEST_CALENDAR_WORDS },
             reminders,
+            receiptFiles,
         )
     val catalog = Catalog(ctx)
     val schedule = Schedule(ctx)
     val lessons = Lessons(ctx)
     val live = Live(ctx)
+}
+
+/**
+ * Runs the database's queries on the IO threads and counts those still running, so Compose's
+ * waitForIdle waits for them (registered in Harness.show): a screen's data is on screen before
+ * the test looks, however slow the machine (CI flaked on a fixed sleep, 16 Nov 2026).
+ */
+object DbWork : kotlinx.coroutines.CoroutineDispatcher(), androidx.compose.ui.test.IdlingResource {
+    private val running =
+        java.util.concurrent.atomic
+            .AtomicInteger()
+
+    override val isIdleNow get() = running.get() == 0
+
+    override fun dispatch(
+        context: kotlin.coroutines.CoroutineContext,
+        block: Runnable,
+    ) {
+        running.incrementAndGet()
+        kotlinx.coroutines.Dispatchers.IO.dispatch(context) {
+            try {
+                block.run()
+            } finally {
+                running.decrementAndGet()
+            }
+        }
+    }
 }
 
 /** A backup folder in memory: what was written, and a switch to make writing fail (AC-011-9). */
@@ -193,5 +222,33 @@ class FakeReminderAlarm : app.tutora.usecases.ReminderAlarm {
         lessonId: String?,
     ) {
         if (at == null) set.remove(kind) else set[kind] = at to lessonId
+    }
+}
+
+/**
+ * Picked and shared comprovantes from plain files: the uri is a path, the type comes from its
+ * extension, and the file is copied as it is (the phone's shrinking is the domain rule's job).
+ */
+class FakeReceiptFiles : app.tutora.usecases.ReceiptFiles {
+    override fun stage(
+        uri: String,
+        dir: File,
+        name: String,
+    ): app.tutora.usecases.StageResult {
+        val from = File(uri.removePrefix("file://"))
+        val mime =
+            when (from.extension.lowercase()) {
+                "pdf" -> "application/pdf"
+                "png" -> "image/png"
+                "jpg", "jpeg" -> "image/jpeg"
+                else ->
+                    return app.tutora.usecases.StageResult
+                        .Refused(app.tutora.usecases.ReceiptRefusal.UNSUPPORTED)
+            }
+        dir.mkdirs()
+        val out = File(dir, "$name.${from.extension.lowercase()}")
+        from.copyTo(out, overwrite = true)
+        return app.tutora.usecases.StageResult
+            .Ok(app.tutora.usecases.StagedReceipt(out.name, mime, out.length()))
     }
 }

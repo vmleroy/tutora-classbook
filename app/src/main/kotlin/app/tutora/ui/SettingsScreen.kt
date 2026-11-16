@@ -62,8 +62,9 @@ private fun stringIn(
 }
 
 /**
- * Ajustes: only its pages, each with a line of what is set (AC-014-28). Seus dados, Backup e
- * planilha and Privacidade first; Geral, Aulas, Lembretes and Pagamentos; then Sobre.
+ * Ajustes: only its pages, each with a line of what is set (AC-014-28). Your work first (Seus dados,
+ * Aulas, Pagamentos, Relatórios, Lembretes), then the app (Geral, Backup e planilha, Privacidade),
+ * then Sobre (Victor, 14 Nov 2026).
  */
 @Composable
 fun SettingsScreen(
@@ -75,23 +76,78 @@ fun SettingsScreen(
     val settings by services.settings.collectAsState(initial = null)
     val s = settings ?: return
     ScreenScaffold(stringResource(R.string.tab_settings), "settings-screen") {
+        // Your work first, then the app, then Sobre (Victor, 14 Nov 2026).
         ListGroup(
             listOf(
                 // Seus dados: name and Pix key for reports (AC-010-16).
                 {
-                    // The Pix key never in full here (AC-015-16).
                     ListRow(
                         stringResource(R.string.rep_personal),
-                        subtitle =
-                            listOf(s.teacherName, app.tutora.domain.maskPix(s.pixKey))
-                                .filter { it.isNotBlank() }
-                                .joinToString(" · ")
-                                .ifEmpty {
-                                    stringResource(R.string.rep_personalHint)
-                                },
+                        subtitle = s.teacherName.ifBlank { stringResource(R.string.rep_personalHint) },
                         icon = IconName.USERS,
                         onClick = { onOpen(PersonalData) },
                     )
+                },
+                {
+                    PageRow(
+                        stringResource(R.string.settings_lessons),
+                        listOfNotNull(
+                            stringResource(if (s.pastClasses == PastClasses.AUTO) R.string.set_pastAuto else R.string.set_pastAsk),
+                            stringResource(R.string.settings_liveTimer).takeIf { s.liveTimer },
+                        ).joinToString(" · "),
+                        IconName.CALENDAR_CHECK,
+                        "page-lessons",
+                    ) { onOpen(SettingsLessons) }
+                },
+                // Calendário: classes into a phone calendar, its own page (AC-012-1; Victor, 14 Nov 2026).
+                {
+                    app.tutora.ui.calendar
+                        .CalendarSettingsRow { onOpen(CalendarHome) }
+                },
+                {
+                    PageRow(
+                        stringResource(R.string.set_payments),
+                        // The Pix key never in full here (AC-015-16).
+                        listOf(
+                            stringResource(if (s.credits) R.string.set_creditsOn else R.string.set_creditsOff),
+                            app.tutora.domain.maskPix(s.pixKey),
+                        ).filter { it.isNotBlank() }.joinToString(" · "),
+                        IconName.WALLET,
+                        "page-payments",
+                    ) { onOpen(SettingsPayments) }
+                },
+                // Relatórios: the title on top and what the PDF shows (AC-021-18; Victor, 14 Nov 2026).
+                {
+                    PageRow(
+                        stringResource(R.string.rep_sectionReports),
+                        stringResource(R.string.doc_rowHint),
+                        IconName.FILE,
+                        "page-reports",
+                    ) { onOpen(SettingsReports) }
+                },
+                {
+                    PageRow(
+                        stringResource(R.string.set_reminders),
+                        app.tutora.ui.reminders
+                            .remindersSummary(s),
+                        IconName.ALERT,
+                        "reminders-row",
+                    ) { onOpen(RemindersHome) }
+                },
+            ),
+        )
+        ListGroup(
+            listOf(
+                {
+                    PageRow(
+                        stringResource(R.string.settings_general),
+                        listOfNotNull(
+                            stringResource(if (s.language == Language.PT_BR) R.string.languages_pt_BR else R.string.languages_en),
+                            stringResource(R.string.set_hhmm).takeIf { s.clockDurations },
+                        ).joinToString(" · "),
+                        IconName.GEAR,
+                        "page-general",
+                    ) { onOpen(SettingsGeneral) }
                 },
                 // Backup e planilha, with its state or its warning (AC-011-1, 10).
                 {
@@ -110,49 +166,6 @@ fun SettingsScreen(
                         IconName.LOCK,
                         "page-privacy",
                     ) { onOpen(SettingsPrivacy) }
-                },
-            ),
-        )
-        ListGroup(
-            listOf(
-                {
-                    PageRow(
-                        stringResource(R.string.settings_general),
-                        listOfNotNull(
-                            stringResource(if (s.language == Language.PT_BR) R.string.languages_pt_BR else R.string.languages_en),
-                            stringResource(R.string.set_hhmm).takeIf { s.clockDurations },
-                        ).joinToString(" · "),
-                        IconName.GEAR,
-                        "page-general",
-                    ) { onOpen(SettingsGeneral) }
-                },
-                {
-                    PageRow(
-                        stringResource(R.string.settings_lessons),
-                        listOfNotNull(
-                            stringResource(if (s.pastClasses == PastClasses.AUTO) R.string.set_pastAuto else R.string.set_pastAsk),
-                            stringResource(R.string.settings_liveTimer).takeIf { s.liveTimer },
-                        ).joinToString(" · "),
-                        IconName.CALENDAR_CHECK,
-                        "page-lessons",
-                    ) { onOpen(SettingsLessons) }
-                },
-                {
-                    PageRow(
-                        stringResource(R.string.set_reminders),
-                        app.tutora.ui.reminders
-                            .remindersSummary(s),
-                        IconName.ALERT,
-                        "reminders-row",
-                    ) { onOpen(RemindersHome) }
-                },
-                {
-                    PageRow(
-                        stringResource(R.string.set_payments),
-                        stringResource(if (s.credits) R.string.set_creditsOn else R.string.set_creditsOff),
-                        IconName.WALLET,
-                        "page-payments",
-                    ) { onOpen(SettingsPayments) }
                 },
             ),
         )
@@ -178,7 +191,7 @@ private fun PageRow(
     onClick: () -> Unit,
 ) = ListRow(title, Modifier.testTag(tag), subtitle = subtitle.ifEmpty { null }, icon = icon, onClick = onClick)
 
-/** Ajustes › Geral: Idioma, Aparência, Calendário, Como você dá aula, Locais padrão and Durações em HH:MM (AC-014-28). */
+/** Ajustes › Geral: Idioma, Aparência and Durações em HH:MM, how the app shows things (AC-014-28; Victor, 14 Nov 2026). */
 @Composable
 fun SettingsGeneralScreen(nav: NavHostController) {
     val services = LocalServices.current
@@ -198,11 +211,48 @@ fun SettingsGeneralScreen(nav: NavHostController) {
                     app.tutora.ui.appearance
                         .AppearanceSettingsRow { nav.navigate(AppearanceHome) }
                 },
-                // Calendário: classes into a phone calendar (AC-012-1).
+                // How durations show everywhere: "90 min" or "01:30".
                 {
-                    app.tutora.ui.calendar
-                        .CalendarSettingsRow { nav.navigate(CalendarHome) }
+                    ListRow(
+                        stringResource(R.string.settings_clockDurations),
+                        subtitle = stringResource(R.string.settings_clockDurationsHint),
+                        icon = IconName.CLOCK,
+                        trailing = RowTrailing.SWITCH,
+                        switchValue = s.clockDurations,
+                        onSwitchChange = { save(s.copy(clockDurations = it)) },
+                    )
                 },
+            ),
+        )
+    }
+}
+
+/**
+ * Ajustes › Aulas: Como você dá aula and Locais padrão; then Aula
+ * ao vivo with Início automático, Aulas passadas with Pedir confirmação, and Marcar como dada
+ * antes do horário (AC-014-28; Victor, 14 Nov 2026).
+ */
+@Composable
+fun SettingsLessonsScreen(nav: NavHostController) {
+    val services = LocalServices.current
+    val settings by services.settings.collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
+    val s = settings ?: return
+
+    fun save(next: Settings) = scope.launch { services.saveSettings(next) }
+
+    // A change to the timer or its automatic start sets or clears the alarm at once.
+    fun saveTimer(next: Settings) =
+        scope.launch {
+            services.saveSettings(next)
+            services.live.autoStart()
+        }
+    ScreenScaffold(stringResource(R.string.settings_lessons), "settings-lessons", variant = HeaderVariant.PUSH, onBack = {
+        nav.popBackStack()
+    }) {
+        // How you teach and how classes show, moved here from Geral (Victor, 14 Nov 2026).
+        ListGroup(
+            listOf(
                 // Como você dá aula, to change what the setup chose (AC-014-20).
                 {
                     ListRow(
@@ -225,43 +275,8 @@ fun SettingsGeneralScreen(nav: NavHostController) {
                         onSwitchChange = { save(s.copy(showDefaultPlaces = it)) },
                     )
                 },
-                {
-                    ListRow(
-                        stringResource(R.string.settings_clockDurations),
-                        subtitle = stringResource(R.string.settings_clockDurationsHint),
-                        icon = IconName.CLOCK,
-                        trailing = RowTrailing.SWITCH,
-                        switchValue = s.clockDurations,
-                        onSwitchChange = { save(s.copy(clockDurations = it)) },
-                    )
-                },
             ),
         )
-    }
-}
-
-/**
- * Ajustes › Aulas: Aula ao vivo with Início automático, Aulas passadas with Pedir confirmação,
- * and Marcar como dada antes do horário (AC-014-28).
- */
-@Composable
-fun SettingsLessonsScreen(nav: NavHostController) {
-    val services = LocalServices.current
-    val settings by services.settings.collectAsState(initial = null)
-    val scope = rememberCoroutineScope()
-    val s = settings ?: return
-
-    fun save(next: Settings) = scope.launch { services.saveSettings(next) }
-
-    // A change to the timer or its automatic start sets or clears the alarm at once.
-    fun saveTimer(next: Settings) =
-        scope.launch {
-            services.saveSettings(next)
-            services.live.autoStart()
-        }
-    ScreenScaffold(stringResource(R.string.settings_lessons), "settings-lessons", variant = HeaderVariant.PUSH, onBack = {
-        nav.popBackStack()
-    }) {
         ListGroup(
             listOf(
                 {
@@ -365,6 +380,7 @@ fun SettingsPaymentsScreen(nav: NavHostController) {
                 )
             },
         )
+        PixFields(s)
     }
 }
 
@@ -497,7 +513,7 @@ private fun LanguageRow(
     }
 }
 
-/** Seus dados: the teacher's name, Pix and the reports' title, in three sections (AC-010-16, AC-020-28). */
+/** Seus dados: the teacher's name, on the reports and the copied text (AC-010-16; Pix is in Pagamentos, Victor, 14 Nov 2026). */
 @Composable
 fun PersonalDataScreen(onBack: () -> Unit) {
     val services = LocalServices.current
@@ -506,68 +522,12 @@ fun PersonalDataScreen(onBack: () -> Unit) {
     val s = settings ?: return
     ScreenScaffold(stringResource(R.string.rep_personal), "personal-screen", variant = HeaderVariant.PUSH, onBack = onBack) {
         Text(stringResource(R.string.rep_personalBody), style = TutoraTheme.type.meta, color = TutoraTheme.colors.inkMuted)
-        // Three sections, each saying what its fields are for (AC-020-28).
         PersonalSection(R.string.rep_sectionYou, R.string.rep_sectionYouBody, "section-you")
         TextField(stringResource(R.string.rep_settingsName), s.teacherName, { v ->
             scope.launch {
                 services.saveSettings(s.copy(teacherName = v))
             }
         })
-        PersonalSection(R.string.rep_sectionPix, R.string.rep_sectionPixBody, "section-pix")
-        // Masked, with the eye to show it (AC-015-16); offered the lock once when first saved (AC-015-5).
-        val lock = app.tutora.lock.LocalAppLock.current
-        var offer by rememberSaveable { mutableStateOf(false) }
-        TextField(
-            stringResource(R.string.rep_settingsPix),
-            s.pixKey,
-            { v -> scope.launch { services.saveSettings(s.copy(pixKey = v)) } },
-            Modifier.testTag("pix-key"),
-            // E-mail and random keys keep their letters as typed.
-            capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.None,
-            secret = { app.tutora.domain.maskPix(it) },
-            onFocusLost = {
-                if (s.pixKey.isNotBlank() && !s.appLock && !s.lockOffered && lock.device.available()) offer = true
-            },
-        )
-        // Cidade: the Pix QR code needs it with the name and key (AC-020-18).
-        TextField(
-            stringResource(R.string.rep_settingsCity),
-            s.pixCity,
-            { v -> scope.launch { services.saveSettings(s.copy(pixCity = v)) } },
-            Modifier.testTag("pix-city"),
-            helper = stringResource(R.string.rep_settingsCityHint),
-            capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Words,
-        )
-        PersonalSection(R.string.rep_sectionReports, R.string.rep_sectionReportsBody, "section-reports")
-        // The reports' top line; empty keeps Tutora's (AC-019-15).
-        TextField(
-            stringResource(R.string.rep_settingsTitle),
-            s.reportTitle,
-            { v -> scope.launch { services.saveSettings(s.copy(reportTitle = v)) } },
-            Modifier.testTag("report-title"),
-            placeholder = stringResource(R.string.rep_brand),
-        )
-        if (offer) {
-            fun answer(on: Boolean) {
-                offer = false
-                if (on) {
-                    lock.ask { ok -> scope.launch { services.saveSettings(s.copy(appLock = ok, lockOffered = true)) } }
-                } else {
-                    scope.launch { services.saveSettings(s.copy(lockOffered = true)) }
-                }
-            }
-            BottomSheet(
-                stringResource(R.string.lock_offerTitle),
-                { answer(false) },
-                Modifier.testTag("lock-offer"),
-                subtitle = stringResource(R.string.lock_offerBody),
-                actions =
-                    listOf(
-                        { m -> Button(stringResource(R.string.lock_offerYes), { answer(true) }, m) },
-                        { m -> Button(stringResource(R.string.lock_offerNo), { answer(false) }, m, variant = ButtonVariant.GHOST) },
-                    ),
-            )
-        }
     }
 }
 
@@ -647,6 +607,126 @@ private fun LockSettings(s: Settings) {
             { after -> scope.launch { services.saveSettings(s.copy(lockAfter = after)) } },
             stringResource(R.string.lock_after),
             size = ControlSize.SM,
+        )
+    }
+}
+
+/**
+ * Ajustes › Relatórios (Victor, 14 Nov 2026): the title on top of every PDF, which parts of the
+ * document start on, and Lembrar a última escolha (AC-019-15, AC-021-18).
+ */
+@Composable
+fun SettingsReportsScreen(nav: NavHostController) {
+    val services = LocalServices.current
+    val settings by services.settings.collectAsState(initial = null)
+    val scope = rememberCoroutineScope()
+    val s = settings ?: return
+    ScreenScaffold(stringResource(R.string.rep_sectionReports), "settings-reports", variant = HeaderVariant.PUSH, onBack = {
+        nav.popBackStack()
+    }) {
+        // The reports' top line; empty keeps Tutora's (AC-019-15).
+        TextField(
+            stringResource(R.string.rep_settingsTitle),
+            s.reportTitle,
+            { v -> scope.launch { services.saveSettings(s.copy(reportTitle = v)) } },
+            Modifier.testTag("report-title"),
+            placeholder = stringResource(R.string.rep_brand),
+            helper = stringResource(R.string.rep_sectionReportsBody),
+        )
+        // Which parts of the document start on, and whether Relatório keeps the last choice (AC-021-18).
+        val parts = s.docParts
+
+        fun setParts(p: app.tutora.domain.DocParts) = scope.launch { services.saveSettings(s.copy(docParts = p)) }
+
+        @Composable
+        fun part(
+            label: Int,
+            tag: String,
+            on: Boolean,
+            set: (Boolean) -> Unit,
+        ): @Composable () -> Unit =
+            {
+                ListRow(
+                    stringResource(label),
+                    Modifier.testTag(tag),
+                    trailing = RowTrailing.SWITCH,
+                    switchValue = on,
+                    onSwitchChange = set,
+                )
+            }
+        ListGroup(
+            listOf(
+                part(R.string.doc_pix, "default-pix", parts.pix) { setParts(parts.copy(pix = it)) },
+                part(R.string.doc_details, "default-details", parts.details) { setParts(parts.copy(details = it)) },
+                part(R.string.doc_notes, "default-notes", parts.notes) { setParts(parts.copy(notes = it)) },
+                part(R.string.doc_payments, "default-payments", parts.payments) { setParts(parts.copy(payments = it)) },
+                part(R.string.rc_include, "default-receipts", parts.receipts) { setParts(parts.copy(receipts = it)) },
+            ),
+            title = stringResource(R.string.doc_settingsTitle),
+        )
+        ListRow(
+            stringResource(R.string.doc_remember),
+            Modifier.testTag("doc-remember"),
+            subtitle = stringResource(R.string.doc_rememberSub),
+            trailing = RowTrailing.SWITCH,
+            switchValue = s.docRemember,
+            onSwitchChange = { on -> scope.launch { services.saveSettings(s.copy(docRemember = on, docLast = null)) } },
+        )
+    }
+}
+
+/**
+ * Pix (chave e cidade), in Ajustes › Pagamentos (Victor, 14 Nov 2026): masked with the eye to show
+ * it (AC-015-16), the lock offered once when first saved (AC-015-5), the city for the QR code (AC-020-18).
+ */
+@Composable
+private fun PixFields(s: Settings) {
+    val services = LocalServices.current
+    val scope = rememberCoroutineScope()
+    PersonalSection(R.string.rep_sectionPix, R.string.rep_sectionPixBody, "section-pix")
+    // Masked, with the eye to show it (AC-015-16); offered the lock once when first saved (AC-015-5).
+    val lock = app.tutora.lock.LocalAppLock.current
+    var offer by rememberSaveable { mutableStateOf(false) }
+    TextField(
+        stringResource(R.string.rep_settingsPix),
+        s.pixKey,
+        { v -> scope.launch { services.saveSettings(s.copy(pixKey = v)) } },
+        Modifier.testTag("pix-key"),
+        // E-mail and random keys keep their letters as typed.
+        capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.None,
+        secret = { app.tutora.domain.maskPix(it) },
+        onFocusLost = {
+            if (s.pixKey.isNotBlank() && !s.appLock && !s.lockOffered && lock.device.available()) offer = true
+        },
+    )
+    // Cidade: the Pix QR code needs it with the name and key (AC-020-18).
+    TextField(
+        stringResource(R.string.rep_settingsCity),
+        s.pixCity,
+        { v -> scope.launch { services.saveSettings(s.copy(pixCity = v)) } },
+        Modifier.testTag("pix-city"),
+        helper = stringResource(R.string.rep_settingsCityHint),
+        capitalization = androidx.compose.ui.text.input.KeyboardCapitalization.Words,
+    )
+    if (offer) {
+        fun answer(on: Boolean) {
+            offer = false
+            if (on) {
+                lock.ask { ok -> scope.launch { services.saveSettings(s.copy(appLock = ok, lockOffered = true)) } }
+            } else {
+                scope.launch { services.saveSettings(s.copy(lockOffered = true)) }
+            }
+        }
+        BottomSheet(
+            stringResource(R.string.lock_offerTitle),
+            { answer(false) },
+            Modifier.testTag("lock-offer"),
+            subtitle = stringResource(R.string.lock_offerBody),
+            actions =
+                listOf(
+                    { m -> Button(stringResource(R.string.lock_offerYes), { answer(true) }, m) },
+                    { m -> Button(stringResource(R.string.lock_offerNo), { answer(false) }, m, variant = ButtonVariant.GHOST) },
+                ),
         )
     }
 }

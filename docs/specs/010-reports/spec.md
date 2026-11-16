@@ -32,7 +32,7 @@ The teacher can send someone what they owe and what they took: pick a student, a
 
 ### Sharing
 
-- **AC-010-8.** "Exportar este relatório" has PDF and Excel side by side, and "Copiar como texto".
+- **AC-010-8.** *(Replaced by AC-021-14 to 16: one Exportar section and one document with switches, 13 Nov 2026.)* "Exportar este relatório" has PDF and Excel side by side, and "Copiar como texto".
 - **AC-010-9.** The PDF has a header in the theme's main color with "Relatório de aulas", the teacher's name and the period. Then the student, group or place, the totals, and the table of classes with a total line. Payments received in the period follow, with method and the classes they paid, then the amount still pending, the Pix key, and at the foot "Gerado pela Tutora em 26/10/2026, 18:45 · página 1 de 2". A long period continues on more pages with the table header repeated.
 - **AC-010-10.** The Excel file has a sheet "Aulas" (date, duration in minutes, place, value, situation) and a sheet "Pagamentos" (date, method, amount). Dates are dates and amounts are numbers in reais, so the spreadsheet can sum them.
 - **AC-010-11.** PDF and Excel open the phone's share sheet with the file, named after the subject and period ("Ana Souza - outubro 2026.pdf").

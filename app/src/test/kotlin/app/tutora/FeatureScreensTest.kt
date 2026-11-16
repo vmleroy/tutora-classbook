@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.tutora.domain.BuiltinPlace
@@ -161,8 +162,8 @@ class FeatureScreensTest {
     @Test
     fun `AC-004-29 Mostrar locais padrão is on by default and turning it off hides the default places`() {
         h.show(compose)
-        h.go(compose, app.tutora.ui.SettingsGeneral)
-        compose.onNodeWithContentDescription("Mostrar locais padrão").performClick()
+        h.go(compose, app.tutora.ui.SettingsLessons)
+        compose.onNodeWithContentDescription("Mostrar locais padrão").performScrollTo().performClick()
         h.awaitDb(compose) {
             !h.services.settings
                 .first()

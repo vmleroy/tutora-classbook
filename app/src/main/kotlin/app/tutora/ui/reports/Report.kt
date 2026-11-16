@@ -32,7 +32,6 @@ import app.tutora.designsystem.components.Card
 import app.tutora.designsystem.components.Checkbox
 import app.tutora.designsystem.components.ControlSize
 import app.tutora.designsystem.components.HeaderVariant
-import app.tutora.designsystem.components.IconName
 import app.tutora.designsystem.components.ListGroup
 import app.tutora.designsystem.components.ListRow
 import app.tutora.designsystem.components.Money
@@ -117,7 +116,8 @@ fun rememberReportWords(): ReportWords {
         date = stringResource(R.string.lesson_date),
         duration = stringResource(R.string.lesson_duration),
         where = stringResource(R.string.rep_where),
-        value = stringResource(R.string.lesson_value),
+        // Short, so the column's header fits on A4 with every column on (Victor, 16 Nov 2026).
+        value = stringResource(R.string.doc_valueColumn),
         situation = stringResource(R.string.rep_situation),
         statusPaid = stringResource(R.string.pay_paid),
         statusOwed = stringResource(R.string.pay_toReceive),
@@ -149,6 +149,9 @@ fun rememberReportWords(): ReportWords {
         sheetSources = stringResource(R.string.rep_sheetSources),
         method = stringResource(R.string.rep_method),
         amount = stringResource(R.string.pay_amount),
+        receiptColumn = stringResource(R.string.rc_column),
+        yes = stringResource(R.string.rc_yes),
+        no = stringResource(R.string.rc_no),
     )
 }
 
@@ -327,35 +330,15 @@ fun ReportScreen(
             }
         }
         ReportList(r, words, showWho = kind == SubjectKind.PLACE)
-        // Exportar este relatório: PDF and Excel side by side, and Copiar como texto (AC-010-8).
-        SectionHeader(stringResource(R.string.rep_export))
         val name = subject.second
-        val plan = { subjectPlan(r, words, teacher, subjectLabel, name, subject.third, kind == SubjectKind.PLACE, stamp) }
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s3)) {
-            Button(stringResource(R.string.rep_pdf), {
-                exports.share(fileName(name, from, to, language) + ".pdf", MIME_PDF, exports.pdf(plan(), colors))
-            }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE, icon = IconName.FILE)
-            Button(stringResource(R.string.rep_excel), {
-                exports.share(fileName(name, from, to, language) + ".xlsx", MIME_XLSX, Xlsx.write(subjectSheets(r, words)))
-            }, Modifier.weight(1f), variant = ButtonVariant.OUTLINE, icon = IconName.FILE)
-        }
-        Button(
-            stringResource(if (copied) R.string.rep_copied else R.string.rep_copy),
-            {
-                exports.copy(subjectText(r, words, teacher, name))
-                copied = true
-            },
-            variant = ButtonVariant.GHOST,
-            fullWidth = true,
-        )
-        // Enviar: the Fatura and the Relatório detalhado (spec 020).
+        // Exportar: one document with switches (AC-021-14).
         val group = if (kind == SubjectKind.GROUP) groups.firstOrNull { it.id == id } else null
         val groupPlace = group?.let { g -> places.firstOrNull { it.place.id == g.placeId }?.place }
         val splitMembers =
             group?.let { g ->
                 members[g.id]?.takeIf { groupPlace != null && canSplit(it.size, groupPlace.kind, groupPlace.payer) }
             }
-        SendSection(
+        ExportSection(
             nav,
             r,
             SendSubject(

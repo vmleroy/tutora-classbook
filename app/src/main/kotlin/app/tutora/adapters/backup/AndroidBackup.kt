@@ -45,7 +45,7 @@ class AndroidBackupFolder(
     ): Long {
         val tree = uri.toUri()
         val doc =
-            checkNotNull(DocumentsContract.createDocument(resolver, folderDoc(tree), "application/json", name)) { "Folder refused $name" }
+            checkNotNull(DocumentsContract.createDocument(resolver, folderDoc(tree), backupMime(name), name)) { "Folder refused $name" }
         checkNotNull(resolver.openOutputStream(doc, "wt")) { "Can't write $name" }.use { it.write(bytes) }
         return bytes.size.toLong()
     }
@@ -77,6 +77,9 @@ class AndroidBackupFolder(
         DocumentsContract.deleteDocument(resolver, doc)
     }
 }
+
+/** A backup's type from its name: a zip since spec 021, JSON before (AC-021-10). */
+fun backupMime(name: String) = if (name.endsWith(".json")) "application/json" else "application/zip"
 
 class WorkManagerBackupScheduler(
     private val context: Context,

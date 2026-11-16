@@ -7,6 +7,7 @@ import app.tutora.data.PackageRow
 import app.tutora.data.PaymentLessonRow
 import app.tutora.data.PaymentRepository
 import app.tutora.data.PaymentRow
+import app.tutora.data.ReceiptRow
 import app.tutora.data.ScheduleRepository
 import app.tutora.data.SettingsRepository
 import app.tutora.data.inTransaction
@@ -97,6 +98,21 @@ data class PaymentDraft(
     val note: String? = null,
     /** The classes ticked in "Escolher aulas", which this payment pays first. */
     val chosen: List<String> = emptyList(),
+    /** Its comprovantes, in order: those it keeps and files just picked (AC-021-1). */
+    val receipts: List<ReceiptRef> = emptyList(),
+)
+
+/**
+ * A payment just removed, with everything that went with it, so Desfazer can write it all back
+ * (AC-021-6): its chosen classes, its comprovantes (whose files stay until the start-up sweep),
+ * and a package's purchase with the classes that used it.
+ */
+data class DeletedPayment(
+    val payment: PaymentRow,
+    val chosen: List<PaymentLessonRow>,
+    val receipts: List<ReceiptRow>,
+    val pkg: PackageRow? = null,
+    val packageLessons: List<String> = emptyList(),
 )
 
 enum class PaymentError { NOT_FOUND, AMOUNT, FUTURE_DATE, NOT_OWED, NO_PACKAGE, CREDITS_OFF, NO_CREDIT }
@@ -117,6 +133,8 @@ class Payments(
 ) {
     private val db get() = ctx.db
     private val dao get() = db.payments()
+    private val rdao get() = db.receipts()
+    private val receipts = Receipts(ctx)
 
     /** Today keeps the time it was recorded; an earlier day is noon of that day. */
     private fun paidAt(date: LocalDate): String {
@@ -210,6 +228,8 @@ class Payments(
                 val part = PaymentDraft(payer, cents, draft.method, draft.date, draft.note, classes.map { it.owed.lessonId })
                 dao.upsertPayment(payer.row(id, part, null, ctx.now()))
                 choose(id, part)
+                // One transfer that pays two payers: each payment keeps its own copy of the proof.
+                attachNew(id, draft.receipts)
                 remaining -= cents
                 first = first ?: id
             }
@@ -218,6 +238,7 @@ class Payments(
                 val rest = own.copy(cents = remaining)
                 dao.upsertPayment(rest.payer.row(id, rest, null, ctx.now()))
                 choose(id, rest)
+                attachNew(id, draft.receipts)
                 first = first ?: id
             }
             PaymentResult.Ok(first ?: "")
@@ -227,32 +248,86 @@ class Payments(
     suspend fun edit(
         id: String,
         draft: PaymentDraft,
-    ): PaymentResult =
-        db.inTransaction {
-            val before = dao.payment(id) ?: return@inTransaction PaymentResult.Err(PaymentError.NOT_FOUND)
-            (check(draft) ?: checkChosen(draft))?.let { return@inTransaction PaymentResult.Err(it) }
-            dao.upsertPayment(draft.payer.row(id, draft, before.packageId, before.createdAt))
-            choose(id, draft)
-            PaymentResult.Ok(id)
-        }
+    ): PaymentResult {
+        val dropped = mutableListOf<String>()
+        return db
+            .inTransaction {
+                val before = dao.payment(id) ?: return@inTransaction PaymentResult.Err(PaymentError.NOT_FOUND)
+                (check(draft) ?: checkChosen(draft))?.let { return@inTransaction PaymentResult.Err(it) }
+                dao.upsertPayment(draft.payer.row(id, draft, before.packageId, before.createdAt))
+                choose(id, draft)
+                dropped += setReceipts(id, draft.receipts)
+                PaymentResult.Ok(id)
+            }.also { if (it is PaymentResult.Ok) dropped.forEach(receipts.store::delete) }
+    }
+
+    /** Inside a transaction: rows for files just picked, after those the payment has. */
+    private suspend fun attachNew(
+        paymentId: String,
+        refs: List<ReceiptRef>,
+    ) {
+        val start = rdao.forPayment(paymentId).maxOfOrNull { it.position + 1 } ?: 0
+        rdao.insert(refs.filterIsInstance<ReceiptRef.New>().mapIndexed { i, r -> receipts.newRow(paymentId, r.staged, start + i) })
+    }
+
+    /**
+     * Inside a transaction: the payment's comprovantes become exactly [refs], in that order.
+     * Returns the files of those taken off, deleted once the transaction holds (AC-021-1).
+     */
+    private suspend fun setReceipts(
+        paymentId: String,
+        refs: List<ReceiptRef>,
+    ): List<String> {
+        val had = rdao.forPayment(paymentId).associateBy { it.id }
+        val keep = refs.filterIsInstance<ReceiptRef.Existing>().map { it.id }.toSet()
+        val gone = had.values.filter { it.id !in keep }
+        gone.forEach { rdao.delete(it.id) }
+        rdao.insert(
+            refs.mapIndexedNotNull { i, r ->
+                when (r) {
+                    is ReceiptRef.Existing -> had[r.id]?.copy(position = i, updatedAt = ctx.now())
+                    is ReceiptRef.New -> receipts.newRow(paymentId, r.staged, i)
+                }
+            },
+        )
+        return gone.map { it.file }
+    }
 
     /**
      * Excluir: the classes it paid go back to owing (AC-008-12). A package's payment takes the
-     * package with it, and the classes that used it owe its price per class again.
+     * package with it, and the classes that used it owe its price per class again. What went is
+     * returned, so Desfazer can bring it back with its comprovantes (AC-021-6).
      */
-    suspend fun delete(id: String): PaymentResult =
+    suspend fun delete(id: String): DeletedPayment? =
         db.inTransaction {
-            val row = dao.payment(id) ?: return@inTransaction PaymentResult.Err(PaymentError.NOT_FOUND)
+            val row = dao.payment(id) ?: return@inTransaction null
+            val chosen = dao.chosenOf(id)
+            val receipts = rdao.forPayment(id)
             val packageId = row.packageId
             if (packageId == null) {
                 dao.deletePayment(id)
-                return@inTransaction PaymentResult.Ok(id)
+                return@inTransaction DeletedPayment(row, chosen, receipts)
             }
+            val pkg = dao.packageRow(packageId)
             val used = dao.packageLessons(packageId)
             // Deleting the package deletes its payment and frees its classes.
             dao.deletePackage(packageId)
             used.forEach { db.schedule().upsertLesson(withDue(ctx, it.copy(packageId = null))) }
-            PaymentResult.Ok(id)
+            DeletedPayment(row, chosen, receipts, pkg, used.map { it.id })
+        }
+
+    /** Desfazer after Excluir: the payment, its classes, its comprovantes and its package, as they were (AC-021-6). */
+    suspend fun restore(deleted: DeletedPayment) =
+        db.inTransaction {
+            deleted.pkg?.let { dao.insertPackage(it) }
+            dao.upsertPayment(deleted.payment)
+            dao.insertChosen(deleted.chosen)
+            rdao.insert(deleted.receipts.filter { receipts.store.file(it.file).exists() })
+            deleted.pkg?.let { pkg ->
+                deleted.packageLessons.forEach { lid ->
+                    db.schedule().lesson(lid)?.let { db.schedule().upsertLesson(withDue(ctx, it.copy(packageId = pkg.id))) }
+                }
+            }
         }
 
     /** Novo pacote: the package at the student's current terms, and its payment (AC-008-20). */

@@ -38,6 +38,9 @@ class Harness(
     /** Whether exact alarms are allowed, and whether their page was opened (AC-014-27). */
     val exactAlarm = FakeExactAlarm()
 
+    /** What the camera, gallery and file pickers answer for comprovantes (spec 021): file paths. */
+    val receiptPicker = FakeReceiptPicker()
+
     /** The phone's unlock (spec 015): whether a screen lock is set and what asking answers. */
     val unlock = FakeDeviceUnlock()
 
@@ -117,18 +120,20 @@ class Harness(
                 app.tutora.ui.reminders.LocalNotificationPermission provides notificationPermission,
                 app.tutora.ui.reminders.LocalExactAlarmPermission provides exactAlarm,
                 app.tutora.lock.LocalAppLock provides lock,
+                app.tutora.ui.receipts.LocalReceiptPicker provides receiptPicker,
             ) { app.tutora.lock.LockGate { TutoraNav(AppInfo("1.1.0", "7"), services.schemaVersion, nav = nav) } }
         }
     }
 
     fun show(compose: ComposeContentTestRule) {
+        compose.registerIdlingResource(DbWork)
         compose.setContent { Content() }
         settle(compose)
     }
 
     /**
-     * Room emits from its own IO thread, which waitForIdle does not wait for: idle Compose and
-     * give the database real time, so screens show their data before the test looks.
+     * Room emits from its own IO thread: waitForIdle waits for its running queries ([DbWork]), and
+     * the short sleeps cover the moment between a write and the query it sets off.
      */
     fun settle(compose: ComposeContentTestRule) {
         repeat(6) {
@@ -166,6 +171,17 @@ class FakeBackupPicker : app.tutora.ui.backup.BackupPicker {
     override fun folder(onPicked: (String?) -> Unit) = onPicked(folderAnswer)
 
     override fun file(onPicked: (String?) -> Unit) = onPicked(fileAnswer)
+}
+
+/** The three sources of a comprovante answer with [answer], file paths in a temp folder; empty is cancelled. */
+class FakeReceiptPicker : app.tutora.ui.receipts.ReceiptPicker {
+    var answer: List<String> = emptyList()
+
+    override fun camera(onPicked: (List<String>) -> Unit) = onPicked(answer)
+
+    override fun gallery(onPicked: (List<String>) -> Unit) = onPicked(answer)
+
+    override fun file(onPicked: (List<String>) -> Unit) = onPicked(answer)
 }
 
 class FakeDeviceUnlock : app.tutora.lock.DeviceUnlock {

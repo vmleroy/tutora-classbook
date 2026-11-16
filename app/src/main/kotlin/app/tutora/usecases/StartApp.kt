@@ -40,6 +40,7 @@ class StartApp(
     private val calendar: PhoneCalendar = PhoneCalendar.None,
     private val calendarWords: (Language) -> app.tutora.domain.CalendarWords = NO_CALENDAR_WORDS,
     private val reminders: ReminderAlarm = ReminderAlarm.None,
+    private val receiptFiles: ReceiptFiles = ReceiptFiles.None,
 ) {
     suspend operator fun invoke(): StartResult {
         val phone = phoneTags()
@@ -63,6 +64,7 @@ class StartApp(
                     calendar = calendar,
                     calendarWords = calendarWords,
                     reminders = reminders,
+                    receiptFiles = receiptFiles,
                 )
             // This phone's calendar setup starts off (AC-012-2).
             app.tutora.data
@@ -89,6 +91,8 @@ class StartApp(
             runCatching { Reminders(ctx).plan() }
             // Notificações keeps 30 days (AC-014-40).
             Notices(ctx).prune()
+            // Comprovantes no payment points to any more (an Excluir not undone) go (AC-021-6).
+            runCatching { Receipts(ctx).sweep() }
             StartResult.Ready(db, repo.load(), TutoraDatabase.VERSION, ctx)
         } catch (e: Exception) {
             StartResult.Failed(startupLanguage(null, phone), backup, e.message ?: e.toString())

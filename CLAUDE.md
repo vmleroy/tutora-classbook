@@ -43,23 +43,14 @@ Read these when the spec points to them, not all up front:
 - Screens never touch `:core:data`. Every write is a use case in one Room transaction.
 - No raw `Color(0x…)`, `sp` or `dp` literals in screens or design-system components; use `TutoraTheme` tokens. Mockup hex values map to tokens.
 - Every user-facing string is a resource in both `values/strings.xml` (English) and `values-pt-rBR/strings.xml`.
-- New UI pieces come from the design system's components (47 since spec 020). A screen that needs a new one adds it to `:core:designsystem` first, with its guideline in `docs/design-system/components/<Name>/README.md` and a gallery entry.
+- New UI pieces come from the design system's components (49 since spec 021). A screen that needs a new one adds it to `:core:designsystem` first, with its guideline in `docs/design-system/components/<Name>/README.md` and a gallery entry.
 - All Markdown documentation lives under `docs/`. Only `README.md`, `CLAUDE.md` and `.claude/commands/` stay at the root.
 - Test names carry criterion ids: ``fun `AC-001-3 Ajustes is the fifth tab`()``.
 - If a spec is ambiguous, write the question under "Open questions" and ask Victor rather than guessing on anything the teacher would see.
 
-## Stack as installed (spec 001, 27 Oct 2026)
-
-- Gradle 9.8.2, Android Gradle Plugin 9.4.1 (built-in Kotlin, so no `kotlin-android` plugin), Kotlin 2.4.21, KSP 2.3.12. Versions live in `gradle/libs.versions.toml`.
-- JDK 21 toolchain for compiling and testing, downloaded by the Foojay resolver; any JDK 17+ can run Gradle itself.
-- compileSdk and targetSdk 37, minSdk 26. Application id `app.tutora.app`.
-- Compose BOM 2026.09.00 with Material 3 under `TutoraTheme`, Navigation Compose 2.10.2 (type-safe routes), Lifecycle 2.11.0, AppCompat 1.8.0 (per-app language), Core SplashScreen 1.2.0.
-- Room 2.8.5 with the bundled SQLite driver in the app; kotlinx-datetime 0.8.0, kotlinx.serialization 1.12.0, coroutines 1.11.0.
-- Tests: JUnit 4, kotest-property 6.2.6, Robolectric 4.17, Compose UI test (`junit4.v2.createComposeRule`), Espresso 3.7.0, navigation-testing.
-- Static analysis: Android Lint (warnings as errors) and ktlint 14.2.0 (`.editorconfig`). Detekt is out until it supports Kotlin 2.4 in a stable release.
-
 ## Tooling gotchas
 
+- Versions live in `gradle/libs.versions.toml`. Detekt is out until it supports Kotlin 2.4 in a stable release.
 - Robolectric needs JDK 21 for SDK 36+ and two JVM flags (`--add-opens java.base/java.io`, `--add-exports java.base/jdk.internal.access`); the root `build.gradle.kts` sets them for every test task.
 - The bundled SQLite driver's native library only loads on Android. JVM tests pass `AndroidSQLiteDriver()` (sqlite-framework, backed by Robolectric) to `openTutoraDatabase`.
 - The Compose test rule pulls Espresso 3.5, which crashes on Android 37; modules with UI tests depend on `espresso-core` 3.7.0 explicitly.

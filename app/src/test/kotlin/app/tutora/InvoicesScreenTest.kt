@@ -84,7 +84,7 @@ class InvoicesScreenTest {
         compose.onNodeWithTag("due-Ana Souza").assertExists()
         tap("due-pdf-Ana Souza")
         assertEquals(
-            "Ana Souza - fatura - outubro 2026.pdf",
+            "Ana Souza - relatório - outubro 2026.pdf",
             h.exports.shared
                 .single()
                 .first,
@@ -129,5 +129,28 @@ class InvoicesScreenTest {
                 true,
             ).onFirst()
             .assertExists()
+    }
+
+    @Test
+    fun `AC-021-19 Faturas do mes sends the same document, Pix on and the rest as Ajustes' defaults`() {
+        kotlinx.coroutines.runBlocking {
+            h.services.saveSettings(h.services.currentSettings().copy(docParts = app.tutora.domain.DocParts(pix = false, details = true)))
+        }
+        openInvoices()
+        tap("due-pdf-Ana Souza")
+        val plan =
+            String(
+                h.exports.shared
+                    .single()
+                    .second,
+            )
+        assertTrue(plan.contains("title=Relatório de aulas,") && plan.contains("due=PdfDue("))
+        assertTrue(plan.contains("Desloc."))
+        assertEquals(
+            "Ana Souza - relatório - outubro 2026.pdf",
+            h.exports.shared
+                .single()
+                .first,
+        )
     }
 }

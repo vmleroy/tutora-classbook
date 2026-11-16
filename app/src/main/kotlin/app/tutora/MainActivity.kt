@@ -29,9 +29,13 @@ import app.tutora.ui.LiveRequest
 import app.tutora.ui.RegistryHome
 import app.tutora.ui.TodayGraph
 import app.tutora.ui.TutoraApp
+import app.tutora.ui.receipts.attachRoute
+import app.tutora.ui.receipts.sharedUris
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // How often the open app looks for a class whose time has come.
 private const val AUTO_START_CHECK_MS = 30_000L
@@ -62,7 +66,21 @@ class MainActivity : AppCompatActivity() {
         if (route != null) openRequest.value = route
     }
 
+    /**
+     * Compartilhar › Tutora: the files are copied into Tutora at once (the link they came with
+     * doesn't last), then Anexar comprovante opens, behind the lock when it is on (AC-021-3).
+     */
+    private fun takeShare(intent: Intent?) {
+        val uris = sharedUris(intent)
+        if (uris.isEmpty()) return
+        lifecycleScope.launch {
+            val results = withContext(Dispatchers.IO) { uris.map { container.receipts.stage(it) } }
+            openRequest.value = attachRoute(results)
+        }
+    }
+
     private fun takeLiveRequest(intent: Intent?) {
+        takeShare(intent)
         takeOpenRequest(intent)
         val id = intent?.getStringExtra(AndroidLiveNotifier.EXTRA_LESSON) ?: return
         liveRequest.value = LiveRequest(id, intent.getBooleanExtra(AndroidLiveNotifier.EXTRA_END, false))

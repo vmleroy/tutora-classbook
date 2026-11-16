@@ -74,9 +74,24 @@ class InvoiceDocsTest {
     }
 
     @Test
-    fun `AC-020-6 the Fatura's header has its title, the teacher, the date made, who it is for and the period`() {
-        val plan = fatura()
-        assertEquals("Fatura", plan.title)
+    fun `AC-020-6 the document's header has its title, the teacher, the date made, who it is for and the period`() {
+        val plan =
+            app.tutora.ui.reports.documentPlan(
+                owing,
+                app.tutora.domain.DocParts(),
+                w,
+                iw,
+                teacher,
+                city,
+                ana,
+                "Aluna",
+                null,
+                false,
+                null,
+                made,
+                stamp,
+            )
+        assertEquals("Relatório de aulas", plan.title)
         assertEquals("Prof. Victor Le Roy · Emitida em 13/11/2026 · 01/10/2026 a 31/10/2026", plan.subtitle)
         assertEquals("Para:", plan.subjectLabel)
         assertEquals("Maria Souza", plan.subjectName)
@@ -115,7 +130,7 @@ class InvoiceDocsTest {
         val text = invoiceText(invoiceOf(owing, false), w, iw, teacher, city, "outubro 2026", null)
         val lines = text.lines()
         assertEquals(
-            listOf("Olá!", "Fatura de outubro 2026", "19/10 · 14:00 · 60 min · R$ 120,00", "22/10 · 14:00 · 60 min · R$ 120,00"),
+            listOf("Olá!", "Aulas de outubro 2026", "19/10 · 14:00 · 60 min · R$ 120,00", "22/10 · 14:00 · 60 min · R$ 120,00"),
             lines.take(4),
         )
         assertTrue(text.contains("Total a pagar: R$ 240,00"))
@@ -147,8 +162,8 @@ class InvoiceDocsTest {
                 "Término",
                 "Em aula",
                 "Local",
-                "Deslocamento",
-                "Cobrança extra",
+                "Desloc.",
+                "Extra",
                 "Valor",
                 "Situação",
                 "Observações",
@@ -170,8 +185,180 @@ class InvoiceDocsTest {
                 .associate { it.groupValues[1] to it.groupValues[2] }
         val en = names("src/main/res/values/strings_features.xml")
         val pt = names("src/main/res/values-pt-rBR/strings_features.xml")
-        assertTrue(en.size >= 50)
+        assertTrue(en.size >= 45)
         assertEquals(en.keys, pt.keys)
         assertEquals("Amount due" to "Valor a pagar", en["inv_toPay"] to pt["inv_toPay"])
+    }
+
+    // Spec 021: comprovantes in the documents.
+
+    private fun receipt(
+        id: String,
+        kind: app.tutora.domain.ReceiptKind,
+    ) = app.tutora.domain.Receipt(
+        id,
+        "p1",
+        kind,
+        if (kind ==
+            app.tutora.domain.ReceiptKind.PDF
+        ) {
+            "application/pdf"
+        } else {
+            "image/jpeg"
+        },
+        "$id.x",
+        100,
+        0,
+    )
+
+    private val withProof =
+        subjectReport(
+            LocalDate(2026, 10, 1),
+            LocalDate(2026, 10, 31),
+            listOf(cls(5), cls(19, left = 12_000)),
+            listOf(
+                app.tutora.domain.ReportPayment(
+                    LocalDate(2026, 10, 16),
+                    app.tutora.domain.PayMethod.PIX,
+                    54_000,
+                    emptyList(),
+                    "p1",
+                    listOf(receipt("a", app.tutora.domain.ReceiptKind.IMAGE), receipt("b", app.tutora.domain.ReceiptKind.PDF)),
+                ),
+                app.tutora.domain.ReportPayment(LocalDate(2026, 10, 2), app.tutora.domain.PayMethod.CASH, 12_000, emptyList(), "p2"),
+            ),
+        )
+
+    @Test
+    fun `AC-021-7 the documents end with each comprovante headed by its payment, a PDF one with its pages`() {
+        assertTrue(
+            app.tutora.ui.reports
+                .hasReceipts(withProof),
+        )
+        assertFalse(
+            app.tutora.ui.reports
+                .hasReceipts(owing),
+        )
+        val receipts =
+            app.tutora.ui.reports
+                .receiptsOf(withProof, w, { "/files/${it.file}" }, { if (it.id == "b") 2 else 1 })
+        assertEquals(
+            listOf("16/10/2026 · Pix · R$ 540,00", "16/10/2026 · Pix · R$ 540,00"),
+            receipts.map { it.heading.replace('\u00A0', ' ') },
+        )
+        assertEquals(listOf(false to 1, true to 2), receipts.map { it.pdf to it.pages })
+        assertEquals("/files/a.x", receipts.first().path)
+    }
+
+    @Test
+    fun `AC-021-8 the Excel's Pagamentos has a Comprovante column with Sim or Nao, never the file`() {
+        val pagamentos = detailSheets(withProof, w, iw, false)[1]
+        assertEquals(listOf("Data", "Forma", "Valor", "Comprovante"), pagamentos.header)
+        assertEquals(
+            listOf(Cell.Text("Sim"), Cell.Text("Não")),
+            pagamentos.rows.map { it.last() },
+        )
+    }
+
+    @Test
+    fun `AC-021-9 the copied text never carries a comprovante`() {
+        val plain = withProof.copy(payments = withProof.payments.map { it.copy(receipts = emptyList()) })
+        assertEquals(
+            invoiceText(invoiceOf(plain, false), w, iw, teacher, city, "outubro 2026", null),
+            invoiceText(invoiceOf(withProof, false), w, iw, teacher, city, "outubro 2026", null),
+        )
+    }
+
+    @Test
+    fun `AC-021-13 every word about comprovantes is in English and Portuguese`() {
+        fun names(path: String) =
+            Regex("<(?:string|plurals) name=\"((?:rc|pay)_[A-Za-z]+)\"")
+                .findAll(File(path).readText())
+                .map { it.groupValues[1] }
+                .toSet()
+        val en = names("src/main/res/values/strings_receipts.xml")
+        val pt = names("src/main/res/values-pt-rBR/strings_receipts.xml")
+        assertTrue(en.size >= 45)
+        assertEquals(en, pt)
+        assertTrue(File("src/main/res/values/strings_receipts.xml").readText().contains(">Attach receipt<"))
+        assertTrue(File("src/main/res/values-pt-rBR/strings_receipts.xml").readText().contains(">Anexar comprovante<"))
+    }
+
+    // The one document (AC-021-15 to 17).
+
+    private fun doc(
+        r: SubjectReport,
+        parts: app.tutora.domain.DocParts,
+    ) = app.tutora.ui.reports
+        .documentPlan(r, parts, w, iw, teacher, city, ana, "Aluna", null, false, null, made, stamp)
+
+    @Test
+    fun `AC-021-15 each switch adds its part, and Valor a pagar e Pix makes it a Fatura`() {
+        val r = withProof.copy(classes = listOf(cls(5, travel = 3_000, notes = "Revisão"), cls(19, left = 12_000)))
+        val bare = doc(r, app.tutora.domain.DocParts(pix = false, payments = false))
+        assertEquals("Relatório de aulas", bare.title)
+        assertNull(bare.due)
+        assertNull(bare.payPix)
+        assertEquals(emptyList<Any>(), bare.sections)
+        assertEquals(6, bare.columns.size)
+        assertTrue(bare.rows.none { it.kind == PdfRowKind.NOTE })
+        val all = doc(r, app.tutora.domain.DocParts(pix = true, details = true, notes = true, payments = true))
+        assertEquals("Relatório de aulas", all.title)
+        assertEquals("Para:" to "Maria Souza", all.subjectLabel to all.subjectName)
+        assertEquals("Valor a pagar", all.due?.label)
+        assertEquals("victor@gmail.com", all.payPix?.key)
+        assertEquals(9, all.columns.size)
+        assertEquals(listOf("Revisão"), all.rows.filter { it.kind == PdfRowKind.NOTE }.map { it.cells.single() })
+        assertEquals("Pagamentos recebidos", all.sections.single().title)
+        // One style: the same header, tiles and columns in the same order; the switches only add parts.
+        assertEquals(bare.subjectLabel to bare.subjectName, all.subjectLabel to all.subjectName)
+        assertEquals(bare.stats.map { it.label }, all.stats.map { it.label })
+        assertEquals(bare.columns, all.columns.filter { it in bare.columns })
+    }
+
+    @Test
+    fun `AC-021-17 the Excel's columns follow the switches, and the text is the Fatura's only with Pix on`() {
+        val r = report(cls(5, travel = 3_000, notes = "ok"), cls(19, left = 12_000))
+        val plainSheet =
+            app.tutora.ui.reports
+                .documentSheets(r, app.tutora.domain.DocParts(), w, iw)
+                .first()
+        assertEquals(listOf("Nome", "Data", "Em aula", "Valor", "Situação"), plainSheet.header)
+        assertEquals(5, plainSheet.rows.first().size)
+        val full =
+            app.tutora.ui.reports
+                .documentSheets(r, app.tutora.domain.DocParts(details = true, notes = true), w, iw)
+                .first()
+        assertEquals(11, full.header.size)
+        assertEquals("Observações", full.header.last())
+        val fatura =
+            app.tutora.ui.reports.documentText(
+                r,
+                app.tutora.domain.DocParts(),
+                w,
+                iw,
+                teacher,
+                city,
+                "Ana Souza",
+                "outubro 2026",
+                false,
+                null,
+            )
+        assertTrue(fatura.contains("Total a pagar"))
+        val summary =
+            app.tutora.ui.reports.documentText(
+                r,
+                app.tutora.domain.DocParts(pix = false),
+                w,
+                iw,
+                teacher,
+                city,
+                "Ana Souza",
+                "outubro 2026",
+                false,
+                null,
+            )
+        assertFalse(summary.contains("Total a pagar"))
+        assertTrue(summary.startsWith("Ana Souza"))
     }
 }

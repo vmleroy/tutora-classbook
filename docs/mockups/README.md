@@ -43,5 +43,8 @@ Colors in the mockups are hex values from the Quadro-negro light theme. In the a
 | [A_Ganhos.dc.html](A_Ganhos.dc.html) | 2026 look · Ganhos |
 | [A_Ajustes.dc.html](A_Ajustes.dc.html) | 2026 look · Ajustes |
 | [A_Estilo.dc.html](A_Estilo.dc.html) | 2026 look · color roles, Suas cores parts, type, shapes |
+| [PaymentSheet.dc.html](PaymentSheet.dc.html) | 2026 look · Registrar / Editar pagamento › Comprovante, its three sources, a refused file (spec 021) |
+| [PaymentDetail.dc.html](PaymentDetail.dc.html) | 2026 look · Pagamentos with the comprovante mark, Pagamento with thumbnails, Excluir › Desfazer (spec 021) |
+| [Receipt.dc.html](Receipt.dc.html) | 2026 look · Comprovante viewer (image, PDF, Remover) and Compartilhar › Tutora › Anexar comprovante (spec 021) |
 
 The 2026 boards take every color from CSS variables named after the theme tokens, with Tema and Modo tweaks, so they carry no hex in their markup.
