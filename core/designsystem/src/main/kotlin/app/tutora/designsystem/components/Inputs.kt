@@ -666,9 +666,26 @@ fun DateField(
     modifier: Modifier = Modifier,
     title: String? = null,
     latest: LocalDate? = null,
+    /**
+     * As a [ListRow] inside a [ListGroup] (label, then [text] under it) instead of a field; with
+     * [onClear], the row ends in a × that takes the date away (spec 021).
+     */
+    row: Boolean = false,
+    onClear: (() -> Unit)? = null,
 ) {
     var open by rememberSaveable { mutableStateOf(false) }
-    SelectField(text, { open = true }, modifier, label = label, icon = IconName.CALENDAR)
+    if (row) {
+        ListRow(
+            label,
+            modifier,
+            subtitle = text,
+            trailing = if (onClear != null) RowTrailing.REMOVE else RowTrailing.CHEVRON,
+            onClick = { open = true },
+            onRemove = { onClear?.invoke() },
+        )
+    } else {
+        SelectField(text, { open = true }, modifier, label = label, icon = IconName.CALENDAR)
+    }
     if (open && !LocalCovered.current) {
         // The calendar counts in UTC milliseconds at midnight.
         val lastMillis = latest?.let { it.toEpochDays() * DAY_MILLIS }

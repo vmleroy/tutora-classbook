@@ -1,10 +1,8 @@
 package app.tutora.ui.reports
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -362,9 +360,16 @@ fun ExportSection(
             part(R.string.doc_pix, "part-pix", parts.pix, R.string.doc_pixSub) { change(parts.copy(pix = it)) },
             if (parts.pix) {
                 {
-                    Box(Modifier.padding(start = Spacing.s4, end = Spacing.s4, bottom = Spacing.s3)) {
-                        DueField(stringResource(R.string.inv_dueDate), dueDate, today) { due = it?.toString() }
-                    }
+                    // One plain row like its neighbours: tap for the calendar, × to clear (Victor, 16 Nov 2026).
+                    DateField(
+                        stringResource(R.string.inv_dueDate),
+                        dueDate?.let { pattern("dd/MM/yyyy", currentLanguage(), it) } ?: stringResource(R.string.inv_noDue),
+                        dueDate ?: today,
+                        { due = it.toString() },
+                        Modifier.testTag("due-date"),
+                        row = true,
+                        onClear = dueDate?.let { { due = null } },
+                    )
                 }
             } else {
                 null
