@@ -9,6 +9,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import kotlinx.coroutines.Dispatchers
 import java.io.File
+import kotlin.coroutines.CoroutineContext
 
 /** A migration failed; the copy taken before it is at [backupPath]. */
 class MigrationFailed(
@@ -24,6 +25,8 @@ fun openTutoraDatabase(
     context: Context,
     file: File = context.getDatabasePath("tutora.db"),
     driver: SQLiteDriver = BundledSQLiteDriver(),
+    /** Where queries run; tests pass one that tells Compose when the database is busy. */
+    queryContext: CoroutineContext = Dispatchers.IO,
 ): Pair<TutoraDatabase, String?> {
     file.parentFile?.mkdirs()
     val backup = PreMigrationBackup(driver).copyIfOlder(file, TutoraDatabase.VERSION)
@@ -31,7 +34,7 @@ fun openTutoraDatabase(
         Room
             .databaseBuilder<TutoraDatabase>(context, file.absolutePath)
             .setDriver(driver)
-            .setQueryCoroutineContext(Dispatchers.IO)
+            .setQueryCoroutineContext(queryContext)
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
             .addMigrations(*TutoraDatabase.MIGRATIONS)
             .addCallback(

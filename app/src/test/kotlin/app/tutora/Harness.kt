@@ -126,13 +126,14 @@ class Harness(
     }
 
     fun show(compose: ComposeContentTestRule) {
+        compose.registerIdlingResource(DbWork)
         compose.setContent { Content() }
         settle(compose)
     }
 
     /**
-     * Room emits from its own IO thread, which waitForIdle does not wait for: idle Compose and
-     * give the database real time, so screens show their data before the test looks.
+     * Room emits from its own IO thread: waitForIdle waits for its running queries ([DbWork]), and
+     * the short sleeps cover the moment between a write and the query it sets off.
      */
     fun settle(compose: ComposeContentTestRule) {
         repeat(6) {
