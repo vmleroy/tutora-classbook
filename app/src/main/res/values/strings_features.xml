@@ -571,7 +571,7 @@
     <string name="inv_inClass">In class</string>
     <string name="inv_place">Place</string>
     <string name="inv_travel">Travel</string>
-    <string name="inv_charge">Extra charge</string>
+    <string name="inv_charge">Extra</string>
     <string name="inv_subtotal">Subtotal</string>
     <string name="inv_salary">Salary</string>
     <string name="inv_periodTotal">Period total</string>
@@ -596,7 +596,7 @@
     <string name="inv_whole">Whole group</string>
     <string name="inv_split">Split by student</string>
     <string name="inv_addPix">Add your Pix key in Settings › Payments</string>
-    <string name="inv_monthTitle">Monthly invoices</string>
+    <string name="inv_monthTitle">Charges this month</string>
     <string name="inv_monthTotal">Due in the period</string>
     <string name="inv_splitGroups">Split groups by student</string>
     <string name="inv_nobody">Nobody owes anything in this period</string>

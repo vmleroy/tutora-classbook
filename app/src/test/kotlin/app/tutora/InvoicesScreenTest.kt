@@ -145,7 +145,7 @@ class InvoicesScreenTest {
                     .second,
             )
         assertTrue(plan.contains("title=Relatório de aulas,") && plan.contains("due=PdfDue("))
-        assertTrue(plan.contains("Deslocamento"))
+        assertTrue(plan.contains("Desloc."))
         assertEquals(
             "Ana Souza - relatório - outubro 2026.pdf",
             h.exports.shared

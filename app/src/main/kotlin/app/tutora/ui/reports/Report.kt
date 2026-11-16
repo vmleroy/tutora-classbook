@@ -116,7 +116,8 @@ fun rememberReportWords(): ReportWords {
         date = stringResource(R.string.lesson_date),
         duration = stringResource(R.string.lesson_duration),
         where = stringResource(R.string.rep_where),
-        value = stringResource(R.string.lesson_value),
+        // Short, so the column's header fits on A4 with every column on (Victor, 16 Nov 2026).
+        value = stringResource(R.string.doc_valueColumn),
         situation = stringResource(R.string.rep_situation),
         statusPaid = stringResource(R.string.pay_paid),
         statusOwed = stringResource(R.string.pay_toReceive),

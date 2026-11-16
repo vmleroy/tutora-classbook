@@ -580,8 +580,8 @@
     <string name="inv_ends">Término</string>
     <string name="inv_inClass">Em aula</string>
     <string name="inv_place">Local</string>
-    <string name="inv_travel">Deslocamento</string>
-    <string name="inv_charge">Cobrança extra</string>
+    <string name="inv_travel">Desloc.</string>
+    <string name="inv_charge">Extra</string>
     <string name="inv_subtotal">Subtotal</string>
     <string name="inv_salary">Salário</string>
     <string name="inv_periodTotal">Total do período</string>
@@ -606,7 +606,7 @@
     <string name="inv_whole">Turma inteira</string>
     <string name="inv_split">Dividir por aluno</string>
     <string name="inv_addPix">Adicione sua chave Pix em Ajustes › Pagamentos</string>
-    <string name="inv_monthTitle">Faturas do mês</string>
+    <string name="inv_monthTitle">Cobranças do mês</string>
     <string name="inv_monthTotal">A receber no período</string>
     <string name="inv_splitGroups">Dividir turmas por aluno</string>
     <string name="inv_nobody">Ninguém deve nada neste período</string>

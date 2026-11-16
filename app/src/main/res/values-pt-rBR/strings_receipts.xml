@@ -78,4 +78,5 @@
     <string name="doc_remember">Lembrar a última escolha</string>
     <string name="doc_rememberSub">Cada relatório abre como você deixou da última vez</string>
     <string name="doc_rowHint">O que o PDF mostra e o título no topo</string>
+    <string name="doc_valueColumn">Valor</string>
 </resources>
